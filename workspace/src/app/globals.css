@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+html, body {
+
+  width: 100%;
+  height: 100%;
+}
+.bg-green {
+  background-color: #06b57b;
+}
+
+.border-green {
+  border-color: #06b57b;
+}
+
+
+@layer components {
+
+  #sidebar-toggle {
+    right: -.77em;
+    z-index: 2;
+  }
+
+  #sidebar.hiddenSidebar span {
+    display: none;
+  }
+
+  #sidebar.hiddenSidebar {
+    @apply w-12;
+  }
+
+  .large-icon {
+    font-size: 25px;
+  }
+
+
+
+  .navbar-icon {
+    @apply h-8 w-8 flex items-center justify-center rounded-md hover:border-2 border-gray-200 hover:cursor-pointer;
+  }
+
+
+  .horizontal-editable-table {
+      @apply w-full rounded-lg border-2 border-gray-100;
+  }
+  .horizontal-editable-table td:first-child {
+    @apply p-4 py-2 font-bold;
+  }
+
+  .horizontal-editable-table input {
+    @apply outline-none w-full p-4 py-2 rounded;
+  }
+
+  .navbar-icon:not(:last-child) {
+    @apply mr-2;
+  }
+
+  .card {
+    @apply border-2 border-gray-200 bg-white rounded p-4;
+  }
+  .sidebar-dropdown {
+    @apply transition-all duration-200 ease-in-out opacity-100;
+  }
+
+  .sidebar-dropdown.closed-sidebar-dropdown {
+      @apply h-0 opacity-0;
+  }
+
+  .cards-group .card:not(:last-child) {
+    @apply mr-2;
+  }
+
+  .active {
+    @apply w-full border-l-2 border-green-800 bg-green-100 p-2 pl-4;
+  }
+
+  .tab {
+    @apply w-full border-l-2 p-2 pl-4;
+  }
+
+  .tab:hover {
+    @apply cursor-pointer;
+  }
+
+  .tab:not(.active):hover {
+    @apply border-green-800 bg-green-100;
+  }
+
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: bolder;
+}

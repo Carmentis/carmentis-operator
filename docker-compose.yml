@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+
+  workspace:
+    build:
+      context: ./workspace
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_WORKSPACE_API_BASE_URL: ${NEXT_PUBLIC_WORKSPACE_API_BASE_URL}
+    environment:
+      image: ghcr.io/carmentis/carmentis-workspace
+    container_name: workspace.carmentis
+    tty: true
+    networks:
+      - carmentis-network
+    ports:
+      - "3004:3000"
+
+  operator:
+    build:
+      context: ./operator
+      dockerfile: Dockerfile
+    environment:
+         image: ghcr.io/carmentis/carmentis-operator
+    container_name: operator.carmentis
+    tty: true
+    networks:
+      - carmentis-network
+    ports:
+      - "3005:3000"
+    env_file:
+      - .env
+
+networks:
+  carmentis-network:
+    driver: bridge

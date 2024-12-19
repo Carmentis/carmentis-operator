@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Operator Server
 
-## Getting Started
+This repository contains the source code of the operator and the workspace (the administration interface of the operator).
 
-First, run the development server:
+## Environment variables
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```dotenv
+# mandatory variables
+OPERATOR_DATABASE_NAME=db-operator
+OPERATOR_DATABASE_USERNAME=postgres
+OPERATOR_DATABASE_PASSWORD=admin
+OPERATOR_DATABASE_PORT=3001
+OPERATOR_DATABASE_URL=localhost
+NEXT_PUBLIC_WORKSPACE_API_BASE_URL=http://localhost:3002/workspace/api
+
+# optional variables
+OPERATOR_PORT=3002
+WORKSPACE_PORT=3003
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+We resume the scope of each variable below:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable                             | Used by   | Comment                                                       |
+|--------------------------------------|-----------|---------------------------------------------------------------
+| `OPERATOR_DATABASE_USERNAME`         | Operator  | User's name to access database.                               |
+| `OPERATOR_DATABASE_PASSWORD`         | Operator  | User's password to access database.                           |
+| `OPERATOR_DATABASE_URL`              | Operator  | URL where the database is listening.                          |
+| `OPERATOR_DATABASE_PORT`             | Operator  | Port where the database server is listening.                  |
+| `OPERATOR_DATABASE_NAME`             | Operator  | Name of the database.                                         |
+| `OPERATOR_PORT`                      | Operator  | Listening port of the operator. (Default: 3000)               |
+| `NEXT_PUBLIC_WORKSPACE_API_BASE_URL` | Workspace | URL where the backend API used by the workspace is listening. |
+| `WORKSPACE_PORT`                     | Workspace | Listening port of the workspace. (Default: 3000)              |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deploy the operator using host
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Deploying the operator requires **three active terminals**, one for the operator, one for the (ui of the) workspace
+and another one for the database (we use `docker` to run the database).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### First terminal: The database
+Go to the 
+
+### Second terminal: The operator
+
+### Third terminal: The workspace
+
+
+## Deploy the operator using Docker
+
+The deployment of the operator is done in two steps: (1) creates the environment file `.env` and (2) run the docker-compose
+file.  To run the operator, execute the following docker command **next to the `.env` file**:
+```shell
+docker-compose up
+```
