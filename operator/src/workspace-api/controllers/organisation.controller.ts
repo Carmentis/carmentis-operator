@@ -5,7 +5,8 @@ import {OrganisationEntity} from "../entities/organisation.entity";
 import {UserEntity} from "../entities/user.entity";
 import {ApplicationService} from "../services/application.service";
 import {ApplicationEntity} from "../entities/application.entity";
-import {CreateOrganisationDto} from "../dto/create-organisation.dto";
+import {ApplicationDto} from "../dto/application.dto";
+import {instanceToPlain, plainToInstance} from "class-transformer";
 
 @Controller('/workspace/api/organisation')
 export class OrganisationController {
@@ -30,6 +31,46 @@ export class OrganisationController {
     @Get()
     async getAllOrganisations(): Promise<{ id: number, name: string, logoUrl: string }[]> {
         return await this.organisationService.findAll();
+    }
+
+    /**
+     * Returns the list of organisation in which the current user is involved
+     *
+     */
+    @Get(":organisationId/application")
+    async getAllApplications(
+        @Param('organisationId') organisationId: number,
+    ): Promise<{ id: number, name: string, logoUrl: string }[]> {
+        return await this.applicationService.findAllApplicationsInOrganisationByOrganisationId(organisationId);
+    }
+
+    /**
+     * Returns the list of organisation in which the current user is involved
+     *
+     */
+    @Get(":organisationId/application/:applicationId")
+    async getApplicationInOrganisation(
+        @Param('organisationId') organisationId: number,
+        @Param('applicationId') applicationId: number,
+    ) {
+        const application = await this.applicationService.findApplication(applicationId);
+        return instanceToPlain(application);
+    }
+
+
+    /**
+     * Update an application
+     *
+     */
+    @Put(":organisationId/application/:applicationId")
+    async updateApplicationInOrganisation(
+        @Param('organisationId') organisationId: number,
+        @Param('applicationId') applicationId: number,
+        @Body() applicationDto: ApplicationDto
+    ) {
+        const application: ApplicationEntity = plainToInstance(ApplicationEntity, applicationDto);
+        console.log(application)
+        await this.applicationService.update(application);
     }
 
     @Get(':organisationId')

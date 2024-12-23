@@ -1,6 +1,11 @@
 import { useFetch } from '@/components/fetcher.hook';
 import { string } from 'postcss-selector-parser';
 import User from '@/entities/user.entity';
+import { number } from 'style-value-types';
+import {
+	Application,
+	AppDataField,
+} from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 
 export interface AccessRight {
 	"id": number,
@@ -73,7 +78,13 @@ export function fetchOrganisation(organisationId: number)  {
 	});
 }
 
+export type GetApplicationResponse = Application;
 
+export function fetchApplicationInOrganisation( organisationId: number, applicationId: number ) {
+	return useFetch<GetApplicationResponse>(`/organisation/${organisationId}/application/${applicationId}`,{
+		headers: { "Accept": "application/json", "Content-Type": "application/json" }
+	});
+}
 
 
 export function fetchUsersInOrganisation(organisationId: number)  {
@@ -81,6 +92,8 @@ export function fetchUsersInOrganisation(organisationId: number)  {
 		headers: { "Accept": "application/json", "Content-Type": "application/json" }
 	});
 }
+
+
 
 
 export interface UserInOrganisationDetailsResponse {
@@ -120,6 +133,12 @@ export function fetchOrganisationsOfUser() {
 	});
 }
 
+export function fetchOrganisationApplications( organisationId: number )  {
+	return useFetch<{id: number, name: string}>(`/organisation/${organisationId}/application`,{
+		headers: { "Accept": "application/json", "Content-Type": "application/json" }
+	});
+}
+
 
 export function useOrganisationCreation() {
 	return async (name: string, cb: APICallbacks<{id: number}> | undefined) => {
@@ -127,6 +146,16 @@ export function useOrganisationCreation() {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ name }),
+		});
+	};
+}
+
+export function useApplicationUpdateApi() {
+	return async (organisationId : number, application: Application, cb: APICallbacks<{id: number}> | undefined) => {
+		return CallApi(`/organisation/${organisationId}/application/${application.id}`, cb, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(application),
 		});
 	};
 }

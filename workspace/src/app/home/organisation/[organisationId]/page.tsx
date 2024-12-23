@@ -7,7 +7,6 @@ export default function Home(){
 
     const params: { organisationId: string } = useParams();
     const {data, loading, error} = fetchOrganisation(parseInt(params.organisationId));
-    console.log(data);
 
     return (
         <>

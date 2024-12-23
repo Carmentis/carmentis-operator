@@ -35,6 +35,13 @@ html, body {
 
 
 @layer components {
+  .button-dark {
+    @apply bg-white;
+  }
+
+  #fields tbody td {
+      @apply p-2 z-20;
+  }
 
   #sidebar-toggle {
     right: -.77em;

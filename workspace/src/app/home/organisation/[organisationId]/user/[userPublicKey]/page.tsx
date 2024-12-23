@@ -18,7 +18,6 @@ export default function UserInOrganisationDetailsPage() {
 		userPublicKey
 	);
 
-	console.log(data, loading, error)
 	let content = <></>;
 	if (!data || loading) {
 		content = <Skeleton count={1} className={"h-5/12 w-full"}></Skeleton>;

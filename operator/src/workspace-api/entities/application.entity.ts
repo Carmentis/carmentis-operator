@@ -1,5 +1,6 @@
 import {Column, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 import {OrganisationEntity} from "./organisation.entity";
+import {Transform} from "class-transformer";
 
 @Entity("application")
 export class ApplicationEntity {
@@ -8,6 +9,9 @@ export class ApplicationEntity {
 
     @Column()
     name: string;
+
+    @Column({ default: () => '1' })
+    version: number;
 
     @Column({ nullable: true })
     logoUrl: string;
@@ -30,8 +34,13 @@ export class ApplicationEntity {
     createdAt: Date;
 
 
+    @Column({ default: false })
+    published: boolean;
+
+    @Column({ nullable: true })
+    publishedAt: Date;
+
     @Column()
-    structure: string = "{}";
-
-
+    @Transform(({value}) => JSON.parse(value), { toPlainOnly: true })
+    data: string = "{}";
 }
