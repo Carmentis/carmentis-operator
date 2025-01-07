@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { WorkspaceApiModule } from './workspace-api/workspace-api.module';
 import PackageConfigService from './package.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -23,7 +22,7 @@ import { OperatorApiModule } from './operator-api/operator-api.module';
 		}),
 	],
 	controllers: [AppController],
-	providers: [AppService, PackageConfigService,DatabaseInitService, ],
+	providers: [PackageConfigService,DatabaseInitService, ],
 	exports: [PackageConfigService],
 })
 export class AppModule {

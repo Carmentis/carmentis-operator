@@ -3,10 +3,11 @@ import {
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import {  useEffect, useState } from 'react';
 import {
-	useApplication, useUpdateApplication, useSetEditionStatus, useApplicationFields,
+	useUpdateApplication, useSetEditionStatus, useApplicationFields,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
 import { Button, Input } from '@material-tailwind/react';
 import FieldEditionCard from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
+import { useToast } from '@/app/layout';
 
 export default function FieldsPanel(
 	input: {
@@ -15,6 +16,7 @@ export default function FieldsPanel(
 	},
 ) {
 
+	const notify = useToast();
 	const applicationFields = useApplicationFields();
 	const updateApplication = useUpdateApplication();
 	const setIsModified = useSetEditionStatus();
@@ -25,13 +27,22 @@ export default function FieldsPanel(
 		setFields(applicationFields);
 	}, [applicationFields]);
 
+	/**
+	 * Add a new field.
+	 */
 	function addField() {
-		setFieldName('')
-		setIsModified(true);
-		updateApplication(application => {
-			const editor = new ApplicationEditor(application)
-			editor.createField(fieldName)
-		})
+		// aborts if the field name is empty
+		if ( fieldName !== '' ) {
+			setFieldName('')
+			setIsModified(true);
+			updateApplication(application => {
+				const editor = new ApplicationEditor(application)
+				editor.createField(fieldName)
+			})
+		}  else {
+			notify.error("Cannot add field with an empty name")
+		}
+
 	}
 
 	function removeField(fieldName: string) {

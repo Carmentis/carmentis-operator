@@ -16,9 +16,6 @@ export class UserEntity {
 	@Column({ default: false })
 	isAdmin: boolean;
 
-	@OneToMany(_ => OrganisationEntity, (org) => org.owner)
-	ownedOrganisations: OrganisationEntity[];
-
 	@OneToMany(_ => OrganisationAccessRightEntity, (perm) => perm.user)
 	accessRights: OrganisationAccessRightEntity[];
 }

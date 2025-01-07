@@ -1,13 +1,13 @@
 import {Controller, Get} from '@nestjs/common';
-import {AppService} from './app.service';
+import PackageConfigService from './package.service';
 
 @Controller()
 export class AppController {
-    constructor(private readonly appService: AppService) {
+    constructor(private readonly packageService: PackageConfigService) {
     }
 
     @Get()
-    getHello(): string {
-        return this.appService.getHello();
+    index(): string {
+        return 'Carmentis Operator v' + this.packageService.operatorVersion
     }
 }

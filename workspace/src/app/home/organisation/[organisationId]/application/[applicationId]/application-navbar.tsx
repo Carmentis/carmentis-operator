@@ -1,16 +1,15 @@
 'use client';
 
 import { Card, CardBody, Chip, IconButton, Spinner, Typography } from '@material-tailwind/react';
-import { ArrowDownOnSquareIcon, ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/16/solid';
+import { ArrowDownOnSquareIcon, ArrowLongDownIcon, ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/16/solid';
 import {
-	ApplicationOverview,
 	useApplication,
 	useEditionStatus, useSetEditionStatus,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
-import { useApplicationUpdateApi } from '@/components/api.hook';
-import { useParams } from 'next/navigation';
+import { useApplicationDeletion, useApplicationUpdateApi } from '@/components/api.hook';
+import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useToastNotification } from '@/app/layout';
+import { useToast } from '@/app/layout';
 
 export default function ApplicationDetailsNavbar() {
 	const params = useParams();
@@ -19,21 +18,33 @@ export default function ApplicationDetailsNavbar() {
 	const isModified = useEditionStatus();
 	const setIsModified = useSetEditionStatus();
 	const callApplicationUpdate = useApplicationUpdateApi();
+	const callApplicationDeletion = useApplicationDeletion();
+	const router = useRouter();
+	const notify = useToast();
 	const [isSaving, setIsSaving] = useState(false);
-	const notify = useToastNotification();
 	const [hideLogo, setHideLogo] = useState(false);
 
+	/**
+	 * Save the application into the database
+	 */
 	function save() {
 		setIsSaving(true);
 		callApplicationUpdate(organisationId, application, {
-			onEnd: () => {
+			onSuccess: () => {
 				setIsSaving(false)
 				setIsModified(false);
-				notify("Application saved")
+				notify.info("Application saved")
 			},
+			onError: (error) => {
+				notify.error(error)
+				setIsSaving(false)
+			}
 		})
 	}
 
+	/**
+	 * Downloads the application as a JSON file.
+	 */
 	function downloadApplication() {
 		const encodedApplication = JSON.stringify(application);
 		const jsonBlob = new Blob([encodedApplication], {
@@ -46,7 +57,19 @@ export default function ApplicationDetailsNavbar() {
 		link.click();
 
 		URL.revokeObjectURL(link.href);
-		notify("Application downloaded")
+		notify.info("Application downloaded")
+	}
+
+	function deleteApplication() {
+		callApplicationDeletion(organisationId, application.id, {
+			onSuccess: () => {
+				notify.info("Application deleted")
+				router.replace(`/home/organisation/${organisationId}/application`);
+			},
+			onError: (error) => {
+				notify.error(error)
+			}
+		})
 	}
 
 	return <Card>
@@ -54,7 +77,7 @@ export default function ApplicationDetailsNavbar() {
 			<div className="flex justify-between">
 				<div className="begin-section justify-center items-center content-center flex">
 					<div className="border-r-2 border-gray-200  px-2 pr-4 flex ">
-						<img src={application.logoUrl} alt="" className={"mr-4 px-0"} width={15} hidden={hideLogo}
+						<img src={application.logoUrl} alt="" className={"mr-4 px-0"} width={15} hidden={ !application.logoUrl || hideLogo}
 							 onError={() => setHideLogo(true)} onLoad={() => setHideLogo(false)} />
 						<Typography variant={'h5'} color={'blue-gray'}
 									className={'justify-center items-center content-center'}>
@@ -79,13 +102,16 @@ export default function ApplicationDetailsNavbar() {
 							{ isSaving && <Spinner /> }
 							{ !isSaving && <i className={"bi bi-floppy-fill"}></i>}
 						</IconButton>
-						<IconButton  onClick={downloadApplication} >
+						<IconButton>
 							<ArrowUpOnSquareIcon className="h-5 w-5 transition-transform group-hover:rotate-45" />
+						</IconButton>
+						<IconButton  onClick={downloadApplication} >
+							<ArrowDownOnSquareIcon className="h-5 w-5 transition-transform group-hover:rotate-45" />
 						</IconButton>
 					</div>
 
 
-					<IconButton  className={"border-l-2 border-gray-200 ml-2"} >
+					<IconButton  className={"border-l-2 border-gray-200 ml-2"}  onClick={deleteApplication}>
 						<TrashIcon className="h-5 w-5 transition-transform group-hover:rotate-45" />
 					</IconButton>
 				</div>

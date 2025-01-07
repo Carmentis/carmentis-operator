@@ -11,7 +11,7 @@ async function bootstrap() {
 		origin: '*',
 		methods: 'GET,POST,PUT,DELETE,OPTIONS',
 	});
-	app.useGlobalPipes(new ValidationPipe());
+	app.useGlobalPipes(new ValidationPipe({whitelist: true}));
 	await app.listen(port);
 }
 

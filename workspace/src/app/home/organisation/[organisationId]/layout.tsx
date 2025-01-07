@@ -1,18 +1,35 @@
 'use client';
 
-import type { Metadata } from 'next';
 import Sidebar from '@/app/home/organisation/[organisationId]/sidebar';
 import Navbar from '@/app/home/organisation/[organisationId]/navbar';
-import { createInterfaceStore, InterfaceStore } from '@/app/home/organisation/[organisationId]/interface.store';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useState } from 'react';
 import {
 	createOrganisationStore,
 	OrganisationStore,
 } from '@/app/home/organisation/[organisationId]/organisation.store';
 import { StoreApi } from 'zustand';
+import { fetchOrganisation } from '@/components/api.hook';
+import { notFound, useParams } from 'next/navigation';
+import { Spinner } from '@material-tailwind/react';
 
-const InterfaceStoreContext = createContext<StoreApi<InterfaceStore> | undefined>(undefined);
-const OrganisationStoreContext = createContext<StoreApi<OrganisationStore> | undefined>(undefined);
+
+export type InterfaceState = {
+	sidebarHidden: boolean;
+}
+export type InterfaceActions = {
+	toggleSidebar: () => void
+}
+
+export type InterfaceStore = InterfaceState & InterfaceActions
+export const UserInterfaceStoreContext = createContext<InterfaceStore>({
+	sidebarHidden: true,
+	toggleSidebar: () => {}
+})
+
+
+
+
+export const OrganisationStoreContext = createContext<StoreApi<OrganisationStore> | undefined>(undefined);
 
 function HomeOrganisationPage(
 	{
@@ -23,10 +40,9 @@ function HomeOrganisationPage(
 
 
 	// change the width of the sidebar if closed or not
-	const interfaceStore = useContext(InterfaceStoreContext);
-	const interfaceState = interfaceStore?.getState();
-	const sidebarWidth = interfaceState.sidebarHidden ? 'w-14' : 'w-96';
-	const contentWidth = interfaceState.sidebarHidden ? 'ml-14' : 'ml-96';
+	const interfaceStore = useContext(UserInterfaceStoreContext);
+	const sidebarWidth = interfaceStore.sidebarHidden ? 'w-14' : 'w-64';
+	const contentWidth = interfaceStore.sidebarHidden ? 'ml-14' : 'ml-64';
 
 
 	return <>
@@ -49,17 +65,43 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 
-	const interfaceStore = createInterfaceStore();
+	// search the organisation by id and redirect to not found if do not exist
+	const params = useParams();
+	const organisationId = params.organisationId;
+	const {data, loading, error} = fetchOrganisation(organisationId)
+
+	// create the interface store
+	const [sidebarHidden, setSidebarHidden] = useState(false);
+	const interfaceStore: InterfaceStore = {
+		sidebarHidden: sidebarHidden,
+		toggleSidebar: () => setSidebarHidden(!sidebarHidden),
+	}
+
+	// display the loading page when checking if the organisation exists
+	if (loading) {
+		return <div className="flex items-center justify-center w-screen h-screen">
+			<Spinner width={100} height={100} />
+		</div>
+	}
+
+	// if not found, redirect to the not found page
+	if (error) {
+		notFound()
+	}
+
+
+
+	// create the organisation store
 	const organisationStore = createOrganisationStore();
 
 	return (<>
-			<InterfaceStoreContext.Provider value={interfaceStore}>
+			<UserInterfaceStoreContext.Provider value={interfaceStore}>
 				<OrganisationStoreContext.Provider value={organisationStore}>
 					<HomeOrganisationPage>
 						{children}
 					</HomeOrganisationPage>
 				</OrganisationStoreContext.Provider>
-			</InterfaceStoreContext.Provider>
+			</UserInterfaceStoreContext.Provider>
 
 		</>
 	);

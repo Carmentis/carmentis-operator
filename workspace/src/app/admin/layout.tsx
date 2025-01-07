@@ -46,7 +46,7 @@ export const createInterfaceStore = (
 export type InterfaceStoreApi = ReturnType<typeof createInterfaceStore>
 
 export const InterfaceStoreContext = createContext<InterfaceStoreApi | undefined>(
-	undefined,
+	undefined
 )
 
 export interface InterfaceStoreProviderProps {

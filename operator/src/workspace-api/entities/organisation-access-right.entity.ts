@@ -19,29 +19,11 @@ export class OrganisationAccessRightEntity {
 	isAdmin: boolean;
 
 	@Column({ default: false })
-	addUser: boolean;
+	editUsers: boolean;
 
 	@Column({ default: false })
-	removeUser: boolean;
+	editApplications: boolean;
 
 	@Column({ default: false })
-	addAdmin: boolean;
-
-	@Column({ default: false })
-	removeAdmin: boolean;
-
-	@Column({ default: false })
-	addApplication: boolean;
-
-	@Column({ default: false })
-	deleteApplication: boolean;
-
-	@Column({ default: false })
-	addOracle: boolean;
-
-	@Column({ default: false })
-	removeOracle: boolean;
-
-	@Column({ default: false })
-	canPublish: boolean;
+	editOracles: boolean;
 }

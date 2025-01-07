@@ -11,6 +11,7 @@ import {
 import { UserEntity } from './user.entity';
 import { OrganisationAccessRightEntity } from './organisation-access-right.entity';
 import {ApplicationEntity} from "./application.entity";
+import { OracleEntity } from './oracle.entity';
 
 @Entity('organisation')
 export class OrganisationEntity {
@@ -28,11 +29,12 @@ export class OrganisationEntity {
 	@OneToMany(() => ApplicationEntity, (app) => app.organisation)
 	applications: ApplicationEntity[];
 
+	@OneToMany(() => OracleEntity, (app) => app.organisation)
+	oracles: OracleEntity[];
+
+
 	@ManyToOne(() => UserEntity)
 	creator: UserEntity;
-
-	@ManyToOne(() => UserEntity, (user: UserEntity) => user.ownedOrganisations)
-	owner: UserEntity;
 
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
 	createdAt: Date;

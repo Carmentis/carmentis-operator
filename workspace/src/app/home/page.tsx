@@ -7,13 +7,12 @@ import { Organisation } from '@/components/sidebar';
 import { fetchOrganisationsOfUser, useOrganisationCreation } from '@/components/api.hook';
 import SimpleTextModalComponent from '@/components/modals/simple-text-modal.component';
 import { useRouter } from 'next/navigation';
+import Avatar from 'boring-avatars';
 
 function OrganisationCard(input: { organisation: { id:number, name: string } }) {
 	return <Link className={'card w-52 flex flex-col justify-center items-center space-y-2 h-52 hover:cursor-pointer'}
 				 href={`/home/organisation/${input.organisation.id}`}>
-		<div className="organisation-logo bg-gray-100 h-24 w-24 rounded-full flex justify-center items-center">
-			<Image src={'/skyline.png'} alt={'building'} width={60} height={60} />
-		</div>
+			<Avatar name={input.organisation.name} variant={"beam"} width={60} height={60} />
 		<p className={'organisation-name'}>{input.organisation.name}</p>
 	</Link>;
 }

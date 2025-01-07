@@ -1,20 +1,17 @@
 import InputButtonForm from '@/components/form/input-button.form';
 import {
-	 useApplicationMessages,
+	useApplicationMessages,
 	useSetEditionStatus, useUpdateApplication,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
 import {
-	AppDataMask, AppDataMessage,
+	AppDataMessage,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import {
 	Card,
 	CardBody,
 	CardHeader,
-	Checkbox,
 	IconButton,
 	Input,
-	Option, Radio,
-	Select,
 	Typography,
 } from '@material-tailwind/react';
 import { useEffect, useState } from 'react';
@@ -27,9 +24,6 @@ function MessageEditionCard(
 	const message = input.message;
 	const setApplication = useUpdateApplication();
 	const setIsModified = useSetEditionStatus();
-
-
-
 	const [name, setName] = useState<string>(message.name);
 	const [content, setContent] = useState<string>(message.message);
 

@@ -14,16 +14,23 @@ import {SearchController} from "./controllers/search.controller";
 import {UserController} from "./controllers/user.controller";
 import {ApplicationEntity} from "./entities/application.entity";
 import {ApplicationService} from "./services/application.service";
+import { AccessRightService } from './services/access-right.service';
+import { AuditService } from './services/audit.service';
+import { AuditLogEntity } from './entities/audit-log.entity';
+import { OracleEntity } from './entities/oracle.entity';
+import { OracleService } from './services/oracle.service';
 
 @Module({
 	imports: [TypeOrmModule.forFeature([
 		UserEntity,
 		OrganisationEntity,
 		OrganisationAccessRightEntity,
-		ApplicationEntity
+		ApplicationEntity,
+		OracleEntity,
+		AuditLogEntity
 	])],
 	controllers: [WorkspaceApiController, AdminController, OrganisationController, SearchController, UserController],
-	providers: [PackageConfigService, AdministrationService, OrganisationService, UserService, ApplicationService],
+	providers: [PackageConfigService, AdministrationService, OrganisationService, UserService, ApplicationService, AccessRightService, AuditService, OracleService],
 })
 export class WorkspaceApiModule {
 }

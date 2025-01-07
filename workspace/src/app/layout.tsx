@@ -1,10 +1,9 @@
 'use client';
 
-import type { Metadata } from "next";
 
 import "bootstrap-icons/font/bootstrap-icons.min.css"
 import "./globals.css";
-import { toast, ToastContainer } from 'react-toastify';
+import { toast, ToastContainer, } from 'react-toastify';
 
 
 
@@ -14,11 +13,23 @@ export const useToastNotification = () => {
     }
 }
 
+export const useToast = () => {
+    return {
+        info: (message: string) =>  {
+            toast.info(message)
+        },
+        error: (message: string) =>  {
+            toast.error(message)
+        }
+    }
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="en">
       <body>

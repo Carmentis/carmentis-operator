@@ -29,7 +29,7 @@ import MasksPanel from '@/app/home/organisation/[organisationId]/application/[ap
 import MessagesPanel from '@/app/home/organisation/[organisationId]/application/[applicationId]/message-panel';
 import CodeViewPanel from '@/app/home/organisation/[organisationId]/application/[applicationId]/code-panel';
 
-function OverviewInput(
+export function OverviewInput(
 	input: {
 		label: string,
 		value: string,
@@ -164,64 +164,6 @@ function ApplicationDetails(
 
 	</Card>
 }
-
-function SpeedCreation() {
-	return <div className="absolute h-80 right-10 bottom-10 z-30">
-		<div className="absolute bottom-0 right-0">
-			<SpeedDial>
-				<SpeedDialHandler>
-
-					<IconButton size="lg" className="rounded-full">
-						<PlusIcon className="h-5 w-5 transition-transform group-hover:rotate-45" />
-					</IconButton>
-
-
-				</SpeedDialHandler>
-				<SpeedDialContent>
-					<SpeedDialAction>
-						<Tooltip content="Create structure" placement={"left"} offset={30}>
-							<i className={"bi bi-braces"}></i>
-						</Tooltip>
-					</SpeedDialAction>
-					<SpeedDialAction>
-						<Tooltip content="Create field" placement={"left"} offset={30}>
-							<i className={"bi bi-braces-asterisk"}></i>
-						</Tooltip>
-					</SpeedDialAction>
-					<SpeedDialAction>
-						<Tooltip content="Create message" placement={"left"} offset={30}>
-							<i className={"bi bi-chat-left"}></i>
-						</Tooltip>
-					</SpeedDialAction>
-					<SpeedDialAction>
-						<Tooltip content="Create enumerates" placement={"left"} offset={30}>
-							<i className={"bi bi-list-ul"}></i>
-						</Tooltip>
-					</SpeedDialAction>
-					<SpeedDialAction>
-						<Tooltip content="Create masks" placement={"left"} offset={30}>
-							<i className={"bi bi-mask"}></i>
-						</Tooltip>
-					</SpeedDialAction>
-				</SpeedDialContent>
-			</SpeedDial>
-		</div>
-	</div>
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 export interface ApplicationState {
 	application: Application;

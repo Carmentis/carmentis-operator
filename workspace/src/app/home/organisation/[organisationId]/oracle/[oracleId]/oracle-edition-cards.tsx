@@ -1,7 +1,3 @@
-import {
-	ApplicationEditor,
-	AppDataField, FieldVisility, PrimitiveType,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import { useEffect, useState } from 'react';
 import { generateRandomString } from 'ts-randomstring/lib';
 import {
@@ -11,91 +7,78 @@ import {
 	Checkbox,
 	IconButton,
 	Input,
-	Option, Radio,
+	Option,
 	Select,
 	Typography,
 } from '@material-tailwind/react';
+import { OracleServiceInputField, OracleServiceOutputField, OracleStructureField } from '@/components/api.hook';
+import { useOracle, useSetOracle } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/page';
 import {
-	useUpdateApplication,
-	useSetEditionStatus, useApplication, useApplicationStrutures,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
+	FieldVisility,
+	PrimitiveType,
+} from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 
-export default function FieldEditionCard(
+export default function OracleServiceFieldEditionCard(
 	input: {
-		field: AppDataField,
-		onRemoveField: (fieldName: string) => void,
-		structureName?: string
+		fieldType: 'input' | 'output'
+		serviceId?: number,
+		structureId?: number
+		field: OracleServiceInputField | OracleServiceOutputField | OracleStructureField
+		onRemoveField: (fieldId: string) => void,
 	},
 ) {
+	const oracle = useOracle();
+	const setOracle = useSetOracle();
 	const field = input.field;
-
-	const application = useApplication();
-	const setApplication = useUpdateApplication();
-	const setHasBeenModified = useSetEditionStatus();
 	const [fieldName, setFieldName] = useState<string>(field.name);
 	const [fieldType, setFieldType] = useState<string>(field.type);
-	const [hashable, setHashable] = useState<boolean>(field.hashable);
-	const [required, setRequired] = useState<boolean>(field.required);
 	const [isList, setIsList] = useState(field.isList);
-	const [visibility, setVisibility] = useState<FieldVisility>(field.visiblity);
+	const [isRequired, setIsRequired] = useState(field.isRequired);
+	const [isHashable, setIsHashable] = useState('isHashable' in input.field ? input.field.isHashable : false);
 	const [availableStructures, setAvailableStructures] = useState<string[]>(
-		application.data.structures.map(s => s.name)
+		oracle.data.structures.map(s => s.name)
 	);
 
-	useEffect(() => {
-		setAvailableStructures(application.data.structures.map(s => s.name))
-	}, [application]);
-
 
 	useEffect(() => {
-		const field: AppDataField = {
-			hashable: hashable,
-			isList: isList,
-			name: fieldName,
-			required: required,
-			type: fieldType,
-			visiblity: visibility
-		};
 
-		setApplication(application => {
-			const editor = new ApplicationEditor(application);
-
-			if ( input.structureName ) {
-				editor.updateFieldInStructure(input.structureName, field);
-			} else {
-				editor.updateField(field)
+		setOracle(editor => {
+			if ( input.fieldType === 'input' && input.serviceId ) {
+				editor.updateServiceInput(input.serviceId, field);
 			}
 		})
-	}, [fieldName, fieldType, hashable, visibility, required, isList]);
+	}, [fieldName, fieldType, isList]);
 
 	function updateFieldName(fieldName: string) {
-		setHasBeenModified(true);
-		setFieldName(fieldName);
+
 	}
 
 	function updateType(type: string) {
-		setHasBeenModified(true);
-		setFieldType(type);
+		setOracle(editor => {
+			switch ( input.fieldType ) {
+				case 'input':
+					if (!input.serviceId) throw new Error('Cannot update service input without serviceId')
+					editor.updateServiceInput(input.serviceId, {
+						...input.field,
+						type
+					})
+
+			}
+		})
 	}
 
 	function updateIsList(value: boolean) {
-		setHasBeenModified(true);
-		setIsList(value);
+		setOracle(editor => {
+		})
 	}
 
 	function updateRequired(value: boolean) {
-		setHasBeenModified(true);
-		setRequired(value);
 	}
 
 	function updateHashable(value: boolean) {
-		setHasBeenModified(true);
-		setHashable(value);
 	}
 
 	function updateVisibility(visibility: FieldVisility) {
-		setHasBeenModified(true);
-		setVisibility(visibility);
 	}
 
 	// generate a random field id, used to isolate radio buttons
@@ -164,21 +147,17 @@ export default function FieldEditionCard(
 				<div className="flex flex-wrap">
 
 					<Checkbox label={'Array'} checked={isList} onChange={e => updateIsList(e.target.checked)} />
-					<Checkbox label={'Hashable'} checked={hashable} onChange={e => updateHashable(e.target.checked)} />
-					<Checkbox label={'Required'} checked={required} onChange={e => updateRequired(e.target.checked)} />
+					{	input.fieldType !== 'input' &&
+						<Checkbox label={'Required'} checked={isRequired} onChange={e => updateRequired(e.target.checked)} />
+					}
+					{	input.fieldType !== 'input' &&
+						<Checkbox label={'Hashable'} checked={isHashable} onChange={e => updateHashable(e.target.checked)} />
+					}
 				</div>
 			</div>
 
 
-			<div className="visibility">
-				<Typography variant={'h6'}>Visiblity</Typography>
-				<Radio name={`visibility-${fieldFormId}`} label="public" defaultChecked
-					   checked={visibility === FieldVisility.public}
-					   onChange={() => updateVisibility(FieldVisility.public)} />
-				<Radio name={`visibility-${fieldFormId}`} label="private"
-					   checked={visibility === FieldVisility.private}
-					   onChange={() => updateVisibility(FieldVisility.private)} />
-			</div>
+
 		</CardBody>
 	</Card>;
 }

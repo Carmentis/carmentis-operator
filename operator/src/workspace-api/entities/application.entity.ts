@@ -40,6 +40,9 @@ export class ApplicationEntity {
     @Column({ nullable: true })
     publishedAt: Date;
 
+    @Column({ default: false })
+    hasBeenModified: boolean;
+
     @Column()
     @Transform(({value}) => JSON.parse(value), { toPlainOnly: true })
     data: string = "{}";

@@ -15,7 +15,6 @@ export class UserService {
 	// Find one item by public key
 	async findOneByPublicKey(publicKey: string): Promise<UserEntity> {
 		return this.userEntityRepository.findOne({
-			relations: ['owner'],
 			where: {
 				publicKey: publicKey
 			},
@@ -81,6 +80,7 @@ export class UserService {
 			.limit(30)
 			.getMany();
 	}
+
 
 	async findUserInOrganisation(userPublicKey: string, organisationId: number) {
 		return this.userEntityRepository

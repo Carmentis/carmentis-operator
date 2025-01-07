@@ -45,7 +45,7 @@ export interface AppDataField {
 	hashable: boolean;
 	visiblity: FieldVisility
 	type: string
-	isArray: boolean;
+	isList: boolean;
 	required: boolean;
 }
 
