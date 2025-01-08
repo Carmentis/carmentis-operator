@@ -1,17 +1,55 @@
 'use client';
-
-import { Card, CardBody, Chip, IconButton, Spinner, Typography } from '@material-tailwind/react';
-import { ArrowDownOnSquareIcon, ArrowLongDownIcon, ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/16/solid';
+import { Button, Card, CardBody, Chip, IconButton, Spinner, Typography } from '@material-tailwind/react';
+import { ArrowDownOnSquareIcon, ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/16/solid';
+import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import {
 	useApplication,
-	useEditionStatus, useSetEditionStatus,
+	useEditionStatus,
+	useSetEditionStatus,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
 import { useApplicationDeletion, useApplicationUpdateApi } from '@/components/api.hook';
-import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useToast } from '@/app/layout';
+import { Application } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 
-export default function ApplicationDetailsNavbar() {
+const BORDER_CLASSES = 'border-r-2 border-gray-200';
+const ICON_ROTATION_CLASSES = 'h-5 w-5 transition-transform group-hover:rotate-45';
+
+function ApplicationHeader({ application, hideLogo, setHideLogo }: {
+	application: Application,
+	hideLogo: boolean,
+	setHideLogo: (state: boolean) => void
+}) {
+	return (
+		<div className="begin-section justify-center items-center content-center flex">
+			<div className={`${BORDER_CLASSES} px-2 pr-4 flex`}>
+				<img
+					src={application.logoUrl}
+					alt=""
+					className="mr-4 px-0"
+					width={15}
+					hidden={!application.logoUrl || hideLogo}
+					onError={() => setHideLogo(true)}
+					onLoad={() => setHideLogo(false)}
+				/>
+				<Typography
+					variant="h5"
+					color="blue-gray"
+					className="justify-center items-center content-center"
+				>
+					{application.name}
+				</Typography>
+			</div>
+			<div className={`${BORDER_CLASSES} px-4`}>Version {application.version}</div>
+			<div className="px-4 flex flex-row space-x-2">
+				{application.published && <Chip variant="filled" className={"bg-primary-light"} value="Published" />}
+				{application.isDraft && <Chip variant="outlined" className={"border-primary-light text-primary-light"} value="Draft" />}
+			</div>
+		</div>
+	);
+}
+
+export default function ApplicationDetailsNavbar({ refreshApplication }: { refreshApplication: () => void }) {
 	const params = useParams();
 	const organisationId = parseInt(params.organisationId);
 	const application = useApplication();
@@ -21,103 +59,90 @@ export default function ApplicationDetailsNavbar() {
 	const callApplicationDeletion = useApplicationDeletion();
 	const router = useRouter();
 	const notify = useToast();
-	const [isSaving, setIsSaving] = useState(false);
+	const [isApplicationSaving, setApplicationSaving] = useState(false);
 	const [hideLogo, setHideLogo] = useState(false);
 
-	/**
-	 * Save the application into the database
-	 */
-	function save() {
-		setIsSaving(true);
+	const saveApplication = () => {
+		setApplicationSaving(true);
 		callApplicationUpdate(organisationId, application, {
 			onSuccess: () => {
-				setIsSaving(false)
+				setApplicationSaving(false);
 				setIsModified(false);
-				notify.info("Application saved")
+				notify.info('Application saved');
 			},
 			onError: (error) => {
-				notify.error(error)
-				setIsSaving(false)
-			}
-		})
-	}
-
-	/**
-	 * Downloads the application as a JSON file.
-	 */
-	function downloadApplication() {
-		const encodedApplication = JSON.stringify(application);
-		const jsonBlob = new Blob([encodedApplication], {
-			type: "application/json",
+				notify.error(error);
+				setApplicationSaving(false);
+			},
+			onEnd: refreshApplication
 		});
+	};
 
-		const link = document.createElement("a");
-		link.href = URL.createObjectURL(jsonBlob);
-		link.download = `application-${application.name}.json`;
+	const downloadApplicationAsJson = () => {
+		const encodedApplication = JSON.stringify(application);
+		const jsonBlob = new Blob([encodedApplication], { type: 'application/json' });
+		const link = createDownloadLink(
+			jsonBlob,
+			`application-${application.name}.json`,
+		);
 		link.click();
-
 		URL.revokeObjectURL(link.href);
-		notify.info("Application downloaded")
-	}
+		notify.info('Application downloaded');
+	};
 
-	function deleteApplication() {
+	const createDownloadLink = (blob: Blob, filename: string): HTMLAnchorElement => {
+		const link = document.createElement('a');
+		link.href = URL.createObjectURL(blob);
+		link.download = filename;
+		return link;
+	};
+
+	const deleteApplication = () => {
 		callApplicationDeletion(organisationId, application.id, {
 			onSuccess: () => {
-				notify.info("Application deleted")
+				notify.info('Application deleted');
 				router.replace(`/home/organisation/${organisationId}/application`);
 			},
 			onError: (error) => {
-				notify.error(error)
-			}
-		})
+				notify.error(error);
+			},
+		});
+	};
+
+	function publishApplication() {
+
 	}
 
-	return <Card>
-		<CardBody className={"p-3"}>
-			<div className="flex justify-between">
-				<div className="begin-section justify-center items-center content-center flex">
-					<div className="border-r-2 border-gray-200  px-2 pr-4 flex ">
-						<img src={application.logoUrl} alt="" className={"mr-4 px-0"} width={15} hidden={ !application.logoUrl || hideLogo}
-							 onError={() => setHideLogo(true)} onLoad={() => setHideLogo(false)} />
-						<Typography variant={'h5'} color={'blue-gray'}
-									className={'justify-center items-center content-center'}>
-							{application.name}
-						</Typography>
-					</div>
-
-					<div className="border-r-2 border-gray-200  px-4">
-						Version {application.version}
-					</div>
-					<div className=" px-4">
-						{ application.published && <Chip variant="outlined" value="Published" /> }
-						{ !application.published && <Chip variant="filled" value="Draft" /> }
+	return (
+		<Card>
+			<CardBody className="p-3">
+				<div className="flex justify-between">
+					<ApplicationHeader
+						application={application}
+						hideLogo={hideLogo}
+						setHideLogo={setHideLogo}
+					/>
+					<div className="flex">
+						<div className={`space-x-2 ${BORDER_CLASSES} pr-2 flex flex-row`}>
+							{isModified && <Button className={"flex items-center space-x-2 bg-primary-light"}   onClick={saveApplication} >
+								{isApplicationSaving ? <Spinner /> : <i className="bi bi-floppy-fill"></i>}
+								<span>save</span>
+							</Button>}
+							{application.isDraft && <Button className={"flex items-center space-x-2 bg-primary-light"} onClick={publishApplication}>
+								<ArrowUpOnSquareIcon className={ICON_ROTATION_CLASSES} />
+								<span>Publish</span>
+							</Button>}
+							<Button  className={"flex items-center space-x-2 bg-primary-light"} onClick={downloadApplicationAsJson}>
+								<ArrowDownOnSquareIcon className={ICON_ROTATION_CLASSES} />
+								<span>Download</span>
+							</Button>
+						</div>
+						<IconButton className="border-l-2 border-gray-200 ml-2" onClick={deleteApplication}>
+							<TrashIcon className={ICON_ROTATION_CLASSES} />
+						</IconButton>
 					</div>
 				</div>
-
-
-				<div className={'flex'}>
-
-					<div className="space-x-2 border-r-2 border-gray-200 pr-2">
-						<IconButton  hidden={!isModified} onClick={save}>
-							{ isSaving && <Spinner /> }
-							{ !isSaving && <i className={"bi bi-floppy-fill"}></i>}
-						</IconButton>
-						<IconButton>
-							<ArrowUpOnSquareIcon className="h-5 w-5 transition-transform group-hover:rotate-45" />
-						</IconButton>
-						<IconButton  onClick={downloadApplication} >
-							<ArrowDownOnSquareIcon className="h-5 w-5 transition-transform group-hover:rotate-45" />
-						</IconButton>
-					</div>
-
-
-					<IconButton  className={"border-l-2 border-gray-200 ml-2"}  onClick={deleteApplication}>
-						<TrashIcon className="h-5 w-5 transition-transform group-hover:rotate-45" />
-					</IconButton>
-				</div>
-			</div>
-
-		</CardBody>
-	</Card>
+			</CardBody>
+		</Card>
+	);
 }
-

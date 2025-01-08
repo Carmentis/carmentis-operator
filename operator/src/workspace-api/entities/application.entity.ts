@@ -2,6 +2,10 @@ import {Column, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} fro
 import {OrganisationEntity} from "./organisation.entity";
 import {Transform} from "class-transformer";
 
+export interface ApplicationData {
+
+}
+
 @Entity("application")
 export class ApplicationEntity {
     @PrimaryGeneratedColumn()
@@ -10,7 +14,7 @@ export class ApplicationEntity {
     @Column()
     name: string;
 
-    @Column({ default: () => '1' })
+    @Column({ default: () => '0' })
     version: number;
 
     @Column({ nullable: true })
@@ -40,10 +44,42 @@ export class ApplicationEntity {
     @Column({ nullable: true })
     publishedAt: Date;
 
-    @Column({ default: false })
-    hasBeenModified: boolean;
+    @Column({ default: true })
+    isDraft: boolean;
 
-    @Column()
-    @Transform(({value}) => JSON.parse(value), { toPlainOnly: true })
-    data: string = "{}";
+    @Column({ type: 'json'})
+    data: {
+        fields?: {
+            name: string;
+            hashable: boolean;
+            visiblity: string;
+            type: string
+            isList: boolean;
+            required: boolean;
+        }[];
+        structures?: {
+            name: string;
+            fields: {
+                name: string;
+                hashable: boolean;
+                visiblity: string;
+                type: string
+                isList: boolean;
+                required: boolean;
+            }[];
+        }[];
+        enumerations?: {
+            name: string,
+            values: { id: number, value: string }[]
+        }[];
+        messages?: {
+            name: string,
+            message: string,
+        }[];
+        masks?: {
+            name: string;
+            expression: string;
+            substitution: string;
+        }[];
+    };
 }

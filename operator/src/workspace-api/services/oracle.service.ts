@@ -53,4 +53,11 @@ export class OracleService {
 			.limit(10)
 			.getMany();
 	}
+
+	async getNumberOfOraclesInOrganisation(organisationId: number) {
+		return this.oracleRepository.createQueryBuilder('oracle')
+			.innerJoin('oracle.organisation', 'org')
+			.where('org.id = :organisationId', { organisationId })
+			.getCount();
+	}
 }

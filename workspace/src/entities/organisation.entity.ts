@@ -1,11 +1,12 @@
 export interface Organisation {
-	id?: number;
-
+	isDraft: boolean;
+	published: boolean;
+	id: number;
 	name: string;
-
 	logoUrl: string;
-
+	city: string;
+	website: string;
+	countryCode: string;
 	createdAt: Date;
-
-	lastUpdateAt: Date;
+	lastUpdatedAt: Date;
 }

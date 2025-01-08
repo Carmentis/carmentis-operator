@@ -14,84 +14,107 @@ import { OrganisationLog, useFetchOrganisationLogs } from '@/components/api.hook
 import Skeleton from 'react-loading-skeleton';
 
 export default function RecentActivities() {
+	// Extracted constant for formatting options
+	const DATE_FORMAT_OPTIONS = {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+		hour: 'numeric',
+		minute: 'numeric',
+	};
 
 	/**
-	 * Formats a given date.
-	 *
+	 * Formats a given date to a readable format.
 	 * @param date
 	 */
-	function formatDate( date: string ) {
-		return  new Date(date).toLocaleDateString('en-GB', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric',
-			hour: 'numeric',
-			minute: 'numeric'
-		});
+	function getFormattedDate(date: string) {
+		return new Date(date).toLocaleDateString('en-GB', DATE_FORMAT_OPTIONS);
 	}
 
-	function formatOperationType( operationType: string ) {
+	/**
+	 * Formats an operation type to a readable format.
+	 * @param operationType
+	 */
+	function getReadableOperationType(operationType: string) {
 		return operationType.replaceAll('_', ' ');
 	}
 
-	function formatDescription( log: OrganisationLog ) {
-		switch ( log.operation ) {
-			case 'ORGANISATION_CREATION': return 'Creation of organisation'
-			case 'ORGANISATION_USER_INSERTION': return <span>
-				User <b>{log.data.name}</b> added in organisation.
-			</span>
-			case 'ORGANISATION_USER_DELETION': return <span>
-				User <b>{log.data.name}</b> removed from organisation.
-			</span>
-			case 'APPLICATION_CREATION': return <span>
-				Application <b>{log.data.name}</b> created.
-			</span>
-			default: return ''
+	/**
+	 * Returns a description based on the log's operation and data.
+	 * @param operation
+	 * @param data
+	 */
+	function getLogDescription({ operation, data }: OrganisationLog) {
+		switch (operation) {
+			case 'ORGANISATION_CREATION':
+				return 'Creation of organisation';
+			case 'ORGANISATION_USER_INSERTION':
+				return (
+					<span>
+						User <b>{data.name}</b> added in organisation.
+					</span>
+				);
+			case 'ORGANISATION_USER_DELETION':
+				return (
+					<span>
+						User <b>{data.name}</b> removed from organisation.
+					</span>
+				);
+			case 'APPLICATION_CREATION':
+				return (
+					<span>
+						Application <b>{data.name}</b> created.
+					</span>
+				);
+			default:
+				return '';
 		}
 	}
 
+	/**
+	 * Renders the content of the component based on data and loading state.
+	 * @param logs
+	 * @param isLoading
+	 */
+	function renderContent(logs: OrganisationLog[] | undefined, isLoading: boolean) {
+		if (!logs || isLoading) {
+			return <Skeleton count={5} />;
+		}
 
-
-
-	const params = useParams();
-	const organisationId = parseInt(params.organisationId);
-	const { data, isLoading } = useFetchOrganisationLogs(organisationId);
-
-
-	let content = <></>;
-	if ( !data || isLoading ) {
-		content = <Skeleton count={3}/>
-	} else {
-		content = <>
+		return (
 			<Timeline>
-				{
-					data.map((l, index) =>
-						<TimelineItem key={index}>
-							<TimelineConnector />
-							<TimelineHeader className="h-3">
-								<TimelineIcon />
-								<Typography variant="h6" color="blue-gray" className="leading-none">
-									{formatOperationType(l.operation)} - {formatDate(l.timestamp)}
-								</Typography>
-							</TimelineHeader>
-							<TimelineBody className="pb-8">
-								<Typography variant="small" color="gary" className="font-normal text-gray-600">
-									{formatDescription(l)}
-								</Typography>
-							</TimelineBody>
-						</TimelineItem>)
-				}
+				{logs.map((log, index) => (
+					<TimelineItem key={index}>
+						<TimelineConnector />
+						<TimelineHeader className="h-3">
+							<TimelineIcon />
+							<Typography variant="h6" color="blue-gray" className="leading-none">
+								{getReadableOperationType(log.operation)} - {getFormattedDate(log.timestamp)}
+							</Typography>
+						</TimelineHeader>
+						<TimelineBody className="pb-8">
+							<Typography variant="small" color="gary" className="font-normal text-gray-600">
+								{getLogDescription(log)}
+							</Typography>
+						</TimelineBody>
+					</TimelineItem>
+				))}
 			</Timeline>
-		</>
+		);
 	}
 
-	return <>
+	// Fetching data using the parsed organisationId
+	const { organisationId } = useParams();
+	const { data, isLoading } = useFetchOrganisationLogs(parseInt(organisationId));
 
+	return (
 		<Card>
 			<CardBody>
-				<Typography variant={"h5"} className={"mb-8"}>Activities</Typography>
-				{content}
+				<Typography variant="h5" className="mb-8">
+					Activities
+				</Typography>
+				{renderContent(data, isLoading)}
 			</CardBody>
 		</Card>
-	</>
+	);
 }

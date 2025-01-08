@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import {ApplicationEntity} from "../entities/application.entity";
 import {plainToInstance} from "class-transformer";
 import { ImportApplicationDto } from '../dto/import-application.dto';
+import * as sdk from '@cmts-dev/carmentis-sdk';
+import ChainService from './chain.service';
 
 @Injectable()
 export class ApplicationService {
@@ -14,6 +16,8 @@ export class ApplicationService {
 
         @InjectRepository(OrganisationEntity)
         private readonly organisationRepository: Repository<OrganisationEntity>,
+
+        private readonly chainService: ChainService,
     ) {
     }
 
@@ -31,6 +35,7 @@ export class ApplicationService {
             name: applicationName,
         })
         application.organisation = organisationEntity;
+        application.data = {};
 
         const item = this.applicationRepository.create(
             application
@@ -110,4 +115,15 @@ export class ApplicationService {
             .limit(10)
             .getMany();
 	}
+
+	async getPublicationCost(applicationId: number) {
+        const application = await this.applicationRepository.findOneBy({
+            id: applicationId,
+        });
+        return this.chainService.publishApplication(application);
+	}
+
+    async publishApplication(applicationId: number) {
+
+    }
 }

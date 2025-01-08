@@ -7,32 +7,33 @@ import { UserEntity } from '../entities/user.entity';
 import { OrganisationAccessRightEntity } from '../entities/organisation-access-right.entity';
 import { UpdateAccessRightDto } from '../dto/update-access-rights.dto';
 import { ApplicationEntity } from '../entities/application.entity';
+import ChainService from './chain.service';
+import * as sdk from '@cmts-dev/carmentis-sdk';
 
 @Injectable()
 export class OrganisationService {
 	constructor(
 		@InjectRepository(OrganisationEntity)
 		private readonly organisationEntityRepository: Repository<OrganisationEntity>,
-
 		@InjectRepository(UserEntity)
 		private readonly userRepository: Repository<UserEntity>,
-
 		@InjectRepository(OrganisationAccessRightEntity)
 		private readonly accessRightRepository: Repository<OrganisationAccessRightEntity>,
-
-
 		@InjectRepository(ApplicationEntity)
 		private readonly applicationRepository: Repository<ApplicationEntity>,
+		private readonly chainService: ChainService,
 	) {
 	}
 
 	// Find one item by ID
 	async findOne(id: number): Promise<OrganisationEntity> {
 		const organisation = await this.organisationEntityRepository.findOne({
-			where: {id: id},
+			where: { id: id },
 		});
-		if ( !organisation ) { throw new NotFoundException('Organisation not found'); }
-		return  organisation
+		if (!organisation) {
+			throw new NotFoundException('Organisation not found');
+		}
+		return organisation;
 	}
 
 	async findAccessRightsByOrganisationId(organisationId: number): Promise<OrganisationAccessRightEntity[]> {
@@ -42,7 +43,7 @@ export class OrganisationService {
 			.innerJoin('accessRight.organisation', 'organisation')
 			.innerJoinAndSelect('accessRight.user', 'user')
 			.where('organisation.id = :organisationId', { organisationId })
-			.getMany()
+			.getMany();
 	}
 
 	async findAllUsersInOrganisation(organisationId: number): Promise<UserEntity[]> {
@@ -68,9 +69,17 @@ export class OrganisationService {
 	}
 
 	async createByName(organisationName: string): Promise<OrganisationEntity> {
+		// create the organisation
 		const item = this.organisationEntityRepository.create({
 			name: organisationName,
 		});
+
+		// generate the signature key pair for the orgnisation
+		const sk = sdk.crypto.generateKey256();
+		const pk = sdk.crypto.secp256k1.publicKeyFromPrivateKey(sk);
+		item.privateSignatureKey = sk;
+		item.publicSignatureKey = pk;
+
 		return this.organisationEntityRepository.save(item);
 	}
 
@@ -91,10 +100,9 @@ export class OrganisationService {
 	}
 
 
-
 	async updateAccessRights(organisationId: number, userPublicKey: string, rights: UpdateAccessRightDto) {
 		return await this.accessRightRepository.update({
-			id: rights.id
+			id: rights.id,
 		}, rights);
 	}
 
@@ -119,15 +127,48 @@ export class OrganisationService {
 	async getBalanceOfOrganisation(organisationId: number) {
 		const entity = await this.organisationEntityRepository.findOneBy({
 			id: organisationId,
-		})
+		});
 		return entity.balance;
 	}
 
 	async search(query: string) {
 		return this.organisationEntityRepository.createQueryBuilder('org')
-			.select(["org.id", "org.name"])
+			.select(['org.id', 'org.name'])
 			.where('org.name LIKE :query', { query: `%${query}%` })
 			.limit(10)
 			.getMany();
+	}
+
+	async findOrganisationsByUser(publicKey: string) {
+		return this.organisationEntityRepository.createQueryBuilder('org')
+			.select(['org.id', 'org.name'])
+			.innerJoin('org.accessRights', 'ar')
+			.where('ar.user.publicKey = :publicKey', { publicKey })
+			.getMany();
+	}
+
+	async publishOrganisation(organisationId: number) {
+		const organisation = await this.organisationEntityRepository.findOneBy({ id: organisationId });
+		return await this.chainService.publishOrganisation(organisation);
+	}
+
+	async getPublicationCost(organisationId: number) {
+		return Promise.resolve(undefined);
+	}
+
+	async update(organisationId: number, organisation: OrganisationEntity) {
+
+		// Update the organisation entity in the database
+		const existingOrganisation = await this.organisationEntityRepository.findOneBy({ id: organisationId });
+
+		if (!existingOrganisation) {
+			throw new NotFoundException(`Organisation with id ${organisationId} not found`);
+		}
+
+		// Merge the updates into the existing organisation entity
+		const updatedOrganisation = this.organisationEntityRepository.merge(existingOrganisation, organisation);
+
+		// Save the updated organisation back to the database
+		return this.organisationEntityRepository.save(updatedOrganisation);
 	}
 }

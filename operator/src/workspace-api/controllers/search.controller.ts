@@ -1,31 +1,36 @@
-import { Controller, Get, HttpException, HttpStatus, Param, Query } from '@nestjs/common';
-import {UserService} from "../services/user.service";
-import { OrganisationService } from '../services/organisation.service';
-import { OracleService } from '../services/oracle.service';
-import { ApplicationService } from '../services/application.service';
+import { Controller, Get, HttpException, HttpStatus, Query } from '@nestjs/common';
+import { UserService } from '../services/user.service';
 
+const NOT_FOUND_MESSAGE = 'Not Found';
+
+/**
+ * Controller for handling search-related API endpoints within the workspace.
+ */
 @Controller('/workspace/api/search')
 export class SearchController {
-    constructor(
-        private readonly userServer: UserService,
-        private readonly organisationService: OrganisationService,
-        private readonly oracleService: OracleService,
-        private readonly applicationService: ApplicationService,
-    ) {
-    }
-
-    @Get("/user")
-    async searchUser(
-        @Query('query') query: string,
-    ) {
-        // ignore empty query
-        if ( query === '' ) {
-            throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
-        }
-        // search users by name or by public key
-        const foundUsers = await this.userServer.search(query);
-        return foundUsers;
-    }
+	constructor(
+		private readonly userService: UserService,
+	) {
+	}
 
 
+	/**
+     * Searches for a user based on the provided query string.
+     *
+     * @param {string} query - The query string to search for the user.
+     * @return {Promise<any>} A promise that resolves with the search results.
+     */
+    @Get('/user')
+	async searchUser(
+		@Query('query') query: string,
+	): Promise<any> {
+		this.validateQuery(query);
+		return await this.userService.search(query);
+	}
+
+	private validateQuery(query: string): void {
+		if (query === '') {
+			throw new HttpException(NOT_FOUND_MESSAGE, HttpStatus.NOT_FOUND);
+		}
+	}
 }

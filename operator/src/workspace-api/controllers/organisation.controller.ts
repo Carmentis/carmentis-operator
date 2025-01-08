@@ -27,6 +27,9 @@ import { AuditOperation, EntityType } from '../entities/audit-log.entity';
 import { application } from 'express';
 import { OracleEntity } from '../entities/oracle.entity';
 import { OracleService } from '../services/oracle.service';
+import { UpdateOrganisationDto } from '../dto/organisation-update.dto';
+
+
 
 @Controller('/workspace/api/organisation')
 export class OrganisationController {
@@ -123,6 +126,32 @@ export class OrganisationController {
         return result
     }
 
+
+    /**
+     * Update an organisation
+     *
+     */
+    @Put(':organisationId')
+    async updateOrganisation(
+        @Param('organisationId') organisationId: number,
+        @Body() organisationDto: UpdateOrganisationDto,
+    ): Promise<OrganisationEntity> {
+        // create an organisation entity from the input DTO
+        const organisation: OrganisationEntity = plainToInstance(OrganisationEntity, organisationDto);
+        const success = await this.organisationService.update(organisationId, organisation);
+
+        if (success) {
+            this.auditService.log(
+                EntityType.ORGANISATION,
+                organisationId,
+                AuditOperation.ORGANISATION_EDITION,
+                { name: organisation.name },
+            );
+        }
+
+        return organisation;
+    }
+
     /**
      * Update an application
      *
@@ -135,6 +164,7 @@ export class OrganisationController {
     ) {
         // create an application entity from the input DTO
         const application: ApplicationEntity = plainToInstance(ApplicationEntity, applicationDto);
+        application.isDraft = true;
         const success = await this.applicationService.update(application);
         if ( success ) {
             this.auditService.log(
@@ -273,7 +303,9 @@ export class OrganisationController {
         const applicationsNumber =  await this.organisationService.getNumberOfApplicationsInOrganisation(organisationId);
         const usersNumber = await this.organisationService.getNumberOfUsersInOrganisation(organisationId);
         const balance = await this.organisationService.getBalanceOfOrganisation(organisationId);
+        const oraclesNumber = await this.oracleService.getNumberOfOraclesInOrganisation(organisationId);
         return {
+            oraclesNumber,
             applicationsNumber,
             usersNumber,
             balance
@@ -395,6 +427,38 @@ export class OrganisationController {
             'oracles': foundOracles,
             'applications': foundApplications,
         }
+    }
+
+    @Get(":organisationId/publicationCost")
+    async getOrganisationPublicationCost(
+        @Param('organisationId') organisationId: number,
+    ) {
+        return await this.organisationService.getPublicationCost(organisationId);
+    }
+
+
+    @Post(":organisationId/publish")
+    async publishOrganisation(
+        @Param('organisationId') organisationId: number,
+    ) {
+        await this.organisationService.publishOrganisation(organisationId);
+    }
+
+    @Get(":organisationId/application/:applicationId/publicationCost")
+    async getApplicationPublicationCost(
+        @Param('organisationId') organisationId: number,
+        @Param('applicationId') applicationId: number,
+    ) {
+        return await this.applicationService.getPublicationCost(applicationId);
+    }
+
+
+    @Post(":organisationId/application/:applicationId/publish")
+    async publishApplication(
+        @Param('organisationId') organisationId: number,
+        @Param('applicationId') applicationId: number,
+    ) {
+        await this.applicationService.publishApplication(applicationId);
     }
 
 

@@ -6,7 +6,7 @@ import {
 import InputButtonForm from '@/components/form/input-button.form';
 import { AppDataEnum } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 
-function MyChip(
+export function MyChip(
 	input: {
 		enumId: string;
 		enumValue: string;

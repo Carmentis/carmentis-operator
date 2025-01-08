@@ -58,6 +58,7 @@ export interface Application {
 	createdAt: Date;
 	lastUpdatedAt: Date;
 	published: boolean;
+	isDraft: boolean;
 	publishedAt: Date;
 	data: {
 		fields: AppDataField[];

@@ -242,7 +242,7 @@ export default function ApplicationDetailsPage() {
 
 	// load the application
 	const params : { organisationId: number, applicationId: number } = useParams();
-	const { data, loading, error } = fetchApplicationInOrganisation(
+	const { data, isLoading, error, mutate } = fetchApplicationInOrganisation(
 		params.organisationId,
 		params.applicationId
 	)
@@ -258,7 +258,7 @@ export default function ApplicationDetailsPage() {
 
 
 
-	if ( !data || loading || !application ) {
+	if ( !data || isLoading || !application ) {
 		return <Skeleton count={5}></Skeleton>
 	}
 
@@ -274,7 +274,9 @@ export default function ApplicationDetailsPage() {
 			setIsModified
 		}}>
 			<div className={"space-y-10"}>
-				<ApplicationDetailsNavbar />
+				<ApplicationDetailsNavbar
+					refreshApplication={() => mutate()}
+				/>
 				<ApplicationOverview/>
 				<ApplicationDetails
 					application={application}

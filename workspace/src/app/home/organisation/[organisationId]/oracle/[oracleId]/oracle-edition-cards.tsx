@@ -18,6 +18,7 @@ import {
 	PrimitiveType,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 
+
 export default function OracleServiceFieldEditionCard(
 	input: {
 		fieldType: 'input' | 'output'
@@ -35,6 +36,7 @@ export default function OracleServiceFieldEditionCard(
 	const [isList, setIsList] = useState(field.isList);
 	const [isRequired, setIsRequired] = useState(field.isRequired);
 	const [isHashable, setIsHashable] = useState('isHashable' in input.field ? input.field.isHashable : false);
+	const [availableMasks, setAvailableMasks] = useState<string[]>(oracle.data.masks.map(m => m.name));
 	const [availableStructures, setAvailableStructures] = useState<string[]>(
 		oracle.data.structures.map(s => s.name)
 	);
@@ -54,21 +56,12 @@ export default function OracleServiceFieldEditionCard(
 	}
 
 	function updateType(type: string) {
-		setOracle(editor => {
-			switch ( input.fieldType ) {
-				case 'input':
-					if (!input.serviceId) throw new Error('Cannot update service input without serviceId')
-					editor.updateServiceInput(input.serviceId, {
-						...input.field,
-						type
-					})
 
-			}
-		})
 	}
 
 	function updateIsList(value: boolean) {
 		setOracle(editor => {
+
 		})
 	}
 

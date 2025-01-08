@@ -12,6 +12,7 @@ import { UserEntity } from './user.entity';
 import { OrganisationAccessRightEntity } from './organisation-access-right.entity';
 import {ApplicationEntity} from "./application.entity";
 import { OracleEntity } from './oracle.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('organisation')
 export class OrganisationEntity {
@@ -25,6 +26,28 @@ export class OrganisationEntity {
 		nullable: true,
 	})
 	logoUrl: string;
+
+	@Column({default: false})
+	published: boolean;
+
+	@Column({default: true})
+	isDraft: boolean;
+
+	@Column({default: ''})
+	city: string;
+
+	@Column({default: ''})
+	countryCode: string;
+
+	@Column({default: ''})
+	website: string;
+
+	@Column()
+	@Exclude()
+	privateSignatureKey: string;
+
+	@Column()
+	publicSignatureKey: string;
 
 	@OneToMany(() => ApplicationEntity, (app) => app.organisation)
 	applications: ApplicationEntity[];

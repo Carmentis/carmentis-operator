@@ -63,7 +63,7 @@ export default function HomePage() {
 			className="flex flex-row items-center justify-center px-6 py-4 mx-auto  lg:py-0 gap-2 flex-wrap w-8/12">
 			<div
 				onClick={() => setShowNewOrganisationModal(true)}
-				className={'card w-52 flex flex-col justify-center items-center space-y-2 h-52 bg-opacity-15 bg-blue-300 border-blue-600 hover:cursor-pointer border-dashed'}>
+				className={'card w-52 flex flex-col justify-center items-center space-y-2 h-52 bg-opacity-15 bg-primary-light border-primary-light hover:cursor-pointer border-dashed'}>
 				<div className="organisation-logo h-24 w-24 rounded-full flex justify-center items-center">
 					<i className={'bi bi-plus'}></i>
 				</div>

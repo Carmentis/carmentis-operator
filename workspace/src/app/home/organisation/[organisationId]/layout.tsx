@@ -68,7 +68,7 @@ export default function RootLayout({
 	// search the organisation by id and redirect to not found if do not exist
 	const params = useParams();
 	const organisationId = params.organisationId;
-	const {data, loading, error} = fetchOrganisation(organisationId)
+	const {data, isLoading, error} = fetchOrganisation(parseInt(organisationId))
 
 	// create the interface store
 	const [sidebarHidden, setSidebarHidden] = useState(false);
@@ -78,7 +78,7 @@ export default function RootLayout({
 	}
 
 	// display the loading page when checking if the organisation exists
-	if (loading) {
+	if (isLoading) {
 		return <div className="flex items-center justify-center w-screen h-screen">
 			<Spinner width={100} height={100} />
 		</div>

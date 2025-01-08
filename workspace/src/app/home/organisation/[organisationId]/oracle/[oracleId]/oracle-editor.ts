@@ -3,7 +3,10 @@ import {
 	OracleInOrganisation,
 	OracleMask,
 	OracleService,
-	OracleServiceInputField, OracleServiceOutputField, OracleStructure, OracleStructureField,
+	OracleServiceInputField,
+	OracleServiceOutputField,
+	OracleStructure,
+	OracleStructureField,
 } from '@/components/api.hook';
 import { FieldVisility } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 
@@ -372,6 +375,19 @@ export class OracleEditor {
 		return false;
 	}
 
+	updateStructureField(structureId: number, field: OracleStructureField) {
+		const structure = this.oracle.data.structures.find(s => s.id === structureId);
+		if (!structure) return false;
+
+		const index = structure.fields.findIndex(f => f.id === field.id);
+		if (index !== -1) {
+			structure.fields[index] = field;
+			return true;
+		}
+
+		return true;
+	}
+
 	/**
 	 * Deletes an OracleServiceOutputField from a service.
 	 *
@@ -395,27 +411,36 @@ export class OracleEditor {
 	 *
 	 * @param structureId - The ID of the structure.
 	 * @param name - The name of the new field.
-	 * @param type - The data type of the field.
-	 * @param isList - Whether the field is a list.
-	 * @param isRequired - Whether the field is required.
 	 * @returns The newly created OracleStructureField, or `null` if the structure is not found.
 	 */
-	createStructureField(structureId: number, name: string, type: string, isList: boolean, isRequired: boolean): OracleStructureField | null {
+	createStructureField(structureId: number, name: string): OracleStructureField | null {
 		const structure = this.oracle.data.structures.find(s => s.id === structureId);
 		if (!structure) return null;
 		if (structure.fields.some(f => f.name === name)) return null;
 
 		const maxId = structure.fields.reduce((max, field) => Math.max(max, field.id), 0);
 		const newField: OracleStructureField = {
+			isHashable: false,
+			mask: undefined,
+			visiblity: FieldVisility.public,
 			id: maxId + 1,
 			name,
-			type,
-			isList,
-			isRequired
+			type: 'string',
+			isList: false,
+			isRequired: false
 		};
 
 		structure.fields.push(newField);
 		return newField;
+	}
+
+	deleteStructureFieldById(structureId: number, fieldId: number) {
+		const structure = this.oracle.data.structures.find(s => s.id === structureId);
+		if (!structure) return false;
+
+		const initialLength = structure.fields.length;
+		structure.fields = structure.fields.filter(field => field.id !== fieldId);
+		return structure.fields.length < initialLength;
 	}
 
 	// ==================== Enumeration Values ====================
@@ -476,4 +501,6 @@ export class OracleEditor {
 		if ( oracle === undefined ) throw new Error('Cannot instantiate an editor from an undefined oracle.')
 		return new OracleEditor(oracle);
 	}
+
+
 }

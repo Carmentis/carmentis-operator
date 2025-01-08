@@ -3,20 +3,15 @@ import {
 	useApplicationMask,
 	useSetEditionStatus, useUpdateApplication,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
-import { useApplicationUpdateApi } from '@/components/api.hook';
 import {
 	AppDataMask,
-	FieldVisility,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import {
 	Card,
 	CardBody,
 	CardHeader,
-	Checkbox,
 	IconButton,
 	Input,
-	Option, Radio,
-	Select,
 	Typography,
 } from '@material-tailwind/react';
 import { useEffect, useState } from 'react';
@@ -24,12 +19,11 @@ import { useEffect, useState } from 'react';
 function MaskEditionCard(
 	input: {
 		mask: AppDataMask
-	}
+	},
 ) {
 	const mask = input.mask;
 	const setApplication = useUpdateApplication();
 	const setIsModified = useSetEditionStatus();
-
 
 
 	const [name, setName] = useState<string>(mask.name);
@@ -42,30 +36,30 @@ function MaskEditionCard(
 				name: name,
 				expression: expression,
 				substitution: substitution,
-			})
-		})
+			});
+		});
 	}, [name, expression, substitution]);
 
 	function removeMask() {
 		setApplication((application, editor) => {
-			editor.removeMaskByName(mask.name)
-		})
+			editor.removeMaskByName(mask.name);
+		});
 		setIsModified(true);
 	}
 
-	function updateName( name: string ) {
+	function updateName(name: string) {
 		setIsModified(true);
 		setName(name);
 	}
 
-	function updateExpression( expression: string ) {
+	function updateExpression(expression: string) {
 		setIsModified(true);
 		setExpression(expression);
 	}
 
-	function updateSubsitution( subsitution: string ) {
+	function updateSubsitution(subsitution: string) {
 		setIsModified(true);
-		setSubstitution( subsitution );
+		setSubstitution(subsitution);
 	}
 
 	return <Card className={' w-72 shadow-lg'}>
@@ -90,20 +84,21 @@ function MaskEditionCard(
 			<Input variant={'outlined'} size={'md'} label={'Expression'}
 				   value={expression} onChange={(e) => updateExpression(e.target.value)} />
 			<Input variant={'outlined'} size={'md'} label={'Subsitution'}
-				   value={substitution} onChange={(e) => updateSubsitution(e.target.value)}/>
+				   value={substitution} onChange={(e) => updateSubsitution(e.target.value)} />
 		</CardBody>
-	</Card>
+	</Card>;
 }
+
 export default function MasksPanel() {
 
 	const masks = useApplicationMask();
 	const setApplication = useUpdateApplication();
 	const setIsModified = useSetEditionStatus();
 
-	function createMask( name: string ) {
+	function createMask(name: string) {
 		setApplication((application, editor) => {
-			editor.createMaskByName(name)
-		})
+			editor.createMaskByName(name);
+		});
 		setIsModified(true);
 	}
 
@@ -111,8 +106,8 @@ export default function MasksPanel() {
 	return <>
 		{/* enum creation */}
 		<InputButtonForm
-			inputLabel={"Name"}
-			buttonLabel={"Add Mask"}
+			inputLabel={'Name'}
+			buttonLabel={'Add Mask'}
 			onConfirm={(value) => createMask(value)}
 		/>
 
@@ -122,7 +117,7 @@ export default function MasksPanel() {
 					return <MaskEditionCard
 						mask={mask}
 						key={index}
-					/>
+					/>;
 				})
 			}
 		</div>

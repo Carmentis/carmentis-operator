@@ -23,5 +23,5 @@ export class ApplicationDto {
 
 
     @IsDefined()
-    data: string;
+    data: any;
 }

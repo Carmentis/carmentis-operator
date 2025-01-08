@@ -7,6 +7,7 @@ import {
 	AppDataField, FieldVisility,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import useSWR from 'swr';
+import { Organisation } from '@/entities/organisation.entity';
 
 export interface AccessRight {
 	"id": number,
@@ -60,27 +61,18 @@ export async function CallApi<T>(
 		})
 }
 
-export type GetOrganisationResponse = {
-	id: number;
-	name: string;
-	logoUrl: string;
-	owner: User | null;
-	createdAt: Date;
-	lastUpdatedAt: Date;
-}
+export type GetOrganisationResponse = Organisation;
 
 export function fetchOrganisation(organisationId: number)  {
-	return useFetch<GetOrganisationResponse>(`/organisation/${organisationId}`,{
-		headers: { "Accept": "application/json", "Content-Type": "application/json" }
-	});
+	return useWorkspaceApi<GetOrganisationResponse>(`/organisation/${organisationId}`);
 }
 
 export type GetApplicationResponse = Application;
 
-export function fetchApplicationInOrganisation( organisationId: number, applicationId: number ) {
-	return useFetch<GetApplicationResponse>(`/organisation/${organisationId}/application/${applicationId}`,{
-		headers: { "Accept": "application/json", "Content-Type": "application/json" }
-	});
+export const fetchApplicationInOrganisation = ( organisationId: number, applicationId: number ) => {
+	return useWorkspaceApi<GetApplicationResponse>(
+		`/organisation/${organisationId}/application/${applicationId}`,
+	);
 }
 
 
@@ -108,6 +100,29 @@ export const useFetchUsersInOrganisation = (organisationId: number) => {
 	);
 }
 
+export type OrganisationsOfUserResponse = {
+	id: number,
+	name: string,
+}
+export const useFetchOrganisationsOfUser= (userPublicKey: number) => {
+	return useWorkspaceApi<OrganisationsOfUserResponse[]>(
+		`/user/${userPublicKey}/organisation`
+	);
+}
+
+
+export type CurrentUserDetailsResponse = {
+	publicKey: string,
+	firstname: string,
+	lastname: string,
+	isAdmin: boolean,
+}
+export const useFetchCurrentUserDetails = () => {
+	return useWorkspaceApi<CurrentUserDetailsResponse>(
+		`/user/current`
+	);
+}
+
 
 export function useFetchUserDetailsInOrganisation(organisationId: number, userPublicKey: string)  {
 	return useWorkspaceApi<UserInOrganisationDetailsResponse>(`/organisation/${organisationId}/user/${userPublicKey}`);
@@ -120,6 +135,7 @@ export function useFetchOrganisationApplications( organisationId: number )  {
 
 export interface OrganisationStats {
 	applicationsNumber: number
+	oraclesNumber: number
 	usersNumber: number
 	balance: number
 }
@@ -205,12 +221,32 @@ export function useUserCreation() {
 	};
 }
 
+
+
 export function useApplicationUpdateApi() {
 	return async (organisationId : number, application: Application, cb: APICallbacks<{id: number}> | undefined) => {
 		return CallApi(`/organisation/${organisationId}/application/${application.id}`, cb, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(application),
+		});
+	};
+}
+
+export function useOrganisationUpdateApi() {
+	return async (organisation: Organisation, cb: APICallbacks<void> | undefined) => {
+		return CallApi(`/organisation/${organisation.id}`, cb, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(organisation),
+		});
+	};
+}
+
+export function useOrganisationPublication() {
+	return async (organisation: Organisation, cb: APICallbacks<void> | undefined) => {
+		return CallApi(`/organisation/${organisation.id}/publish`, cb, {
+			method: "POST",
 		});
 	};
 }
@@ -354,7 +390,7 @@ export type OracleServiceOutputField = {
 	isRequired: boolean;
 	isHashable: boolean;
 	visiblity: FieldVisility;
-	mask: string;
+	mask: string | undefined;
 }
 export type OracleStructureField = OracleServiceOutputField;
 export type OracleMask = {

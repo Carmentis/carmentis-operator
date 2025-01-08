@@ -1,6 +1,20 @@
-import type { Config } from "tailwindcss";
-
 import withMT from '@material-tailwind/react/utils/withMT';
+
+import { colors as defaultColors } from 'tailwindcss/defaultTheme';
+
+
+const colors = {
+  ...defaultColors,
+  ...{
+    primary: {
+      light: '#159A9C',
+      dark: '#002333',
+      gray: '#B4BEC9'
+    },
+    primaryBackground: "#f6f9ff",
+    primaryForeground: "#4154f1"
+  },
+}
 
 module.exports = withMT({
   content: [
@@ -10,13 +24,7 @@ module.exports = withMT({
   ],
   theme: {
     extend: {
-      colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        default: {
-          light: "#ffffff",
-        }
-      },
+      colors: colors,
     },
   },
   plugins: [],

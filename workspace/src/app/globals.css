@@ -79,14 +79,10 @@ html, body {
         @apply w-12;
     }
 
-    .active-sidebar-item {
-        background-color: rgba(6, 181, 123, 0.6);
-        color: white;
+    .active-sidebar-item, .active-sidebar-item:hover {
+        @apply bg-primary-light bg-opacity-10 text-primary-light;
     }
 
-    .active-sidebar-item:hover {
-        color: #0a0a0a;
-    }
 
     .large-icon {
         font-size: 25px;
