@@ -1,184 +1,260 @@
 import {
+	AppDataField,
 	ApplicationEditor,
-	AppDataField, FieldVisility, PrimitiveType,
+	FieldVisility,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import { generateRandomString } from 'ts-randomstring/lib';
-import {
-	Card,
-	CardBody,
-	CardHeader,
-	Checkbox,
-	IconButton,
-	Input,
-	Option, Radio,
-	Select,
-	Typography,
-} from '@material-tailwind/react';
-import {
-	useUpdateApplication,
-	useSetEditionStatus, useApplication, useApplicationStrutures,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
+import { Button, Checkbox, Input, Option, Radio, Select, Typography } from '@material-tailwind/react';
+import SmallCardEdition from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/small-edition-card';
+import * as sdk from '@cmts-dev/carmentis-sdk';
+import { useApplication, useUpdateApplication } from '@/contexts/application-store.context';
+import { useSetEditionStatus } from '@/contexts/edition-status.context';
 
-export default function FieldEditionCard(
+
+export default function ApplicationFieldEditionCard(
 	input: {
 		field: AppDataField,
 		onRemoveField: (fieldName: string) => void,
 		structureName?: string
 	},
 ) {
-	const field = input.field;
-
 	const application = useApplication();
 	const setApplication = useUpdateApplication();
-	const setHasBeenModified = useSetEditionStatus();
-	const [fieldName, setFieldName] = useState<string>(field.name);
-	const [fieldType, setFieldType] = useState<string>(field.type);
-	const [hashable, setHashable] = useState<boolean>(field.hashable);
-	const [required, setRequired] = useState<boolean>(field.required);
-	const [isList, setIsList] = useState(field.isList);
-	const [visibility, setVisibility] = useState<FieldVisility>(field.visiblity);
-	const [availableStructures, setAvailableStructures] = useState<string[]>(
-		application.data.structures.map(s => s.name)
-	);
 
-	useEffect(() => {
-		setAvailableStructures(application.data.structures.map(s => s.name))
-	}, [application]);
-
-
-	useEffect(() => {
-		const field: AppDataField = {
-			hashable: hashable,
-			isList: isList,
-			name: fieldName,
-			required: required,
-			type: fieldType,
-			visiblity: visibility
-		};
-
+	function refreshType(field: AppDataField) {
 		setApplication(application => {
 			const editor = new ApplicationEditor(application);
 
-			if ( input.structureName ) {
+			if (input.structureName) {
 				editor.updateFieldInStructure(input.structureName, field);
 			} else {
-				editor.updateField(field)
+				editor.updateField(field);
 			}
-		})
-	}, [fieldName, fieldType, hashable, visibility, required, isList]);
+		});
+	}
+	return <FieldEditionCard
+		field={input.field}
+		onRemoveField={input.onRemoveField}
+		refreshType={refreshType}
+		getStructures={() => application.data.structures}
+		getEnumerations={() => application.data.enumerations}
+		getMasks={() => application.data.masks}
+	/>
+}
+
+
+export function FieldEditionCard(
+	input: {
+		field: { name: string, type: number, maskId?: number },
+		onRemoveField: (fieldName: string) => void,
+		structureName?: string,
+		refreshType: (refreshedType: { name: string, type: number, maskId?: number }) => void
+		getStructures: () => { name: string }[],
+		getEnumerations: () => { name: string }[],
+		getMasks: () => { name: string }[]
+	},
+) {
+	const field = input.field;
+	const setHasBeenModified = useSetEditionStatus();
+
+	// define types that directly obtained from the field
+	const [fieldName, setFieldName] = useState<string>(field.name);
+
+
+	// from the field type is derived several properties defined below
+	const fieldType = useRef(sdk.utils.data.extractType(field.type))
+	const fieldMaskId = useRef(field.maskId ? field.maskId.toString() : undefined)
+	const isList= useRef(sdk.utils.data.isArray(field.type));
+	const isPublic = useRef(sdk.utils.data.isPublic(field.type));
+	const isRequired = useRef(sdk.utils.data.isRequired(field.type));
+	const isHashable = useRef(sdk.utils.data.isHashable(field.type));
+
+
+	console.log("input", sdk.utils.data.isPrimitive(field.type), sdk.utils.data.isStruct(field.type), sdk.utils.data.isEnum(field.type))
+
 
 	function updateFieldName(fieldName: string) {
 		setHasBeenModified(true);
 		setFieldName(fieldName);
+		refreshType();
 	}
 
 	function updateType(type: string) {
 		setHasBeenModified(true);
-		setFieldType(type);
+		console.log("assigning new type:", type)
+		fieldType.current = parseInt(type);
+        refreshType();
 	}
 
-	function updateIsList(value: boolean) {
+	function updateMask(maskId: string | undefined) {
 		setHasBeenModified(true);
-		setIsList(value);
+		console.log("assigning new mask:", maskId);
+		if (maskId) {
+			fieldMaskId.current = maskId;
+		} else {
+			fieldMaskId.current = undefined;
+		}
+		refreshType();
 	}
 
-	function updateRequired(value: boolean) {
+	function setIsList(value: boolean) {
 		setHasBeenModified(true);
-		setRequired(value);
+		isList.current = value;
+		refreshType();
 	}
 
-	function updateHashable(value: boolean) {
+	function setIsRequired(required: boolean) {
 		setHasBeenModified(true);
-		setHashable(value);
+		isRequired.current = required;
+		refreshType();
 	}
 
-	function updateVisibility(visibility: FieldVisility) {
+
+	function setVisibility( visibility: FieldVisility ) {
 		setHasBeenModified(true);
-		setVisibility(visibility);
+		isPublic.current = visibility === FieldVisility.public;
+		refreshType();
 	}
+
+	function setIsHashable(value: boolean) {
+		setHasBeenModified(true);
+		isHashable.current = value;
+		refreshType();
+	}
+
+
+	function refreshType() {
+		const field = {
+			name: fieldName,
+			type: sdk.utils.data.createType({
+				public: isPublic.current,
+				optional: !isRequired.current,
+				hashable: isHashable.current,
+				array: isList.current,
+				type: fieldType.current,
+				maskable: true, // maskable by default, only considered if primitive
+			}),
+			maskId: fieldMaskId.current
+		};
+
+		input.refreshType(field)
+	}
+
+
 
 	// generate a random field id, used to isolate radio buttons
 	const fieldFormId = generateRandomString({ length: 256 });
 
 	// compute the list of types
 	const availableTypes: { key: string, value: string, label: string }[] = [];
-	Object.values(PrimitiveType).forEach((type, index) => {
+	Object.entries(sdk.constants.DATA.PrimitiveTypes).forEach(([k,v], index) => {
 		availableTypes.push({
-			key: `prim-${index}`,
-			value: type,
-			label: type,
+			key: `prim-${k}`,
+			value: v.toString(),
+			label: k,
 		});
 	});
-	availableStructures.forEach((type, index) => {
+	input.getStructures().forEach((structure, index) => {
 		availableTypes.push({
 			key: `struct-${index}`,
-			value: type,
-			label: type,
+			value: (sdk.constants.DATA.STRUCT | index).toString(),
+			label: structure.name,
+		});
+	});
+	input.getEnumerations().forEach((enumeration, index) => {
+		availableTypes.push({
+			key: `enum-${index}`,
+			value: (sdk.constants.DATA.ENUM | index).toString(),
+			label: enumeration.name,
 		});
 	});
 
 
-	return <Card className={' w-72 shadow-lg'}>
-		<CardHeader floated={false}
-					shadow={false}
-					color="transparent"
-					className="m-0 rounded-none rounded-t-md bg-gray-800 p-2 flex justify-between items-center">
+	// compute the list of masks
+	const availableMasks = input.getMasks().map((mask, index) => ({
+        key: `mask-${index}`,
+        value: index.toString(),
+        label: mask.name,
+    }))
+	console.log(fieldMaskId, availableMasks)
 
-			<Typography variant={'h6'} color={'white'}>{field.name}</Typography>
+	return <SmallCardEdition name={field.name} onRemove={() => input.onRemoveField(field.name)}>
+		<Input variant={'outlined'} size={'md'} label={'Name'} value={fieldName}
+			   onChange={(e) => updateFieldName(e.target.value)} />
 
-			{/* Icons */}
-			<div id="icons" className={'flex gap-2'}>
-				<IconButton variant={'filled'} color={'white'} size={'sm'} onClick={() => input.onRemoveField(field.name)}>
-					<i className="bi bi-trash" />
-				</IconButton>
+		<div className="flex flex-col gap-3">
+			<Typography variant={'h6'} className={''}>Type</Typography>
+
+			{/* Select the type of the field (among primitives, structures or enumerations ) */}
+			<Select
+				label="Type"
+				name={fieldFormId}
+				id={fieldFormId}
+				value={fieldType.current.toString()}
+				onChange={updateType}
+				menuProps={{
+					className: 'max-h-48 overflow-auto',
+				}}>
+
+				{
+					availableTypes.map((entry) =>
+						<Option key={entry.key} value={entry.value}>{entry.label}</Option>,
+					)
+				}
+
+
+			</Select>
+
+			<div className="flex flex-wrap">
+				<Checkbox label={'Array'} checked={isList.current} onChange={e => setIsList(e.target.checked)} />
+				<Checkbox label={'Hashable'} checked={isHashable.current}
+						  onChange={e => setIsHashable(e.target.checked)} />
+				<Checkbox label={'Required'} checked={isRequired.current}
+						  onChange={e => setIsRequired(e.target.checked)} />
 			</div>
-		</CardHeader>
-		<CardBody className={'flex flex-col space-y-3'}>
-			<Input variant={'outlined'} size={'md'} label={'Name'} value={fieldName}
-				   onChange={(e) => updateFieldName(e.target.value)} />
-
-			<div className="flex flex-col gap-3">
-				<Typography variant={'h6'} className={''}>Type</Typography>
-
-				{/* Select the type of the field (among primitive of structure) */}
-				<Select
-					label="Type"
-					name={fieldFormId}
-					id={fieldFormId}
-					value={fieldType}
-					onChange={updateType}
-					menuProps={{
-						className: 'max-h-48 overflow-auto', // Limite la hauteur et ajoute un scroll
-					}}>
-
-					{
-						availableTypes.map((entry) =>
-							<Option key={entry.key} value={entry.value}>{entry.label}</Option>,
-						)
-					}
+		</div>
 
 
-				</Select>
+		<div className="visibility">
+			<Typography variant={'h6'}>Visiblity</Typography>
+			<Radio name={`visibility-${fieldFormId}`} label="public"
+				   checked={sdk.utils.data.isPublic(field.type)}
+				   onChange={() => setVisibility(FieldVisility.public)} />
+			<Radio name={`visibility-${fieldFormId}`} label="private"
+				   checked={sdk.utils.data.isPrivate(field.type)}
+				   onChange={() => setVisibility(FieldVisility.private)} />
+		</div>
 
-				<div className="flex flex-wrap">
+		{/* Select the mask if desired */}
+		<div className="flex flex-row space-x-2">
+			<Select
+				label="Mask"
+				disabled={!sdk.utils.data.isPrimitive(field.type)}
+				value={fieldMaskId.current}
+				onChange={updateMask}
+				menuProps={{
+					className: 'max-h-48 overflow-auto',
+				}}>
 
-					<Checkbox label={'Array'} checked={isList} onChange={e => updateIsList(e.target.checked)} />
-					<Checkbox label={'Hashable'} checked={hashable} onChange={e => updateHashable(e.target.checked)} />
-					<Checkbox label={'Required'} checked={required} onChange={e => updateRequired(e.target.checked)} />
-				</div>
-			</div>
+				{
+					availableMasks.map((entry, index) =>
+						<Option key={entry.key} value={entry.value}>{entry.label}</Option>,
+					)
+				}
 
 
-			<div className="visibility">
-				<Typography variant={'h6'}>Visiblity</Typography>
-				<Radio name={`visibility-${fieldFormId}`} label="public" defaultChecked
-					   checked={visibility === FieldVisility.public}
-					   onChange={() => updateVisibility(FieldVisility.public)} />
-				<Radio name={`visibility-${fieldFormId}`} label="private"
-					   checked={visibility === FieldVisility.private}
-					   onChange={() => updateVisibility(FieldVisility.private)} />
-			</div>
-		</CardBody>
-	</Card>;
+			</Select>
+
+			<Button
+				onClick={() => updateMask(undefined)}
+				aria-label="Clear selection"
+				hidden={fieldMaskId.current === undefined}
+			>
+				<i className="bi bi-trash" />
+			</Button>
+		</div>
+	</SmallCardEdition>
+		;
+
 }

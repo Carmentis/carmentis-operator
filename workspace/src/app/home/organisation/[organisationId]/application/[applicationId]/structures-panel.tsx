@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { SearchInputForm } from '@/components/form/search-input.form';
-import { Button, Card, CardBody, CardHeader, IconButton, Input, Typography } from '@material-tailwind/react';
-import FieldEditionCard from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
-import {
-	useApplicationStrutures, useSetEditionStatus,
-	useUpdateApplication,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
+import { Button, Input, Typography } from '@material-tailwind/react';
+import LargeCardEdition from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/large-edition-card';
+import ApplicationFieldEditionCard
+	from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
+import { useApplicationStrutures, useUpdateApplication } from '@/contexts/application-store.context';
+import { useSetEditionStatus } from '@/contexts/edition-status.context';
 
 
 
@@ -80,7 +80,6 @@ export default function StructurePanel(
 	function removeFieldFromStructure(structureName: string, fieldName: string) {
 		setIsModified(true);
 		setApplication((app, editor) => {
-			console.log(app, editor, structureName, fieldName)
 			editor.removeFieldInStructureByName(structureName, fieldName);
 		});
 	}
@@ -102,63 +101,53 @@ export default function StructurePanel(
 			{
 				structures
 					.filter(struct => search === '' || struct.name.toLowerCase().includes(search.toLowerCase()))
-					.map(struct => <Card className={'border-2 border-gray-800 w-full'}>
-							<CardHeader floated={false}
-										shadow={false}
-										color="transparent"
-										className="m-0 rounded-none rounded-t-md p-2 bg-gray-800 flex justify-between">
+					.map(struct =>
+						<LargeCardEdition
+							name={struct.name}
+							onRemove={() => removeStructure(struct.name)}>
+							<Input variant={'outlined'} size={'md'} label={'Name'} value={struct.name} />
 
-								<Typography variant={'h6'} color={'white'}>{struct.name}</Typography>
-								<IconButton variant={'filled'} color={'white'} size={'sm'}
-											onClick={() => removeStructure(struct.name)}>
-									<i className="bi bi-trash" />
-								</IconButton>
-							</CardHeader>
-							<CardBody className={'flex flex-col space-y-4'}>
-								<Input variant={'outlined'} size={'md'} label={'Name'} value={struct.name} />
+							{/* Fields in the structure */}
+							<div id="fields">
 
-								{/* Fields in the structure */}
-								<div id="fields">
+								<Typography variant={'h6'}>Fields</Typography>
 
-									<Typography variant={'h6'}>Fields</Typography>
-
-									{/* Search and add field */}
-									<div className={'flex flex-row gap-2 mt-2 mb-4'}>
-										<SearchInputForm
-											searchFilter={
-												fieldsSearches[struct.name] ?
-													fieldsSearches[struct.name] :
-													''
-											}
-											setSearchFilter={
-												(value) => updateSearch(
-													struct.name,
-													value,
-												)
-											} />
-										<FieldCreationForm onCreateField={(fieldName: string) => {
-											createFieldInStructure(struct.name, fieldName);
-										}}/>
-									</div>
-									<div className="flex flex-wrap gap-4">
-										{
-											struct.fields
-												.filter(f => !fieldsSearches[struct.name] || f.name.toLowerCase().includes(fieldsSearches[struct.name].toLowerCase()))
-												.map((field, index) => {
-													return <FieldEditionCard
-														structureName={struct.name}
-														key={index}
-														field={field}
-														onRemoveField={() => removeFieldFromStructure(
-															struct.name,
-															field.name
-														)} />;
-												})
+								{/* Search and add field */}
+								<div className={'flex flex-row gap-2 mt-2 mb-4'}>
+									<SearchInputForm
+										searchFilter={
+											fieldsSearches[struct.name] ?
+												fieldsSearches[struct.name] :
+												''
 										}
-									</div>
+										setSearchFilter={
+											(value) => updateSearch(
+												struct.name,
+												value,
+											)
+										} />
+									<FieldCreationForm onCreateField={(fieldName: string) => {
+										createFieldInStructure(struct.name, fieldName);
+									}}/>
 								</div>
-							</CardBody>
-						</Card>,
+								<div className="flex flex-wrap gap-4">
+									{
+										struct.properties
+											.filter(f => !fieldsSearches[struct.name] || f.name.toLowerCase().includes(fieldsSearches[struct.name].toLowerCase()))
+											.map((field, index) => {
+												return <ApplicationFieldEditionCard
+													structureName={struct.name}
+													key={index}
+													field={field}
+													onRemoveField={() => removeFieldFromStructure(
+														struct.name,
+														field.name
+													)} />;
+											})
+									}
+								</div>
+							</div>
+						</LargeCardEdition>
 					)
 			}
 		</div>

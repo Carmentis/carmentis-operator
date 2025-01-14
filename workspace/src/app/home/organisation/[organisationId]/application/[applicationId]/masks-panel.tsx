@@ -1,9 +1,5 @@
 import InputButtonForm from '@/components/form/input-button.form';
 import {
-	useApplicationMask,
-	useSetEditionStatus, useUpdateApplication,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
-import {
 	AppDataMask,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import {
@@ -15,6 +11,8 @@ import {
 	Typography,
 } from '@material-tailwind/react';
 import { useEffect, useState } from 'react';
+import { useApplicationMask, useUpdateApplication } from '@/contexts/application-store.context';
+import { useSetEditionStatus } from '@/contexts/edition-status.context';
 
 function MaskEditionCard(
 	input: {
@@ -27,14 +25,14 @@ function MaskEditionCard(
 
 
 	const [name, setName] = useState<string>(mask.name);
-	const [expression, setExpression] = useState<string>(mask.expression);
+	const [expression, setExpression] = useState<string>(mask.regex);
 	const [substitution, setSubstitution] = useState<string>(mask.substitution);
 
 	useEffect(() => {
 		setApplication((application, editor) => {
 			editor.updateMask(mask.name, {
 				name: name,
-				expression: expression,
+				regex: expression,
 				substitution: substitution,
 			});
 		});

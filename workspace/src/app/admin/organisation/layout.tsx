@@ -1,4 +1,4 @@
-import OrganisationSidebar from '@/app/admin/organisation/sidebar';
+import OrganisationsList from '@/app/admin/organisation/sidebar';
 
 
 export default function RootLayout({
@@ -7,10 +7,11 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<div className={"flex flex-row h-full"}>
-			<OrganisationSidebar></OrganisationSidebar>
-			<div className={"ml-60 w-full"}>
-
+		<div className={"flex flex-row h-full space-x-4"}>
+			<div className="w-3/12">
+				<OrganisationsList></OrganisationsList>
+			</div>
+			<div className="w-9/12">
 				{children}
 			</div>
 		</div>

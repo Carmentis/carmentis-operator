@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WorkspaceApiController } from './workspace-api.controller';
-import { AdminController } from './admin/admin.controller';
 import { OrganisationController } from './controllers/organisation.controller';
 import { SearchController } from './controllers/search.controller';
 import { UserController } from './controllers/user.controller';
@@ -22,6 +21,7 @@ import { AccessRightService } from './services/access-right.service';
 import { AuditService } from './services/audit.service';
 import { OracleService } from './services/oracle.service';
 import ChainService from './services/chain.service';
+import { AdminController } from './controllers/admin.controller';
 
 // Extracted imports, controllers, and providers into constants
 const WORKSPACE_IMPORTS = [

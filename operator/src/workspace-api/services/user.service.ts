@@ -57,11 +57,7 @@ export class UserService {
 	}
 
 	async findAllUsers() {
-		return this.userEntityRepository.find({
-			where: {
-				isAdmin: false,
-			},
-		});
+		return this.userEntityRepository.find();
 	}
 
 	async createUser(createUserDto: CreateUserDto) {

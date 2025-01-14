@@ -3,14 +3,11 @@ import { Button, Card, CardBody, Chip, IconButton, Spinner, Typography } from '@
 import { ArrowDownOnSquareIcon, ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/16/solid';
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import {
-	useApplication,
-	useEditionStatus,
-	useSetEditionStatus,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
-import { useApplicationDeletion, useApplicationUpdateApi } from '@/components/api.hook';
+import { useApplicationDeletionApi, useApplicationPublicationApi, useApplicationUpdateApi } from '@/components/api.hook';
 import { useToast } from '@/app/layout';
 import { Application } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
+import { useApplication } from '@/contexts/application-store.context';
+import { useEditionStatus, useSetEditionStatus } from '@/contexts/edition-status.context';
 
 const BORDER_CLASSES = 'border-r-2 border-gray-200';
 const ICON_ROTATION_CLASSES = 'h-5 w-5 transition-transform group-hover:rotate-45';
@@ -56,7 +53,8 @@ export default function ApplicationDetailsNavbar({ refreshApplication }: { refre
 	const isModified = useEditionStatus();
 	const setIsModified = useSetEditionStatus();
 	const callApplicationUpdate = useApplicationUpdateApi();
-	const callApplicationDeletion = useApplicationDeletion();
+	const callApplicationDeletion = useApplicationDeletionApi();
+	const callApplicationPublish = useApplicationPublicationApi();
 	const router = useRouter();
 	const notify = useToast();
 	const [isApplicationSaving, setApplicationSaving] = useState(false);
@@ -110,7 +108,15 @@ export default function ApplicationDetailsNavbar({ refreshApplication }: { refre
 	};
 
 	function publishApplication() {
-
+		callApplicationPublish(organisationId, application, {
+			onSuccess: () => {
+				notify.info('Application published');
+				refreshApplication();
+			},
+			onError: (error) => {
+				notify.error(error);
+			},
+		})
 	}
 
 	return (
@@ -124,15 +130,15 @@ export default function ApplicationDetailsNavbar({ refreshApplication }: { refre
 					/>
 					<div className="flex">
 						<div className={`space-x-2 ${BORDER_CLASSES} pr-2 flex flex-row`}>
-							{isModified && <Button className={"flex items-center space-x-2 bg-primary-light"}   onClick={saveApplication} >
+							{isModified && <Button className={"flex items-center space-x-2"}   onClick={saveApplication} >
 								{isApplicationSaving ? <Spinner /> : <i className="bi bi-floppy-fill"></i>}
 								<span>save</span>
 							</Button>}
-							{application.isDraft && <Button className={"flex items-center space-x-2 bg-primary-light"} onClick={publishApplication}>
+							{application.isDraft && <Button className={"flex items-center space-x-2"} onClick={publishApplication}>
 								<ArrowUpOnSquareIcon className={ICON_ROTATION_CLASSES} />
 								<span>Publish</span>
 							</Button>}
-							<Button  className={"flex items-center space-x-2 bg-primary-light"} onClick={downloadApplicationAsJson}>
+							<Button  className={"flex items-center space-x-2"} onClick={downloadApplicationAsJson}>
 								<ArrowDownOnSquareIcon className={ICON_ROTATION_CLASSES} />
 								<span>Download</span>
 							</Button>

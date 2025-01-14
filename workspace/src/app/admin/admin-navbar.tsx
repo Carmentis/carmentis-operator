@@ -1,26 +1,15 @@
 'use client';
 
-
-import { useContext } from 'react';
-import { InterfaceStoreContext } from '@/app/admin/layout';
-import { useStore } from 'zustand/index';
+import CarmentisLogo from '@/components/carmentis-logo.component';
 
 export default function AdminNavbar() {
-    const context = useContext(InterfaceStoreContext)
-    const store = useStore(context, (state) => state)
-
-    const heightNavbarClass = store.sidebarHidden ?
-        'w-[calc(100vw-2rem)]' :
-        'w-[calc(100vw-18rem)]';
-
-    return <nav
-        className={`navbar ${heightNavbarClass} border-b-2 border-gray-200 flex flex-row justify-between px-10 p-2 h-14 bg-white -z-10`}>
+    return <div className={"flex justify-between w-full"}>
         <div className={"flex items-center"}>
-            <h1>Dashboard</h1>
+            <CarmentisLogo/>
         </div>
         <div className="flex items-center justify-between">
-            <p className={'mr-2'}>Gael Marcadet</p>
-            <i className={'bi bi-person navbar-icon'}></i>
+
         </div>
-    </nav>
+    </div>
+
 }

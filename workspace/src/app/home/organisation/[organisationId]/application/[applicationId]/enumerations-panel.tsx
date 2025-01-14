@@ -1,10 +1,8 @@
 import { Card, CardBody, CardHeader, Chip, IconButton, Typography } from '@material-tailwind/react';
-import {
-	useApplicationEnum, useSetEditionStatus,
-	useUpdateApplication,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
 import InputButtonForm from '@/components/form/input-button.form';
 import { AppDataEnum } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
+import { useApplicationEnum, useUpdateApplication } from '@/contexts/application-store.context';
+import { useSetEditionStatus } from '@/contexts/edition-status.context';
 
 export function MyChip(
 	input: {
@@ -75,10 +73,11 @@ function EnumerationEditionCard(
 
 				<div className="values flex flex-wrap gap-2">
 					{
-						enumeration.values.map(v => {
+						enumeration.values.map((v,index) => {
 							return <MyChip
-								enumId={v.id}
-								enumValue={v.value}
+								key={index}
+								enumId={v}
+								enumValue={v}
 								removeEnumValue={(value) => removeEnumValue(value)}
 							></MyChip>
 						})

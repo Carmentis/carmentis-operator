@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { OrganisationEntity } from '../entities/organisation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateOrganisationDto } from '../dto/create-organisation.dto';
@@ -148,8 +148,27 @@ export class OrganisationService {
 	}
 
 	async publishOrganisation(organisationId: number) {
-		const organisation = await this.organisationEntityRepository.findOneBy({ id: organisationId });
-		return await this.chainService.publishOrganisation(organisation);
+		const organisation: OrganisationEntity = await this.organisationEntityRepository.findOneBy({ id: organisationId });
+		try {
+			const mb : MicroBlock = await this.chainService.publishOrganisation(organisation);
+
+			// init the organisation chain status if first micro-block
+			if ( mb.header.height === 1 ) {
+				organisation.virtualBlockchainId = mb.hash;
+			}
+
+			// update the organisation
+			organisation.version = mb.header.height;
+			organisation.published = true;
+			organisation.isDraft = false;
+			organisation.publishedAt = new Date();
+			organisation.balance -= mb.header.gas; // TODO get the balance account from the node
+			await this.update(organisation.id, organisation);
+		} catch (e) {
+			console.error(e)
+			throw new InternalServerErrorException('Failed to publish the organisation');
+		}
+
 	}
 
 	async getPublicationCost(organisationId: number) {

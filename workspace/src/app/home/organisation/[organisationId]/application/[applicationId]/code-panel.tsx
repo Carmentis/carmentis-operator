@@ -1,4 +1,4 @@
-import { useApplication } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
+import { useApplication } from '@/contexts/application-store.context';
 
 export default function CodeViewPanel(
 ) {

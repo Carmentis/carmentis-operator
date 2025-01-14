@@ -9,9 +9,9 @@ import {
 	TimelineItem,
 	Typography,
 } from '@material-tailwind/react';
-import { useParams } from 'next/navigation';
 import { OrganisationLog, useFetchOrganisationLogs } from '@/components/api.hook';
 import Skeleton from 'react-loading-skeleton';
+import { useOrganisationContext } from '@/contexts/organisation-store.context';
 
 export default function RecentActivities() {
 	// Extracted constant for formatting options
@@ -104,8 +104,8 @@ export default function RecentActivities() {
 	}
 
 	// Fetching data using the parsed organisationId
-	const { organisationId } = useParams();
-	const { data, isLoading } = useFetchOrganisationLogs(parseInt(organisationId));
+	const organisation = useOrganisationContext();
+	const { data, isLoading } = useFetchOrganisationLogs(organisation.id);
 
 	return (
 		<Card>

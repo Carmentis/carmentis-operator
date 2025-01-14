@@ -1,18 +1,18 @@
 'use client';
 
-import { useContext, useState } from 'react';
-import { AdminDataContext, AdminState } from '@/app/admin/layout';
 import { useParams } from 'next/navigation';
 import User, { UserSearchResult } from '@/entities/user.entity';
-import { Button } from '@material-tailwind/react';
+import { Button, Card, CardBody, Typography } from '@material-tailwind/react';
 import { SearchUserInputComponent } from '@/components/form/search-user-form';
 import {
 	fetchOrganisation,
 	fetchUsersInOrganisation,
-	useAffectOwner, UserInOrganisationResponse,
-	useUserDeletion, useUserOrganisationInsertion,
+	useUserOrganisationInsertion, useUserOrganisationRemoval,
 } from '@/components/api.hook';
 import SwitchForm from '@/components/form/switch.form';
+import WelcomeCards from '@/components/welcome-cards.component';
+import Avatar from 'boring-avatars';
+import Skeleton from 'react-loading-skeleton';
 
 interface Organisation {
 	name: string,
@@ -23,210 +23,142 @@ interface Organisation {
 }
 
 
-
-
-function CardOwner(input: { owner : User | null, organisationId: number }) {
-	const affectOwner = useAffectOwner();
-
-	// the function to associate the current organisation with the chosen user
-	function associateOwner( user: UserSearchResult ) {
-		affectOwner( input.organisationId, user.publicKey, undefined )
-	}
-
-	// the head content for the current owner
-	let content = <div id="currentOwner" className="flex flex-row justify-between mb-4">
-		<i className={'bi bi-person'}></i>
-		{ input.owner && <h1>{input.owner.firstname} {input.owner.lastname}</h1> }
-		{ !input.owner && <h1>--</h1> }
-	</div>;
-
-	return <div className="card transition-all ease-in duration-100">
-		{content}
-		<SearchUserInputComponent
-			formatUserSearchResult={(user: UserSearchResult) => {
-				return <li
-					className={'p-2 border-b-2 border-gray-100 cursor-pointer hover:bg-gray-100 '}>
-					<p className={'font-bold'}>{user.firstname} {user.lastname}</p>
-					<p className={'text-sm overflow-x-clip'}>{user.publicKey}</p>
-				</li>;
-			}}
-			onSelectedUser={associateOwner} />
-	</div>;
-}
-
-
-
-
-
-
-function ListOfUserInOrganisation( input :{ organisationId: number } ) {
+function OrganisationUsers(input: { organisationId: number }) {
 	const { data, loading, error } = fetchUsersInOrganisation(input.organisationId);
-	const deleteUser = useUserDeletion();
+	const deleteUser = useUserOrganisationRemoval();
 	const addExistingUserInOrganisation = useUserOrganisationInsertion();
 
 	if (!data || loading) return <p>Chargement...</p>;
-	if (error) return <p>Erreur : {error}</p>;
 
 
-
-
-
-
-	function addUserInOrganisation( user: UserSearchResult ) {
+	function addUserInOrganisation(user: UserSearchResult) {
 		addExistingUserInOrganisation(input.organisationId, user.publicKey, undefined);
 	}
 
 	function removeUserFromOrganisation(userPublicKey: string) {
-		deleteUser( input.organisationId, userPublicKey, undefined )
+		deleteUser(input.organisationId, userPublicKey, undefined);
 	}
 
-	function updateUserAccessRights( user: UserSearchResult ) {
-		console.log(user)
+	function updateUserAccessRights(user: UserSearchResult) {
+		console.log(user);
 	}
 
-	return <>
-		<h1>Users</h1>
-		<div className={'space-y-4'}>
-			<div className="w-full">
-				<div className="card space-y-2">
-					<h1>Add user</h1>
-
-					<SearchUserInputComponent
-						formatUserSearchResult={(user: UserSearchResult) => {
-							return <li
-								className={'p-2 border-b-2 border-gray-100 cursor-pointer hover:bg-gray-100 '}>
-								<p className={'font-bold'}>{user.firstname} {user.lastname}</p>
-								<p className={'text-sm overflow-x-clip'}>{user.publicKey}</p>
-							</li>;
-						}}
-						onSelectedUser={addUserInOrganisation} />
-
-				</div>
+	return <Card>
+		<CardBody>
+			<div className={'mb-2'}>
+				<Typography>Add user</Typography>
+				<SearchUserInputComponent
+					formatUserSearchResult={(user: UserSearchResult) => {
+						return <li
+							className={'p-2 border-b-2 border-gray-100 cursor-pointer hover:bg-gray-100 '}>
+							<p className={'font-bold'}>{user.firstname} {user.lastname}</p>
+							<p className={'text-sm overflow-x-clip'}>{user.publicKey}</p>
+						</li>;
+					}}
+					onSelectedUser={addUserInOrganisation} />
 			</div>
-
-			<div className="w-full space-y-2">
+			<div className={'space-y-2'}>
 				{
 					data.map((user, index) => {
 							const accessRight = user.accessRights[0];
-							return <div key={index}
-										className={'w-full flex flex-row justify-between items-center w-100 not:last:border-b-2 card'}>
-								<div className="flex flex-col justify-center items-center w-24 mr-2">
-									<div
-										className={'bg-gray-100 rounded-full p-2 w-12 h-12 items-center justify-center text-center align-middle mb-4'}>
-										<i className={'bi bi-person large-icon'}></i>
+							return <Card key={index}
+										 className={'w-full flex flex-row justify-between items-center w-100 not:last:border-b-2'}>
+								<CardBody className={'w-full flex flex-row justify-between p-4'}>
+									<div className="flex flex-row justify-center items-center">
+										<Avatar width={30} name={`${user.firstname} ${user.lastname}`} className={'mr-2'} />
+										<span>{user.firstname} {user.lastname}</span>
 									</div>
-									<span>{user.firstname} {user.lastname}</span>
-								</div>
 
-								<div className="setting flex space-x-2">
+									<div className="setting flex space-x-2">
+										<div className="flex flex-col space-y-2">
+											<SwitchForm property="Administrator"
+														value={accessRight.isAdmin}
+														onChange={() => updateUserAccessRights(user)}
+											/>
+											<SwitchForm property="Can publish" value={accessRight.canPublish}
+														onChange={() => updateUserAccessRights(user)} />
+										</div>
+										<div className="flex flex-col space-y-2">
+											<SwitchForm property="Edit users" value={accessRight.editUsers}
+														onChange={() => updateUserAccessRights(user)} />
+										</div>
+										<div className="flex flex-col space-y-2">
+											<SwitchForm property="Add application" value={accessRight.addApplication}
+														onChange={() => updateUserAccessRights(user)} />
+											<SwitchForm property="Remove application"
+														value={accessRight.deleteApplication}
+														onChange={() => updateUserAccessRights(user)}
+											/>
+										</div>
+									</div>
+
 									<div className="flex flex-col space-y-2">
-										<SwitchForm property="Administrator"
-													value={accessRight.isAdmin}
-													onChange={() => updateUserAccessRights(user)}
-										/>
-										<SwitchForm property="Can publish" value={accessRight.canPublish} onChange={() => updateUserAccessRights(user)} />
+										<Button size={'sm'}
+												onClick={() => removeUserFromOrganisation(user.publicKey)}>Remove</Button>
 									</div>
-									<div className="flex flex-col space-y-2">
-										<SwitchForm property="Add user" value={accessRight.addUser} onChange={() => updateUserAccessRights(user)} />
-										<SwitchForm property="Remove user" value={accessRight.removeUser} onChange={() => updateUserAccessRights(user)}/>
-									</div>
-									<div className="flex flex-col space-y-2">
-										<SwitchForm property="Add application" value={accessRight.addApplication} onChange={() => updateUserAccessRights(user)}/>
-										<SwitchForm property="Remove application"
-													value={accessRight.deleteApplication}
-													onChange={() => updateUserAccessRights(user)}
-										/>
-									</div>
-								</div>
-
-								<div className="flex flex-col space-y-2">
-									<Button size={'sm'}
-											onClick={() => removeUserFromOrganisation(user.publicKey)}>Remove</Button>
-								</div>
+								</CardBody>
 
 
-							</div>;
+							</Card>;
 						},
 					)
 				}
 			</div>
 
-		</div>
-	</>
 
+		</CardBody>
+	</Card>;
+
+}
+
+function OrganisationProperties(
+	{ organisation }: { organisation: Organisation },
+) {
+	return <Card className={'w-full'}>
+		<CardBody>
+			<h1 className={'mb-4'}>Property</h1>
+			<table>
+				<tbody>
+				<tr>
+					<td>Created at</td>
+					<td>{organisation.createdAt}</td>
+				</tr>
+				<tr>
+					<td>Organisation Name</td>
+					<td>{organisation.name}</td>
+				</tr>
+				</tbody>
+			</table>
+		</CardBody>
+	</Card>;
 }
 
 
 export default function OrganisationDetailsPage() {
 
-	const { useAdminDataStore } = useContext<AdminState>(AdminDataContext);
-	const organisations: { id: number, name: string }[] = useAdminDataStore((state) => state.organisations);
-
 	// get the current organisation
 	const params: { organisationId: string } = useParams();
 	const organisationId = parseInt(params.organisationId);
 
-	const { data, loading, error } = fetchOrganisation(organisationId);
-
+	const { data, isLoading, mutate } = fetchOrganisation(organisationId);
 
 
 	// render an empty page if the organisation is loading
-	if (loading) {
-		return <div>
-			<h1>Loading...</h1>
-		</div>
+	if (isLoading || !data) {
+		return <Skeleton className={"h-full"} />;
 	}
 
-	const organisation: Organisation = data;
-	return <div className={"w-full p-8 space-y-12"}>
-		<p className={"mb-8"}>Dashboard <i className={"bi bi-chevron-double-right"}></i> {organisation.name}</p>
 
-		<div>
-			<h1 className={"mb-4"}>Overview</h1>
-			<div className="flex flex-row space-x-4">
-				<div className="card w-1/3 rounded flex flex-row justify-between bg-green border-green text-white">
-					<h1 className="card-title">Balance</h1>
-					<p>0.00 CMTS</p>
-				</div>
-				<div className="card w-1/3 rounded flex flex-row justify-between">
-					<h1 className="card-title">Costs</h1>
-					<p>0.00 CMTS</p>
-				</div>
-				<div className="card w-1/3 rounded flex flex-row justify-between">
-					<h1 className="card-title">Last update</h1>
-					<p>{organisation.lastUpdateAt}</p>
-				</div>
-			</div>
-		</div>
-
-		<div className={"w-full flex flex-row space-x-4"}>
-			<div className="w-1/3">
-				<h1 className={'mb-4'}>Owner</h1>
-				<CardOwner owner={organisation.owner} organisationId={organisationId}></CardOwner>
-			</div>
-			<div className={'w-2/3'}>
-				<h1 className={'mb-4'}>Property</h1>
-				<table className={'horizontal-editable-table'}>
-					<tbody>
-
-					<tr>
-						<td>Created at</td>
-						<td>{organisation.createdAt}</td>
-					</tr>
-					<tr>
-						<td>Created by</td>
-						<td>{organisation.creatorPublicKey}</td>
-					</tr>
-					<tr>
-						<td>Organisation Name</td>
-						<td>{organisation.name}</td>
-					</tr>
-					</tbody>
-				</table>
-			</div>
-		</div>
+	const organisation = data;
+	// welcome data
+	const welcomeData = [
+		{ icon: 'bi-currency-dollar', title: 'Balance', value: organisation.balance.toString() + ' CMTS' },
+	];
 
 
-		<ListOfUserInOrganisation organisationId={organisationId} />
-	</div>
+	return <div className={'h-full flex flex-col space-y-4'}>
+		<WelcomeCards items={welcomeData} />
+		<OrganisationProperties organisation={organisation} />
+		<OrganisationUsers organisationId={organisationId} />
+	</div>;
 }

@@ -1,8 +1,6 @@
 'use client';
 
 import {
-	fetchOrganisation,
-	GetOrganisationResponse,
 	useFetchOrganisationStats, useOrganisationPublication,
 	useOrganisationUpdateApi,
 } from '@/components/api.hook';
@@ -19,36 +17,12 @@ import Skeleton from 'react-loading-skeleton';
 import RecentActivities from '@/app/home/organisation/[organisationId]/activities';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/app/layout';
+import { useOrganisationContext } from '@/contexts/organisation-store.context';
+import { useOrganisationMutationContext } from '@/contexts/organisation-mutation.context';
+import WelcomeCards from '@/components/welcome-cards.component';
 
 
-/**
- * The WelcomeCard function creates a styled card component displaying a title, value, and icon.
- *
- * @param {string} input.icon - The icon to be displayed on the welcome card.
- * @param {string} input.title - The title to be displayed on the welcome card.
- * @param {string} input.value - The value or content of the welcome card.
- * @returns {JSX.Element} A styled card component displaying a title, value, and icon.
- */
-function WelcomeCard(
-	input: {
-		icon: string,
-		title: string,
-		value: string,
-	},
-) {
-	return <Card className={'w-full'}>
-		<CardBody className={'flex flex-row justify-between p-4 items-center text-center'}>
-			<IconButton className={'flex bg-primary-light'}>
-				<i className={`bi ${input.icon} text-white font-bold text-lg`}></i>
-			</IconButton>
 
-			<div className="flex flex-col justify-end items-end">
-				<Typography className={'font-bold text-primary-dark'}>{input.title}</Typography>
-				<Typography>{input.value}</Typography>
-			</div>
-		</CardBody>
-	</Card>;
-}
 
 
 /**
@@ -58,11 +32,9 @@ function WelcomeCard(
  *
  * @return {JSX.Element} A React component displaying organisation statistics or a loading skeleton.
  */
-function WelcomeCards() {
-	const { organisationId: organisationIdParam } = useParams<{ organisationId: string }>();
-	const organisationId = parseInt(organisationIdParam);
-
-	const organisationStats = useFetchOrganisationStats(organisationId);
+function OverviewOrganisationWelcomeCards() {
+	const organisation = useOrganisationContext();
+	const organisationStats = useFetchOrganisationStats(organisation.id);
 	if (!organisationStats.data || organisationStats.isLoading) {
 		return <Skeleton count={1} />;
 	}
@@ -70,49 +42,29 @@ function WelcomeCards() {
 	const { balance, applicationsNumber, oraclesNumber, usersNumber } = organisationStats.data;
 
 	const welcomeCardData = [
-		{ icon: 'bi-currency-dollar', title: 'Balance', value: balance.toString() },
+		{ icon: 'bi-currency-dollar', title: 'Balance', value: balance.toString() + ' CMTS' },
 		{ icon: 'bi-layers', title: 'Applications', value: applicationsNumber.toString() },
 		{ icon: 'bi-layers', title: 'Oracles', value: oraclesNumber.toString() },
 		{ icon: 'bi-people', title: 'Users', value: usersNumber.toString() },
-	];
+		{ icon: 'bi-people', title: 'Version', value: organisation.version.toString() },
+	]
 
-	/**
-	 * Renders a welcome card component wrapped within a container div element.
-	 *
-	 * @param {string} icon - The icon to be displayed on the welcome card.
-	 * @param {string} title - The title to be displayed on the welcome card.
-	 * @param {string} value - The value or content of the welcome card.
-	 * @param {number} key - A unique key for the rendered parent div element.
-	 * @returns {JSX.Element} A JSX element containing the WelcomeCard component inside a wrapper div.
-	 */
-	const renderWelcomeCard = (icon: string, title: string, value: string, key: number) => (
-		<div key={key} className="w-3/12">
-			<WelcomeCard icon={icon} title={title} value={value}></WelcomeCard>
-		</div>
-	);
 
-	return (
-		<div id="welcome" className="flex flex-row space-x-4 mb-8">
-			{welcomeCardData.map((card, index) =>
-				renderWelcomeCard(card.icon, card.title, card.value, index),
-			)}
-		</div>
-	);
+	return <div className={"mb-8"}>
+		<WelcomeCards items={welcomeCardData}/>
+	</div>
 }
 
 
 
-function OrganisationEdition(
-	input: {
-		organisation: GetOrganisationResponse | null,
-		refreshOrganisation: () => void,
-	}
-) {
-	const organisation = input.organisation;
-	const [name, setName] = useState('');
-	const [city, setCity] = useState('');
-	const [countryCode, setCountryCode] = useState('');
-	const [website, setWebsite] = useState('');
+function OrganisationEdition() {
+	const organisation = useOrganisationContext();
+	const refreshOrganisation = useOrganisationMutationContext();
+	const [name, setName] = useState(organisation.name);
+	const [city, setCity] = useState(organisation.city);
+	const [countryCode, setCountryCode] = useState(organisation.countryCode);
+	const [website, setWebsite] = useState(organisation.website);
+	const [operatorEndpoint, setOperatorEndpoint] = useState(organisation.operatorEndpoint);
 	const [isModified, setIsModified] = useState(false);
 	const notify = useToast();
 	const callOrganisationPublication = useOrganisationPublication();
@@ -124,6 +76,7 @@ function OrganisationEdition(
 			setCity(organisation.city);
 			setCountryCode(organisation.countryCode);
 			setWebsite(organisation.website);
+			setOperatorEndpoint(organisation.operatorEndpoint)
 		}
 	}, [organisation]);
 
@@ -134,10 +87,12 @@ function OrganisationEdition(
 			city,
 			countryCode,
 			website,
+			operatorEndpoint
 		}, {
 			onSuccess: () => {
+				setIsModified(false);
 				notify.info("Organisation updated successfully");
-				input.refreshOrganisation();
+				refreshOrganisation.mutate();
 			},
 			onError: notify.error
 		})
@@ -148,7 +103,7 @@ function OrganisationEdition(
 		callOrganisationPublication(organisation, {
 			onSuccess: () => {
 				notify.info("Organisation published successfully");
-				input.refreshOrganisation();
+				refreshOrganisation.mutate();
 			},
 			onError: notify.error
 		})
@@ -163,9 +118,9 @@ function OrganisationEdition(
 						Overview
 					</Typography>
 					<div className="chips flex flex-row space-x-2">
-
+						{ organisation.isSandbox && <Chip variant="filled" className={"bg-secondary-light"} value="Sandbox" />}
 						{ organisation.isDraft && <Chip value={"Draft"} variant={"outlined"} className={"border-primary-light text-primary-light"} />}
-						{ true && <Chip value={"Published"} variant={"filled"} className={"bg-primary-light"} />}
+						{ organisation.published && <Chip value={`Published - ${new Date(organisation.publishedAt).toLocaleString()}`} variant={"filled"} className={"bg-primary-light"} />}
 					</div>
 				</div>
 
@@ -176,7 +131,7 @@ function OrganisationEdition(
 						<span>Save</span>
 					</Button>}
 
-					{!isModified && organisation.isDraft&&<Button className={"flex space-x-2 bg-primary-light"} onClick={publish}>
+					{!isModified && organisation.isDraft &&<Button className={"flex space-x-2 bg-primary-light"} onClick={publish}>
 						<i className={"bi bi-floppy-fill"}></i>
 						<span>Publish</span>
 					</Button>}
@@ -189,7 +144,7 @@ function OrganisationEdition(
 					value={name}
 					label={'Name'}
 					onChange={e => {
-						setIsModified(true)
+						setIsModified(true);
 						setName(e.target.value);
 					}}
 				/>
@@ -198,7 +153,7 @@ function OrganisationEdition(
 					value={countryCode}
 					label={'Coutry code'}
 					onChange={e => {
-						setIsModified(true)
+						setIsModified(true);
 						setCountryCode(e.target.value);
 					}}
 				/>
@@ -206,7 +161,7 @@ function OrganisationEdition(
 					value={city}
 					label={'City'}
 					onChange={e => {
-						setIsModified(true)
+						setIsModified(true);
 						setCity(e.target.value);
 					}}
 				/>
@@ -214,36 +169,70 @@ function OrganisationEdition(
 					value={website}
 					label={'Website'}
 					onChange={e => {
-						setIsModified(true)
+						setIsModified(true);
 						setWebsite(e.target.value);
 					}}
 				/>
+				<Input
+					value={operatorEndpoint}
+					label={'Operator endpoint'}
+					onChange={e => {
+						setIsModified(true);
+						setOperatorEndpoint(e.target.value);
+					}}
+				/>
+
+				<div className="input">
+					<Typography>Public key</Typography>
+					<Input
+						value={organisation.publicSignatureKey}
+						label={'Public key'}
+						disabled
+					/>
+				</div>
+
+				<div className="input">
+					<Typography>Virtual blockchain ID</Typography>
+					<Input
+						value={organisation.virtualBlockchainId}
+						label={'Virtual blockchain ID'}
+						disabled
+					/>
+				</div>
 			</div>
 		</CardBody>
 	</Card>
 }
 
 export default function Home() {
-	const params: { organisationId: string } = useParams();
-	const organisationId = parseInt(params.organisationId);
-	const { data, mutate } = fetchOrganisation(organisationId);
+	const organisation = useOrganisationContext();
+	const mutation = useOrganisationMutationContext();
 
 	return (
 		<>
 			<div className="w-full">
 				<div id="welcome-logo" className={'my-12 w-full flex flex-col justify-center items-center'}>
-					<Avatar name={data?.name} className={'w-32 h-32 mb-2'} variant={'beam'}></Avatar>
-					<Typography variant={'h4'} className={"text-primary-dark"}>{data?.name}</Typography>
+					<Avatar name={organisation.name} className={'w-32 h-32 mb-2'} variant={'beam'}></Avatar>
+					<Typography variant={'h4'} className={"text-primary-dark"}>{organisation.name}</Typography>
+
+					<div id="actions" className={"mt-4"}>
+						<IconButton
+							onClick={() => window.open(organisation.website, '_blank')}
+							className={"flex space-x-2 bg-primary-light"}>
+							<i className="bi bi-globe large-icon"
+							   title="Go to website"></i>
+						</IconButton>
+					</div>
 				</div>
 
-				<WelcomeCards></WelcomeCards>
+				<OverviewOrganisationWelcomeCards></OverviewOrganisationWelcomeCards>
 
 
 				<div className="flex space-x-4">
 					<div className="w-8/12">
 						<OrganisationEdition
-							organisation={data}
-							refreshOrganisation={() => mutate()}
+							organisation={organisation}
+							refreshOrganisation={() => mutation.mutate()}
 						/>
 					</div>
 					<div id="activities" className={"w-4/12"}>

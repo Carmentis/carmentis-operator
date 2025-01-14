@@ -4,28 +4,21 @@ import { useParams, useRouter } from 'next/navigation';
 import {
 	Button,
 	Card,
-	CardBody, CardHeader, Checkbox,
+	CardBody,
 	IconButton,
-	Input, Option, Radio, Select, Spinner, Tab,
-	TabPanel,
-	Tabs, TabsBody,
-	TabsHeader,
+	Input, Spinner,
 	Typography,
 } from '@material-tailwind/react';
 import {
-	OracleEnumeration,
-	OracleInOrganisation, OracleMask,
+	OracleEnumeration, OracleInOrganisation, OracleMask,
 	useFetchFullOracleInOrganisation,
 	useOracleDeletion,
 	useOracleUpdate,
 } from '@/components/api.hook';
 import Skeleton from 'react-loading-skeleton';
 import { TrashIcon } from '@heroicons/react/16/solid';
-import { createContext, Dispatch, SetStateAction, use, useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useToast } from '@/app/layout';
-import {
-	OverviewInput,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
 import { OracleEditor } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/oracle-editor';
 import {
 	OracleServiceInputFieldEditionCard,
@@ -33,13 +26,18 @@ import {
 import {
 	OracleServiceOutputFieldEditionCard,
 } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/oracle-service-output-edition-card';
-import { FieldVisility } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import LargeCardEdition from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/large-edition-card';
 import OracleStructureFieldEditionCard
 	from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/oracle-structure-field-edition-card';
 import InputButtonForm from '@/components/form/input-button.form';
 import { MyChip } from '@/app/home/organisation/[organisationId]/application/[applicationId]/enumerations-panel';
 import SmallCardEdition from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/small-edition-card';
+import { EditionStatusContextProvider, useEditionStatusContext } from '@/contexts/edition-status.context';
+import { OverviewInput } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
+import TabsComponent from '@/components/tabs.component';
+import { OracleStoreContextProvider, useOracleStoreContext } from '@/contexts/oralce-store.context';
+import DefaultCard from '@/components/default-card.component';
+import { useOrganisationContext } from '@/contexts/organisation-store.context';
 
 function OracleNavbar() {
 	const callOracleUpdate = useOracleUpdate();
@@ -48,10 +46,10 @@ function OracleNavbar() {
 	const router = useRouter();
 	const notify = useToast();
 	const oracle = useOracle();
-	const isModified = useOracleEditionStatus();
+	const editionStatus = useEditionStatusContext();
 	const [saving, setSaving] = useState<boolean>(false);
-	const context = useContext(OracleEditionStatusContext);
 	const callOracleDeletion = useOracleDeletion();
+
 
 	/**
 	 * Delete the oracle.
@@ -74,7 +72,7 @@ function OracleNavbar() {
 		callOracleUpdate(organisationId, oracle, {
 			onSuccess: () => {
 				notify.info('Oracle saved');
-				context.setIsModified(false);
+				editionStatus.setIsModified(false);
 			},
 			onError: notify.error,
 			onEnd: () => {
@@ -87,7 +85,7 @@ function OracleNavbar() {
 		<CardBody className={'flex justify-between items-center'}>
 			<Typography variant="h5">Oracle {oracle.name}</Typography>
 			<div>
-				<IconButton hidden={!isModified} onClick={save}>
+				<IconButton hidden={!editionStatus.isModified} onClick={save}>
 					{saving && <Spinner />}
 					{!saving && <i className={'bi bi-floppy-fill'}></i>}
 				</IconButton>
@@ -105,13 +103,9 @@ function OracleNavbar() {
  * @param input - The input data.
  * @constructor
  */
-function OracleOverview(
-	input: {
-		oracle: OracleInOrganisation
-	},
-) {
+function OracleOverview() {
 	// Oracle data
-	const oracle = input.oracle;
+	const oracle = useOracle();
 	const [name, setName] = useState(oracle.name);
 
 	return <Card>
@@ -176,36 +170,36 @@ function ServicesPanel() {
 		});
 	}
 
-	function removeService(serviceId: number) {
+	function removeService(serviceName: string) {
 		setOracle(editor => {
-			editor.deleteServiceById(serviceId);
+			editor.deleteServiceByName(serviceName);
 		});
 	}
 
-	function addInput(serviceId: number, name: string) {
+	function addInput(serviceName: string, name: string) {
 		setOracle(editor => {
-			const response = editor.createServiceInput(serviceId, name);
+			const response = editor.createServiceInput(serviceName, name);
 			console.log('Response of addInput:', response);
 		});
 	}
 
-	function removeServiceInput(serviceId: number, inputId: number) {
-		console.log('Remove serviceInput', serviceId, inputId);
+	function removeServiceInput(serviceName: string, name: string) {
+		console.log('Remove serviceInput', serviceName, name);
 		setOracle(editor => {
-			editor.deleteServiceInputById(serviceId, inputId);
+			editor.deleteServiceInputByName(serviceName, name);
 		});
 	}
 
 
-	function addOutput(serviceId: number, name: string) {
+	function addOutput(serviceName: string, name: string) {
 		setOracle(editor => {
-			editor.createServiceOutput(serviceId, name);
+			editor.createServiceOutput(serviceName, name);
 		});
 	}
 
-	function removeOutput(serviceId: number, outputId: number) {
+	function removeOutput(serviceName: string, name: string) {
 		setOracle(editor => {
-			editor.deleteServiceOutputById(serviceId, outputId);
+			editor.deleteServiceOutputByName(serviceName, name);
 		});
 	}
 
@@ -222,24 +216,24 @@ function ServicesPanel() {
 				return <LargeCardEdition
 					key={index}
 					name={s.name}
-					onRemove={() => removeService(s.id)}>
+					onRemove={() => removeService(s.name)}>
 					<Input variant={'outlined'} size={'md'} label={'Name'} value={s.name} />
 
 					{/* Inputs of the service */}
 					<Typography variant={'h6'}>Inputs</Typography>
 					<HorizontalInputButton
 						label={'Add input'}
-						onSubmit={(val) => addInput(s.id, val)}
+						onSubmit={(val) => addInput(s.name, val)}
 					/>
 
 					<div className="flex flex-wrap gap-4">
 						{
-							s.inputs.map((i, index) =>
+							s.request.map((i, index) =>
 								<OracleServiceInputFieldEditionCard
 									key={index}
 									field={i}
-									serviceId={s.id}
-									onRemoveField={() => removeServiceInput(s.id, i.id)} />,
+									serviceName={s.name}
+									onRemoveField={() => removeServiceInput(s.name, i.name)} />,
 							)
 						}
 					</div>
@@ -249,17 +243,17 @@ function ServicesPanel() {
 					<Typography variant={'h6'}>Outputs</Typography>
 					<HorizontalInputButton
 						label={'Add output'}
-						onSubmit={(val) => addOutput(s.id, val)}
+						onSubmit={(val) => addOutput(s.name, val)}
 					/>
 
 					<div className="flex flex-wrap gap-4">
 						{
-							s.outputs.map((o, index) =>
+							s.answer.map((o, index) =>
 								<OracleServiceOutputFieldEditionCard
 									key={index}
 									field={o}
-									serviceId={s.id}
-									onRemoveField={() => removeOutput(s.id, o.id)} />
+									serviceName={s.name}
+									onRemoveField={() => removeOutput(s.name, o.name)} />,
 							)
 						}
 					</div>
@@ -290,30 +284,32 @@ function StructurePanel() {
 		<HorizontalInputButton label={'add structure'} onSubmit={(v: string) => CreateStructure(v)} />
 
 		{
-			oracle.data.structures.map((s, index) =>
+			oracle.data.structures && oracle.data.structures.map((s, index) =>
 				<LargeCardEdition
 					name={s.name}
 					key={index}
 					onRemove={() => {
-						setOracle(e => e.deleteStructureById(s.id));
+						setOracle(e => e.deleteStructureByName(s.name));
 					}}>
 
 					<HorizontalInputButton
 						label={'add property'}
-						onSubmit={v => setOracle(e => e.createStructureField(s.id, v))}
+						onSubmit={v => setOracle(e => e.createStructureField(s.name, v))}
 					/>
 
-					{
-						s.fields.map((f, index) =>
-							<OracleStructureFieldEditionCard
-								key={index}
-								structureId={s.id}
-								field={f}
-								onRemoveField={() => {
-									setOracle(e => e.deleteStructureFieldById(s.id, f.id));
-								}} />,
-						)
-					}
+					<div className="flex flex-wrap gap-4">
+						{
+							s.properties.map((f, index) =>
+								<OracleStructureFieldEditionCard
+									key={index}
+									structureName={s.name}
+									field={f}
+									onRemoveField={() => {
+										setOracle(e => e.deleteStructureFieldByName(s.name, f.name));
+									}} />,
+							)
+						}
+					</div>
 				</LargeCardEdition>)
 		}
 	</>;
@@ -334,7 +330,7 @@ function EnumerationsPanel() {
 				inputLabel={'Name'}
 				buttonLabel={'Add value'}
 				onConfirm={v =>
-					setOracle(ed => ed.addEnumerationValue(e.id, v))
+					setOracle(ed => ed.addEnumerationValue(e.name, v))
 				} />;
 
 			<div className="values flex flex-wrap gap-2">
@@ -345,7 +341,7 @@ function EnumerationsPanel() {
 							enumId={v}
 							enumValue={v}
 							removeEnumValue={v =>
-								setOracle(ed => ed.removeEnumerationValue(e.id, v))
+								setOracle(ed => ed.removeEnumerationValue(e.name, v))
 							}
 						></MyChip>;
 					})
@@ -360,12 +356,12 @@ function EnumerationsPanel() {
 			onSubmit={v => setOracle(e => e.createEnumeration(v))} />
 
 		{
-			oracle.data.enumerations.map((e, index) =>
+			oracle.data.enumerations && oracle.data.enumerations.map((e, index) =>
 				<LargeCardEdition
 					key={index}
 					name={e.name}
 					onRemove={() =>
-						setOracle(ed => ed.deleteEnumerationById(e.id))
+						setOracle(ed => ed.deleteEnumerationByName(e.name))
 					}>
 					<EnumerationEdition enumeration={e} />
 				</LargeCardEdition>,
@@ -380,22 +376,21 @@ function MaskEditionCard(
 	const setOracle = useSetOracle();
 	const mask = input.mask;
 	const [name, setName] = useState(mask.name);
-	const [expression, setExpression] = useState(mask.expression);
+	const [expression, setExpression] = useState(mask.regex);
 	const [substitution, setSubstitution] = useState(mask.substitution);
 
 	useEffect(() => {
-		setOracle(e => e.updateMask({
-			id: mask.id,
+		setOracle(e => e.updateMaskByName(mask.name, {
 			name,
-			expression,
+			regex: expression,
 			substitution,
-		}))
+		}));
 	}, [name, expression, substitution]);
 
 	return <SmallCardEdition
 		name={mask.name}
 		onRemove={() => {
-			setOracle(e => e.deleteMaskById(mask.id));
+			setOracle(e => e.deleteMaskByName(mask.name));
 		}}>
 		<Input variant={'outlined'} size={'md'} label={'Name'}
 			   value={name} onChange={(event) => {
@@ -420,7 +415,6 @@ function MasksPanel() {
 	const setOracle = useSetOracle();
 
 
-
 	return <>
 		<InputButtonForm
 			inputLabel={'Name'}
@@ -430,7 +424,7 @@ function MasksPanel() {
 
 		<div className="flex flex-wrap gap-4">
 			{
-				oracle.data.masks.map((mask, index) => {
+				oracle.data.masks && oracle.data.masks.map((mask, index) => {
 					return <MaskEditionCard
 						mask={mask}
 						key={index}
@@ -442,70 +436,29 @@ function MasksPanel() {
 }
 
 function OracleEditionPanel() {
-	return <Card>
-		<CardBody>
-
-			<Tabs value={'services'}>
-				<TabsHeader
-					className="rounded-none border-b border-blue-gray-50 bg-transparent p-0"
-					indicatorProps={{
-						className:
-							'bg-transparent border-b-2 border-gray-900 shadow-none rounded-none',
-					}}
-				>
-					<Tab key={'services'} value={'services'}>Services</Tab>
-					<Tab key={'structures'} value={'structures'}>Structures</Tab>
-					<Tab key={'enumerations'} value={'enumerations'}>Enumerations</Tab>
-					<Tab key={'masks'} value={'masks'}>Mask</Tab>
-				</TabsHeader>
-				<TabsBody>
-					<TabPanel key={'services'} value={'services'}>
-						<ServicesPanel />
-					</TabPanel>
-					<TabPanel key={'structures'} value={'structures'}>
-						<StructurePanel />
-					</TabPanel>
-					<TabPanel key={'enumerations'} value={'enumerations'}>
-						<EnumerationsPanel />
-					</TabPanel>
-					<TabPanel key={'masks'} value={'masks'}>
-						<MasksPanel />
-					</TabPanel>
-				</TabsBody>
-			</Tabs>
-
-		</CardBody>
-	</Card>;
+	return <DefaultCard>
+		<TabsComponent
+			defaultTabValue={'Services'}
+			panels={{
+				'Services': <ServicesPanel />,
+				'Structures': <StructurePanel />,
+				'Enumerations': <EnumerationsPanel />,
+				'Masks': <MasksPanel />,
+			}} />
+	</DefaultCard>;
 }
 
 
-export interface OracleState {
-	oracle: OracleInOrganisation;
-	setOracle: Dispatch<SetStateAction<OracleInOrganisation>>;
-}
 
-export interface OracleEditionStatus {
-	isModified: boolean,
-	setIsModified: Dispatch<SetStateAction<boolean>>
-}
-
-export const OracleContext = createContext<OracleState>();
-export const OracleEditionStatusContext = createContext<OracleEditionStatus>();
-
-
-export const useOracle = () => {
-	const context = useContext(OracleContext);
+export function useOracle() : OracleInOrganisation {
+	const context = useOracleStoreContext();
+	if (context.oracle === undefined) throw new Error('Cannot access undefined oracle')
 	return context.oracle;
 };
 
-export const useOracleEditionStatus = () => {
-	const context = useContext(OracleEditionStatusContext);
-	return context.isModified;
-};
-
 export const useSetOracle = () => {
-	const statusContext = useContext(OracleEditionStatusContext);
-	const context = useContext(OracleContext);
+	const statusContext = useEditionStatusContext();
+	const context = useOracleStoreContext();
 	return (cb: (editor: OracleEditor) => void) => {
 		statusContext.setIsModified(true);
 		context.setOracle(oracle => {
@@ -517,11 +470,11 @@ export const useSetOracle = () => {
 };
 
 
-export default function OraclePage() {
-
+export function OracleDataAccess() {
 	// load parameters
 	const params = useParams();
-	const organisationId = parseInt(params.organisationId);
+	const organisation = useOrganisationContext();
+	const organisationId = organisation.id;
 	const oracleId = parseInt(params.oracleId);
 
 
@@ -531,33 +484,32 @@ export default function OraclePage() {
 	const isLoading = response.isLoading;
 
 	// define edition state (useful to synchronize the edition status)
-	const [isModified, setIsModified] = useState(false);
-	const [oracle, setOracle] = useState<OracleInOrganisation>(data);
+	const store = useOracleStoreContext();
+	const oracle = store.oracle;
 	useEffect(() => {
-		setOracle(data);
+		store.setOracle(data);
 	}, [data]);
 
 	// display the loading page while the request is loading
 	if (!data || !oracle || isLoading) return <Skeleton count={3} />;
 
-
 	return <>
-		<OracleContext.Provider value={{
-			oracle: oracle,
-			setOracle: setOracle,
-		}}>
-			<OracleEditionStatusContext.Provider value={{
-				isModified,
-				setIsModified,
-			}}>
-				<div className={'mb-8'}>
-					<OracleNavbar oracle={data} />
-				</div>
-				<div className="mb-8">
-					<OracleOverview oracle={data} />
-				</div>
-				<OracleEditionPanel />
-			</OracleEditionStatusContext.Provider>
-		</OracleContext.Provider>
+		<div className={'mb-8'}>
+			<OracleNavbar />
+		</div>
+
+		<div className="mb-8">
+			<OracleOverview/>
+		</div>
+		<OracleEditionPanel />
 	</>;
+}
+
+export default function OraclePage() {
+	return <OracleStoreContextProvider>
+		<EditionStatusContextProvider>
+			<OracleDataAccess />
+		</EditionStatusContextProvider>
+	</OracleStoreContextProvider>;
+
 }

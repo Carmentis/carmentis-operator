@@ -48,8 +48,8 @@ export class AdminController {
 	@Post('/organisation')
 	async addOrganisation(@Body() createOrganisationDto: CreateOrganisationDto): Promise<OrganisationEntity> {
 		const organisationName = createOrganisationDto.name;
-		const response = await this.organisationService.createByName(organisationName);
-		return response;
+		return await this.organisationService.createByName(organisationName);
+
 	}
 
 	@Delete('/organisation')

@@ -8,6 +8,9 @@ import { fetchOrganisationsOfUser, useOrganisationCreation } from '@/components/
 import SimpleTextModalComponent from '@/components/modals/simple-text-modal.component';
 import { useRouter } from 'next/navigation';
 import Avatar from 'boring-avatars';
+import { Button } from '@material-tailwind/react';
+import DefaultCard from '@/components/default-card.component';
+import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 
 function OrganisationCard(input: { organisation: { id:number, name: string } }) {
 	return <Link className={'card w-52 flex flex-col justify-center items-center space-y-2 h-52 hover:cursor-pointer'}
@@ -15,6 +18,17 @@ function OrganisationCard(input: { organisation: { id:number, name: string } }) 
 			<Avatar name={input.organisation.name} variant={"beam"} width={60} height={60} />
 		<p className={'organisation-name'}>{input.organisation.name}</p>
 	</Link>;
+}
+
+
+function AdministrationPanelAccess() {
+	const navigation = useApplicationNavigationContext();
+	return <div className={"absolute left-5 top-5 w-72"}>
+		<DefaultCard bodyClassName={"p-4 flex flex-col items-center"}>
+			Are you an Administrator ?
+			<Button onClick={navigation.navigateToAdmin}>move to administration page</Button>
+		</DefaultCard>
+	</div>
 }
 
 export default function HomePage() {
@@ -46,6 +60,7 @@ export default function HomePage() {
 
 
 	return <section className="bg-gray-50 dark:bg-gray-900 p-8 h-screen ">
+		<AdministrationPanelAccess/>
 		<div id="filter" className={'flex flex-col space-y-4 w-100 justify-center items-center mb-8'}>
 			<Image src={'/logo-full.svg'} alt={'logo'} width={120} height={120} />
 			<div className="relative z-0 w-3/12 mb-5 ">

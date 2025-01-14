@@ -7,18 +7,18 @@ export default function SmallCardEdition(
 		onRemove: () => void
 	}>,
 ) {
-	return <Card className={' w-72 shadow-lg'}>
+	return <Card className={' w-80 shadow-lg'}>
 		<CardHeader floated={false}
 					shadow={false}
 					color="transparent"
-					className="m-0 rounded-none rounded-t-md bg-blue-gray-100 p-2 flex justify-between items-center">
+					className="m-0 rounded-none rounded-t-md bg-primary-light p-2 flex justify-between items-center">
 
 			<Typography variant={'h6'} color={'white'}>{name}</Typography>
 
 			{/* Icons */}
 			<div id="icons" className={'flex gap-2'}>
-				<IconButton variant={'filled'} color={'white'} size={'sm'} onClick={() => onRemove()}>
-					<i className="bi bi-trash" />
+				<IconButton variant={'filled'} className={"bg-white"} size={'sm'} onClick={() => onRemove()}>
+					<i className="bi bi-trash text-black" />
 				</IconButton>
 			</div>
 		</CardHeader>

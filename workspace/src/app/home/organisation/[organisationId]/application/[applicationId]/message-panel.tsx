@@ -1,9 +1,5 @@
 import InputButtonForm from '@/components/form/input-button.form';
 import {
-	useApplicationMessages,
-	useSetEditionStatus, useUpdateApplication,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
-import {
 	AppDataMessage,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import {
@@ -15,6 +11,8 @@ import {
 	Typography,
 } from '@material-tailwind/react';
 import { useEffect, useState } from 'react';
+import { useApplicationMessages, useUpdateApplication } from '@/contexts/application-store.context';
+import { useSetEditionStatus } from '@/contexts/edition-status.context';
 
 function MessageEditionCard(
 	input: {

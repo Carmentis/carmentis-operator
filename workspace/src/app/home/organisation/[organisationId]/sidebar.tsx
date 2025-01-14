@@ -1,15 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useContext } from 'react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
-import { UserInterfaceStoreContext } from '@/app/home/organisation/[organisationId]/layout';
+import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
+import { useInterfaceContext } from '@/contexts/interface.context';
+import { useAuthenticationContext } from '@/contexts/user-authentication.context';
+import Skeleton from 'react-loading-skeleton';
+import Avatar from 'boring-avatars';
+import { AuthenticatedUserSidebarItem } from '@/components/sidebar-components';
 
 function SidebarItem(
 	input: { icon: string, text: string, link?: string, className?: string, onClick?: () => void, activeRegex?: RegExp, id?: string },
 ) {
 	const activePath = usePathname();
-	const interfaceStore = useContext(UserInterfaceStoreContext);
+	const interfaceStore = useInterfaceContext();
 	const params : {organisationId: string} = useParams();
 
 	// check if active and set the active classes
@@ -18,8 +22,6 @@ function SidebarItem(
 
 	// check if hidden or not
 	const toggleSidebarItemClasses = interfaceStore.sidebarHidden ? 'hidden-sidebar-item' : 'visible-sidebar-item';
-
-
 	const itemClass = `cursor-pointer hover:bg-gray-100  ${input.className} ${activeClasses} ${toggleSidebarItemClasses}`;
 
 	const content = <>
@@ -38,12 +40,15 @@ function SidebarItem(
 	}
 }
 
+
+
+
 export default function Sidebar() {
 
 
 	const router = useRouter();
-
-	const interfaceStore = useContext(UserInterfaceStoreContext);
+	const navigation = useApplicationNavigationContext();
+	const interfaceStore = useInterfaceContext();
 
 	function backRouter() {
 		router.back();
@@ -51,7 +56,7 @@ export default function Sidebar() {
 
 
 	function exit() {
-		router.push("/home")
+		navigation.navigateToHome()
 	}
 
 	function toggleSidebar() {
@@ -59,23 +64,28 @@ export default function Sidebar() {
 	}
 
 
-	return <div className={"h-full"}>
-		<ul className={"flex flex-col h-full"}>
-			<SidebarItem
-				icon={ interfaceStore.sidebarHidden ? "bi-chevron-double-right" : 'bi-chevron-double-left' }
-				id={"sidebar-toggle"}
-				text={""}
-				onClick={toggleSidebar}>
+	return <>
+		<SidebarItem
+			icon={interfaceStore.sidebarHidden ? "bi-chevron-double-right" : 'bi-chevron-double-left'}
+			id={"sidebar-toggle"}
+			text={""}
+			onClick={toggleSidebar}>
+		</SidebarItem>
 
-			</SidebarItem>
+		<AuthenticatedUserSidebarItem/>
+		<SidebarItem icon={"bi-arrow-left"} text={"Back"} onClick={backRouter}></SidebarItem>
+		<SidebarItem icon={"bi-door-closed"} text={"Exit"} className={"separator"} onClick={exit}></SidebarItem>
 
-			<SidebarItem icon={"bi-arrow-left"} text={"Back"} onClick={backRouter}></SidebarItem>
-			<SidebarItem icon={"bi-door-closed"} text={"Exit"} className={"separator"} onClick={exit}></SidebarItem>
+		<SidebarItem icon={"bi-house"} text={"Home"} link={"/"}
+					 activeRegex={new RegExp('/organisation/[0-9]+$')}></SidebarItem>
+		<SidebarItem icon={"bi-people"} text={"Users"} link={`/user`}
+					 activeRegex={new RegExp('/user')}></SidebarItem>
+		<SidebarItem icon={"bi-boxes"} text={"Applications"} link={"/application"}
+					 activeRegex={new RegExp('/application')}></SidebarItem>
+		<SidebarItem icon={"bi-arrow-left-right"} text={"Oracles"} link={"/oracle"}
+					 activeRegex={new RegExp('/oracle')}></SidebarItem>
+		<SidebarItem icon={"bi-currency-dollar"} text={"Exchange"} link={"/exchange"}
+					 activeRegex={new RegExp('/exchange')}></SidebarItem>
 
-			<SidebarItem icon={"bi-house"} text={"Home"} link={"/"} activeRegex={new RegExp('/organisation/[0-9]+$')}></SidebarItem>
-			<SidebarItem icon={"bi-people"} text={"Users"} link={`/user`} activeRegex={new RegExp('/user')}></SidebarItem>
-			<SidebarItem icon={"bi-boxes"} text={"Applications"} link={"/application"} activeRegex={new RegExp('/application')}></SidebarItem>
-			<SidebarItem icon={"bi-arrow-left-right"} text={"Oracles"} link={"/oracle"}  activeRegex={new RegExp('/oracle')}></SidebarItem>
-		</ul>
-	</div>
+	</>
 }

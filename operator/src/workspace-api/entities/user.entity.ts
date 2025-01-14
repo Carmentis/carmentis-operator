@@ -1,5 +1,4 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
-import { OrganisationEntity } from './organisation.entity';
 import { OrganisationAccessRightEntity } from './organisation-access-right.entity';
 
 @Entity('user')

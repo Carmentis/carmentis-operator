@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotImplementedException } from '@nestjs/common';
 import { OrganisationEntity } from '../entities/organisation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -117,13 +117,32 @@ export class ApplicationService {
 	}
 
 	async getPublicationCost(applicationId: number) {
-        const application = await this.applicationRepository.findOneBy({
-            id: applicationId,
-        });
-        return this.chainService.publishApplication(application);
+        throw new NotImplementedException();
 	}
 
     async publishApplication(applicationId: number) {
+        const application = await this.applicationRepository.findOneBy({
+            id: applicationId,
+        });
+        const organisation = await this.getOrganisationByApplicationId(applicationId);
+        const mb : MicroBlock = await this.chainService.publishApplication(organisation, application);
 
+        application.isDraft = false;
+        application.published = true;
+        application.publishedAt = new Date();
+        application.version += 1;
+        if ( mb.header.height === 1 ) {
+            application.virtualBlockchainId = mb.hash;
+        }
+
+        await this.applicationRepository.save(application);
+    }
+
+    private async getOrganisationByApplicationId(applicationId: number) {
+
+        return this.organisationRepository.createQueryBuilder('organisation')
+            .innerJoin('organisation.applications', 'application')
+            .where('application.id = :applicationId', { applicationId })
+            .getOne();
     }
 }

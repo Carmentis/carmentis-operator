@@ -4,7 +4,7 @@ import {
     Delete,
     Get,
     HttpException,
-    HttpStatus,
+    HttpStatus, InternalServerErrorException,
     Logger,
     NotFoundException,
     Param,
@@ -138,6 +138,7 @@ export class OrganisationController {
     ): Promise<OrganisationEntity> {
         // create an organisation entity from the input DTO
         const organisation: OrganisationEntity = plainToInstance(OrganisationEntity, organisationDto);
+        organisation.isDraft = true;
         const success = await this.organisationService.update(organisationId, organisation);
 
         if (success) {
@@ -458,7 +459,12 @@ export class OrganisationController {
         @Param('organisationId') organisationId: number,
         @Param('applicationId') applicationId: number,
     ) {
-        await this.applicationService.publishApplication(applicationId);
+        try {
+            await this.applicationService.publishApplication(applicationId);
+        } catch (e) {
+            console.error(e)
+            throw new InternalServerErrorException();
+        }
     }
 
 

@@ -1,5 +1,7 @@
 export interface Organisation {
+	publishedAt: Date;
 	isDraft: boolean;
+	isSandbox: boolean;
 	published: boolean;
 	id: number;
 	name: string;
@@ -9,4 +11,9 @@ export interface Organisation {
 	countryCode: string;
 	createdAt: Date;
 	lastUpdatedAt: Date;
+	publicSignatureKey: string;
+	virtualBlockchainId: string;
+	operatorEndpoint: string;
+	version: number;
+	balance: number;
 }

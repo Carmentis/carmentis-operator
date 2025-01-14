@@ -1,8 +1,9 @@
 import { GetApplicationResponse } from '@/components/api.hook';
+import * as sdk from '@cmts-dev/carmentis-sdk';
 
 export interface AppDataStruct {
 	name: string;
-	fields: AppDataField[];
+	properties: AppDataField[];
 }
 
 export enum FieldVisility {
@@ -24,7 +25,7 @@ export enum PrimitiveType {
 
 export interface AppDataEnum {
 	name: string,
-	values: { id: number, value: string }[]
+	values: string[]
 }
 
 export interface AppDataMessage {
@@ -34,7 +35,7 @@ export interface AppDataMessage {
 
 export interface AppDataMask {
 	name: string;
-	expression: string;
+	regex: string;
 	substitution: string;
 }
 
@@ -42,11 +43,8 @@ export interface AppDataMask {
 
 export interface AppDataField {
 	name: string;
-	hashable: boolean;
-	visiblity: FieldVisility
-	type: string
-	isList: boolean;
-	required: boolean;
+	type: number;
+	maskId?: number;
 }
 
 export interface Application {
@@ -138,7 +136,7 @@ export class ApplicationEditor {
 	createStructure(structureName: string): void {
 		this.addStructure({
 			name: structureName,
-			fields: []
+			properties: []
 		})
 	}
 
@@ -154,14 +152,14 @@ export class ApplicationEditor {
 		const structure = this.application.data.structures.find((s) => s.name === structureName);
 		if ( !structure ) throw new Error(`Structure ${structureName} not found`);
 
-		const fieldExists = structure.fields.find((f) => f.name === fieldName);
+		const fieldExists = structure.properties.find((f) => f.name === fieldName);
 		if ( fieldExists ) {
 			console.warn(`Field ${fieldName} already exists in structure ${structureName}`);
 		} else {
 			// add the field in the structure
 			const defaultField = this.createDefaultField(fieldName);
 			const structure = this.getStructureByName(structureName);
-			structure.fields.push(defaultField);
+			structure.properties.push(defaultField);
 		}
 	}
 
@@ -189,7 +187,7 @@ export class ApplicationEditor {
 	updateFieldInStructure(structureName: string, field: AppDataField) {
 		const structure = this.application.data.structures.find((s) => s.name === structureName);
 		if ( !structure ) throw new Error(`Structure ${structureName} not found`);
-		structure.fields = structure.fields.map(
+		structure.properties = structure.properties.map(
 			f => f.name === field.name ? field : f
 		);
 	}
@@ -204,11 +202,11 @@ export class ApplicationEditor {
 	private createDefaultField( fieldName: string ): AppDataField {
 		return {
 			name: fieldName,
-			hashable: false,
-			isArray: false,
-			required: false,
-			visiblity: FieldVisility.public,
-			type: PrimitiveType.string,
+			type: sdk.utils.data.createType({
+				public: true,
+				optional: true,
+				type: sdk.constants.DATA.STRING
+			}),
 		}
 	}
 
@@ -223,7 +221,7 @@ export class ApplicationEditor {
 			s => s.name === structureName
 		);
 		if ( !structure ) throw new Error(`Structure ${structureName} not found`);
-		structure.fields = structure.fields.filter(f => f.name !== fieldName);
+		structure.properties = structure.properties.filter(f => f.name !== fieldName);
 	}
 
 	createEnumeration(name: string) {
@@ -283,7 +281,7 @@ export class ApplicationEditor {
 			masks.push({
 				name: name,
 				substitution: "",
-				expression: "",
+				regex: "",
 			})
 		}
 	}

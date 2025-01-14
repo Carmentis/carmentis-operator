@@ -17,14 +17,17 @@ export class ApplicationEntity {
     @Column({ default: () => '0' })
     version: number;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, default: '' })
     logoUrl: string;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, default: '' })
     domain: string;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, default: '' })
     website: string;
+
+    @Column({ nullable: true })
+    virtualBlockchainId: string;
 
     @ManyToOne(() => OrganisationEntity, (org) => org.applications)
     organisation: OrganisationEntity;
@@ -51,34 +54,28 @@ export class ApplicationEntity {
     data: {
         fields?: {
             name: string;
-            hashable: boolean;
-            visiblity: string;
-            type: string
-            isList: boolean;
-            required: boolean;
+            type: number;
+            maskId?: string;
         }[];
         structures?: {
             name: string;
-            fields: {
+            properties: {
                 name: string;
-                hashable: boolean;
-                visiblity: string;
-                type: string
-                isList: boolean;
-                required: boolean;
+                type: number;
+                maskId?: string;
             }[];
         }[];
         enumerations?: {
             name: string,
-            values: { id: number, value: string }[]
+            values: string[]
         }[];
         messages?: {
             name: string,
-            message: string,
+            content: string,
         }[];
         masks?: {
             name: string;
-            expression: string;
+            regex: string;
             substitution: string;
         }[];
     };

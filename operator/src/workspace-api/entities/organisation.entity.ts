@@ -30,6 +30,9 @@ export class OrganisationEntity {
 	@Column({default: false})
 	published: boolean;
 
+	@Column({nullable: true})
+	publishedAt: Date;
+
 	@Column({default: true})
 	isDraft: boolean;
 
@@ -55,10 +58,6 @@ export class OrganisationEntity {
 	@OneToMany(() => OracleEntity, (app) => app.organisation)
 	oracles: OracleEntity[];
 
-
-	@ManyToOne(() => UserEntity)
-	creator: UserEntity;
-
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
 	createdAt: Date;
 
@@ -71,4 +70,16 @@ export class OrganisationEntity {
 
 	@OneToMany(() => OrganisationAccessRightEntity, (perm) => perm.organisation)
 	accessRights: OrganisationAccessRightEntity[];
+
+	@Column({default: 0})
+	version: number;
+
+	@Column({default: false})
+	isSandbox: boolean;
+	
+	@Column({nullable: true})
+	virtualBlockchainId: string;
+
+	@Column({nullable: true})
+	operatorEndpoint: string;
 }

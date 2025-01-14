@@ -2,18 +2,17 @@
 
 import { Button, Card, CardBody, Typography } from '@material-tailwind/react';
 import { SearchInputForm } from '@/components/form/search-input.form';
-import { BaseSyntheticEvent, SyntheticEvent, useRef, useState } from 'react';
+import { BaseSyntheticEvent, useRef, useState } from 'react';
 import SimpleTextModalComponent from '@/components/modals/simple-text-modal.component';
 import {
 	CreateApplicationResponse,
-	fetchOrganisationApplications,
 	useApplicationCreation,
 	useApplicationImport, useFetchOrganisationApplications,
 } from '@/components/api.hook';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { DynamicAppIcon } from '@/components/icons/default-user.icon';
-import { useToast, useToastNotification } from '@/app/layout';
+import { useToast } from '@/app/layout';
 
 /**
  * Component representing a horizontal card for an application.
@@ -134,8 +133,8 @@ export default function ListOfApplicationsPage() {
 							Applications
 						</Typography>
 						<div className="space-x-2">
-							<Button onClick={() => setIsShowingNameForm(true)}>Create application</Button>
-							<Button onClick={() => handleImportFileButtonClick()}>Import application</Button>
+							<Button className={"bg-primary-light"} onClick={() => setIsShowingNameForm(true)}>Create application</Button>
+							<Button className={"bg-primary-light"} onClick={() => handleImportFileButtonClick()}>Import application</Button>
 						</div>
 						<input
 							ref={fileInputRef}

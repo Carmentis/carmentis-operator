@@ -7,14 +7,14 @@ export default function LargeCardEdition(
 		onRemove: () => void
 	}>,
 ) {
-	return <Card className={'border-2 border-gray-800 w-full'}>
+	return <Card className={'border-2 border-primary-light w-full'}>
 		<CardHeader floated={false}
 					shadow={false}
 					color="transparent"
-					className="m-0 rounded-none rounded-t-md p-2 bg-gray-800 flex justify-between">
+					className="m-0 rounded-none rounded-t-md p-2 bg-primary-light flex justify-between">
 
 			<Typography variant={'h6'} color={'white'}>{name}</Typography>
-			<IconButton variant={'filled'} color={'white'} size={'sm'}
+			<IconButton variant={'filled'} className={"bg-white text-black"} size={'sm'}
 						onClick={() => onRemove()}
 			>
 				<i className="bi bi-trash" />

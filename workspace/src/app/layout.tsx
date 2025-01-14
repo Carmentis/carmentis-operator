@@ -4,8 +4,14 @@ import 'bootstrap-icons/font/bootstrap-icons.min.css';
 import './globals.css';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { toast, ToastContainer as ToastifyContainer } from 'react-toastify';
-import { createContext, useContext, useEffect, useState } from 'react';
-import { CurrentUserDetailsResponse, useFetchCurrentUserDetails } from '@/components/api.hook';
+import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
+import { AuthenticatedUserDetailsResponse, useFetchCurrentUserDetails } from '@/components/api.hook';
+import { Spinner } from '@material-tailwind/react';
+import { ThemeProvider } from '@material-tailwind/react';
+import { ApplicationNavigationContextProvider } from '@/contexts/application-navigation.context';
+import { ApplicationInterfaceContextProvider } from '@/contexts/interface.context';
+import { MaterialTailwindThemeContextProvider } from '@/contexts/material-taildwind-theme.context';
+import { UserAuthenticationContextProvider } from '@/contexts/user-authentication.context';
 
 // Constants for reusability and manage ToastContainer configuration
 const toastConfig = {
@@ -30,10 +36,7 @@ export const useToast = () => {
 };
 
 // CurrentUser type definition
-export type CurrentUser = CurrentUserDetailsResponse;
 
-export const CurrentUserContext = createContext<CurrentUser | undefined>(undefined);
-export const useCurrentUser = () => useContext(CurrentUserContext);
 
 /**
  * RootLayout component that provides the layout structure of the application,
@@ -43,25 +46,24 @@ export const useCurrentUser = () => useContext(CurrentUserContext);
  * @param {React.ReactNode} props.children - The child components or elements to be rendered inside the layout.
  * @return {JSX.Element} The React component representing the root layout.
  */
-export default function RootLayout({
-									   children,
-								   }: { children: React.ReactNode }) {
-	const [currentUser, setCurrentUser] = useState<CurrentUser | undefined>(undefined);
-
-	const currentUserDetails = useFetchCurrentUserDetails();
-	useEffect(() => {
-		setCurrentUser(currentUserDetails.data);
-	}, [currentUserDetails.data]);
+export default function RootLayout({ children }: PropsWithChildren) {
 
 	return (
-		<CurrentUserContext.Provider value={currentUser}>
-			<html lang="en">
-			<body>
-			{/* Centralized ToastContainer with extracted configurations */}
-			<ToastifyContainer {...toastConfig} />
-			{children}
-			</body>
-			</html>
-		</CurrentUserContext.Provider>
-	);
+		<ApplicationNavigationContextProvider>
+			<ApplicationInterfaceContextProvider>
+				<MaterialTailwindThemeContextProvider>
+					<UserAuthenticationContextProvider>
+						<html lang="en">
+						<body>
+						{/* Centralized ToastContainer with extracted configurations */}
+						<ToastifyContainer {...toastConfig} />
+						{children}
+						</body>
+						</html>
+					</UserAuthenticationContextProvider>
+				</MaterialTailwindThemeContextProvider>
+			</ApplicationInterfaceContextProvider>
+		</ApplicationNavigationContextProvider>
+	)
+		;
 }

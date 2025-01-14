@@ -1,7 +1,8 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { HttpCode, HttpException, HttpStatus, Injectable, NotImplementedException, OnModuleInit } from '@nestjs/common';
 import * as sdk from "@cmts-dev/carmentis-sdk";
 import { ApplicationEntity } from '../entities/application.entity';
 import { OrganisationEntity } from '../entities/organisation.entity';
+import { OrganisationService } from './organisation.service';
 
 
 /**
@@ -16,38 +17,125 @@ import { OrganisationEntity } from '../entities/organisation.entity';
  * be defined and implemented as per the application requirements.
  */
 @Injectable()
-export default class ChainService {
-	constructor() {
+export default class ChainService implements OnModuleInit{
+
+
+	constructor() {}
+
+	onModuleInit() {
+		sdk.blockchain.blockchainCore.setNode("http://127.0.0.1:3000");
 	}
 
+	/**
+	 * Publishes an organisation to the blockchain by creating or updating a micro-block with the organisation's details.
+	 *
+	 * @param {OrganisationEntity} organisation - The organisation entity containing details such as name, location, website, and keys.
+	 * @return {Promise<MicroBlock>} A promise that resolves to the published micro-block of the organisation.
+	 */
 	async publishOrganisation(
 		organisation: OrganisationEntity
-	) {
-		// TODO implement the organisation publishing logic
+	) : Promise<MicroBlock> {
+		// TODO remove the hardcoded node
+		// initialise the blockchain sdk
+		sdk.blockchain.blockchainCore.setNode("http://127.0.0.1:3000");
+		sdk.blockchain.blockchainCore.setUser(
+			sdk.blockchain.ROLES.OPERATOR,
+			organisation.privateSignatureKey
+		);
+
+
 		const organisationVb = new sdk.blockchain.organizationVb()
-		await organisationVb.addPublicKey({
-			publicKey: organisation.publicSignatureKey
+
+		// if the organisation has already been published, load the existing block
+		if ( organisation.virtualBlockchainId ) {
+			console.log("Loading existing organisation block", organisation);
+			await organisationVb.load(organisation.virtualBlockchainId);
+		} else {
+			console.log("Creating new organisation block");
+			// set the organisation public signature key
+			await organisationVb.addPublicKey({
+				publicKey: organisation.publicSignatureKey
+			});
+		}
+
+
+		// add the organisation description
+		await organisationVb.addDescription({
+			name: organisation.name,
+			city: organisation.city,
+			countryCode: organisation.countryCode,
+			website: organisation.website
 		});
-		const signatureKey = sdk.crypto.generateKey256();
+
+		// sign the organisation
 		await organisationVb.sign()
-		await organisationVb.addDescription(organisation);
-		return await organisationVb.publish();
+
+		// publish the micro-block
+		try {
+			return await organisationVb.publish();
+		} catch (e) {
+			console.error(e);
+			throw new HttpException("Failed to publish the organisation", HttpStatus.NOT_ACCEPTABLE);
+		}
+
 	}
 
 	/**
 	 * Publishes an application to the blockchain.
 	 *
+	 * @param organisation The organisation to publish the application under.
 	 * @param application The application to publish.
 	 */
 	async publishApplication(
+		organisation: OrganisationEntity,
 		application: ApplicationEntity
 	) {
+		// TODO remove the hardcoded node
+		// initialise the blockchain sdk
+		sdk.blockchain.blockchainCore.setUser(
+			sdk.blockchain.ROLES.OPERATOR,
+			organisation.privateSignatureKey
+		);
+
 		const vc = new sdk.blockchain.applicationVb();
+		if ( !application.virtualBlockchainId ) {
+			console.log("Creating new application", application, organisation);
+			await vc.addDeclaration({
+				organizationId: organisation.virtualBlockchainId,
+			});
+			// TODO add operator server
+			/*
+			await vc.addOperatorServer({
+				...
+			});
+			 */
+		} else {
+			console.log("Loading existing application", application);
+			await vc.load(application.virtualBlockchainId);
+		}
+
+		await vc.addDescription( {
+			name: application.name,
+			logoUrl: application.logoUrl || '',
+			homepageUrl: application.website || '',
+			rootDomain: application.domain || '',
+		})
+
+		// merge the default empty application with the provided one
 		await vc.addDefinition({
-			version: application.version,
-			definition: application.data
+			version: application.version + 1, // we increment the version number
+			definition: {
+				fields: [],
+				structures: [],
+				masks: [],
+				enumerations: [],
+				messages: [],
+				...application.data // replace default empty data with the application data if any
+			}
 		});
-		// TODO do not forget to increase the version number and application states (including the application id in the blockchain)
+
+		await vc.sign();
+
 		return vc.publish()
 	}
 

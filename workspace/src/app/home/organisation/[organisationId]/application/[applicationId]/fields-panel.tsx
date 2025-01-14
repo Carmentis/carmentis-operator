@@ -2,19 +2,14 @@ import {
 	ApplicationEditor, AppDataField,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import {  useEffect, useState } from 'react';
-import {
-	useUpdateApplication, useSetEditionStatus, useApplicationFields,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
 import { Button, Input } from '@material-tailwind/react';
-import FieldEditionCard from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
 import { useToast } from '@/app/layout';
+import ApplicationFieldEditionCard
+	from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
+import { useApplicationFields, useUpdateApplication } from '@/contexts/application-store.context';
+import { useSetEditionStatus } from '@/contexts/edition-status.context';
 
-export default function FieldsPanel(
-	input: {
-		appEditor: ApplicationEditor,
-		availableStructures: string[]
-	},
-) {
+export default function FieldsPanel() {
 
 	const notify = useToast();
 	const applicationFields = useApplicationFields();
@@ -69,9 +64,8 @@ export default function FieldsPanel(
 		<div id="fields" className={'flex flex-wrap gap-4'}>
 			{
 				fields.map((field, index) =>
-					<FieldEditionCard
+					<ApplicationFieldEditionCard
 						key={index}
-						availableStructures={input.availableStructures}
 						field={field}
 						onRemoveField={removeField} />)
 			}
