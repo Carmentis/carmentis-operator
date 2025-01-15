@@ -1,18 +1,11 @@
 'use client';
 
+const PAGE_TITLE = 'Administration page';
 
-export default function AdminPage() {
-
-
-
-
-
-	return <>
-		<h1>Administration page</h1>
-
-
-
-
-
-	</>;
+export default function AdministrationPage() {
+	return (
+		<>
+			<h1>{PAGE_TITLE}</h1>
+		</>
+	);
 }
