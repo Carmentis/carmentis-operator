@@ -1,7 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useState } from 'react';
 
 
-
 /**
  * Represents the interface for controlling the application's UI state and behavior.
  *

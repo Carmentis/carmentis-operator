@@ -1,18 +1,22 @@
-import { OracleServiceInputField } from '@/components/api.hook';
-import { useOracle, useSetOracle } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/page';
-import { useEffect, useState } from 'react';
-import { PrimitiveType } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
-import {
-	Checkbox,
-	Input,
-	Option,
-	Select,
-	Typography,
-} from '@material-tailwind/react';
-import {
-	FieldEditionCard
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
 
+import { useOracle, useOracleEditor } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/data-access-layer';
+
+import {
+	FieldEditionCard,
+} from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
+import { OracleServiceInputField } from '@/entities/oracle.entity';
+
+/**
+ * Renders a card component for editing an Oracle service input field.
+ * Allows modification of the field's properties and removal of the field.
+ *
+ * @param {Object} input - The input object containing the necessary parameters.
+ * @param {string} input.serviceName - The name of the Oracle service this input field belongs to.
+ * @param {OracleServiceInputField} input.field - The field object representing attributes of the input field being edited.
+ * @param {function} input.onRemoveField - A callback function to handle the removal of the field.
+ *
+ * @return {JSX.Element} A FieldEditionCard component configured for editing the specified Oracle service input field.
+ */
 export function OracleServiceInputFieldEditionCard(
 	input: {
 		serviceName: string,
@@ -21,10 +25,17 @@ export function OracleServiceInputFieldEditionCard(
 	},
 ) {
 	const oracle = useOracle();
-	const setOracle = useSetOracle();
+	const setOracle = useOracleEditor();
 	const field = input.field;
 
-	function refreshType(refreshedField) {
+
+	/**
+	 * Refreshes the type by updating the service input with the specified refreshed field.
+	 *
+	 * @param {Object} refreshedField - The field object containing new data to update the service input.
+	 * @return {void} This function does not return a value.
+	 */
+	function refreshType(refreshedField: OracleServiceInputField) {
 		setOracle(e => e.updateServiceInput(
 			input.serviceName,
 			field.name,
@@ -39,6 +50,9 @@ export function OracleServiceInputFieldEditionCard(
 		getStructures={() => oracle.data.structures}
 		getEnumerations={() => oracle.data.enumerations}
 		getMasks={() => oracle.data.masks}
+		disableMask={true}
+		defaultIsPublic={true}
+		defaultHashable={true}
 	/>
 
 }

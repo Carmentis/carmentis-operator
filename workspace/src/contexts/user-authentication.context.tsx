@@ -1,6 +1,8 @@
-import { AuthenticatedUserDetailsResponse, useFetchCurrentUserDetails } from '@/components/api.hook';
+'use client';
+
+import { AuthenticatedUserDetailsResponse, useFetchAuthenticatedUser } from '@/components/api.hook';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
-import { state } from 'sucrase/dist/types/parser/traverser/base';
+import FullPageLoadingComponent from '@/components/full-page-loading.component';
 
 export type UserAuthentication = {
 	authenticatedUser: AuthenticatedUserDetailsResponse | undefined,
@@ -14,11 +16,18 @@ const UserAuthenticationContext = createContext<UserAuthentication | undefined>(
 
 export function UserAuthenticationContextProvider({children}: PropsWithChildren) {
 	const [currentUser, setCurrentUser] = useState<AuthenticatedUserDetailsResponse | undefined>(undefined);
-	const currentUserDetails = useFetchCurrentUserDetails();
+	const currentUserDetails = useFetchAuthenticatedUser();
 
 	useEffect(() => {
 		setCurrentUser(currentUserDetails.data);
 	}, [currentUserDetails.data]);
+
+
+	if (!currentUserDetails.data || currentUserDetails.isLoading)
+		return <FullPageLoadingComponent/>
+
+	if (currentUserDetails.error)
+		return <h1>An error has been occurred</h1>
 
 
 	const state : UserAuthentication = {
@@ -33,6 +42,7 @@ export function UserAuthenticationContextProvider({children}: PropsWithChildren)
 			return currentUser;
 		}
 	}
+
 
 
 	return <UserAuthenticationContext.Provider value={state}>

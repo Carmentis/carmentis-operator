@@ -3,27 +3,23 @@
 import { Button, Card, CardBody, Typography } from '@material-tailwind/react';
 import { SearchInputForm } from '@/components/form/search-input.form';
 import { useState } from 'react';
-import {
-	IdentifiedEntity,
-	useFetchOraclesInOrganisation,
-	useOracleCreation,
-} from '@/components/api.hook';
-import { useParams, useRouter } from 'next/navigation';
+import { IdentifiedEntity, useFetchOraclesSummaryInOrganisation, useOracleCreation } from '@/components/api.hook';
+import { useRouter } from 'next/navigation';
 import Skeleton from 'react-loading-skeleton';
 import SimpleTextModalComponent from '@/components/modals/simple-text-modal.component';
 import { useToast } from '@/app/layout';
 import Avatar from 'boring-avatars';
 import Link from 'next/link';
+import { useOrganisationContext } from '@/contexts/organisation-store.context';
 
 
 export default function OraclePage() {
 
-
-	const params = useParams();
 	const router = useRouter();
-	const organisationId = parseInt(params.organisationId);
+	const organisation = useOrganisationContext();
+	const organisationId = organisation.id;
 	const notify = useToast();
-	const { data, isLoading } = useFetchOraclesInOrganisation(organisationId);
+	const { data, isLoading } = useFetchOraclesSummaryInOrganisation(organisationId);
 	const [searchInput, setSearchInput] = useState('');
 	const [showOracleCreationModal, setShowOracleCreationModal] = useState(false);
 

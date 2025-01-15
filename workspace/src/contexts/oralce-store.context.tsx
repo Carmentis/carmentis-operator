@@ -1,5 +1,5 @@
-import { OracleInOrganisation } from '@/components/api.hook';
 import { createContext, Dispatch, PropsWithChildren, SetStateAction, useContext, useState } from 'react';
+import { Oracle } from '@/entities/oracle.entity';
 
 /**
  * Interface representing an OracleStore configuration.
@@ -15,8 +15,8 @@ import { createContext, Dispatch, PropsWithChildren, SetStateAction, useContext,
  *                                                                                   React's Dispatch and SetStateAction.
  */
 interface OracleStore {
-	oracle: OracleInOrganisation|undefined,
-	setOracle: Dispatch<SetStateAction<OracleInOrganisation|undefined>>
+	oracle: Oracle|undefined,
+	setOracle: Dispatch<SetStateAction<Oracle|undefined>>
 }
 
 /**
@@ -33,7 +33,7 @@ const OracleStoreContext = createContext<OracleStore|undefined>(undefined);
  * @return {JSX.Element} A context provider component that wraps its children and provides access to the oracle context.
  */
 export function OracleStoreContextProvider({children}: PropsWithChildren) {
-	const [oracle, setOracle] = useState<OracleInOrganisation|undefined>(undefined);
+	const [oracle, setOracle] = useState<Oracle|undefined>(undefined);
 
 	return (
         <OracleStoreContext.Provider value={{ oracle, setOracle }}>

@@ -1,8 +1,8 @@
-import { Card, CardBody, CardHeader, Chip, IconButton, Typography } from '@material-tailwind/react';
 import InputButtonForm from '@/components/form/input-button.form';
-import { AppDataEnum } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import { useApplicationEnum, useUpdateApplication } from '@/contexts/application-store.context';
 import { useSetEditionStatus } from '@/contexts/edition-status.context';
+import LargeCardEdition from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/large-edition-card';
+import { AppDataEnum } from '@/entities/application.entity';
 
 export function MyChip(
 	input: {
@@ -52,20 +52,9 @@ function EnumerationEditionCard(
 		setIsModified(true);
 	}
 
-	return <>
-		<Card className={'border-2 border-gray-800 w-full'}>
-			<CardHeader floated={false}
-						shadow={false}
-						color="transparent"
-						className="m-0 rounded-none rounded-t-md p-2 bg-gray-800 flex justify-between">
-
-				<Typography variant={'h6'} color={'white'}>{enumeration.name}</Typography>
-				<IconButton variant={'filled'} color={'white'} size={'sm'}
-							onClick={() => removeEnum()}>
-					<i className="bi bi-trash" />
-				</IconButton>
-			</CardHeader>
-			<CardBody className={'flex flex-col space-y-4'}>
+	return <LargeCardEdition
+		name={enumeration.name}
+		onRemove={() => removeEnum()}>
 				<InputButtonForm
 					inputLabel={"Name"}
 					buttonLabel={"Add value"}
@@ -83,10 +72,7 @@ function EnumerationEditionCard(
 						})
 					}
 				</div>
-
-			</CardBody>
-		</Card>
-	</>
+	</LargeCardEdition>
 }
 
 export default function EnumerationPanel() {

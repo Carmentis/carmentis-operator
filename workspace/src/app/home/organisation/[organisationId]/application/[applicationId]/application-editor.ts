@@ -1,74 +1,9 @@
-import { GetApplicationResponse } from '@/components/api.hook';
 import * as sdk from '@cmts-dev/carmentis-sdk';
+import { Application, AppDataStruct, AppDataField, AppDataEnum, AppDataMask, AppDataMessage } from '@/entities/application.entity';
 
-export interface AppDataStruct {
-	name: string;
-	properties: AppDataField[];
-}
-
-export enum FieldVisility {
-	public = "public",
-	private = 'private',
-}
-
-export enum PrimitiveType {
-	string = 'string',
-	integer = 'integer',
-	amount = 'amount',
-	file = 'file',
-	binary = 'binary',
-	hash = 'hash',
-	date = 'date',
-	decimal = 'decimal',
-}
-
-
-export interface AppDataEnum {
-	name: string,
-	values: string[]
-}
-
-export interface AppDataMessage {
-	name: string,
-	message: string,
-}
-
-export interface AppDataMask {
-	name: string;
-	regex: string;
-	substitution: string;
-}
-
-
-
-export interface AppDataField {
-	name: string;
-	type: number;
-	maskId?: number;
-}
-
-export interface Application {
-	id: number;
-	name: string;
-	version: number;
-	logoUrl: string;
-	domain: string;
-	createdAt: Date;
-	lastUpdatedAt: Date;
-	published: boolean;
-	isDraft: boolean;
-	publishedAt: Date;
-	data: {
-		fields: AppDataField[];
-		structures: AppDataStruct[];
-		enumerations: AppDataEnum[];
-		messages: AppDataMessage[];
-		masks: AppDataMask[];
-	}
-}
 
 export class ApplicationBuilder {
-	static BuildFromApiResponse( response: GetApplicationResponse ): Application {
+	static BuildFromApiResponse( response: Application ): Application {
 
 		// check that all fields are defined otherwise initialized them
 		const data = response.data;
@@ -217,7 +152,7 @@ export class ApplicationEditor {
 	}
 
 	removeFieldInStructureByName(structureName: string, fieldName: string) {
-		const structure: AppDataStruct = this.application.data.structures.find(
+		const structure: AppDataStruct | undefined = this.application.data.structures.find(
 			s => s.name === structureName
 		);
 		if ( !structure ) throw new Error(`Structure ${structureName} not found`);
@@ -248,13 +183,9 @@ export class ApplicationEditor {
 		const dataEnumerations = this.application.data.enumerations;
 		const enumeration = dataEnumerations.find((e) => e.name === name);
 		if ( enumeration ) {
-			const valueNotExistsYet = enumeration.values.find(v => v.value === value);
+			const valueNotExistsYet = enumeration.values.find(v => v === value);
 			if ( !valueNotExistsYet ) {
-				const id = enumeration.values.length;
-				enumeration.values.push({
-					value: value,
-					id: id
-				})
+				enumeration.values.push(value)
 			} else {
 				console.warn("Value in enum already exists")
 			}
@@ -266,11 +197,7 @@ export class ApplicationEditor {
 		const dataEnumerations = this.application.data.enumerations;
 		const enumeration = dataEnumerations.find((e) => e.name === name);
 		if ( enumeration ) {
-			enumeration.values = enumeration.values.filter(v => v.value !== value);
-			enumeration.values = enumeration.values.map((value,index) => {
-				value.id = index
-				return value
-			})
+			enumeration.values = enumeration.values.filter(v => v !== value);
 		}
 	}
 

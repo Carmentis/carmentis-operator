@@ -1,4 +1,4 @@
-export interface Organisation {
+export type Organisation = {
 	publishedAt: Date;
 	isDraft: boolean;
 	isSandbox: boolean;
@@ -17,3 +17,6 @@ export interface Organisation {
 	version: number;
 	balance: number;
 }
+
+export type OrganisationSummary = Pick<Organisation, 'id' | 'name' | 'logoUrl' | 'isSandbox'>;
+export type OrganisationSummaryList = OrganisationSummary[];

@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { OrganisationEntity } from './organisation.entity';
-import { Transform } from 'class-transformer';
+import { OracleDataType } from '../types/oracle-data.type';
 
 @Entity('oracle')
 export class OracleEntity {
@@ -10,7 +10,7 @@ export class OracleEntity {
 	@Column()
 	name: string;
 
-	@Column({ default: () => '1' })
+	@Column({ default: () => '0' })
 	version: number;
 
 	@Column({ nullable: true })
@@ -34,12 +34,15 @@ export class OracleEntity {
 	@Column({ default: false })
 	published: boolean;
 
-	@Column({ default: false })
-	hasBeenModified: boolean;
+	@Column({ default: true })
+	isDraft: boolean;
 
 	@Column({ nullable: true })
 	publishedAt: Date;
 
 	@Column({type: 'json', default: {}})
-	data: any;
+	data: OracleDataType;
+
+	@Column({nullable: true})
+	virtualBlockchainId: string;
 }

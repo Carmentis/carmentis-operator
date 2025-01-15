@@ -2,12 +2,12 @@
 
 import Skeleton from 'react-loading-skeleton';
 import { Button, Card, CardBody } from '@material-tailwind/react';
-import { DefaultUserIcon } from '@/components/icons/default-user.icon';
-import { AccessRight, useFetchUserDetailsInOrganisation, useUpdateAccessRight } from '@/components/api.hook';
+import { useFetchUserInOrganisation, useUpdateAccessRight } from '@/components/api.hook';
 import SwitchForm from '@/components/form/switch.form';
 import { useToast } from '@/app/layout';
 import { useEffect, useState } from 'react';
 import Avatar from 'boring-avatars';
+import { AccessRight } from '@/entities/user.entity';
 
 export default function UserInOrganisationDetailsPage(
 	input: { organisationId: number, userPublicKey: string, onRemove: (userPublicKey: string) => void }
@@ -16,7 +16,7 @@ export default function UserInOrganisationDetailsPage(
 	const userPublicKey = input.userPublicKey;
 	const notify = useToast();
 	const updateAccessRight = useUpdateAccessRight();
-	const {data, isLoading, error, mutate} = useFetchUserDetailsInOrganisation(
+	const {data, isLoading, error, mutate} = useFetchUserInOrganisation(
 		organisationId,
 		userPublicKey
 	)

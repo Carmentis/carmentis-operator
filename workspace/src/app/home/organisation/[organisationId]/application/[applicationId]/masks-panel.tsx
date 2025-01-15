@@ -1,18 +1,10 @@
 import InputButtonForm from '@/components/form/input-button.form';
-import {
-	AppDataMask,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
-import {
-	Card,
-	CardBody,
-	CardHeader,
-	IconButton,
-	Input,
-	Typography,
-} from '@material-tailwind/react';
+import { Input } from '@material-tailwind/react';
 import { useEffect, useState } from 'react';
 import { useApplicationMask, useUpdateApplication } from '@/contexts/application-store.context';
 import { useSetEditionStatus } from '@/contexts/edition-status.context';
+import SmallCardEdition from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/small-edition-card';
+import { AppDataMask } from '@/entities/application.entity';
 
 function MaskEditionCard(
 	input: {
@@ -60,31 +52,15 @@ function MaskEditionCard(
 		setSubstitution(subsitution);
 	}
 
-	return <Card className={' w-72 shadow-lg'}>
-		<CardHeader floated={false}
-					shadow={false}
-					color="transparent"
-					className="m-0 rounded-none rounded-t-md bg-gray-800 p-2 flex justify-between items-center">
-
-			<Typography variant={'h6'} color={'white'}>{mask.name}</Typography>
-
-			{/* Icons */}
-			<div id="icons" className={'flex gap-2'}>
-				<IconButton variant={'filled'} color={'white'} size={'sm'}
-							onClick={() => removeMask()}>
-					<i className="bi bi-trash" />
-				</IconButton>
-			</div>
-		</CardHeader>
-		<CardBody className={'flex flex-col space-y-3'}>
+	return <SmallCardEdition name={mask.name} onRemove={removeMask}>
 			<Input variant={'outlined'} size={'md'} label={'Name'}
 				   value={name} onChange={(e) => updateName(e.target.value)} />
 			<Input variant={'outlined'} size={'md'} label={'Expression'}
 				   value={expression} onChange={(e) => updateExpression(e.target.value)} />
 			<Input variant={'outlined'} size={'md'} label={'Subsitution'}
 				   value={substitution} onChange={(e) => updateSubsitution(e.target.value)} />
-		</CardBody>
-	</Card>;
+
+	</SmallCardEdition>;
 }
 
 export default function MasksPanel() {

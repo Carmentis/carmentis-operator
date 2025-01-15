@@ -1,17 +1,11 @@
 'use client';
 
 import {
-	useFetchOrganisationStats, useOrganisationPublication,
+	useFetchOrganisationStats,
+	useOrganisationPublication,
 	useOrganisationUpdateApi,
 } from '@/components/api.hook';
-import { useParams } from 'next/navigation';
-import {
-	Button,
-	Card,
-	CardBody, Chip,
-	IconButton, Input,
-	Typography,
-} from '@material-tailwind/react';
+import { Button, Card, CardBody, Chip, IconButton, Input, Typography } from '@material-tailwind/react';
 import Avatar from 'boring-avatars';
 import Skeleton from 'react-loading-skeleton';
 import RecentActivities from '@/app/home/organisation/[organisationId]/activities';
@@ -22,15 +16,10 @@ import { useOrganisationMutationContext } from '@/contexts/organisation-mutation
 import WelcomeCards from '@/components/welcome-cards.component';
 
 
-
-
-
 /**
  * The WelcomeCards function fetches organisation statistics and displays them in a set of styled cards.
  * Each card represents key metrics such as Balance, Applications, Oracles, and Users.
  * If data is still loading, a skeleton loader is displayed.
- *
- * @return {JSX.Element} A React component displaying organisation statistics or a loading skeleton.
  */
 function OverviewOrganisationWelcomeCards() {
 	const organisation = useOrganisationContext();
@@ -206,7 +195,6 @@ function OrganisationEdition() {
 
 export default function Home() {
 	const organisation = useOrganisationContext();
-	const mutation = useOrganisationMutationContext();
 
 	return (
 		<>
@@ -230,10 +218,7 @@ export default function Home() {
 
 				<div className="flex space-x-4">
 					<div className="w-8/12">
-						<OrganisationEdition
-							organisation={organisation}
-							refreshOrganisation={() => mutation.mutate()}
-						/>
+						<OrganisationEdition />
 					</div>
 					<div id="activities" className={"w-4/12"}>
 						<RecentActivities />

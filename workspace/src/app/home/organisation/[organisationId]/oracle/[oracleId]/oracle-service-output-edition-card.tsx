@@ -1,8 +1,10 @@
-import { OracleServiceOutputField } from '@/components/api.hook';
-import { useOracle, useSetOracle } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/page';
+
+import { useOracle, useOracleEditor } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/data-access-layer';
+
 import {
-	FieldEditionCard
+	FieldEditionCard,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
+import { OracleServiceOutputField } from '@/entities/oracle.entity';
 
 export function OracleServiceOutputFieldEditionCard(
 	input: {
@@ -12,10 +14,10 @@ export function OracleServiceOutputFieldEditionCard(
 	}
 ) {
 	const oracle = useOracle();
-	const setOracle = useSetOracle();
+	const setOracle = useOracleEditor();
 	const field = input.field;
 
-	function refreshType(refreshedField) {
+	function refreshType(refreshedField: OracleServiceOutputField) {
 		setOracle(e => e.updateServiceOutput(
 			input.serviceName,
 			field.name,

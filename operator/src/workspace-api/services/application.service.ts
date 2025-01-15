@@ -5,8 +5,10 @@ import { Repository } from 'typeorm';
 import {ApplicationEntity} from "../entities/application.entity";
 import {plainToInstance} from "class-transformer";
 import { ImportApplicationDto } from '../dto/import-application.dto';
-import * as sdk from '@cmts-dev/carmentis-sdk';
 import ChainService from './chain.service';
+
+
+
 
 @Injectable()
 export class ApplicationService {
@@ -135,7 +137,7 @@ export class ApplicationService {
             application.virtualBlockchainId = mb.hash;
         }
 
-        await this.applicationRepository.save(application);
+        return await this.applicationRepository.save(application);
     }
 
     private async getOrganisationByApplicationId(applicationId: number) {

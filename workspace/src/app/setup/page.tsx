@@ -1,7 +1,7 @@
 'use client';
 
-import {FormEvent, useState} from "react";
-import Spinner from "@/components/spinner";
+import { FormEvent, useState } from 'react';
+import Spinner from '@/components/spinner';
 import { useRouter } from 'next/navigation';
 
 export default function SetupPage() {

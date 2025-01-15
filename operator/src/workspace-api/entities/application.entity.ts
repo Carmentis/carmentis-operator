@@ -1,10 +1,7 @@
 import {Column, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 import {OrganisationEntity} from "./organisation.entity";
-import {Transform} from "class-transformer";
+import { ApplicationDataType } from '../types/application-data.type';
 
-export interface ApplicationData {
-
-}
 
 @Entity("application")
 export class ApplicationEntity {
@@ -51,32 +48,5 @@ export class ApplicationEntity {
     isDraft: boolean;
 
     @Column({ type: 'json'})
-    data: {
-        fields?: {
-            name: string;
-            type: number;
-            maskId?: string;
-        }[];
-        structures?: {
-            name: string;
-            properties: {
-                name: string;
-                type: number;
-                maskId?: string;
-            }[];
-        }[];
-        enumerations?: {
-            name: string,
-            values: string[]
-        }[];
-        messages?: {
-            name: string,
-            content: string,
-        }[];
-        masks?: {
-            name: string;
-            regex: string;
-            substitution: string;
-        }[];
-    };
+    data: ApplicationDataType;
 }

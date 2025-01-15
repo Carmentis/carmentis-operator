@@ -3,9 +3,11 @@
 import {
 	Card,
 	CardBody,
-	Timeline, TimelineBody,
+	Timeline,
+	TimelineBody,
 	TimelineConnector,
-	TimelineHeader, TimelineIcon,
+	TimelineHeader,
+	TimelineIcon,
 	TimelineItem,
 	Typography,
 } from '@material-tailwind/react';
@@ -15,7 +17,7 @@ import { useOrganisationContext } from '@/contexts/organisation-store.context';
 
 export default function RecentActivities() {
 	// Extracted constant for formatting options
-	const DATE_FORMAT_OPTIONS = {
+	const DATE_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
 		year: 'numeric',
 		month: 'short',
 		day: 'numeric',
@@ -93,7 +95,7 @@ export default function RecentActivities() {
 							</Typography>
 						</TimelineHeader>
 						<TimelineBody className="pb-8">
-							<Typography variant="small" color="gary" className="font-normal text-gray-600">
+							<Typography variant="small"  className="font-normal text-gray-600">
 								{getLogDescription(log)}
 							</Typography>
 						</TimelineBody>

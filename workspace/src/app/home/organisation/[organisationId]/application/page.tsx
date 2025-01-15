@@ -5,27 +5,30 @@ import { SearchInputForm } from '@/components/form/search-input.form';
 import { BaseSyntheticEvent, useRef, useState } from 'react';
 import SimpleTextModalComponent from '@/components/modals/simple-text-modal.component';
 import {
-	CreateApplicationResponse,
 	useApplicationCreation,
-	useApplicationImport, useFetchOrganisationApplications,
+	useApplicationImport,
+	useFetchOrganisationApplications,
 } from '@/components/api.hook';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { DynamicAppIcon } from '@/components/icons/default-user.icon';
 import { useToast } from '@/app/layout';
+import { useOrganisationContext } from '@/contexts/organisation-store.context';
+import Skeleton from 'react-loading-skeleton';
+import { ApplicationSummary } from '@/entities/application.entity';
 
 /**
  * Component representing a horizontal card for an application.
  */
 function ApplicationHorizontalCard({ application, className }: {
-	application: { id: number; name: string; logoUrl: string };
+	application: ApplicationSummary;
 	className?: string;
 }) {
 	return (
 		<Card
 			className={`w-72 h-72 hover:shadow-xl transition-shadow cursor-pointer ${className} items-center justify-center`}
 		>
-			<CardBody className={"flex  flex-col justify-center items-center content-center w-full h-full"}>
+			<CardBody>
 					<DynamicAppIcon src={application.logoUrl} className={"mb-8"}/>
 					<p>{application.name}</p>
 			</CardBody>
@@ -38,7 +41,7 @@ function ApplicationHorizontalCard({ application, className }: {
  */
 function ListOfApplicationsComponent({ organisationId, data }: {
 	organisationId: number;
-	data: { id: number; name: string }[];
+	data: ApplicationSummary[];
 }) {
 	return (
 		<div className="flex flex-wrap gap-4">
@@ -59,38 +62,31 @@ export default function ListOfApplicationsPage() {
 	const [isShowingNameForm, setIsShowingNameForm] = useState(false);
 	const createApplication = useApplicationCreation();
 	const importApplication = useApplicationImport();
-	const params = useParams<{ organisationId: number }>();
-	const organisationId = params.organisationId;
+	const organisation = useOrganisationContext();
+	const organisationId = organisation.id;
 	const notify = useToast();
 	const router = useRouter();
 	const fileInputRef = useRef(null);
 
-	const { data, mutate } = useFetchOrganisationApplications(params.organisationId);
+	const { data, isLoading, mutate } = useFetchOrganisationApplications(organisationId);
 
-	const listOfApplicationsContent = data ? (
-		<ListOfApplicationsComponent data={data} organisationId={params.organisationId} />
-	) : (
-		<></>
-	);
 
 
 	function handleImportFileButtonClick() {
+		// @ts-expect-error Input file is undefined by default
 		fileInputRef.current.click();
 	}
 
-	/**
-	 * This function handles the import of files
-	 * @param event
-	 */
+
 	function handleImportFile(event: BaseSyntheticEvent) {
 		const file = event.target.files[0];
 		if (!file) return;
 		const reader = new FileReader();
 		reader.readAsText(file);
 		reader.onloadend = () => {
-			const content = reader.result;
+			const content = reader.result as string;
 			importApplication(organisationId, content, {
-				onSuccessData: (application: CreateApplicationResponse) => {
+				onSuccessData: (application: ApplicationSummary) => {
 					notify.info(`Application "${application.name}" imported successfully.`);
 					mutate()
 				},
@@ -108,7 +104,7 @@ export default function ListOfApplicationsPage() {
 	 * @param name - The name of the new application.
 	 */
 	function submitApplicationNameCreation(name: string) {
-		createApplication(params.organisationId, name, {
+		createApplication(organisationId, name, {
 			onSuccessData: (data) => {
 				notify.info(`Application ${data.name} created`);
 				router.push(
@@ -120,11 +116,21 @@ export default function ListOfApplicationsPage() {
 		setIsShowingNameForm(false);
 	}
 
+
+
+	// render while its loading
+	if (!data || isLoading) {
+		return <Skeleton/>
+	}
+
+
+
+
 	return (
 		<div className="space-y-12">
 			<Card>
-				<CardBody className="p-3">
-					<div className="flex justify-between">
+				<CardBody >
+					<div className="flex justify-between mb-4">
 						<Typography
 							variant="h5"
 							color="blue-gray"
@@ -143,19 +149,17 @@ export default function ListOfApplicationsPage() {
 							onChange={handleImportFile}
 						/>
 					</div>
+						<SearchInputForm searchFilter={search} setSearchFilter={setSearch} />
+
 				</CardBody>
 			</Card>
 
-			<Card>
-				<CardBody>
-					<Typography variant="h5" color="blue-gray" className="mb-4">
-						Search an application
-					</Typography>
-					<SearchInputForm searchFilter={search} setSearchFilter={setSearch} />
-				</CardBody>
-			</Card>
 
-			{listOfApplicationsContent}
+
+			<ListOfApplicationsComponent
+				data={data}
+				organisationId={organisationId}
+			/>
 
 			{isShowingNameForm && (
 				<SimpleTextModalComponent

@@ -1,8 +1,10 @@
-import { OracleStructureField } from '@/components/api.hook';
-import { useOracle, useSetOracle } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/page';
+
+import { useOracle, useOracleEditor } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/data-access-layer';
+
 import {
-	FieldEditionCard
+	FieldEditionCard,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
+import { OracleStructureField } from '@/entities/oracle.entity';
 
 export default function OracleStructureFieldEditionCard(
 	input: {
@@ -17,10 +19,10 @@ export default function OracleStructureFieldEditionCard(
 
 	const structureName = input.structureName;
 	const oracle = useOracle();
-	const setOracle = useSetOracle();
+	const setOracle = useOracleEditor();
 	const field = input.field;
 
-	function refreshType(refreshedField) {
+	function refreshType(refreshedField: OracleStructureField) {
 		setOracle(e => e.updateStructureField(
 			structureName,
 			field.name,

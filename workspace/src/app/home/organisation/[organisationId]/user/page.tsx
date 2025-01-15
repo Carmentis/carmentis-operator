@@ -2,23 +2,21 @@
 
 import { useParams } from 'next/navigation';
 import {
-	CreateUserResponse,
-	fetchUsersInOrganisation, useFetchUsersInOrganisation, UserOrganisationInsertionResponse,
+	useFetchUsersInOrganisation,
 	useUserCreation,
-	useUserOrganisationInsertion, useUserOrganisationRemoval,
+	useUserOrganisationInsertion,
+	useUserOrganisationRemoval,
 } from '@/components/api.hook';
 import { FormEvent, useState } from 'react';
-import { UserSearchResult } from '@/entities/user.entity';
+import { UserSearchResult, UserSummary } from '@/entities/user.entity';
 import Skeleton from 'react-loading-skeleton';
 import { Button, Card, CardBody, Input, Typography } from '@material-tailwind/react';
 import { SearchInputForm } from '@/components/form/search-input.form';
-import { DefaultUserIcon } from '@/components/icons/default-user.icon';
 import { SearchUserInputComponent } from '@/components/form/search-user-form';
-import Link from 'next/link';
 import { useToast } from '@/app/layout';
 import UserInOrganisationDetailsPage from '@/app/home/organisation/[organisationId]/user/user-edition-component';
 import Avatar from 'boring-avatars';
-
+import { useOrganisationContext } from '@/contexts/organisation-store.context';
 
 
 function UserHorizontalCard(input: { user: UserSearchResult, onClick: () => void, className?: string }) {
@@ -56,18 +54,20 @@ function InsertExistingUserPanel(
 	</Card>
 }
 
+
 function InsertNewUserPanel(
-	input: { onUserAdded: (user: UserSearchResult) => void },
+	input: { onUserAdded: (user: UserSummary) => void },
 ) {
 
 	const notify = useToast();
 	const createUserHook = useUserCreation();
-	const params = useParams();
-	const organisationId = parseInt(params.organisationId);
+	const organisation = useOrganisationContext();
+	const organisationId = organisation.id;
 	const addUserInOrganisationHook = useUserOrganisationInsertion();
 	const [publicKey, setPublicKey] = useState<string>();
 	const [firstname, setFirstname] = useState<string>();
 	const [lastname, setLastname] = useState<string>();
+
 
 
 	function createUser(event: FormEvent) {
@@ -75,7 +75,7 @@ function InsertNewUserPanel(
 		if ( !publicKey || !firstname || !lastname ) {
 			notify.error('Cannot add user: Missing fields');
 		} else {
-			createUserHook(publicKey, firstname, lastname, {
+			createUserHook(publicKey, firstname, lastname, false, {
 				onSuccessData: addCreatedUsedInOrganisation,
 				onError: notify.error,
 				onEnd: () => {
@@ -88,7 +88,7 @@ function InsertNewUserPanel(
 	}
 
 
-	function addCreatedUsedInOrganisation( user: CreateUserResponse ) {
+	function addCreatedUsedInOrganisation( user: UserSummary ) {
 		addUserInOrganisationHook(organisationId, user.publicKey, {
 			onSuccess: () => {
 				notify.info(`User ${user.publicKey} created and added successfully`)
@@ -118,7 +118,7 @@ export default function UserPage() {
 	const insertExistingUserInOrganisation = useUserOrganisationInsertion();
 	const removeUserHook = useUserOrganisationRemoval();
 
-	const { data, error, isLoading, mutate } = useFetchUsersInOrganisation(organisationId);
+	const { data, isLoading, mutate } = useFetchUsersInOrganisation(organisationId);
 	const [search, setSearch] = useState('');
 	const notify = useToast();
 	const [chosenUserPublicKey, setChosenUserPublicKey] = useState<string|undefined>(undefined);
@@ -132,7 +132,7 @@ export default function UserPage() {
 	 */
 	function insertExistingUser(user: UserSearchResult) {
 		insertExistingUserInOrganisation(organisationId, user.publicKey, {
-			onSuccessData: (user: UserOrganisationInsertionResponse) => {
+			onSuccessData: (user) => {
 				notify.info(`User "${user.firstname} ${user.lastname}" added successfully.`);
 				mutate()
 			},
@@ -148,11 +148,12 @@ export default function UserPage() {
 
 	function removeUserFromOrganisation(userPublicKey: string) {
 		removeUserHook(organisationId, userPublicKey, {
-			onSuccessData: () => {
-				mutate()
-				notify.info(`User ${userPublicKey} removed from organisation`)
+			onSuccess: () => {
+				mutate();
 				setChosenUserPublicKey(undefined)
-			}
+				notify.info(`User ${userPublicKey} removed from organisation`)
+			},
+			onError: notify.error
 		})
 	}
 

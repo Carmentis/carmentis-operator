@@ -1,7 +1,7 @@
 import { Button, Input } from '@material-tailwind/react';
 import { useState } from 'react';
 
-	export default function InputButtonForm(
+export default function InputButtonForm(
 	input: {
 		inputLabel: string;
 		buttonLabel: string;
@@ -23,7 +23,7 @@ import { useState } from 'react';
 				   onChange={e => setValue(e.target.value)}
 				   className={'w-14'} />
 		</div>
-		<Button size={'md'} color={'default'} onClick={onClick}>
+		<Button size={'md'} onClick={onClick}>
 			{input.buttonLabel}
 		</Button>
 	</div>

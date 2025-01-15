@@ -1,8 +1,8 @@
-import { HttpCode, HttpException, HttpStatus, Injectable, NotImplementedException, OnModuleInit } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable,  OnModuleInit } from '@nestjs/common';
 import * as sdk from "@cmts-dev/carmentis-sdk";
 import { ApplicationEntity } from '../entities/application.entity';
 import { OrganisationEntity } from '../entities/organisation.entity';
-import { OrganisationService } from './organisation.service';
+import { OracleEntity } from '../entities/oracle.entity';
 
 
 /**
@@ -37,7 +37,6 @@ export default class ChainService implements OnModuleInit{
 	) : Promise<MicroBlock> {
 		// TODO remove the hardcoded node
 		// initialise the blockchain sdk
-		sdk.blockchain.blockchainCore.setNode("http://127.0.0.1:3000");
 		sdk.blockchain.blockchainCore.setUser(
 			sdk.blockchain.ROLES.OPERATOR,
 			organisation.privateSignatureKey
@@ -56,6 +55,12 @@ export default class ChainService implements OnModuleInit{
 			await organisationVb.addPublicKey({
 				publicKey: organisation.publicSignatureKey
 			});
+			// TODO add operator server
+			/*
+			await vc.addOperatorServer({
+				...
+			});
+			 */
 		}
 
 
@@ -103,12 +108,7 @@ export default class ChainService implements OnModuleInit{
 			await vc.addDeclaration({
 				organizationId: organisation.virtualBlockchainId,
 			});
-			// TODO add operator server
-			/*
-			await vc.addOperatorServer({
-				...
-			});
-			 */
+
 		} else {
 			console.log("Loading existing application", application);
 			await vc.load(application.virtualBlockchainId);
@@ -140,4 +140,47 @@ export default class ChainService implements OnModuleInit{
 	}
 
 
+	async publishOracle(organisation: OrganisationEntity, oracle: OracleEntity) {
+		// TODO remove the hardcoded node
+		// initialise the blockchain sdk
+		sdk.blockchain.blockchainCore.setUser(
+			sdk.blockchain.ROLES.OPERATOR,
+			organisation.privateSignatureKey
+		);
+
+		/*
+		const vc = new sdk.blockchain.oracleVb();
+		if ( !oracle.virtualBlockchainId ) {
+			console.log("Creating new oracle", oracle, organisation);
+			await vc.addDeclaration({
+				organizationId: organisation.virtualBlockchainId,
+			});
+		} else {
+			console.log("Loading existing oracle", oracle);
+			await vc.load(oracle.virtualBlockchainId);
+		}
+
+		await vc.addDescription( {
+			name: oracle.name,
+			logoUrl: oracle.logoUrl || '',
+			rootDomain: oracle.domain || '',
+		})
+
+		// merge the default empty application with the provided one
+		await vc.addDefinition({
+			version: oracle.version + 1, // we increment the version number
+			definition: {
+				services: [],
+				structures: [],
+				masks: [],
+				enumerations: [],
+				...oracle.data // replace default empty data with the application data if any
+			}
+		});
+
+		await vc.sign();
+		return vc.publish()
+
+		 */
+	}
 }

@@ -28,6 +28,7 @@ import { application } from 'express';
 import { OracleEntity } from '../entities/oracle.entity';
 import { OracleService } from '../services/oracle.service';
 import { UpdateOrganisationDto } from '../dto/organisation-update.dto';
+import { UpdateOracleDto } from '../dto/update-oracle.dto';
 
 
 
@@ -173,6 +174,30 @@ export class OrganisationController {
                 organisationId,
                 AuditOperation.APPLICATION_EDITION,
                 { name: application.name }
+            )
+        }
+    }
+
+    /**
+     * Update an roacle
+     *
+     */
+    @Put(":organisationId/oracle/:oracleId")
+    async updateOracleInOrganisation(
+        @Param('organisationId') organisationId: number,
+        @Param('oracleId') oracleId: number,
+        @Body() oracleDto: UpdateOracleDto
+    ) {
+        const oracle: OracleEntity = plainToInstance(OracleEntity, oracleDto);
+        console.log("oracle to update", oracleDto)
+        oracle.isDraft = true;
+        const success = await this.oracleService.update(oracleId, oracle);
+        if ( success ) {
+            this.auditService.log(
+                EntityType.ORACLE,
+                organisationId,
+                AuditOperation.ORGANISATION_EDITION,
+                { name: oracle.name }
             )
         }
     }
@@ -466,6 +491,21 @@ export class OrganisationController {
             throw new InternalServerErrorException();
         }
     }
+
+    @Post(":organisationId/oracle/:oracleId/publish")
+    async publishOracle(
+        @Param('organisationId') organisationId: number,
+        @Param('oracleID') oracleId: number,
+    ) {
+        try {
+            await this.oracleService.publishOracle(oracleId);
+        } catch (e) {
+            console.error(e)
+            throw new InternalServerErrorException();
+        }
+    }
+
+
 
 
 

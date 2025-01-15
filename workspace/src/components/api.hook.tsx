@@ -1,32 +1,52 @@
-import { useFetch } from '@/components/fetcher.hook';
-import { string } from 'postcss-selector-parser';
-import User, { UserSearchResult } from '@/entities/user.entity';
-import { number } from 'style-value-types';
-import {
-	Application,
-	AppDataField, FieldVisility,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
+import User, { AccessRight, UserSummary, UserSummaryList } from '@/entities/user.entity';
 import useSWR from 'swr';
-import { Organisation } from '@/entities/organisation.entity';
+import { Organisation, OrganisationSummary, OrganisationSummaryList } from '@/entities/organisation.entity';
+import { Application, ApplicationSummary, ApplicationSummaryList } from '@/entities/application.entity';
+import { Oracle, OracleSummary, OracleSummaryList } from '@/entities/oracle.entity';
 
-export interface AccessRight {
-	"id": number,
-	"isAdmin": boolean,
-	"editUsers": boolean,
-	"editOracles": boolean,
-	"editApplications": boolean,
 
+export type IdentifiedEntity = {
+	id: number;
 }
 
 
-export type UserWithAccessRights = User & { accessRights: AccessRight[] }
-
-export interface UserInOrganisationResponse  {
-	firstname: string;
-	lastname: string;
-	publicKey: string;
-	"isAdmin": boolean,
+export type Field = {
+	name: string,
+	type: number,
+	maskId?: number
 }
+
+export type GlobalSearchResponse = {
+	users: UserSummary[];
+	oracles: OracleSummary[];
+	applications: ApplicationSummary[];
+	organisations: OrganisationSummary[];
+}
+
+
+export interface OrganisationStats {
+	applicationsNumber: number
+	oraclesNumber: number
+	usersNumber: number
+	balance: number
+}
+
+
+export interface OrganisationLog {
+	operation: string,
+	entityType: string,
+	timestamp: string,
+	relatedOrganisationId: number,
+	data: {name: string}
+}
+
+export type AuthenticatedUserDetailsResponse = {
+	publicKey: string,
+	firstname: string,
+	lastname: string,
+	isAdmin: boolean,
+}
+
 
 
 export interface APICallbacks<T> {
@@ -64,30 +84,25 @@ export async function CallApi<T>(
 		})
 }
 
-export type GetOrganisationResponse = Organisation;
-export function fetchOrganisation(organisationId: number) {
-	return useWorkspaceApi<GetOrganisationResponse>(`/organisation/${organisationId}`);
+
+export class WorkspaceApiError extends Error {
+	constructor(
+		readonly message: string,
+		readonly statusCode: number
+	) {
+		super(`Workspace API Error[${statusCode}]: ${message}`);
+	}
 }
 
-export type GetApplicationResponse = Application;
-export const fetchApplicationInOrganisation = ( organisationId: number, applicationId: number ) => {
-	return useWorkspaceApi<GetApplicationResponse>(
-		`/organisation/${organisationId}/application/${applicationId}`,
-	);
+export async function fetcherJSON<T>(url: string) : Promise<T> {
+	const res = await fetch(url)
+
+	if (!res.ok) {
+		throw new WorkspaceApiError(res.statusText, res.status);
+	}
+
+	return res.json()
 }
-
-
-export function fetchUsersInOrganisation(organisationId: number)  {
-	return useFetch<UserInOrganisationResponse[]>(`/organisation/${organisationId}/user`,{
-		headers: { "Accept": "application/json", "Content-Type": "application/json" }
-	});
-}
-
-
-export function fetcherJSON<T>(url: string) : Promise<T> {
-	return fetch(url).then((res) => res.json())
-}
-
 
 /**
  * A custom hook that facilitates data fetching from a workspace API using the SWR library.
@@ -102,62 +117,54 @@ export function useWorkspaceApi<T>( url: string | undefined) {
 	);
 }
 
+
+
+export function useFetchOrganisation(organisationId: number) {
+	return useWorkspaceApi<Organisation>(`/organisation/${organisationId}`);
+}
+
+export const useFetchApplicationInOrganisation = (organisationId: number, applicationId: number ) => {
+	return useWorkspaceApi<Application>(
+		`/organisation/${organisationId}/application/${applicationId}`,
+	);
+}
+
 export const useFetchUsersInOrganisation = (organisationId: number) => {
-	return useWorkspaceApi<UserInOrganisationResponse[]>(
+	return useWorkspaceApi<UserSummaryList>(
 		`/organisation/${organisationId}/user`
 	);
 }
 
-export type OrganisationsOfUserResponse = {
-	id: number,
-	name: string,
-}
+
 export const useFetchOrganisationsOfUser= (userPublicKey: string | undefined) => {
-	return useWorkspaceApi<OrganisationsOfUserResponse[]>(
+	return useWorkspaceApi<OrganisationSummaryList>(
 		userPublicKey ? `/user/${userPublicKey}/organisation` : undefined
 	);
 }
 
 
-export type AuthenticatedUserDetailsResponse = {
-	publicKey: string,
-	firstname: string,
-	lastname: string,
-	isAdmin: boolean,
-}
-export const useFetchCurrentUserDetails = () => {
-	return useWorkspaceApi<AuthenticatedUserDetailsResponse>(
+
+export const useFetchAuthenticatedUser = () => {
+	return useWorkspaceApi<UserSummary>(
 		`/user/current`
 	);
 }
 
 
-export function useFetchUserDetailsInOrganisation(organisationId: number, userPublicKey: string)  {
-	return useWorkspaceApi<UserInOrganisationDetailsResponse>(`/organisation/${organisationId}/user/${userPublicKey}`);
+export function useFetchUserInOrganisation(organisationId: number, userPublicKey: string)  {
+	return useWorkspaceApi<User>(`/organisation/${organisationId}/user/${userPublicKey}`);
 }
 
 export function useFetchOrganisationApplications( organisationId: number )  {
-	return useWorkspaceApi<{id: number, name: string}>(`/organisation/${organisationId}/application`);
+	return useWorkspaceApi<ApplicationSummary[]>(`/organisation/${organisationId}/application`);
 }
 
 
-export interface OrganisationStats {
-	applicationsNumber: number
-	oraclesNumber: number
-	usersNumber: number
-	balance: number
-}
 export function useFetchOrganisationStats( organisationId: number )  {
 	return useWorkspaceApi<OrganisationStats>(`/organisation/${organisationId}/stats`);
 }
 
-export interface OrganisationLog {
-	operation: string,
-	entityType: string,
-	timestamp: string,
-	relatedOrganisationId: number,
-	data: any
-}
+
 export function useFetchOrganisationLogs( organisationId: number )  {
 	return useWorkspaceApi<OrganisationLog[]>(`/organisation/${organisationId}/logs`);
 }
@@ -165,56 +172,24 @@ export function useFetchOrganisationLogs( organisationId: number )  {
 
 
 export function useApplicationDeletionApi() {
-	return async (organisationId: number, applicationId: number, cb: APICallbacks<GetApplicationResponse> | undefined) => {
+	return async (organisationId: number, applicationId: number, cb: APICallbacks<ApplicationSummary> | undefined) => {
 		return CallApi(`/organisation/${organisationId}/application/${applicationId}`, cb, {
 			method: "DELETE",
 		});
 	};
 }
 
-export interface UserInOrganisationDetailsResponse {
-	publicKey: string;
-	firstname: string;
-	lastname: string;
-	isAdmin: boolean;
-	accessRights: AccessRight[];
-}
 
-
-
-
-
-export type ListOfOrganisationsResponse = {
-	id: number
-	name: string,
-	logoUrl: string,
-}[]
 export function useAdminListOfOrganisationsApi() {
-	return useWorkspaceApi<ListOfOrganisationsResponse>(
+	return useWorkspaceApi<OrganisationSummary[]>(
 		`/admin/organisation`
 	);
 }
 
 
 
-/**
- * This function returns the organisation in which the user is involved.
- */
-export function fetchOrganisationsOfUser() {
-	return useFetch<ListOfOrganisationsResponse>(`/organisation`,{
-		headers: { "Accept": "application/json", "Content-Type": "application/json" }
-	});
-}
-
-export function fetchOrganisationApplications( organisationId: number )  {
-	return useFetch<{id: number, name: string}>(`/organisation/${organisationId}/application`,{
-		headers: { "Accept": "application/json", "Content-Type": "application/json" }
-	});
-}
-
-
 export function useOrganisationCreation() {
-	return async (name: string, cb: APICallbacks<{id: number}> | undefined) => {
+	return async (name: string, cb: APICallbacks<IdentifiedEntity> | undefined) => {
 		return CallApi(`/organisation`, cb, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -223,9 +198,17 @@ export function useOrganisationCreation() {
 	};
 }
 
-export type CreateUserResponse = UserInOrganisationDetailsResponse;
+export function useSandboxCreationApi() {
+	return async (cb: APICallbacks<IdentifiedEntity> | undefined) => {
+		return CallApi(`/sandbox`, cb, {
+			method: "POST",
+		});
+	};
+}
+
+
 export function useUserCreation() {
-	return async (publicKey: string, firstname: string, lastname: string, isAdmin: boolean, cb: APICallbacks<CreateUserResponse> | undefined) => {
+	return async (publicKey: string, firstname: string, lastname: string, isAdmin: boolean, cb: APICallbacks<UserSummary> | undefined) => {
 		return CallApi(`/user`, cb, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -239,7 +222,7 @@ export function useUserCreation() {
 
 
 export function useApplicationUpdateApi() {
-	return async (organisationId : number, application: Application, cb: APICallbacks<{id: number}> | undefined) => {
+	return async (organisationId : number, application: Application, cb: APICallbacks<IdentifiedEntity> | undefined) => {
 		return CallApi(`/organisation/${organisationId}/application/${application.id}`, cb, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
@@ -274,9 +257,8 @@ export function useApplicationPublicationApi() {
 	};
 }
 
-export type CreateApplicationResponse = Application;
 export function useApplicationCreation() {
-	return async (organisationId: number, applicationName: string, cb: APICallbacks<CreateApplicationResponse> | undefined) => {
+	return async (organisationId: number, applicationName: string, cb: APICallbacks<Application> | undefined) => {
 		return CallApi(`/organisation/${organisationId}/application`, cb, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -288,7 +270,7 @@ export function useApplicationCreation() {
 
 
 export function useApplicationImport() {
-	return async (organisationId: number, application: string, cb: APICallbacks<CreateApplicationResponse> | undefined) => {
+	return async (organisationId: number, application: string, cb: APICallbacks<ApplicationSummary> | undefined) => {
 		return CallApi(`/organisation/${organisationId}/application/import`, cb, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -319,30 +301,9 @@ export function useUserDeletion() {
 	};
 }
 
-export function useAdminCreation() {
-	return async (publicKey: string, firstname: string, lastname: string, cb: APICallbacks<CreateUserResponse> | undefined) => {
-		return CallApi(`/admin/admin`, cb, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ publicKey, firstname, lastname }),
-		});
-	};
-}
 
-
-export function useAdminDeletion() {
-	return async (publicKey: string, cb: APICallbacks<void> | undefined) => {
-		return CallApi(`/admin/admin`, cb, {
-			method: "DELETE",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ publicKey }),
-		});
-	};
-}
-
-export type UserOrganisationInsertionResponse = UserSearchResult;
 export function useUserOrganisationInsertion() {
-	return async (organisationId: number, userPublicKey: string, cb: APICallbacks<UserOrganisationInsertionResponse> | undefined) => {
+	return async (organisationId: number, userPublicKey: string, cb: APICallbacks<UserSummary> | undefined) => {
 		return CallApi(`/organisation/${organisationId}/user`, cb, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -362,10 +323,6 @@ export function useUserOrganisationRemoval() {
 }
 
 
-
-export type IdentifiedEntity = {
-	id: number;
-}
 export function useOracleCreation() {
 	return async (organisationId: number, name: string, cb: APICallbacks<IdentifiedEntity> | undefined) => {
 		return CallApi(`/organisation/${organisationId}/oracle`, cb, {
@@ -384,12 +341,7 @@ export function useOracleDeletion() {
 	};
 }
 
-export type GlobalSearchResponse = {
-	users: { publicKey: string, firstname: string, lastname: string }[];
-	oracles: { id: number, name: string }[];
-	applications: { id: number, name: string }[];
-	organisations: { id: number, name: string }[];
-}
+
 export function useCallGlobalSearchApi() {
 	return async (organisationId : number, query: string, cb: APICallbacks<GlobalSearchResponse> | undefined) => {
 		return CallApi(`/organisation/${organisationId}/search?query=${query}`, cb, {
@@ -400,65 +352,19 @@ export function useCallGlobalSearchApi() {
 
 
 
-export type OracleAbstract = IdentifiedEntity & {
-	name: string;
-}
-export type OracleAbstractInOrganisationResponse = OracleAbstract[]
-export function useFetchOraclesInOrganisation( organisationId: number ) {
-	return useWorkspaceApi<OracleAbstractInOrganisationResponse>(`/organisation/${organisationId}/oracle`);
+
+export function useFetchOraclesSummaryInOrganisation(organisationId: number ) {
+	return useWorkspaceApi<OracleSummary[]>(`/organisation/${organisationId}/oracle`);
 }
 
 
-export type OracleServiceInputField = {
-	name: string;
-	type: number;
-};
 
-export type OracleServiceOutputField = {
-	name: string;
-	type: number;
-}
-
-export type OracleStructureField = OracleServiceOutputField;
-export type OracleMask = {
-	name: string;
-	regex: string;
-	substitution: string;
-};
-export type OracleEnumeration = {
-	name: string;
-	values: string[]
-};
-export type OracleStructure = {
-	name: string;
-	properties: OracleStructureField[];
-};
-
-export type OracleService = {
-	name: string;
-	request: OracleServiceInputField[],
-	answer:  OracleServiceOutputField[]
-}
-
-
-export type OracleInOrganisation = OracleAbstract & {
-	lastUpdate: Date;
-	published: boolean;
-	data: {
-		services: OracleService[],
-		structures: OracleStructure[];
-		enumerations: OracleEnumeration[];
-		masks: OracleMask[]
-
-	};
-}
-
-export function useFetchFullOracleInOrganisation( organisationId: number, oracleId: number ) {
-	return useWorkspaceApi<OracleInOrganisation>(`/organisation/${organisationId}/oracle/${oracleId}`);
+export function useFetchOracleInOrganisation(organisationId: number, oracleId: number ) {
+	return useWorkspaceApi<Oracle>(`/organisation/${organisationId}/oracle/${oracleId}`);
 }
 
 export function useOracleUpdate() {
-	return async (organisationId: number, oracle: OracleInOrganisation, cb: APICallbacks<void> | undefined) => {
+	return async (organisationId: number, oracle: Oracle, cb: APICallbacks<void> | undefined) => {
 		return CallApi(`/organisation/${organisationId}/oracle/${oracle.id}`, cb, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
@@ -469,14 +375,21 @@ export function useOracleUpdate() {
 
 
 
-export type ListOfUsersResponse = UserWithAccessRights[];
 export function useAdminListOfUsersApi() {
-	return useWorkspaceApi<ListOfUsersResponse>(
+	return useWorkspaceApi<UserSummary[]>(
 		`/admin/user`
 	);
 }
 
 
+
+export function useOraclePublication() {
+	return async (organisationId: number, oracleId: number, cb: APICallbacks<void> | undefined) => {
+		return CallApi(`/organisation/${organisationId}/oracle/${oracleId}/publish`, cb, {
+			method: "POST",
+		});
+	};
+}
 
 
 

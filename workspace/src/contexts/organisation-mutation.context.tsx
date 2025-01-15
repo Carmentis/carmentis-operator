@@ -9,9 +9,9 @@ const OrgansationMutationContext = createContext<OrganisationMutation|undefined>
 
 export function OrganisationMutationContextProvider({children, mutate}: PropsWithChildren<OrganisationMutation>) {
 
-	return <OrgansationMutationContext value={{mutate: mutate}}>
+	return <OrgansationMutationContext.Provider value={{mutate: mutate}}>
 		{children}
-	</OrgansationMutationContext>;
+	</OrgansationMutationContext.Provider>;
 }
 
 export function useOrganisationMutationContext(): OrganisationMutation {

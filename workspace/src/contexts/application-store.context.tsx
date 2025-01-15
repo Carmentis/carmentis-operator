@@ -1,8 +1,15 @@
 import React, { createContext, Dispatch, PropsWithChildren, SetStateAction, useContext, useState } from 'react';
 import {
-	Application,
 	ApplicationEditor,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
+import {
+	AppDataEnum,
+	AppDataField,
+	AppDataMask,
+	AppDataMessage,
+	AppDataStruct,
+	Application,
+} from '@/entities/application.entity';
 
 export type ApplicationStore = {
 	application: Application|undefined;
@@ -19,9 +26,9 @@ export function ApplicationStoreContextProvider({children}: PropsWithChildren) {
 		setApplication: setObject
 	}
 
-	return <ApplicationStoreContext value={store}>
+	return <ApplicationStoreContext.Provider value={store}>
 		{children}
-	</ApplicationStoreContext>
+	</ApplicationStoreContext.Provider>
 }
 
 export function useApplicationStoreContext()  {
@@ -38,29 +45,29 @@ export const useApplication = () => {
 	return store.application;
 }
 
-export const useApplicationFields = () => {
+export function useApplicationFields(): AppDataField[] {
 	const application = useApplication();
 	return application.data.fields;
 }
 
 
-export const useApplicationStrutures = () => {
+export function useApplicationStrutures() : AppDataStruct[] {
 	const application = useApplication();
 	return application.data.structures;
 }
 
 
-export const useApplicationEnum = () => {
-	const application = useApplication();
+export function useApplicationEnum() : AppDataEnum[] {
+	const application: Application = useApplication();
 	return application.data.enumerations;
 }
 
-export const useApplicationMask = () => {
+export function useApplicationMask() : AppDataMask[] {
 	const application = useApplication();
 	return application.data.masks;
 }
 
-export const useApplicationMessages = () => {
+export function useApplicationMessages() : AppDataMessage[] {
 	const application = useApplication();
 	return application.data.messages;
 }
@@ -70,6 +77,7 @@ export const useUpdateApplication = () => {
 	const context = useApplicationStoreContext();
 	return (cb: (application: Application, editor: ApplicationEditor) => void) => {
 		context.setApplication(app => {
+			if (app === undefined) return undefined;
 			const editor = new ApplicationEditor(app);
 			cb(app, editor)
 			return {...app}

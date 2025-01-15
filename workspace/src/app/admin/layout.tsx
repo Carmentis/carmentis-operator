@@ -1,9 +1,9 @@
 'use client';
 
-import type {} from '@redux-devtools/extension';
 import AdminSidebar from '@/app/admin/admin-sidebar';
 import AdminNavbar from '@/app/admin/admin-navbar';
-import NavbarSidebarLayout from '@/components/navbar-sidebar-layout.component'; // required for devtools typing
+import NavbarSidebarLayout from '@/components/navbar-sidebar-layout.component';
+import { UserAuthenticationContextProvider } from '@/contexts/user-authentication.context';
 
 
 function AdminComponent(
@@ -22,9 +22,11 @@ export default function RootLayout(
 
 	return (
 		<>
-			<AdminComponent>
-				{children}
-			</AdminComponent>
+			<UserAuthenticationContextProvider>
+				<AdminComponent>
+					{children}
+				</AdminComponent>
+			</UserAuthenticationContextProvider>
 		</>
 	);
 }

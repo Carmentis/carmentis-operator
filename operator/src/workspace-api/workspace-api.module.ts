@@ -22,6 +22,7 @@ import { AuditService } from './services/audit.service';
 import { OracleService } from './services/oracle.service';
 import ChainService from './services/chain.service';
 import { AdminController } from './controllers/admin.controller';
+import { SandboxController } from './controllers/sandbox.controller';
 
 // Extracted imports, controllers, and providers into constants
 const WORKSPACE_IMPORTS = [
@@ -41,6 +42,7 @@ const WORKSPACE_CONTROLLERS = [
 	OrganisationController,
 	SearchController,
 	UserController,
+	SandboxController
 ];
 
 const WORKSPACE_PROVIDERS = [

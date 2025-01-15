@@ -1,18 +1,9 @@
 import InputButtonForm from '@/components/form/input-button.form';
-import {
-	AppDataMessage,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
-import {
-	Card,
-	CardBody,
-	CardHeader,
-	IconButton,
-	Input,
-	Typography,
-} from '@material-tailwind/react';
+import { Card, CardBody, CardHeader, IconButton, Input, Typography } from '@material-tailwind/react';
 import { useEffect, useState } from 'react';
 import { useApplicationMessages, useUpdateApplication } from '@/contexts/application-store.context';
 import { useSetEditionStatus } from '@/contexts/edition-status.context';
+import { AppDataMessage } from '@/entities/application.entity';
 
 function MessageEditionCard(
 	input: {

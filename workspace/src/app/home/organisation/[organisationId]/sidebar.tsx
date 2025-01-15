@@ -4,9 +4,6 @@ import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import { useInterfaceContext } from '@/contexts/interface.context';
-import { useAuthenticationContext } from '@/contexts/user-authentication.context';
-import Skeleton from 'react-loading-skeleton';
-import Avatar from 'boring-avatars';
 import { AuthenticatedUserSidebarItem } from '@/components/sidebar-components';
 
 function SidebarItem(

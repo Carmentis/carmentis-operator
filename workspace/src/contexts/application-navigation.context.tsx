@@ -1,7 +1,5 @@
-import { createContext, PropsWithChildren, startTransition, Suspense, useContext, useState } from 'react';
+import { createContext, PropsWithChildren, startTransition, useContext, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Skeleton from 'react-loading-skeleton';
-import { Spinner } from '@material-tailwind/react';
 
 export const ApplicationNavigationContext = createContext<NavigationInterface|null>(null);
 
@@ -10,6 +8,7 @@ export interface NavigationInterface {
 	navigateToAdmin: () => void,
 	navigateToIndex: () => void,
 	navigateToOrganisation: (organisationId: number) => void
+	navigateToLogin: () => void;
 }
 
 
@@ -36,13 +35,12 @@ export function ApplicationNavigationContextProvider({ children }: PropsWithChil
 		navigateToHome: () => navigate('/home'),
 		navigateToOrganisation: (id) => navigate(`/home/organisation/${id}`),
 		navigateToAdmin: () => navigate(`/admin`),
-		navigateToIndex: () => navigate('/')
+		navigateToIndex: () => navigate('/'),
+		navigateToLogin: () => navigate('/login')
 	}
 
 	return <ApplicationNavigationContext.Provider value={navigation}>
-		{
-			isLoading && <Spinner/>
-		}
+
 			{!isLoading && children}
 	</ApplicationNavigationContext.Provider>
 }

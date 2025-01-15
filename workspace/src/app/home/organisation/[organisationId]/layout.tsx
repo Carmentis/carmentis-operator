@@ -4,12 +4,13 @@ import Sidebar from '@/app/home/organisation/[organisationId]/sidebar';
 import Navbar from '@/app/home/organisation/[organisationId]/navbar';
 import { PropsWithChildren, useEffect } from 'react';
 
-import { fetchOrganisation } from '@/components/api.hook';
-import { notFound, useParams } from 'next/navigation';
+import { useFetchOrganisation } from '@/components/api.hook';
+import { useParams } from 'next/navigation';
 import { Spinner } from '@material-tailwind/react';
 import { OrganisationStoreContextProvider, useOrganisationStoreContext } from '@/contexts/organisation-store.context';
 import { OrganisationMutationContextProvider } from '@/contexts/organisation-mutation.context';
 import NavbarSidebarLayout from '@/components/navbar-sidebar-layout.component';
+import NotFoundPage from '@/app/home/organisation/[organisationId]/not-found';
 
 
 function HomeOrganisationPage(
@@ -30,8 +31,8 @@ function HomeOrganisationPage(
 function OrganisationDataAccess({ children }: PropsWithChildren) {
 	// search the organisation by id and redirect to not found if do not exist
 	const params = useParams();
-	const organisationId = params.organisationId;
-	const { data, isLoading, error, mutate } = fetchOrganisation(parseInt(organisationId));
+	const organisationId = parseInt(params.organisationId as string);
+	const { data, isLoading, error, mutate } = useFetchOrganisation(organisationId);
 	const organisationStoreContext = useOrganisationStoreContext();
 
 	// synchronise the organisation state
@@ -48,8 +49,9 @@ function OrganisationDataAccess({ children }: PropsWithChildren) {
 
 
 	// if not found, redirect to the not found page
-	if (error) {
-		notFound();
+	console.log("--->", data, isLoading, error)
+	if (error !== undefined) {
+		return <NotFoundPage/>
 	}
 
 	// create the organisation reader context and organisation mutation context

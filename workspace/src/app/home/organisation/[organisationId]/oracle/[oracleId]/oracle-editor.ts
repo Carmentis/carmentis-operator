@@ -1,18 +1,20 @@
+import * as sdk from '@cmts-dev/carmentis-sdk';
 import {
+	Oracle,
 	OracleEnumeration,
-	OracleInOrganisation,
 	OracleMask,
 	OracleService,
-	OracleServiceInputField,
-	OracleServiceOutputField,
-	OracleStructure,
-	OracleStructureField,
-} from '@/components/api.hook';
-import * as sdk from '@cmts-dev/carmentis-sdk';
+	OracleServiceInputField, OracleServiceOutputField,
+	OracleStructure, OracleStructureField,
+} from '@/entities/oracle.entity';
 
+/**
+ * The OracleEditor class provides functionality to manage and manipulate various components
+ * such as services, structures, enumerations, and masks within an Oracle instance's data.
+ */
 export class OracleEditor {
 
-	constructor(private oracle: OracleInOrganisation) {
+	constructor(private oracle: Oracle) {
 		const data = oracle.data;
 
 		// check if the data contains all (possibly empty) intended fields
@@ -34,6 +36,12 @@ export class OracleEditor {
 	}
 
 
+	/**
+	 * Creates a new OracleService with the given name and adds it to the list of services if it does not already exist.
+	 *
+	 * @param {string} name - The name of the service to be created.
+	 * @return {OracleService | null} The newly created OracleService if the service did not already exist, otherwise null.
+	 */
 	createService(name: string): OracleService | null {
 		if ( this.oracle.data.services.some(s => s.name === name) )
 			return null;
@@ -50,6 +58,12 @@ export class OracleEditor {
 		return newService;
 	}
 
+	/**
+	 * Deletes a service by its name from the list of services.
+	 *
+	 * @param {string} name - The name of the service to be deleted.
+	 * @return {boolean} Returns true if the service was successfully deleted, otherwise false.
+	 */
 	deleteServiceByName(name: string): boolean {
 		const initialLength = this.oracle.data.services.length;
 
@@ -61,6 +75,13 @@ export class OracleEditor {
 	}
 
 
+	/**
+	 * Updates a service in the list by its name.
+	 *
+	 * @param {string} name - The name of the service to be updated.
+	 * @param {OracleService} service - The updated service object to replace the existing service.
+	 * @return {boolean} Returns true if the service was successfully updated, false if no matching service was found.
+	 */
 	updateServiceByName(name: string, service: OracleService): boolean {
 		// Find the index of the service with the same ID
 		const index = this.oracle.data.services.findIndex(s => s.name === name);
@@ -76,6 +97,13 @@ export class OracleEditor {
 
 	// ==================== Structures ====================
 
+	/**
+	 * Creates a new structure with the given name and adds it to the oracle's data structures.
+	 * If a structure with the same name already exists, the method returns null.
+	 *
+	 * @param {string} name - The name of the structure to be created.
+	 * @return {OracleStructure | null} The newly created structure object if successful, or null if a structure with the same name already exists.
+	 */
 	createStructure(name: string): OracleStructure | null {
 		if (this.oracle.data.structures.some(structure => structure.name === name)) {
 			return null; // Skip creation if name already exists
@@ -91,6 +119,13 @@ export class OracleEditor {
 	}
 
 
+	/**
+	 * Updates a structure by its name in the Oracle data structures collection.
+	 *
+	 * @param {string} name - The name of the structure to be updated.
+	 * @param {OracleStructure} structure - The new structure object to replace the existing one.
+	 * @return {boolean} Returns true if the structure was found and updated, otherwise returns false.
+	 */
 	updateStructureByName(name: string, structure: OracleStructure): boolean {
 		const index = this.oracle.data.structures.findIndex(s => s.name === name);
 
@@ -103,6 +138,12 @@ export class OracleEditor {
 	}
 
 
+	/**
+	 * Deletes a structure by its name from the list of structures.
+	 *
+	 * @param {string} name - The name of the structure to be deleted.
+	 * @return {boolean} - Returns true if a structure was deleted, otherwise false.
+	 */
 	deleteStructureByName(name: string): boolean {
 		const initialLength = this.oracle.data.structures.length;
 		this.oracle.data.structures = this.oracle.data.structures.filter(structure => structure.name !== name);
@@ -112,6 +153,12 @@ export class OracleEditor {
 	// ==================== Enumerations ====================
 
 
+	/**
+	 * Creates a new enumeration with the specified name if it does not already exist.
+	 *
+	 * @param {string} name - The name of the enumeration to be created.
+	 * @return {OracleEnumeration | null} The newly created enumeration if successful, or null if an enumeration with the specified name already exists.
+	 */
 	createEnumeration(name: string): OracleEnumeration | null {
 		if (this.oracle.data.enumerations.some(enumeration => enumeration.name === name)) {
 			return null; // Skip creation if name already exists
@@ -127,6 +174,13 @@ export class OracleEditor {
 	}
 
 
+	/**
+	 * Updates an existing enumeration by its name with the provided enumeration object.
+	 *
+	 * @param {string} name - The name of the enumeration to update.
+	 * @param {OracleEnumeration} enumeration - The new enumeration object to replace the existing one.
+	 * @return {boolean} Returns true if the enumeration was successfully updated, or false if no enumeration with the given name was found.
+	 */
 	updateEnumerationByName(name: string, enumeration: OracleEnumeration): boolean {
 		const index = this.oracle.data.enumerations.findIndex(e => e.name === name);
 
@@ -139,6 +193,12 @@ export class OracleEditor {
 	}
 
 
+	/**
+	 * Deletes an enumeration by its name from the list of enumerations.
+	 *
+	 * @param {string} name - The name of the enumeration to be deleted.
+	 * @return {boolean} Returns true if the enumeration was found and deleted, otherwise false.
+	 */
 	deleteEnumerationByName(name: string): boolean {
 		const initialLength = this.oracle.data.enumerations.length;
 		this.oracle.data.enumerations = this.oracle.data.enumerations.filter(enumeration => enumeration.name !== name);
@@ -148,6 +208,12 @@ export class OracleEditor {
 	// ==================== Masks ====================
 
 
+	/**
+	 * Creates a new mask with the specified name if it does not already exist.
+	 *
+	 * @param {string} name - The name of the mask to create.
+	 * @return {OracleMask | null} Returns the newly created OracleMask object if the name does not already exist, otherwise returns null.
+	 */
 	createMask(name: string): OracleMask | null {
 		if (this.oracle.data.masks.some(mask => mask.name === name)) {
 			return null; // Skip creation if name already exists
@@ -165,6 +231,14 @@ export class OracleEditor {
 
 
 
+	/**
+	 * Updates the mask object in the oracle data by matching the specified name.
+	 * If no mask with the given name is found, no updates are made.
+	 *
+	 * @param {string} name - The name of the oracle mask to update.
+	 * @param {OracleMask} mask - The new mask object to replace the existing one with the same name.
+	 * @return {boolean} - Returns true if the mask was successfully updated, otherwise returns false.
+	 */
 	updateMaskByName(name: string, mask: OracleMask): boolean {
 		const index = this.oracle.data.masks.findIndex(m => m.name === name);
 
@@ -177,6 +251,12 @@ export class OracleEditor {
 	}
 
 
+	/**
+	 * Deletes a mask with the specified name from the list of masks.
+	 *
+	 * @param {string} name - The name of the mask to be deleted.
+	 * @return {boolean} Returns true if a mask with the specified name was deleted, otherwise false.
+	 */
 	deleteMaskByName(name: string): boolean {
 		const initialLength = this.oracle.data.masks.length;
 		this.oracle.data.masks = this.oracle.data.masks.filter(mask => mask.name !== name);
@@ -186,6 +266,14 @@ export class OracleEditor {
 	// ==================== Service Inputs ====================
 
 
+	/**
+	 * Creates a new service input field for a given service name and input name.
+	 * If the service is not found or the input already exists, it returns null.
+	 *
+	 * @param {string} serviceName - The name of the service where the new input field will be added.
+	 * @param {string} name - The name of the input field to be created.
+	 * @return {OracleServiceInputField | null} The created input field object if successful, or null if the service is not found or the input already exists.
+	 */
 	createServiceInput(serviceName: string, name: string): OracleServiceInputField | null {
 		const service = this.oracle.data.services.find(s => s.name === serviceName);
 		if (!service) return null;
@@ -205,6 +293,14 @@ export class OracleEditor {
 	}
 
 
+	/**
+	 * Updates the specified input field for a given service request.
+	 *
+	 * @param {string} serviceName - The name of the service to update.
+	 * @param {string} inputName - The name of the input field to update within the service request.
+	 * @param {OracleServiceInputField} input - The new input field data to replace the existing one.
+	 * @return {boolean} Returns true if the input field was updated successfully, otherwise returns false.
+	 */
 	updateServiceInput(serviceName: string, inputName: string, input: OracleServiceInputField): boolean {
 		const service = this.oracle.data.services.find(s => s.name === serviceName);
 		if (!service) return false;
@@ -219,6 +315,13 @@ export class OracleEditor {
 	}
 
 
+	/**
+	 * Deletes a service input by its name from a specified service.
+	 *
+	 * @param {string} serviceName - The name of the service from which the input should be deleted.
+	 * @param {string} inputName - The name of the input to delete from the specified service.
+	 * @return {boolean} Returns true if the input was successfully deleted, otherwise false.
+	 */
 	deleteServiceInputByName(serviceName: string, inputName: string): boolean {
 		const service = this.oracle.data.services.find(s => s.name === serviceName);
 		if (!service) return false;
@@ -231,6 +334,16 @@ export class OracleEditor {
 	// ==================== Service Outputs ====================
 
 
+	/**
+	 * Creates and adds a new `OracleServiceOutputField` to the specified service's answer list if it
+	 * does not already exist. Returns the newly created output field or `null` if the service or
+	 * field with the provided name does not exist.
+	 *
+	 * @param {string} serviceName - The name of the service where the output field should be added.
+	 * @param {string} name - The name of the output field to be created.
+	 * @return {OracleServiceOutputField | null} The newly created output field, or `null` if the
+	 * service or field with the specified name does not exist.
+	 */
 	createServiceOutput(serviceName: string, name: string): OracleServiceOutputField | null {
 		const service = this.oracle.data.services.find(s => s.name === serviceName);
 		if (!service) return null;
@@ -249,6 +362,14 @@ export class OracleEditor {
 	}
 
 
+	/**
+	 * Updates the output field of a specific service by its name in the Oracle service data.
+	 *
+	 * @param {string} serviceName - The name of the service to be updated.
+	 * @param {string} outputName - The name of the output field to be updated.
+	 * @param {OracleServiceOutputField} output - The new output field object containing updated data.
+	 * @return {boolean} Returns true if the output field was successfully updated, otherwise false if the service or output field is not found.
+	 */
 	updateServiceOutput(serviceName: string, outputName: string, output: OracleServiceOutputField): boolean {
 		const service = this.oracle.data.services.find(s => s.name === serviceName);
 		if (!service) return false;
@@ -262,6 +383,15 @@ export class OracleEditor {
 		return false;
 	}
 
+	/**
+	 * Updates a field in the specified structure with new field data.
+	 *
+	 * @param {string} structureName - The name of the structure to update.
+	 * @param {string} fieldName - The name of the field to update within the structure.
+	 * @param {OracleStructureField} field - The new field data to replace the existing field.
+	 * @return {boolean} Returns true if the specified field is successfully updated or added,
+	 *                   otherwise returns false if the structure does not exist.
+	 */
 	updateStructureField(structureName: string, fieldName: string, field: OracleStructureField) {
 		const structure = this.oracle.data.structures.find(s => s.name === structureName);
 		if (!structure) return false;
@@ -276,6 +406,13 @@ export class OracleEditor {
 	}
 
 
+	/**
+	 * Deletes a specific service output by its name.
+	 *
+	 * @param {string} serviceName - The name of the service where the output resides.
+	 * @param {string} outputName - The name of the output to be deleted.
+	 * @return {boolean} - Returns true if the output was successfully deleted, otherwise false.
+	 */
 	deleteServiceOutputByName(serviceName: string, outputName: string): boolean {
 		const service = this.oracle.data.services.find(s => s.name === serviceName);
 		if (!service) return false;
@@ -288,6 +425,13 @@ export class OracleEditor {
 // ==================== Structure Fields ====================
 
 
+	/**
+	 * Creates a new structure field with the specified name within a given structure.
+	 *
+	 * @param {string} structureName - The name of the structure where the new field will be added.
+	 * @param {string} name - The name of the new field to be created.
+	 * @return {OracleStructureField | null} The newly created field if successful, or null if the structure does not exist or the field already exists.
+	 */
 	createStructureField(structureName: string, name: string): OracleStructureField | null {
 		const structure = this.oracle.data.structures.find(s => s.name === structureName);
 		if (!structure) return null;
@@ -305,6 +449,13 @@ export class OracleEditor {
 		return newField;
 	}
 
+	/**
+	 * Deletes a field from a structure based on its name.
+	 *
+	 * @param {string} structureName - The name of the structure from which the field should be removed.
+	 * @param {string} fieldName - The name of the field to be deleted.
+	 * @return {boolean} Returns true if the field was successfully deleted, otherwise false.
+	 */
 	deleteStructureFieldByName(structureName: string, fieldName: string) {
 		const structure = this.oracle.data.structures.find(s => s.name === structureName);
 		if (!structure) return false;
@@ -317,6 +468,13 @@ export class OracleEditor {
 	// ==================== Enumeration Values ====================
 
 
+	/**
+	 * Adds a new value to the specified enumeration if it exists and the value is not already included.
+	 *
+	 * @param {string} enumerationName - The name of the enumeration to which the value will be added.
+	 * @param {string} value - The value to be added to the enumeration.
+	 * @return {boolean} - Returns true if the value was successfully added, otherwise false.
+	 */
 	addEnumerationValue(enumerationName: string, value: string): boolean {
 		const enumeration = this.oracle.data.enumerations.find(e => e.name === enumerationName);
 		if (!enumeration || enumeration.values.includes(value)) return false;
@@ -326,20 +484,15 @@ export class OracleEditor {
 	}
 
 
-	updateEnumerationValue(enumerationName: string, oldValue: string, newValue: string): boolean {
-		const enumeration = this.oracle.data.enumerations.find(e => e.name === enumerationName);
-		if (!enumeration) return false;
-
-		const index = enumeration.values.indexOf(oldValue);
-		if (index !== -1) {
-			enumeration.values[index] = newValue;
-			return true;
-		}
-
-		return false;
-	}
 
 
+	/**
+	 * Removes a specified value from an enumeration within the given oracle data structure.
+	 *
+	 * @param {string} enumerationName - The name of the enumeration from which the value should be removed.
+	 * @param {string} value - The value to be removed from the enumeration.
+	 * @return {boolean} Returns true if the value was successfully removed, otherwise false.
+	 */
 	removeEnumerationValue(enumerationName: string, value: string): boolean {
 		const enumeration = this.oracle.data.enumerations.find(e => e.name === enumerationName);
 		if (!enumeration) return false;
@@ -347,11 +500,6 @@ export class OracleEditor {
 		const initialLength = enumeration.values.length;
 		enumeration.values = enumeration.values.filter(v => v !== value);
 		return enumeration.values.length < initialLength;
-	}
-
-	static createFromOracle(oracle: OracleInOrganisation | undefined) {
-		if ( oracle === undefined ) throw new Error('Cannot instantiate an editor from an undefined oracle.')
-		return new OracleEditor(oracle);
 	}
 
 

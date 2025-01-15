@@ -1,25 +1,18 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { Button, Card, CardBody, IconButton, Input, Spinner, Typography } from '@material-tailwind/react';
 import {
-	Button,
-	Card,
-	CardBody,
-	IconButton,
-	Input, Spinner,
-	Typography,
-} from '@material-tailwind/react';
-import {
-	OracleEnumeration, OracleInOrganisation, OracleMask,
-	useFetchFullOracleInOrganisation,
 	useOracleDeletion,
+	useOraclePublication,
 	useOracleUpdate,
 } from '@/components/api.hook';
 import Skeleton from 'react-loading-skeleton';
 import { TrashIcon } from '@heroicons/react/16/solid';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/app/layout';
-import { OracleEditor } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/oracle-editor';
+import { useOracle, useOracleEditor } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/data-access-layer';
+
 import {
 	OracleServiceInputFieldEditionCard,
 } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/oracle-service-input-edition-card';
@@ -33,23 +26,35 @@ import InputButtonForm from '@/components/form/input-button.form';
 import { MyChip } from '@/app/home/organisation/[organisationId]/application/[applicationId]/enumerations-panel';
 import SmallCardEdition from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/small-edition-card';
 import { EditionStatusContextProvider, useEditionStatusContext } from '@/contexts/edition-status.context';
-import { OverviewInput } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
 import TabsComponent from '@/components/tabs.component';
-import { OracleStoreContextProvider, useOracleStoreContext } from '@/contexts/oralce-store.context';
+import { OracleStoreContextProvider} from '@/contexts/oralce-store.context';
 import DefaultCard from '@/components/default-card.component';
 import { useOrganisationContext } from '@/contexts/organisation-store.context';
+import OverviewInput from '@/components/overview-input.component';
+import { OracleEnumeration, OracleMask } from '@/entities/oracle.entity';
+import { OracleDataAccess } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/data-access-layer';
 
+
+/**
+ * Functional component representing the Oracle navigation bar.
+ * This component provides the user interface to save, publish, or delete an oracle,
+ * and displays oracle-specific details such as its name and version.
+ *
+ * @return {JSX.Element} A JSX element representing the Oracle navbar.
+ */
 function OracleNavbar() {
 	const callOracleUpdate = useOracleUpdate();
-	const params = useParams();
-	const organisationId = parseInt(params.organisationId);
 	const router = useRouter();
 	const notify = useToast();
 	const oracle = useOracle();
+	const organisation = useOrganisationContext();
+	const organisationId = organisation.id;
 	const editionStatus = useEditionStatusContext();
-	const [saving, setSaving] = useState<boolean>(false);
 	const callOracleDeletion = useOracleDeletion();
+	const callOraclePublication = useOraclePublication();
 
+	const [saving, setSaving] = useState(false);
+	const [isPublishing, setIsPublishing] = useState(false);
 
 	/**
 	 * Delete the oracle.
@@ -81,14 +86,34 @@ function OracleNavbar() {
 		});
 	}
 
+	function publish() {
+		setIsPublishing(true);
+		callOraclePublication(organisation.id, oracle.id, {
+			onSuccess: () => {
+				notify.success('Oracle published');
+			},
+			onError: notify.error,
+			onEnd: () => setIsPublishing(false)
+		})
+	}
+
 	return <Card>
-		<CardBody className={'flex justify-between items-center'}>
-			<Typography variant="h5">Oracle {oracle.name}</Typography>
-			<div>
-				<IconButton hidden={!editionStatus.isModified} onClick={save}>
+		<CardBody className={'flex justify-between items-center py-4'}>
+			<div id="left" className={"flex flex-row items-center"}>
+				<Typography variant="h5" className={"border-r-2 mr-2 pr-2"}>{oracle.name}</Typography>
+				<Typography>Version {oracle.version}</Typography>
+			</div>
+			<div className={"space-x-2"}>
+				{editionStatus.isModified && <Button onClick={save}>
 					{saving && <Spinner />}
-					{!saving && <i className={'bi bi-floppy-fill'}></i>}
-				</IconButton>
+					{!saving && <><i className={'bi bi-floppy-fill  mr-2'}></i><span>save</span></>}
+				</Button>}
+
+				{!editionStatus.isModified && oracle.isDraft && <Button onClick={publish}>
+					{isPublishing && <Spinner />}
+					{!isPublishing && <><i className={'bi bi-floppy-fill  mr-2'}></i><span>publish</span></>}
+				</Button>}
+
 				<IconButton variant={'gradient'} onClick={deleteOracle}>
 					<TrashIcon className="h-5 w-5 transition-transform group-hover:rotate-45" />
 				</IconButton>
@@ -99,9 +124,9 @@ function OracleNavbar() {
 
 
 /**
- * Display the overview of the oracle.
- * @param input - The input data.
- * @constructor
+ * Represents the OracleOverview component which displays an editable overview of the Oracle entity.
+ *
+ * @return {JSX.Element} A JSX element rendering an overview card with the Oracle name input.
  */
 function OracleOverview() {
 	// Oracle data
@@ -124,9 +149,13 @@ function OracleOverview() {
 
 
 /**
- * Display a horizontal input button.
- * @param input - The input data.
- * @constructor
+ * A React component that displays a horizontal input field with a label and a submit button.
+ * Allows the user to input a value and trigger a submission action.
+ *
+ * @param {Object} input - An object containing the input's configuration options.
+ * @param {string} input.label - The label text for the submit button.
+ * @param {function(string): void} input.onSubmit - A callback function triggered on submit, receiving the input value.
+ * @return {JSX.Element} A JSX element rendering the horizontal input button component.
  */
 function HorizontalInputButton(
 	input: {
@@ -156,12 +185,16 @@ function HorizontalInputButton(
 }
 
 /**
- * Display the services panel.
- * @constructor
+ * Renders the `ServicesPanel` component, which provides functionalities for managing services, including adding/removing services, inputs, and outputs and editing their details.
+ *
+ * This component retrieves the current state of services from an Oracle and uses an editor function to update or modify those services interactively.
+ * The interface includes controls for adding inputs/outputs to services and dynamically displaying and editing them.
+ *
+ * @return {JSX.Element | Skeleton} A rendered JSX component that includes the UI for interacting with services or a skeleton loading state while data loads.
  */
 function ServicesPanel() {
 	const oracle = useOracle();
-	const setOracle = useSetOracle();
+	const setOracle = useOracleEditor();
 
 
 	function CreateService(serviceName: string) {
@@ -267,16 +300,19 @@ function ServicesPanel() {
 
 
 /**
- * Structure panel.
- * @constructor
+ * StructurePanel is a React component that allows users to manage and edit structures and their associated fields.
+ * It provides functionality to add new structures, remove existing structures, and edit their properties through intuitive UI elements.
+ *
+ * @return {JSX.Element} The rendered component, including UI elements for creating and managing structures,
+ *                        as well as their associated fields.
  */
 function StructurePanel() {
 	const oracle = useOracle();
-	const setOracle = useSetOracle();
+	const editOracle = useOracleEditor();
 
 	function CreateStructure(name: string) {
 		if (name === '') return;
-		setOracle(e => e.createStructure(name));
+		editOracle(e => e.createStructure(name));
 	}
 
 	return <>
@@ -289,12 +325,12 @@ function StructurePanel() {
 					name={s.name}
 					key={index}
 					onRemove={() => {
-						setOracle(e => e.deleteStructureByName(s.name));
+						editOracle(e => e.deleteStructureByName(s.name));
 					}}>
 
 					<HorizontalInputButton
 						label={'add property'}
-						onSubmit={v => setOracle(e => e.createStructureField(s.name, v))}
+						onSubmit={v => editOracle(e => e.createStructureField(s.name, v))}
 					/>
 
 					<div className="flex flex-wrap gap-4">
@@ -305,7 +341,7 @@ function StructurePanel() {
 									structureName={s.name}
 									field={f}
 									onRemoveField={() => {
-										setOracle(e => e.deleteStructureFieldByName(s.name, f.name));
+										editOracle(e => e.deleteStructureFieldByName(s.name, f.name));
 									}} />,
 							)
 						}
@@ -316,9 +352,15 @@ function StructurePanel() {
 }
 
 
+/**
+ * Renders the EnumerationsPanel component. It displays a list of enumerations and provides
+ * functionalities to add, edit, or delete enumerations and their associated values.
+ *
+ * @return {JSX.Element} The rendered JSX for the EnumerationsPanel component.
+ */
 function EnumerationsPanel() {
 	const oracle = useOracle();
-	const setOracle = useSetOracle();
+	const editOracle = useOracleEditor();
 
 
 	function EnumerationEdition(
@@ -330,7 +372,7 @@ function EnumerationsPanel() {
 				inputLabel={'Name'}
 				buttonLabel={'Add value'}
 				onConfirm={v =>
-					setOracle(ed => ed.addEnumerationValue(e.name, v))
+					editOracle(ed => ed.addEnumerationValue(e.name, v))
 				} />;
 
 			<div className="values flex flex-wrap gap-2">
@@ -341,7 +383,7 @@ function EnumerationsPanel() {
 							enumId={v}
 							enumValue={v}
 							removeEnumValue={v =>
-								setOracle(ed => ed.removeEnumerationValue(e.name, v))
+								editOracle(ed => ed.removeEnumerationValue(e.name, v))
 							}
 						></MyChip>;
 					})
@@ -353,7 +395,7 @@ function EnumerationsPanel() {
 	return <>
 		<HorizontalInputButton
 			label={'Add enumeration'}
-			onSubmit={v => setOracle(e => e.createEnumeration(v))} />
+			onSubmit={v => editOracle(e => e.createEnumeration(v))} />
 
 		{
 			oracle.data.enumerations && oracle.data.enumerations.map((e, index) =>
@@ -361,7 +403,7 @@ function EnumerationsPanel() {
 					key={index}
 					name={e.name}
 					onRemove={() =>
-						setOracle(ed => ed.deleteEnumerationByName(e.name))
+						editOracle(ed => ed.deleteEnumerationByName(e.name))
 					}>
 					<EnumerationEdition enumeration={e} />
 				</LargeCardEdition>,
@@ -370,10 +412,18 @@ function EnumerationsPanel() {
 	</>;
 }
 
+/**
+ * Represents a component that allows the user to edit the properties of an OracleMask object.
+ *
+ * @param {Object} input An object containing the required input parameters.
+ * @param {OracleMask} input.mask The mask object containing initial values for `name`, `regex`, and `substitution`.
+ *
+ * @return {JSX.Element} A JSX element rendering the mask editing interface, including inputs for name, expression, and substitution.
+ */
 function MaskEditionCard(
 	input: { mask: OracleMask },
 ) {
-	const setOracle = useSetOracle();
+	const setOracle = useOracleEditor();
 	const mask = input.mask;
 	const [name, setName] = useState(mask.name);
 	const [expression, setExpression] = useState(mask.regex);
@@ -410,9 +460,15 @@ function MaskEditionCard(
 	</SmallCardEdition>;
 }
 
+/**
+ * MasksPanel is a React functional component that provides a user interface for managing and editing masks.
+ * It includes a form to add a new mask and displays a list of existing masks with editing options.
+ *
+ * @return {JSX.Element} A JSX element representing the masks management panel with input form and mask cards.
+ */
 function MasksPanel() {
 	const oracle = useOracle();
-	const setOracle = useSetOracle();
+	const setOracle = useOracleEditor();
 
 
 	return <>
@@ -435,6 +491,32 @@ function MasksPanel() {
 	</>;
 }
 
+
+/**
+ * A React functional component that renders a formatted JSON representation of data
+ * obtained from an Oracle object.
+ *
+ * @return {React.Element} A React element containing a `<pre>` tag with JSON-formatted Oracle data.
+ */
+function CodeViewPanel(
+) {
+	const oracle = useOracle();
+
+	return <>
+		<pre>
+
+			{JSON.stringify(oracle.data, null, 2)}
+		</pre>
+	</>;
+}
+
+/**
+ * OracleEditionPanel is a function component that renders a default card containing a tabs component.
+ * The tabs component includes multiple panels for navigating through different sections such as
+ * Services, Structures, Enumerations, Masks, and Code View.
+ *
+ * @return {JSX.Element} A DefaultCard component containing TabsComponent with defined panels.
+ */
 function OracleEditionPanel() {
 	return <DefaultCard>
 		<TabsComponent
@@ -444,71 +526,34 @@ function OracleEditionPanel() {
 				'Structures': <StructurePanel />,
 				'Enumerations': <EnumerationsPanel />,
 				'Masks': <MasksPanel />,
+				'Code View': <CodeViewPanel/>
 			}} />
 	</DefaultCard>;
 }
 
 
 
-export function useOracle() : OracleInOrganisation {
-	const context = useOracleStoreContext();
-	if (context.oracle === undefined) throw new Error('Cannot access undefined oracle')
-	return context.oracle;
-};
-
-export const useSetOracle = () => {
-	const statusContext = useEditionStatusContext();
-	const context = useOracleStoreContext();
-	return (cb: (editor: OracleEditor) => void) => {
-		statusContext.setIsModified(true);
-		context.setOracle(oracle => {
-			const editor = new OracleEditor(oracle);
-			cb(editor);
-			return { ...oracle };
-		});
-	};
-};
-
-
-export function OracleDataAccess() {
-	// load parameters
-	const params = useParams();
-	const organisation = useOrganisationContext();
-	const organisationId = organisation.id;
-	const oracleId = parseInt(params.oracleId);
-
-
-	// load the oracle from the API
-	const response = useFetchFullOracleInOrganisation(organisationId, oracleId);
-	const data = response.data;
-	const isLoading = response.isLoading;
-
-	// define edition state (useful to synchronize the edition status)
-	const store = useOracleStoreContext();
-	const oracle = store.oracle;
-	useEffect(() => {
-		store.setOracle(data);
-	}, [data]);
-
-	// display the loading page while the request is loading
-	if (!data || !oracle || isLoading) return <Skeleton count={3} />;
-
-	return <>
-		<div className={'mb-8'}>
-			<OracleNavbar />
-		</div>
-
-		<div className="mb-8">
-			<OracleOverview/>
-		</div>
-		<OracleEditionPanel />
-	</>;
-}
-
+/**
+ * OraclePage is a React component that renders the Oracle Store Context Provider,
+ * Edition Status Context Provider, and Oracle Data Access component. This component
+ * includes the OracleNavbar, OracleOverview, and OracleEditionPanel to provide the
+ * necessary structure and functionality for Oracle-related data and actions.
+ *
+ * @return {JSX.Element} The rendered OraclePage component containing all nested child components.
+ */
 export default function OraclePage() {
 	return <OracleStoreContextProvider>
 		<EditionStatusContextProvider>
-			<OracleDataAccess />
+			<OracleDataAccess>
+				<div className={'mb-8'}>
+					<OracleNavbar />
+				</div>
+
+				<div className="mb-8">
+					<OracleOverview />
+				</div>
+				<OracleEditionPanel />
+			</OracleDataAccess>
 		</EditionStatusContextProvider>
 	</OracleStoreContextProvider>;
 

@@ -28,7 +28,7 @@ function WelcomeCard(
 
 			<div className="flex flex-col justify-end items-end">
 				<Typography className={'font-bold text-primary-dark'}>{input.title}</Typography>
-				<Typography>{input.value}</Typography>
+				<Typography >{input.value}</Typography>
 			</div>
 		</CardBody>
 	</Card>;

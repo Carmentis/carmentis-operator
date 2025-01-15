@@ -21,9 +21,9 @@ export function EditionStatusContextProvider({children}: PropsWithChildren) {
 		setIsModified,
 	}
 
-	return <EditionStatusContext value={store}>
+	return <EditionStatusContext.Provider value={store}>
 		{children}
-	</EditionStatusContext>
+	</EditionStatusContext.Provider>
 }
 
 export function useEditionStatusContext() {

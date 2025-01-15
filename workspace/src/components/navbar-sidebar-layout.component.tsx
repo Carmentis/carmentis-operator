@@ -1,6 +1,5 @@
 import { PropsWithChildren, ReactNode } from 'react';
 import { useInterfaceContext } from '@/contexts/interface.context';
-import { OrganisationDisplay } from '@/app/home/organisation/[organisationId]/navbar';
 
 export interface NavbarSidebarProps {
 	sidebar: ReactNode,

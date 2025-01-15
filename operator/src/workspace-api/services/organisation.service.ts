@@ -1,7 +1,6 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { OrganisationEntity } from '../entities/organisation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateOrganisationDto } from '../dto/create-organisation.dto';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../entities/user.entity';
 import { OrganisationAccessRightEntity } from '../entities/organisation-access-right.entity';
@@ -9,6 +8,31 @@ import { UpdateAccessRightDto } from '../dto/update-access-rights.dto';
 import { ApplicationEntity } from '../entities/application.entity';
 import ChainService from './chain.service';
 import * as sdk from '@cmts-dev/carmentis-sdk';
+import { ApplicationDataType } from '../types/application-data.type';
+import { ApplicationService } from './application.service';
+
+
+const FILESIGN_NAME = 'FileSign';
+const FILESIGN_APPLICATION_DOMAIN = 'https://filesign.carmentis.io?id={{id}}&version={{version}}'
+const FILESIGN_DATA: ApplicationDataType = {
+	fields: [
+		{
+			name: 'SenderEmail',
+			type: sdk.utils.data.createType({
+				type: sdk.constants.DATA.STRING,
+				public: false
+			}),
+		},
+		{
+			name: 'ReceiverEmail',
+			type: sdk.utils.data.createType({
+				type: sdk.constants.DATA.STRING,
+				public: false
+			}),
+		},
+	]
+}
+
 
 @Injectable()
 export class OrganisationService {
@@ -22,6 +46,7 @@ export class OrganisationService {
 		@InjectRepository(ApplicationEntity)
 		private readonly applicationRepository: Repository<ApplicationEntity>,
 		private readonly chainService: ChainService,
+		private readonly applicationService: ApplicationService,
 	) {
 	}
 
@@ -58,7 +83,7 @@ export class OrganisationService {
 	// Find all items
 	async findAll(): Promise<{ id: number, name: string, logoUrl: string }[]> {
 		return this.organisationEntityRepository.find({
-			select: ['id', 'name', 'logoUrl'],
+			select: ['id', 'name', 'logoUrl', 'isSandbox'],
 		});
 	}
 
@@ -81,6 +106,52 @@ export class OrganisationService {
 		item.publicSignatureKey = pk;
 
 		return this.organisationEntityRepository.save(item);
+	}
+
+
+	async createSandbox() {
+		// recover the number of organisations
+		const numberOfOrganisations = await this.organisationEntityRepository.count();
+
+		// create the sandbox
+		let sandbox = new OrganisationEntity();
+		sandbox.name = `Sandbox-${numberOfOrganisations}`;
+		sandbox.isSandbox = true;
+		sandbox.countryCode = 'FR';
+		sandbox.city = 'Paris';
+
+		// generate the signature key pair for the sandbox
+		const sk = sdk.crypto.generateKey256();
+		const pk = sdk.crypto.secp256k1.publicKeyFromPrivateKey(sk);
+		sandbox.privateSignatureKey = sk;
+		sandbox.publicSignatureKey = pk;
+
+		// save the sandbox
+		sandbox = await this.organisationEntityRepository.save(
+			this.organisationEntityRepository.create(sandbox)
+		);
+
+		// publish the sandbox
+		sandbox = await this.publishOrganisation(sandbox.id);
+
+		// create the pre-installed applications
+		let fileSign: ApplicationEntity = new ApplicationEntity();
+		fileSign.name = FILESIGN_NAME;
+		fileSign.data = FILESIGN_DATA;
+		fileSign.organisation = sandbox;
+		fileSign.domain = FILESIGN_APPLICATION_DOMAIN
+
+		// save the application
+		fileSign  = await this.applicationRepository.save(
+			this.applicationRepository.create(fileSign)
+		);
+
+		// publish fileSign
+		await this.applicationService.publishApplication(fileSign.id);
+
+		// return the created sandbox
+		return sandbox;
+
 	}
 
 	// Insert a new item
@@ -163,7 +234,7 @@ export class OrganisationService {
 			organisation.isDraft = false;
 			organisation.publishedAt = new Date();
 			organisation.balance -= mb.header.gas; // TODO get the balance account from the node
-			await this.update(organisation.id, organisation);
+			return await this.update(organisation.id, organisation);
 		} catch (e) {
 			console.error(e)
 			throw new InternalServerErrorException('Failed to publish the organisation');

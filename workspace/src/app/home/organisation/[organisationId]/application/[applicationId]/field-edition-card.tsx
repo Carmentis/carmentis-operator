@@ -1,7 +1,5 @@
 import {
-	AppDataField,
 	ApplicationEditor,
-	FieldVisility,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import { useRef, useState } from 'react';
 import { generateRandomString } from 'ts-randomstring/lib';
@@ -10,7 +8,12 @@ import SmallCardEdition from '@/app/home/organisation/[organisationId]/oracle/[o
 import * as sdk from '@cmts-dev/carmentis-sdk';
 import { useApplication, useUpdateApplication } from '@/contexts/application-store.context';
 import { useSetEditionStatus } from '@/contexts/edition-status.context';
+import ConditionallyHiddenLayout from '@/components/conditionally-hidden-layout.component';
+import { AppDataField } from '@/entities/application.entity';
+import { Field } from '@/components/api.hook';
 
+
+type FieldVisility = 'public' | 'private';
 
 export default function ApplicationFieldEditionCard(
 	input: {
@@ -33,6 +36,7 @@ export default function ApplicationFieldEditionCard(
 			}
 		});
 	}
+
 	return <FieldEditionCard
 		field={input.field}
 		onRemoveField={input.onRemoveField}
@@ -40,19 +44,22 @@ export default function ApplicationFieldEditionCard(
 		getStructures={() => application.data.structures}
 		getEnumerations={() => application.data.enumerations}
 		getMasks={() => application.data.masks}
-	/>
+	/>;
 }
 
 
 export function FieldEditionCard(
 	input: {
-		field: { name: string, type: number, maskId?: number },
+		field: Field,
 		onRemoveField: (fieldName: string) => void,
 		structureName?: string,
-		refreshType: (refreshedType: { name: string, type: number, maskId?: number }) => void
+		refreshType: (refreshedType: Field) => void
 		getStructures: () => { name: string }[],
 		getEnumerations: () => { name: string }[],
-		getMasks: () => { name: string }[]
+		getMasks: () => { name: string }[],
+		disableMask?: boolean,
+		defaultHashable?: boolean,
+		defaultIsPublic?: boolean,
 	},
 ) {
 	const field = input.field;
@@ -63,15 +70,12 @@ export function FieldEditionCard(
 
 
 	// from the field type is derived several properties defined below
-	const fieldType = useRef(sdk.utils.data.extractType(field.type))
-	const fieldMaskId = useRef(field.maskId ? field.maskId.toString() : undefined)
-	const isList= useRef(sdk.utils.data.isArray(field.type));
-	const isPublic = useRef(sdk.utils.data.isPublic(field.type));
+	const fieldType = useRef(sdk.utils.data.extractType(field.type));
+	const fieldMaskId = useRef(field.maskId ? field.maskId.toString() : undefined);
+	const isList = useRef(sdk.utils.data.isArray(field.type));
+	const isPublic = useRef(input.defaultIsPublic || sdk.utils.data.isPublic(field.type));
 	const isRequired = useRef(sdk.utils.data.isRequired(field.type));
-	const isHashable = useRef(sdk.utils.data.isHashable(field.type));
-
-
-	console.log("input", sdk.utils.data.isPrimitive(field.type), sdk.utils.data.isStruct(field.type), sdk.utils.data.isEnum(field.type))
+	const isHashable = useRef(input.defaultHashable || sdk.utils.data.isHashable(field.type));
 
 
 	function updateFieldName(fieldName: string) {
@@ -82,14 +86,13 @@ export function FieldEditionCard(
 
 	function updateType(type: string) {
 		setHasBeenModified(true);
-		console.log("assigning new type:", type)
+		console.log('assigning new type:', type);
 		fieldType.current = parseInt(type);
-        refreshType();
+		refreshType();
 	}
 
 	function updateMask(maskId: string | undefined) {
 		setHasBeenModified(true);
-		console.log("assigning new mask:", maskId);
 		if (maskId) {
 			fieldMaskId.current = maskId;
 		} else {
@@ -111,9 +114,9 @@ export function FieldEditionCard(
 	}
 
 
-	function setVisibility( visibility: FieldVisility ) {
+	function setVisibility(visibility: FieldVisility) {
 		setHasBeenModified(true);
-		isPublic.current = visibility === FieldVisility.public;
+		isPublic.current = visibility === 'public';
 		refreshType();
 	}
 
@@ -135,12 +138,11 @@ export function FieldEditionCard(
 				type: fieldType.current,
 				maskable: true, // maskable by default, only considered if primitive
 			}),
-			maskId: fieldMaskId.current
+			maskId: fieldMaskId.current ? parseInt(fieldMaskId.current) : undefined,
 		};
 
-		input.refreshType(field)
+		input.refreshType(field);
 	}
-
 
 
 	// generate a random field id, used to isolate radio buttons
@@ -148,10 +150,10 @@ export function FieldEditionCard(
 
 	// compute the list of types
 	const availableTypes: { key: string, value: string, label: string }[] = [];
-	Object.entries(sdk.constants.DATA.PrimitiveTypes).forEach(([k,v], index) => {
+	Object.entries(sdk.constants.DATA.PrimitiveTypes).forEach(([k, v], index) => {
 		availableTypes.push({
 			key: `prim-${k}`,
-			value: v.toString(),
+			value: `${v}`,
 			label: k,
 		});
 	});
@@ -173,11 +175,10 @@ export function FieldEditionCard(
 
 	// compute the list of masks
 	const availableMasks = input.getMasks().map((mask, index) => ({
-        key: `mask-${index}`,
-        value: index.toString(),
-        label: mask.name,
-    }))
-	console.log(fieldMaskId, availableMasks)
+		key: `mask-${index}`,
+		value: index.toString(),
+		label: mask.name,
+	}));
 
 	return <SmallCardEdition name={field.name} onRemove={() => input.onRemoveField(field.name)}>
 		<Input variant={'outlined'} size={'md'} label={'Name'} value={fieldName}
@@ -192,7 +193,7 @@ export function FieldEditionCard(
 				name={fieldFormId}
 				id={fieldFormId}
 				value={fieldType.current.toString()}
-				onChange={updateType}
+				onChange={(value) => value && updateType(value)}
 				menuProps={{
 					className: 'max-h-48 overflow-auto',
 				}}>
@@ -208,52 +209,60 @@ export function FieldEditionCard(
 
 			<div className="flex flex-wrap">
 				<Checkbox label={'Array'} checked={isList.current} onChange={e => setIsList(e.target.checked)} />
-				<Checkbox label={'Hashable'} checked={isHashable.current}
-						  onChange={e => setIsHashable(e.target.checked)} />
 				<Checkbox label={'Required'} checked={isRequired.current}
 						  onChange={e => setIsRequired(e.target.checked)} />
+				<ConditionallyHiddenLayout showOn={input.defaultHashable === undefined}>
+					<Checkbox label={'Hashable'} checked={isHashable.current}
+							  onChange={e => setIsHashable(e.target.checked)} />
+				</ConditionallyHiddenLayout>
 			</div>
 		</div>
 
+		<ConditionallyHiddenLayout showOn={input.defaultIsPublic === undefined}>
+			<div className="visibility">
+				<Typography variant={'h6'}>Visiblity</Typography>
+				<Radio name={`visibility-${fieldFormId}`} label="public"
+					   checked={sdk.utils.data.isPublic(field.type)}
+					   onChange={() => setVisibility('public')} />
+				<Radio name={`visibility-${fieldFormId}`} label="private"
+					   checked={sdk.utils.data.isPrivate(field.type)}
+					   onChange={() => setVisibility('private')} />
+			</div>
+		</ConditionallyHiddenLayout>
 
-		<div className="visibility">
-			<Typography variant={'h6'}>Visiblity</Typography>
-			<Radio name={`visibility-${fieldFormId}`} label="public"
-				   checked={sdk.utils.data.isPublic(field.type)}
-				   onChange={() => setVisibility(FieldVisility.public)} />
-			<Radio name={`visibility-${fieldFormId}`} label="private"
-				   checked={sdk.utils.data.isPrivate(field.type)}
-				   onChange={() => setVisibility(FieldVisility.private)} />
-		</div>
 
 		{/* Select the mask if desired */}
-		<div className="flex flex-row space-x-2">
-			<Select
-				label="Mask"
-				disabled={!sdk.utils.data.isPrimitive(field.type)}
-				value={fieldMaskId.current}
-				onChange={updateMask}
-				menuProps={{
-					className: 'max-h-48 overflow-auto',
-				}}>
+		<ConditionallyHiddenLayout showOn={input.disableMask === undefined}>
+			<div className="flex flex-row space-x-2">
+				<Select
+					label="Mask"
+					disabled={!sdk.utils.data.isPrimitive(field.type)}
+					value={fieldMaskId.current}
+					onChange={updateMask}
+					menuProps={{
+						className: 'max-h-48 overflow-auto',
+					}}>
 
-				{
-					availableMasks.map((entry, index) =>
-						<Option key={entry.key} value={entry.value}>{entry.label}</Option>,
-					)
-				}
+					{
+						availableMasks.map((entry, index) =>
+							<Option key={entry.key} value={entry.value}>{entry.label}</Option>,
+						)
+					}
 
 
-			</Select>
+				</Select>
 
-			<Button
-				onClick={() => updateMask(undefined)}
-				aria-label="Clear selection"
-				hidden={fieldMaskId.current === undefined}
-			>
-				<i className="bi bi-trash" />
-			</Button>
-		</div>
+				<Button
+					onClick={() => updateMask(undefined)}
+					aria-label="Clear selection"
+					hidden={fieldMaskId.current === undefined}
+				>
+					<i className="bi bi-trash" />
+				</Button>
+			</div>
+
+		</ConditionallyHiddenLayout>
+
 	</SmallCardEdition>
 		;
 

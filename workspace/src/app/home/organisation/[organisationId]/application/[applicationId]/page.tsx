@@ -1,18 +1,13 @@
 'use client';
 
 
-import {
-	Card,
-	CardBody, Input,
-	Typography,
-} from '@material-tailwind/react';
+import { Card, CardBody, Typography } from '@material-tailwind/react';
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { fetchApplicationInOrganisation } from '@/components/api.hook';
-import Skeleton from 'react-loading-skeleton';
+import { useFetchApplicationInOrganisation } from '@/components/api.hook';
 import {
-	Application, ApplicationBuilder,
+	ApplicationBuilder,
 	ApplicationEditor,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import ApplicationDetailsNavbar
@@ -26,35 +21,27 @@ import CodeViewPanel from '@/app/home/organisation/[organisationId]/application/
 import {
 	ApplicationStoreContextProvider,
 	useApplication,
-	useApplicationStoreContext, useUpdateApplication,
+	useApplicationStoreContext,
+	useUpdateApplication,
 } from '@/contexts/application-store.context';
 import { EditionStatusContextProvider, useSetEditionStatus } from '@/contexts/edition-status.context';
 import TabsComponent from '@/components/tabs.component';
+import OverviewInput from '@/components/overview-input.component';
+import FullPageLoadingComponent from '@/components/full-page-loading.component';
 
-export function OverviewInput(
-	input: {
-		label: string,
-		value: string,
-		onChange: (value: string) => void
-	},
-) {
-	return <div className={'flex flex-col space-y-4 w-3/12'}>
-		<Typography variant="h6" color="blue-gray" className="-mb-3">
-			{input.label}
-		</Typography>
-		<Input
-			value={input.value}
-			onChange={(e) => input.onChange(e.target.value)}
-			className=" !border-t-blue-gray-200 focus:!border-t-gray-900"
-			labelProps={{
-				className: 'before:content-none after:content-none',
-			}}
-		/>
-	</div>;
+
+export default function ApplicationPage() {
+	return <ApplicationStoreContextProvider>
+		<EditionStatusContextProvider>
+			<ApplicationDataAccess />
+		</EditionStatusContextProvider>
+	</ApplicationStoreContextProvider>;
 }
 
 
-export function ApplicationOverview() {
+
+
+function ApplicationOverview() {
 
 	const application = useApplication();
 	const saveApplication = useUpdateApplication();
@@ -111,18 +98,14 @@ export function ApplicationOverview() {
 }
 
 
-function ApplicationDetails(
-	input: { application: Application, editor: ApplicationEditor },
-) {
-	const appEditor = input.editor;
-
+function ApplicationDetails() {
 	return <Card>
 		<CardBody>
 			<TabsComponent
 				defaultTabValue={'Fields'}
 				panels={{
 					'Fields': <FieldsPanel></FieldsPanel>,
-					'Structures': <StructurePanel appEditor={appEditor}></StructurePanel>,
+					'Structures': <StructurePanel></StructurePanel>,
 					'Enumerations': <EnumerationPanel />,
 					'Masks': <MasksPanel />,
 					'Messages': <MessagesPanel />,
@@ -134,41 +117,26 @@ function ApplicationDetails(
 }
 
 
-/**
- * Renders the ApplicationPage component.
- * Combines multiple context providers including ApplicationStoreContextProvider
- * and EditionStatusContextProvider to manage state and provides the
- * ApplicationDataAccess component as a child.
- *
- * @return {JSX.Element} The rendered ApplicationPage component wrapped with necessary context providers.
- */
-export default function ApplicationPage() {
-	return <ApplicationStoreContextProvider>
-		<EditionStatusContextProvider>
-			<ApplicationDataAccess />
-		</EditionStatusContextProvider>
-	</ApplicationStoreContextProvider>;
-}
+
 
 
 /**
  * ApplicationDataAccess is a functional component responsible for fetching and displaying
  * application data within a given organisation. It utilizes hooks for state management,
  * API interaction, and updates the application context accordingly.
- *
- * @return {JSX.Element} Returns a JSX element containing the application details and navbar,
- * or a loading skeleton when data is being fetched or unavailable.
  */
-export function ApplicationDataAccess() {
+function ApplicationDataAccess() {
 
 
 	const { application, setApplication } = useApplicationStoreContext();
 
 	// load the application
-	const params: { organisationId: number, applicationId: number } = useParams();
-	const { data, isLoading, error, mutate } = fetchApplicationInOrganisation(
-		params.organisationId,
-		params.applicationId,
+	const params = useParams();
+	const organisationId = parseInt(params.organisationId as string);
+	const applicationId = parseInt(params.applicationId as string);
+	const { data, isLoading, error, mutate } = useFetchApplicationInOrganisation(
+		organisationId,
+		applicationId,
 	);
 
 	// create the application and edition states
@@ -180,7 +148,7 @@ export function ApplicationDataAccess() {
 
 
 	if (!data || isLoading || !application) {
-		return <Skeleton count={5}></Skeleton>;
+		return <FullPageLoadingComponent/>;
 	}
 
 
@@ -191,10 +159,7 @@ export function ApplicationDataAccess() {
 				refreshApplication={() => mutate()}
 			/>
 			<ApplicationOverview />
-			<ApplicationDetails
-				application={application}
-				editor={editor}></ApplicationDetails>
-
+			<ApplicationDetails/>
 		</div>
 	</>;
 }

@@ -3,11 +3,16 @@ import { Button, Card, CardBody, Chip, IconButton, Spinner, Typography } from '@
 import { ArrowDownOnSquareIcon, ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/16/solid';
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useApplicationDeletionApi, useApplicationPublicationApi, useApplicationUpdateApi } from '@/components/api.hook';
+import {
+	useApplicationDeletionApi,
+	useApplicationPublicationApi,
+	useApplicationUpdateApi,
+} from '@/components/api.hook';
 import { useToast } from '@/app/layout';
-import { Application } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import { useApplication } from '@/contexts/application-store.context';
 import { useEditionStatus, useSetEditionStatus } from '@/contexts/edition-status.context';
+import { Application } from '@/entities/application.entity';
+import { useOrganisationContext } from '@/contexts/organisation-store.context';
 
 const BORDER_CLASSES = 'border-r-2 border-gray-200';
 const ICON_ROTATION_CLASSES = 'h-5 w-5 transition-transform group-hover:rotate-45';
@@ -47,8 +52,8 @@ function ApplicationHeader({ application, hideLogo, setHideLogo }: {
 }
 
 export default function ApplicationDetailsNavbar({ refreshApplication }: { refreshApplication: () => void }) {
-	const params = useParams();
-	const organisationId = parseInt(params.organisationId);
+	const organisation = useOrganisationContext();
+	const organisationId = organisation.id;
 	const application = useApplication();
 	const isModified = useEditionStatus();
 	const setIsModified = useSetEditionStatus();

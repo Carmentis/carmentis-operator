@@ -3,25 +3,20 @@
 import 'bootstrap-icons/font/bootstrap-icons.min.css';
 import './globals.css';
 import 'react-loading-skeleton/dist/skeleton.css';
-import { toast, ToastContainer as ToastifyContainer } from 'react-toastify';
-import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
-import { AuthenticatedUserDetailsResponse, useFetchCurrentUserDetails } from '@/components/api.hook';
-import { Spinner } from '@material-tailwind/react';
-import { ThemeProvider } from '@material-tailwind/react';
+import { toast, ToastContainer as ToastifyContainer, ToastContainerProps } from 'react-toastify';
+import { PropsWithChildren } from 'react';
 import { ApplicationNavigationContextProvider } from '@/contexts/application-navigation.context';
 import { ApplicationInterfaceContextProvider } from '@/contexts/interface.context';
 import { MaterialTailwindThemeContextProvider } from '@/contexts/material-taildwind-theme.context';
-import { UserAuthenticationContextProvider } from '@/contexts/user-authentication.context';
 
 // Constants for reusability and manage ToastContainer configuration
-const toastConfig = {
+const toastConfig: ToastContainerProps = {
 	position: 'bottom-center',
 	autoClose: 5000,
 	hideProgressBar: false,
 	closeOnClick: true,
 	pauseOnHover: true,
 	draggable: true,
-	progress: undefined,
 };
 
 // toast hooks into a single utility for consistent usage
@@ -52,15 +47,13 @@ export default function RootLayout({ children }: PropsWithChildren) {
 		<ApplicationNavigationContextProvider>
 			<ApplicationInterfaceContextProvider>
 				<MaterialTailwindThemeContextProvider>
-					<UserAuthenticationContextProvider>
-						<html lang="en">
-						<body>
-						{/* Centralized ToastContainer with extracted configurations */}
-						<ToastifyContainer {...toastConfig} />
-						{children}
-						</body>
-						</html>
-					</UserAuthenticationContextProvider>
+					<html lang="en">
+					<body>
+					{/* Centralized ToastContainer with extracted configurations */}
+					<ToastifyContainer {...toastConfig} />
+					{children}
+					</body>
+					</html>
 				</MaterialTailwindThemeContextProvider>
 			</ApplicationInterfaceContextProvider>
 		</ApplicationNavigationContextProvider>

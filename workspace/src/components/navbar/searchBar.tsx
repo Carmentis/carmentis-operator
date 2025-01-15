@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { GlobalSearchResponse, useCallGlobalSearchApi } from '@/components/api.hook';
 import { useToast } from '@/app/layout';
 import { Card, CardBody, Spinner, Typography } from '@material-tailwind/react';
@@ -15,7 +15,7 @@ export default function NavbarSearchBar() {
     const [search, setSearch] = useState('');
     const params = useParams();
     const notify = useToast();
-    const organisationId = parseInt(params.organisationId);
+    const organisationId = parseInt(params.organisationId as string);
     const callGlobalSearch = useCallGlobalSearchApi();
     const [isLoading, setIsLoading] = useState(false);
     const [result, setResult] = useState<GlobalSearchResponse|undefined>(undefined);

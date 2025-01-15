@@ -1,14 +1,11 @@
-import Image from "next/image";
-import NavbarSearchBar from "@/components/navbar/searchBar";
-import Avatar from 'boring-avatars';
+import NavbarSearchBar from '@/components/navbar/searchBar';
 import { useFetchOrganisationsOfUser } from '@/components/api.hook';
-import { Menu, MenuHandler, Button, MenuList, MenuItem, Spinner, Chip } from '@material-tailwind/react';
-import { Organisation } from '@/entities/organisation.entity';
+import { Button, Menu, MenuHandler, MenuItem, MenuList, Spinner } from '@material-tailwind/react';
+import { Organisation, OrganisationSummaryList } from '@/entities/organisation.entity';
 import { useAuthenticationContext } from '@/contexts/user-authentication.context';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import { useOrganisationContext } from '@/contexts/organisation-store.context';
 import CarmentisLogo from '@/components/carmentis-logo.component';
-
 
 
 const SEARCH_BAR_CLASSES = 'search-bar w-full';
@@ -54,7 +51,7 @@ function SearchBar() {
 
 type Props = {
 	currentOrganisation: Organisation;
-	organisations: Organisation[];
+	organisations: OrganisationSummaryList;
 };
 
 function OrganisationSwitcher({ currentOrganisation, organisations }: Props) {

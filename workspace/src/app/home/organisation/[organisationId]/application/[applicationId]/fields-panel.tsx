@@ -1,13 +1,14 @@
 import {
-	ApplicationEditor, AppDataField,
+	ApplicationEditor,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
-import {  useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Input } from '@material-tailwind/react';
 import { useToast } from '@/app/layout';
 import ApplicationFieldEditionCard
 	from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
 import { useApplicationFields, useUpdateApplication } from '@/contexts/application-store.context';
 import { useSetEditionStatus } from '@/contexts/edition-status.context';
+import { AppDataField } from '@/entities/application.entity';
 
 export default function FieldsPanel() {
 
@@ -56,7 +57,7 @@ export default function FieldsPanel() {
 				<Input label={'name'} value={fieldName} onChange={e => setFieldName(e.target.value)}
 					   className={'w-14'} />
 			</div>
-			<Button size={'md'} color={'default'} onClick={addField}>Add field</Button>
+			<Button size={'md'} onClick={addField}>Add field</Button>
 		</div>
 
 

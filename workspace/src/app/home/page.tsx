@@ -3,20 +3,26 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Organisation } from '@/components/sidebar';
-import { fetchOrganisationsOfUser, useOrganisationCreation } from '@/components/api.hook';
+import { useFetchOrganisationsOfUser, useOrganisationCreation, useSandboxCreationApi } from '@/components/api.hook';
 import SimpleTextModalComponent from '@/components/modals/simple-text-modal.component';
-import { useRouter } from 'next/navigation';
 import Avatar from 'boring-avatars';
-import { Button } from '@material-tailwind/react';
-import DefaultCard from '@/components/default-card.component';
+import { Button, Chip } from '@material-tailwind/react';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
+import FullPageLoadingComponent from '@/components/full-page-loading.component';
+import { useToast } from '@/app/layout';
+import ConditionallyHiddenLayout from '@/components/conditionally-hidden-layout.component';
+import { Organisation, OrganisationSummaryList } from '@/entities/organisation.entity';
+import { useAuthenticationContext } from '@/contexts/user-authentication.context';
 
-function OrganisationCard(input: { organisation: { id:number, name: string } }) {
+function OrganisationCard(input: { organisation: { id:number, name: string, isSandbox: boolean } }) {
 	return <Link className={'card w-52 flex flex-col justify-center items-center space-y-2 h-52 hover:cursor-pointer'}
 				 href={`/home/organisation/${input.organisation.id}`}>
 			<Avatar name={input.organisation.name} variant={"beam"} width={60} height={60} />
 		<p className={'organisation-name'}>{input.organisation.name}</p>
+
+		<ConditionallyHiddenLayout showOn={input.organisation.isSandbox}>
+			<Chip value={"sandbox"} className={"bg-secondary-light"}/>
+		</ConditionallyHiddenLayout>
 	</Link>;
 }
 
@@ -24,10 +30,7 @@ function OrganisationCard(input: { organisation: { id:number, name: string } }) 
 function AdministrationPanelAccess() {
 	const navigation = useApplicationNavigationContext();
 	return <div className={"absolute left-5 top-5 w-72"}>
-		<DefaultCard bodyClassName={"p-4 flex flex-col items-center"}>
-			Are you an Administrator ?
 			<Button onClick={navigation.navigateToAdmin}>move to administration page</Button>
-		</DefaultCard>
 	</div>
 }
 
@@ -35,10 +38,16 @@ export default function HomePage() {
 	const [search, setSearch] = useState('');
 	const [showNewOrganisationModal, setShowNewOrganisationModal] = useState(false);
 
-	const [organisations, setOrganisations] = useState<Organisation[]>([]);
-	const {data, loading, error} = fetchOrganisationsOfUser();
+	const [organisations, setOrganisations] = useState<OrganisationSummaryList>([]);
+	const authenticationContext = useAuthenticationContext();
+	const authenticatedUser = authenticationContext.getAuthenticatedUser();
+	const {data, isLoading} = useFetchOrganisationsOfUser( authenticatedUser.publicKey );
+	const [isSpinning, setIsSpinning] = useState(false);
 	const callOrganisationCreation = useOrganisationCreation();
-	const router = useRouter();
+	const callSandboxCreation = useSandboxCreationApi();
+	const navigation = useApplicationNavigationContext();
+	const notify = useToast();
+
 
 	useEffect(() => {
 		if (data) {
@@ -48,16 +57,33 @@ export default function HomePage() {
 
 
 	function createOrganisation(organisationName: string) {
+		setIsSpinning(true);
 		setShowNewOrganisationModal(false);
 		callOrganisationCreation(organisationName, {
 			onSuccessData: (data: {id: number}) => {
-				router.push(`/home/organisation/${data.id}`);
-			}
+				navigation.navigateToOrganisation(data.id)
+			},
+			onError: notify.error,
+			onEnd: () => setIsSpinning(false)
 		})
 	}
 
 
+	function handleSandoxCreationClicked() {
+		setIsSpinning(true);
+		callSandboxCreation({
+			onSuccessData: (data) => {
+				notify.success('Sandbox created');
+				navigation.navigateToOrganisation(data.id)
+			},
+			onError: notify.error,
+			onEnd: () => setIsSpinning(false)
+		})
+	}
 
+	if ( !data || isLoading || isSpinning ) {
+		return <FullPageLoadingComponent/>
+	}
 
 	return <section className="bg-gray-50 dark:bg-gray-900 p-8 h-screen ">
 		<AdministrationPanelAccess/>
@@ -78,9 +104,18 @@ export default function HomePage() {
 			className="flex flex-row items-center justify-center px-6 py-4 mx-auto  lg:py-0 gap-2 flex-wrap w-8/12">
 			<div
 				onClick={() => setShowNewOrganisationModal(true)}
-				className={'card w-52 flex flex-col justify-center items-center space-y-2 h-52 bg-opacity-15 bg-primary-light border-primary-light hover:cursor-pointer border-dashed'}>
-				<div className="organisation-logo h-24 w-24 rounded-full flex justify-center items-center">
-					<i className={'bi bi-plus'}></i>
+				className={'card w-52 flex flex-col justify-center items-center space-y-2 h-52 bg-opacity-15 bg-primary-light border-primary-light hover:cursor-pointer border-dashed text-primary-light'}>
+				<div
+					className="organisation-logo h-24 w-24 rounded-full flex justify-center items-center uppercase text-center">
+					Create an organisation
+				</div>
+			</div>
+			<div
+				onClick={handleSandoxCreationClicked}
+				className={'card w-52 flex flex-col justify-center items-center space-y-2 h-52 bg-opacity-15 bg-secondary-light border-secondary-light hover:cursor-pointer border-dashed text-secondary-light'}>
+				<div
+					className="organisation-logo h-24 w-24 rounded-full flex justify-center items-center uppercase text-center">
+					Create a sandbox
 				</div>
 			</div>
 			{
@@ -96,7 +131,7 @@ export default function HomePage() {
 			<SimpleTextModalComponent label={"Organisation Name"}
 									  onSubmit={createOrganisation}
 									  onClose={() => setShowNewOrganisationModal(false)}
-									  placeholder={"Name"}/>
+									  placeholder={"Name"} />
 		}
 	</section>;
 }
