@@ -23,7 +23,7 @@ export default class ChainService implements OnModuleInit{
 	constructor() {}
 
 	onModuleInit() {
-		sdk.blockchain.blockchainCore.setNode("http://127.0.0.1:3000");
+		sdk.blockchain.blockchainCore.setNode("http://127.0.0.1:4000");
 	}
 
 	/**
@@ -55,12 +55,10 @@ export default class ChainService implements OnModuleInit{
 			await organisationVb.addPublicKey({
 				publicKey: organisation.publicSignatureKey
 			});
-			// TODO add operator server
-			/*
-			await vc.addOperatorServer({
-				...
-			});
-			 */
+
+			organisationVb.setGasPrice(
+				sdk.constants.ECO.TOKEN
+			);
 		}
 
 
@@ -134,6 +132,11 @@ export default class ChainService implements OnModuleInit{
 			}
 		});
 
+		vc.setGasPrice(
+			sdk.constants.ECO.TOKEN
+		);
+
+
 		await vc.sign();
 
 		return vc.publish()
@@ -148,15 +151,13 @@ export default class ChainService implements OnModuleInit{
 			organisation.privateSignatureKey
 		);
 
-		/*
+		console.log('oracle publication:', organisation)
 		const vc = new sdk.blockchain.oracleVb();
 		if ( !oracle.virtualBlockchainId ) {
-			console.log("Creating new oracle", oracle, organisation);
 			await vc.addDeclaration({
 				organizationId: organisation.virtualBlockchainId,
 			});
 		} else {
-			console.log("Loading existing oracle", oracle);
 			await vc.load(oracle.virtualBlockchainId);
 		}
 
@@ -178,9 +179,11 @@ export default class ChainService implements OnModuleInit{
 			}
 		});
 
+		vc.setGasPrice(
+			sdk.constants.ECO.TOKEN
+		);
+
 		await vc.sign();
 		return vc.publish()
-
-		 */
 	}
 }

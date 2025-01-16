@@ -81,8 +81,10 @@ export default function HomePage() {
 		})
 	}
 
-	if ( !data || isLoading || isSpinning ) {
-		return <FullPageLoadingComponent/>
+	if ( isSpinning ) return <FullPageLoadingComponent label={"Creation of your sandbox"}/>
+
+	if ( !data || isLoading ) {
+		return <FullPageLoadingComponent label={""}/>
 	}
 
 	return <section className="bg-gray-50 dark:bg-gray-900 p-8 h-screen ">

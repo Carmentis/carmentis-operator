@@ -496,8 +496,9 @@ export class OrganisationController {
     @Post(":organisationId/oracle/:oracleId/publish")
     async publishOracle(
         @Param('organisationId') organisationId: number,
-        @Param('oracleID') oracleId: number,
+        @Param('oracleId') oracleId: number,
     ) {
+
         try {
             await this.oracleService.publishOracle(oracleId);
         } catch (e) {

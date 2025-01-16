@@ -18,7 +18,7 @@ export class OracleService {
 		private readonly oracleRepository: Repository<OracleEntity>,
 		private readonly chainService: ChainService,
 		@InjectRepository(OrganisationEntity)
-		private readonly organisationEntityRepository: Repository<OrganisationEntity>
+		private readonly organisationRepository: Repository<OrganisationEntity>
 	) {
 	}
 
@@ -138,23 +138,30 @@ export class OracleService {
 	}
 
 	async publishOracle(oracleId: number) {
-		/*
 		const oracle = await this.oracleRepository.findOneBy({
 			id: oracleId,
 		});
-		const organisation = await this.organisationEntityRepository.findOneBy({id: oracleId});
+		const organisation = await this.getOrganisationByOracleId(oracleId);
 		const mb : MicroBlock = await this.chainService.publishOracle(organisation, oracle);
 
 		oracle.isDraft = false;
 		oracle.published = true;
 		oracle.publishedAt = new Date();
 		oracle.version += 1;
+		oracle.organisation = organisation;
 		if ( mb.header.height === 1 ) {
 			oracle.virtualBlockchainId = mb.hash;
 		}
 
 		await this.oracleRepository.save(oracle);
+	}
 
-		 */
+	async getOrganisationByOracleId(oracleId: number) {
+		const organisation = await this.organisationRepository.createQueryBuilder('organisation')
+			.innerJoin('organisation.oracles', 'oracle')
+			.where('oracle.id = :oracleId', { oracleId })
+			.getOne();
+		if (!organisation) throw new NotFoundException(`Organisation associated with the oracle is not found: oracle id ${oracleId}`)
+		return organisation
 	}
 }

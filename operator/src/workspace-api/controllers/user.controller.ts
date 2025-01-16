@@ -13,7 +13,7 @@ export class UserController {
 
     @Get("/current")
     async getCurrentAuthUser() {
-        throw new NotFoundException();
+        //throw new NotFoundException();
         const publicKey = "03D3F9D004A717C38742A91F868D27D7D1AABC2385EDFEF1C8A30708FE13B2099A";
         const result = await this.userService.findOneByPublicKey(publicKey);
         if (!result) {
