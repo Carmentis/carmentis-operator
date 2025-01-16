@@ -321,6 +321,7 @@ export class OrganisationController {
         @Param('userPublicKey') userPublicKey: string,
         @Body() rights: UpdateAccessRightDto,
     ) {
+        this.logger.log(`Updating rights for organisation ${organisationId} and user ${userPublicKey}`, JSON.stringify(rights))
         return this.organisationService.updateAccessRights(organisationId, userPublicKey, rights);
     }
 

@@ -9,25 +9,6 @@ import { SearchInputForm } from '@/components/form/search-input.form';
 import Avatar from 'boring-avatars';
 import Skeleton from 'react-loading-skeleton';
 
-
-/**
- * Displays a message indicating no organisation was found and provides an option to create a new organisation.
- *
- * @param {Object} params - The parameter object.
- * @param {Function} params.createOrganisationClicked - A callback function to be invoked when the "Create a new organisation" option is clicked.
- * @return {JSX.Element} A JSX element that contains the message and clickable text to create a new organisation.
- */
-function NoOrganisationFound(
-	{createOrganisationClicked}: {createOrganisationClicked: () => void}
-) {
-	return <div className={"text-center justify-center content-center h-auto"}>
-		<p>No organisation found</p>
-
-		<p className={"text-blue-900"} onClick={createOrganisationClicked}>Create a new organisation</p>
-	</div>
-}
-
-
 /**
  * Represents the properties required for listing organisations.
  *
@@ -66,10 +47,10 @@ function ListOrganisations(
 	const [searchFilter, setSearchFilter] = useState('');
 
 	return <Card className={"h-full w-full"}>
-		<CardBody className={"flex flex-col justify-between h-full"}>
-			<div id="search">
-				<SearchInputForm searchFilter={searchFilter} setSearchFilter={setSearchFilter}></SearchInputForm>
-				<ul>
+		<CardBody className={"flex flex-col justify-between h-full space-y-4"}>
+			<SearchInputForm searchFilter={searchFilter} setSearchFilter={setSearchFilter}></SearchInputForm>
+			<div id="search" className={'flex justify-start max-h-fit overflow-y-auto w-full'}>
+				<ul className={"w-full"}>
 					{
 						organisations
 							.filter(org => searchFilter === '' || org.name.toLowerCase().includes(searchFilter.toLowerCase()))
@@ -114,9 +95,7 @@ export default function OrganisationSidebar() {
 	}
 
 	const organisations = listOfOrganisationsResponse.data;
-	const content = organisations.length === 0 ?
-		<NoOrganisationFound createOrganisationClicked={showOrganisationCreationModal}/>:
-		<ListOrganisations createOrganisationClicked={showOrganisationCreationModal} organisations={organisations}/>
+	const content = <ListOrganisations createOrganisationClicked={showOrganisationCreationModal} organisations={organisations}/>;
 
 
 	return <div id="organisation"

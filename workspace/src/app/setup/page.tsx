@@ -2,10 +2,10 @@
 
 import { FormEvent, useState } from 'react';
 import Spinner from '@/components/spinner';
-import { useRouter } from 'next/navigation';
+import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 
 export default function SetupPage() {
-    const router = useRouter();
+    const navigation = useApplicationNavigationContext();
     const [publicKey, setPublicKey] = useState('');
     const [firstname, setFirstname] = useState('');
     const [lastname, setLastname] = useState('');
@@ -32,7 +32,7 @@ export default function SetupPage() {
     function onSetupResponse(response:any) {
         setIsLoading(false);
         if ( response.ok ) {
-            router.push("/login");
+            navigation.navigateToLogin();
         } else {
             // TODO display the error
         }

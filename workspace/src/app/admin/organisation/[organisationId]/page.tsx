@@ -17,6 +17,7 @@ import FullPageLoadingComponent from '@/components/full-page-loading.component';
 import { useParams } from 'next/navigation';
 import { useToast } from '@/app/layout';
 import Skeleton from 'react-loading-skeleton';
+import { useEffect, useState } from 'react';
 
 function OrganisationUsers({ organisationId }: { organisationId: number }) {
 	const { data, isLoading, mutate } = useFetchUsersInOrganisation(organisationId);
@@ -68,7 +69,7 @@ function OrganisationUsers({ organisationId }: { organisationId: number }) {
 					{data.map((userSummary, index) => <UserEditionCard
 						organisationId={organisationId}
 						userSummary={userSummary}
-						key={index}
+						key={userSummary.publicKey}
 						userRemovalClicked={() => removeUserFromOrganisation(
 							userSummary.publicKey
 						)}
@@ -95,14 +96,25 @@ function UserEditionCard(input: {
 	);
 	const user = data;
 
+	const [accessRights, setAccessRights] = useState<AccessRight|undefined>(undefined);
+
+	useEffect(() => {
+		setAccessRights(
+			user?.accessRights[0]
+		)
+	}, [user]);
+
 	// loading page
-	if (!user || isLoading) return <Skeleton height={60}/>
+	if (!user || !accessRights || isLoading) return <Skeleton height={60}/>
 
 
 
 	function updateUserAccessRights(accessRights: AccessRight) {
 		updateRights(input.organisationId, input.userSummary.publicKey, accessRights, {
-			onSuccess: () => notify.success('User rights updated'),
+			onSuccess: () => {
+				notify.success('User rights updated');
+				setAccessRights(accessRights)
+			},
 			onError: notify.error,
 			onEnd: mutate
 		})
@@ -124,8 +136,10 @@ function UserEditionCard(input: {
 							property="Administrator"
 							value={accessRight.isAdmin}
 							onChange={checked => {
-								accessRight.isAdmin = checked
-								updateUserAccessRights(accessRight)
+								updateUserAccessRights({
+									...accessRights,
+									isAdmin: checked
+								})
 							}}
 						/>
 					</div>
@@ -134,8 +148,10 @@ function UserEditionCard(input: {
 							property="Edit applications"
 							value={accessRight.editApplications}
 							onChange={checked => {
-								accessRight.editApplications = checked
-								updateUserAccessRights(accessRight)
+								updateUserAccessRights({
+									...accessRights,
+									editApplications: checked
+								})
 							}}
 						/>
 					</div>
@@ -144,8 +160,10 @@ function UserEditionCard(input: {
 							property="Edit users"
 							value={accessRight.editUsers}
 							onChange={checked => {
-								accessRight.editUsers = checked
-								updateUserAccessRights(accessRight)
+								updateUserAccessRights({
+									...accessRights,
+									editUsers: checked
+								})
 							}}
 						/>
 					</div>
@@ -154,8 +172,10 @@ function UserEditionCard(input: {
 							property="Edit oracles"
 							value={accessRight.editOracles}
 							onChange={checked => {
-								accessRight.editOracles = checked
-								updateUserAccessRights(accessRight)
+								updateUserAccessRights({
+									...accessRights,
+									editOracles: checked
+								})
 							}}
 						/>
 					</div>

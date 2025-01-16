@@ -11,6 +11,9 @@ import { OrganisationStoreContextProvider, useOrganisationStoreContext } from '@
 import { OrganisationMutationContextProvider } from '@/contexts/organisation-mutation.context';
 import NavbarSidebarLayout from '@/components/navbar-sidebar-layout.component';
 import NotFoundPage from '@/app/home/organisation/[organisationId]/not-found';
+import FullPageLoadingComponent from '@/components/full-page-loading.component';
+import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
+import { useToast } from '@/app/layout';
 
 
 function HomeOrganisationPage(
@@ -34,17 +37,24 @@ function OrganisationDataAccess({ children }: PropsWithChildren) {
 	const organisationId = parseInt(params.organisationId as string);
 	const { data, isLoading, error, mutate } = useFetchOrganisation(organisationId);
 	const organisationStoreContext = useOrganisationStoreContext();
+	const navigation = useApplicationNavigationContext();
+	const notify = useToast();
 
 	// synchronise the organisation state
 	useEffect(() => {
 		organisationStoreContext.setOrganisation(data);
 	}, [data]);
 
+	// if not loading but data not available, redirect to the list of organisation
+	if (!data && !isLoading || error) {
+		notify.info("Cannot load organisation")
+		navigation.navigateToHome();
+		return <NotFoundPage/>
+	}
+
 	// display the loading page when checking if the organisation exists
 	if (!data || isLoading || !organisationStoreContext.organisation) {
-		return <div className="flex items-center justify-center w-screen h-screen">
-			<Spinner width={100} height={100} />
-		</div>;
+		return <FullPageLoadingComponent label={'Loading organisation'} />
 	}
 
 

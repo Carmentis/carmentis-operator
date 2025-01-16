@@ -77,6 +77,7 @@ export class OrganisationService {
 			.innerJoinAndSelect('user.accessRights', 'accessRight')
 			.innerJoin('accessRight.organisation', 'organisation')
 			.where('organisation.id = :organisationId', { organisationId })
+			.orderBy('user.publicKey')
 			.getMany();
 	}
 

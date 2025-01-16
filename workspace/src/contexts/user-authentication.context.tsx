@@ -3,6 +3,7 @@
 import { AuthenticatedUserDetailsResponse, useFetchAuthenticatedUser } from '@/components/api.hook';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
+import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 
 export type UserAuthentication = {
 	authenticatedUser: AuthenticatedUserDetailsResponse | undefined,
@@ -16,18 +17,23 @@ const UserAuthenticationContext = createContext<UserAuthentication | undefined>(
 
 export function UserAuthenticationContextProvider({children}: PropsWithChildren) {
 	const [currentUser, setCurrentUser] = useState<AuthenticatedUserDetailsResponse | undefined>(undefined);
-	const currentUserDetails = useFetchAuthenticatedUser();
+	const {data, isLoading, error} = useFetchAuthenticatedUser();
+	const navigation = useApplicationNavigationContext();
 
 	useEffect(() => {
-		setCurrentUser(currentUserDetails.data);
-	}, [currentUserDetails.data]);
+		setCurrentUser(data);
+	}, [data]);
 
+	// if not loading but data not available, redirect to the list of organisation
+	if (!data && !isLoading || error) {
+		return navigation.navigateToIndex();
+	}
 
-	if (!currentUserDetails.data || currentUserDetails.isLoading)
+	if (!data || isLoading)
 		return <FullPageLoadingComponent/>
 
-	if (currentUserDetails.error)
-		return <h1>An error has been occurred</h1>
+	if (error)
+		navigation.navigateToLogin();
 
 
 	const state : UserAuthentication = {
@@ -46,7 +52,7 @@ export function UserAuthenticationContextProvider({children}: PropsWithChildren)
 
 
 	return <UserAuthenticationContext.Provider value={state}>
-		{children}
+		 {currentUser && children}
 	</UserAuthenticationContext.Provider>
 }
 

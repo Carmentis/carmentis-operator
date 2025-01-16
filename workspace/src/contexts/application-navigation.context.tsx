@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, PropsWithChildren, startTransition, useContext, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -9,26 +11,20 @@ export interface NavigationInterface {
 	navigateToIndex: () => void,
 	navigateToOrganisation: (organisationId: number) => void
 	navigateToLogin: () => void;
+	navigateToOperatorStatus(): void;
+	navigateToSetup(): void;
 }
 
 
 
 export function ApplicationNavigationContextProvider({ children }: PropsWithChildren) {
 	const router = useRouter();
-	const [isLoading, setIsLoading] = useState(false);
 
 	const navigate = (url: string) => {
-		setIsLoading(true);
-
 		// Wrap the navigation in React's startTransition to improve transitions
 		startTransition(() => {
 			router.push(url);
 		});
-
-		// Simulate loading until navigation is complete
-		setTimeout(() => {
-			setIsLoading(false);  // You might need a more reliable way to determine when the navigation is complete
-		}, 500); // Adjust this timeout as needed
 	};
 
 	const navigation: NavigationInterface = {
@@ -36,12 +32,13 @@ export function ApplicationNavigationContextProvider({ children }: PropsWithChil
 		navigateToOrganisation: (id) => navigate(`/home/organisation/${id}`),
 		navigateToAdmin: () => navigate(`/admin`),
 		navigateToIndex: () => navigate('/'),
-		navigateToLogin: () => navigate('/login')
+		navigateToLogin: () => navigate('/'),
+		navigateToOperatorStatus: () => navigate('/operator-status'),
+		navigateToSetup: () => navigate('/setup')
 	}
 
 	return <ApplicationNavigationContext.Provider value={navigation}>
-
-			{!isLoading && children}
+			{children}
 	</ApplicationNavigationContext.Provider>
 }
 

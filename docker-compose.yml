@@ -1,35 +1,56 @@
 version: "3.9"
 services:
 
-  workspace:
-    build:
-      context: ./workspace
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_WORKSPACE_API_BASE_URL: ${NEXT_PUBLIC_WORKSPACE_API_BASE_URL}
+  db:
+    image: postgres:15 # Use the latest stable PostgreSQL image
+    container_name: db-operator-carmentis
+    restart: always
     environment:
-      image: ghcr.io/carmentis/carmentis-workspace
-    container_name: workspace.carmentis
-    tty: true
+      POSTGRES_USER: ${OPERATOR_DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${OPERATOR_DATABASE_PASSWORD}
+      POSTGRES_DB: ${OPERATOR_DATABASE_NAME}
     networks:
       - carmentis-network
     ports:
-      - "3004:3000"
+      - "5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
 
-  operator:
+  back.operator:
+    image: back.operator.themis.carmentis
+    restart: always
     build:
       context: ./operator
       dockerfile: Dockerfile
-    environment:
-         image: ghcr.io/carmentis/carmentis-operator
-    container_name: operator.carmentis
+    container_name: back-operator-carmentis
     tty: true
+    depends_on:
+      - db
     networks:
       - carmentis-network
     ports:
-      - "3005:3000"
+      - "4002:3002"
     env_file:
       - .env
+
+  front.operator:
+    image: front.operator.themis.carmentis
+    build:
+      context: ./workspace
+      dockerfile: Dockerfile
+    container_name: front-operator-carmentis
+    tty: true
+    depends_on:
+      - db
+      - back.operator
+    networks:
+      - carmentis-network
+    ports:
+      - "4003:3003"
+    env_file:
+      - .env
+volumes:
+  db_data:
 
 networks:
   carmentis-network:

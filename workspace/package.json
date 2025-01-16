@@ -13,6 +13,7 @@
     "@cmts-dev/carmentis-sdk": "^0.0.9",
     "@heroicons/react": "^2.2.0",
     "@material-tailwind/react": "^2.1.10",
+    "@next/env": "^15.1.4",
     "@redux-devtools/extension": "^3.3.0",
     "bootstrap-icons": "^1.11.3",
     "boring-avatars": "^1.11.2",

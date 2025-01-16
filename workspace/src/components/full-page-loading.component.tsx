@@ -1,5 +1,9 @@
 import FullSpaceSpinner from '@/components/full-page-spinner.component';
 
-export default function FullPageLoadingComponent() {
-	return <FullSpaceSpinner/>
+type FullPageLoadingComponentProps = {
+	label?: string
+}
+
+export default function FullPageLoadingComponent({label} : FullPageLoadingComponentProps) {
+	return <FullSpaceSpinner label={label}/>
 }

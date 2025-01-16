@@ -1,9 +1,10 @@
 import User, { AccessRight, UserSummary, UserSummaryList } from '@/entities/user.entity';
 import useSWR from 'swr';
 import { Organisation, OrganisationSummary, OrganisationSummaryList } from '@/entities/organisation.entity';
-import { Application, ApplicationSummary, ApplicationSummaryList } from '@/entities/application.entity';
-import { Oracle, OracleSummary, OracleSummaryList } from '@/entities/oracle.entity';
+import { Application, ApplicationSummary } from '@/entities/application.entity';
+import { Oracle, OracleSummary } from '@/entities/oracle.entity';
 
+const API = process.env.NEXT_PUBLIC_WORKSPACE_API_BASE_URL;
 
 export type IdentifiedEntity = {
 	id: number;
@@ -14,6 +15,10 @@ export type Field = {
 	name: string,
 	type: number,
 	maskId?: number
+}
+
+export type OperatorInitialisationStatus = {
+	initialised: true
 }
 
 export type GlobalSearchResponse = {
@@ -63,7 +68,7 @@ export async function CallApi<T>(
 ) {
 
 	if ( cb && cb.onStart ) cb.onStart();
-	fetch(process.env.NEXT_PUBLIC_WORKSPACE_API_BASE_URL + url, params)
+	fetch(API + url, params)
 		.then(async (response) =>  {
 			if ( response.ok ) {
 				if ( cb && cb.onSuccess ) { cb.onSuccess() }
@@ -104,16 +109,22 @@ export async function fetcherJSON<T>(url: string) : Promise<T> {
 	return res.json()
 }
 
+export interface SWRConfig {
+	errorRetryCount?: number
+}
+
 /**
  * A custom hook that facilitates data fetching from a workspace API using the SWR library.
  *
  * @param {string | undefined} url - The relative API endpoint to fetch data from. If undefined, no request will be made.
+ * @param config
  * @return {object} Returns the result of the SWR hook, which includes data, error, and other utilities for managing the request lifecycle.
  */
-export function useWorkspaceApi<T>( url: string | undefined) {
+export function useWorkspaceApi<T>( url: string | undefined, config : SWRConfig = {}) {
 	return useSWR(
-		url ? process.env.NEXT_PUBLIC_WORKSPACE_API_BASE_URL + url : url,
-		fetcherJSON<T>
+		url ? API + url : url,
+		fetcherJSON<T>,
+		config
 	);
 }
 
@@ -148,6 +159,21 @@ export const useFetchAuthenticatedUser = () => {
 	return useWorkspaceApi<UserSummary>(
 		`/user/current`
 	);
+}
+
+export const useFetchOperatorInitialisationStatus= (cb: APICallbacks<OperatorInitialisationStatus>) => {
+	return CallApi(`/setup/status`, cb, {
+		method: 'GET'
+	});
+
+	/*
+	return useWorkspaceApi<OperatorInitialisationStatus>(
+		`/setup/status`,
+		{
+			errorRetryCount: 1
+		}
+	);
+	 */
 }
 
 

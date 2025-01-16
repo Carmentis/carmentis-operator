@@ -1,4 +1,4 @@
-import OrganisationsList from '@/app/admin/organisation/sidebar';
+import OrganisationsList from '@/app/admin/organisation/organisation-list';
 
 
 export default function RootLayout({

@@ -8,6 +8,7 @@ import { PropsWithChildren } from 'react';
 import { ApplicationNavigationContextProvider } from '@/contexts/application-navigation.context';
 import { ApplicationInterfaceContextProvider } from '@/contexts/interface.context';
 import { MaterialTailwindThemeContextProvider } from '@/contexts/material-taildwind-theme.context';
+import { InitialisationStatusContext } from '@/contexts/initialisation-status.context';
 
 // Constants for reusability and manage ToastContainer configuration
 const toastConfig: ToastContainerProps = {
@@ -44,19 +45,21 @@ export const useToast = () => {
 export default function RootLayout({ children }: PropsWithChildren) {
 
 	return (
+		<html lang="en">
+		<body>
 		<ApplicationNavigationContextProvider>
-			<ApplicationInterfaceContextProvider>
-				<MaterialTailwindThemeContextProvider>
-					<html lang="en">
-					<body>
-					{/* Centralized ToastContainer with extracted configurations */}
-					<ToastifyContainer {...toastConfig} />
-					{children}
-					</body>
-					</html>
-				</MaterialTailwindThemeContextProvider>
-			</ApplicationInterfaceContextProvider>
+			<InitialisationStatusContext>
+				<ApplicationInterfaceContextProvider>
+					<MaterialTailwindThemeContextProvider>
+						{/* Centralized ToastContainer with extracted configurations */}
+						<ToastifyContainer {...toastConfig} />
+						{children}
+					</MaterialTailwindThemeContextProvider>
+				</ApplicationInterfaceContextProvider>
+			</InitialisationStatusContext>
 		</ApplicationNavigationContextProvider>
+		</body>
+		</html>
 	)
 		;
 }

@@ -13,7 +13,7 @@ import { OperatorApiModule } from './operator-api/operator-api.module';
 		OperatorApiModule,
 		WorkspaceApiModule,
 		ConfigModule.forRoot({
-			envFilePath: ['../.env', '.env'],
+			envFilePath: ['.env.local', '.env', '../.env',  ],
 			isGlobal: true,
 		}),
 		TypeOrmModule.forRootAsync({
