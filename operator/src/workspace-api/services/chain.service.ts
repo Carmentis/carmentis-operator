@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable,  OnModuleInit } from '@nestjs/common';
-import * as sdk from "@cmts-dev/carmentis-sdk";
+import * as sdk from "@cmts-dev/carmentis-sdk/server";
 import { ApplicationEntity } from '../entities/application.entity';
 import { OrganisationEntity } from '../entities/organisation.entity';
 import { OracleEntity } from '../entities/oracle.entity';

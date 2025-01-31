@@ -3,11 +3,12 @@ import {
 	WebSocketServer,
 	OnGatewayConnection,
 	OnGatewayDisconnect,
+	OnGatewayInit
 } from '@nestjs/websockets';
 import { SubscribeMessage, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { HttpCode, HttpException, HttpStatus, Logger } from '@nestjs/common';
-import * as sdk from '@cmts-dev/carmentis-sdk';
+import * as sdk from '@cmts-dev/carmentis-sdk/server';
 
 const WI = {
 	CLIENT_STORAGE_KEY: "CWI-client",
@@ -197,6 +198,7 @@ export class Uint8Utils {
 }
 
 
+
 @WebSocketGateway({
 	namespace: '/',
 	cors: {
@@ -205,9 +207,20 @@ export class Uint8Utils {
 		credentials: true,
 	},
 })
-export class OperatorApiGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class OperatorApiGateway implements OnGatewayInit {
 	private readonly logger = new Logger(OperatorApiGateway.name);
 	@WebSocketServer() server: Server;
+	private wi : any;
+
+	constructor() {
+
+	}
+
+	afterInit(server: Server): any {
+		this.wi = new sdk.wiServer(server);
+	}
+
+	/*
 	private clients: Set<Socket> = new Set();
 	private requests = new Map<string, any>();
 	private qrCodes = new Map<string, any>();
@@ -260,7 +273,7 @@ export class OperatorApiGateway implements OnGatewayConnection, OnGatewayDisconn
 			case WI.MSG_WALLET_RECONNECTION:
 				response = await this.walletReconnection(client, msg.data);
 				break;
-				 */
+
 			default:
 				this.logger.error(`Unexpected Message ID: ${message.id}`);
 				break;
@@ -365,4 +378,5 @@ export class OperatorApiGateway implements OnGatewayConnection, OnGatewayDisconn
 
 		return qrId;
 	}
+	 */
 }

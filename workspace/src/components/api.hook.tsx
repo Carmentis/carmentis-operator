@@ -1,10 +1,14 @@
+import { env } from 'next-runtime-env';
 import User, { AccessRight, UserSummary, UserSummaryList } from '@/entities/user.entity';
 import useSWR from 'swr';
 import { Organisation, OrganisationSummary, OrganisationSummaryList } from '@/entities/organisation.entity';
 import { Application, ApplicationSummary } from '@/entities/application.entity';
 import { Oracle, OracleSummary } from '@/entities/oracle.entity';
 
-const API = process.env.NEXT_PUBLIC_WORKSPACE_API_BASE_URL;
+
+
+const API = process.env.NEXT_PUBLIC_WORKSPACE_API;
+console.log("Api:", API)
 
 export type IdentifiedEntity = {
 	id: number;
@@ -66,9 +70,10 @@ export async function CallApi<T>(
 	cb: APICallbacks<T> | undefined,
 	params: RequestInit | undefined,
 ) {
-
 	if ( cb && cb.onStart ) cb.onStart();
-	fetch(API + url, params)
+	const targetUrl = API + url;
+	console.log(`Contacting API at ${targetUrl}`)
+	fetch(targetUrl, params)
 		.then(async (response) =>  {
 			if ( response.ok ) {
 				if ( cb && cb.onSuccess ) { cb.onSuccess() }
@@ -161,20 +166,6 @@ export const useFetchAuthenticatedUser = () => {
 	);
 }
 
-export const useFetchOperatorInitialisationStatus= (cb: APICallbacks<OperatorInitialisationStatus>) => {
-	return CallApi(`/setup/status`, cb, {
-		method: 'GET'
-	});
-
-	/*
-	return useWorkspaceApi<OperatorInitialisationStatus>(
-		`/setup/status`,
-		{
-			errorRetryCount: 1
-		}
-	);
-	 */
-}
 
 
 export function useFetchUserInOrganisation(organisationId: number, userPublicKey: string)  {
@@ -232,6 +223,27 @@ export function useSandboxCreationApi() {
 	};
 }
 
+
+export function useFetchOperatorInitialisationStatus(cb: APICallbacks<OperatorInitialisationStatus>) {
+	return CallApi(`/setup/status`, cb, {
+		method: 'GET'
+	});
+}
+
+
+export function useSetupApi() {
+	return async (publicKey: string, firstname: string, lastname: string, cb: APICallbacks<void> | undefined) => {
+		return CallApi(`/setup`, cb, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				publicKey: publicKey,
+				lastname: lastname,
+				firstname: firstname,
+			}),
+		});
+	};
+}
 
 export function useUserCreation() {
 	return async (publicKey: string, firstname: string, lastname: string, isAdmin: boolean, cb: APICallbacks<UserSummary> | undefined) => {

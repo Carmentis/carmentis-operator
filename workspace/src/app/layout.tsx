@@ -9,6 +9,8 @@ import { ApplicationNavigationContextProvider } from '@/contexts/application-nav
 import { ApplicationInterfaceContextProvider } from '@/contexts/interface.context';
 import { MaterialTailwindThemeContextProvider } from '@/contexts/material-taildwind-theme.context';
 import { InitialisationStatusContext } from '@/contexts/initialisation-status.context';
+import { EnvScript } from 'next-runtime-env';
+import { EnvVarsContext } from '@/contexts/env-vars.context';
 
 // Constants for reusability and manage ToastContainer configuration
 const toastConfig: ToastContainerProps = {
@@ -47,6 +49,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
 	return (
 		<html lang="en">
 		<body>
+		<EnvVarsContext>
 		<ApplicationNavigationContextProvider>
 			<InitialisationStatusContext>
 				<ApplicationInterfaceContextProvider>
@@ -58,6 +61,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
 				</ApplicationInterfaceContextProvider>
 			</InitialisationStatusContext>
 		</ApplicationNavigationContextProvider>
+		</EnvVarsContext>
 		</body>
 		</html>
 	)

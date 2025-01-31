@@ -18,13 +18,12 @@ export default function TestPage() {
 
 function OperatorConnectionCard() {
     return <Card>
-        <CardBody>
-            <Typography variant={"h4"}>Connectivity failure</Typography>
+        <CardBody className={"space-y-4"}>
+            <Typography variant={"h4"}>Connectivity Status</Typography>
             <Typography>
-                It appears that we are not able to contact the API.
-                Below is the current connection status.
+                Below is presented the connection status with the operator API.
             </Typography>
-            <OperatorConnectionStatus/>
+            <Typography> <OperatorConnectionStatus/></Typography>
         </CardBody>
     </Card>
 }
@@ -43,6 +42,6 @@ function OperatorConnectionStatus() {
 
     if (online === undefined)  return 'Contacting...'
     if (online) return 'Connected'
-    if (!online) return 'Offline'
+    if (!online) return 'Connection failure'
 }
 

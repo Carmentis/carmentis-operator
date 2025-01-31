@@ -1,4 +1,4 @@
-import * as sdk from '@cmts-dev/carmentis-sdk';
+import * as sdk from '@cmts-dev/carmentis-sdk/client';
 import {
 	Oracle,
 	OracleEnumeration,

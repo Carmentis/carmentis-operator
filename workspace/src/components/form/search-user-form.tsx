@@ -25,7 +25,7 @@ export function SearchUserInputComponent(
 		}
 
 		setIsLoading(true);
-		fetch(process.env.NEXT_PUBLIC_WORKSPACE_API_BASE_URL + `/search/user?query=${searchInput}`)
+		fetch(process.env.NEXT_PUBLIC_WORKSPACE_API + `/search/user?query=${searchInput}`)
 			.then(response => {
 				if (response.status === 404) {
 					throw new Error("No entry found");

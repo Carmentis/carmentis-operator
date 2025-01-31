@@ -1,4 +1,4 @@
-import * as sdk from '@cmts-dev/carmentis-sdk';
+import * as sdk from '@cmts-dev/carmentis-sdk/client';
 import { Application, AppDataStruct, AppDataField, AppDataEnum, AppDataMask, AppDataMessage } from '@/entities/application.entity';
 
 

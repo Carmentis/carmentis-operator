@@ -3,9 +3,11 @@
 import { FormEvent, useState } from 'react';
 import Spinner from '@/components/spinner';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
+import { useSetupApi } from '@/components/api.hook';
 
 export default function SetupPage() {
     const navigation = useApplicationNavigationContext();
+    const callSetup = useSetupApi();
     const [publicKey, setPublicKey] = useState('');
     const [firstname, setFirstname] = useState('');
     const [lastname, setLastname] = useState('');
@@ -14,19 +16,10 @@ export default function SetupPage() {
     function setupPublicKey( event: FormEvent ) {
         event.preventDefault();
         setIsLoading(true);
-        fetch(process.env.NEXT_PUBLIC_WORKSPACE_API_BASE_URL + "/setup", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                publicKey: publicKey,
-                lastname: lastname,
-                firstname: firstname,
-            }),
+        callSetup(publicKey, firstname, lastname, {
+            onSuccess: onSetupResponse,
+            onError: onSetupFailure,
         })
-            .then(onSetupResponse)
-            .catch(onSetupFailure);
     }
 
     function onSetupResponse(response:any) {

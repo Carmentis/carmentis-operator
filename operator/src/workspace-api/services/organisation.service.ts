@@ -7,7 +7,7 @@ import { OrganisationAccessRightEntity } from '../entities/organisation-access-r
 import { UpdateAccessRightDto } from '../dto/update-access-rights.dto';
 import { ApplicationEntity } from '../entities/application.entity';
 import ChainService from './chain.service';
-import * as sdk from '@cmts-dev/carmentis-sdk';
+import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { ApplicationDataType } from '../types/application-data.type';
 import { ApplicationService } from './application.service';
 

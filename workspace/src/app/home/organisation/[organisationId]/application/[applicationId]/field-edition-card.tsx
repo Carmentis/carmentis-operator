@@ -5,7 +5,7 @@ import { useRef, useState } from 'react';
 import { generateRandomString } from 'ts-randomstring/lib';
 import { Button, Checkbox, Input, Option, Radio, Select, Typography } from '@material-tailwind/react';
 import SmallCardEdition from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/small-edition-card';
-import * as sdk from '@cmts-dev/carmentis-sdk';
+import * as sdk from '@cmts-dev/carmentis-sdk/client';
 import { useApplication, useUpdateApplication } from '@/contexts/application-store.context';
 import { useSetEditionStatus } from '@/contexts/edition-status.context';
 import ConditionallyHiddenLayout from '@/components/conditionally-hidden-layout.component';

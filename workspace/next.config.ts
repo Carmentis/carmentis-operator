@@ -1,11 +1,10 @@
 import type { NextConfig } from "next";
 
-
 const nextConfig: NextConfig = {
-    crossOrigin: 'anonymous',
-    env: {
-        PUBLIC_NEXT_WORKSPACE_API_BASE_URL: process.env.PUBLIC_NEXT_WORKSPACE_API_BASE_URL,
-    },
+	env: {
+		NEXT_PUBLIC_OPERATOR_URL: process.env.OPERATOR_URL,
+		NEXT_PUBLIC_WORKSPACE_API: process.env.OPERATOR_URL + '/workspace/api'
+	}
 };
 
 export default nextConfig;
