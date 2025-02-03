@@ -188,6 +188,8 @@ export function useFetchOrganisationLogs( organisationId: number )  {
 
 
 
+
+
 export function useApplicationDeletionApi() {
 	return async (organisationId: number, applicationId: number, cb: APICallbacks<ApplicationSummary> | undefined) => {
 		return CallApi(`/organisation/${organisationId}/application/${applicationId}`, cb, {
@@ -428,6 +430,28 @@ export function useOraclePublication() {
 		});
 	};
 }
+
+export function useObtainChallenge()  {
+	return useWorkspaceApi<{challenge: string}>(`/login/challenge`);
+}
+
+export type ChallengeSuccessResponse = {
+	token: string,
+}
+export function useChallengeVerification() {
+	return async (challenge: string, signature: string, publicKey: string, cb: APICallbacks<ChallengeSuccessResponse> | undefined) => {
+		return CallApi(`/login/challenge/verify`, cb, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				challenge,
+				signature,
+				publicKey,
+			})
+		});
+	};
+}
+
 
 
 

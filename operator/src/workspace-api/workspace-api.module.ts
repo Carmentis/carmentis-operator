@@ -23,6 +23,15 @@ import { OracleService } from './services/oracle.service';
 import ChainService from './services/chain.service';
 import { AdminController } from './controllers/admin.controller';
 import { SandboxController } from './controllers/sandbox.controller';
+import { LoginController } from './controllers/login.controller';
+import { ChallengeService } from './services/challenge.service';
+import { ChallengeEntity } from './entities/challenge.entity';
+import { JwtModule } from '@nestjs/jwt';
+import * as crypto from 'crypto';
+import { AuthGuard } from './guards/authentication.guards';
+import { APP_GUARD } from '@nestjs/core';
+
+import { SetupController } from './controllers/setup.controller';
 
 // Extracted imports, controllers, and providers into constants
 const WORKSPACE_IMPORTS = [
@@ -33,7 +42,13 @@ const WORKSPACE_IMPORTS = [
 		ApplicationEntity,
 		OracleEntity,
 		AuditLogEntity,
+		ChallengeEntity
 	]),
+	JwtModule.register({
+		global: true,
+		secret: process.env.JWT_SECRET || crypto.randomBytes(32),
+		signOptions: { expiresIn: '60s' },
+	}),
 ];
 
 const WORKSPACE_CONTROLLERS = [
@@ -42,7 +57,9 @@ const WORKSPACE_CONTROLLERS = [
 	OrganisationController,
 	SearchController,
 	UserController,
-	SandboxController
+	SandboxController,
+	SetupController,
+	LoginController,
 ];
 
 const WORKSPACE_PROVIDERS = [
@@ -55,6 +72,12 @@ const WORKSPACE_PROVIDERS = [
 	AuditService,
 	OracleService,
 	ChainService,
+	ChallengeService,
+	AuthGuard,
+	{
+		provide: APP_GUARD,
+		useClass: AuthGuard,
+	},
 ];
 
 @Module({
