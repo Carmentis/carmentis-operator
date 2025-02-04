@@ -60,7 +60,6 @@ export class OrganisationScopedController {
 	async getAllApplications(
 		@Param('organisationId') organisationId: number,
 	): Promise<{ id: number, name: string, logoUrl: string }[]> {
-		// TODO check that the user belongs to the organisation
 		return await this.applicationService.findAllApplicationsInOrganisationByOrganisationId(organisationId);
 	}
 

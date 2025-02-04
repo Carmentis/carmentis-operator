@@ -49,5 +49,5 @@ export type Application = {
 	}
 }
 
-export type ApplicationSummary = Pick<Application, 'id' | 'name' | 'logoUrl'>
+export type ApplicationSummary = Pick<Application, 'id' | 'name' | 'logoUrl' | 'published' | 'publishedAt' | 'isDraft' | 'version'>
 export type ApplicationSummaryList = ApplicationSummary[];

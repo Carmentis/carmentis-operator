@@ -1,8 +1,8 @@
 'use client';
 
-import { Button, Card, CardBody, Typography } from '@material-tailwind/react';
+import { Button, Card, CardBody, Chip, Typography } from '@material-tailwind/react';
 import { SearchInputForm } from '@/components/form/search-input.form';
-import { BaseSyntheticEvent, useRef, useState } from 'react';
+import { BaseSyntheticEvent, ReactNode, useRef, useState } from 'react';
 import SimpleTextModalComponent from '@/components/modals/simple-text-modal.component';
 import {
 	useApplicationCreation,
@@ -43,14 +43,63 @@ function ListOfApplicationsComponent({ organisationId, data }: {
 	organisationId: number;
 	data: ApplicationSummary[];
 }) {
+
+	const router = useRouter();
+	function visitApplication(appId: number) {
+		router.push(`/home/organisation/${organisationId}/application/${appId}`)
+	}
+
+	const TABLE_HEAD = ['Name', 'Draft', 'Published', 'Published at', 'Version'];
+	const TABLE_CONTENT : ((app:ApplicationSummary) => ReactNode)[] = [
+		(app) => <Typography>{app.name}</Typography>,
+		(app) => app.isDraft && <Chip value={'Draft'} className={'bg-primary-light w-min'} />,
+		(app) => app.published && <Chip value={'Published'} className={'bg-primary-light w-min'} />,
+		(app) => app.publishedAt && <Typography>{new Date(app.publishedAt).toLocaleString()}</Typography>,
+		(app) => <Typography>{app.version}</Typography>,
+	]
+
 	return (
-		<div className="flex flex-wrap gap-4">
-			{data.map((app) => (
-				<Link key={app.id} href={`/home/organisation/${organisationId}/application/${app.id}`}>
-					<ApplicationHorizontalCard application={app}  />
-				</Link>
-			))}
-		</div>
+		<Card className="h-full w-full overflow-scroll-auto p-4">
+			<table className="w-full min-w-max table-auto text-left">
+				<thead>
+				<tr>
+					{TABLE_HEAD.map((head) => (
+						<th
+							key={head}
+							className="border-b border-blue-gray-100 p-4"
+						>
+							<Typography
+								variant="small"
+								color="blue-gray"
+								className="font-normal leading-none opacity-70"
+							>
+								{head}
+							</Typography>
+						</th>
+					))}
+				</tr>
+				</thead>
+				<tbody>
+				{data.map((app) => (
+					<tr
+						key={app.id}
+						className={"cursor-pointer hover:bg-gray-50 [&>td]:p-2"}
+						onClick={() => visitApplication(app.id)}
+					>
+						{
+							TABLE_CONTENT
+								.map(callback => {
+									return <td>
+										{callback(app)}
+									</td>
+								})
+						}
+					</tr>
+				))}
+
+				</tbody>
+			</table>
+		</Card>
 	);
 }
 
@@ -69,7 +118,6 @@ export default function ListOfApplicationsPage() {
 	const fileInputRef = useRef(null);
 
 	const { data, isLoading, mutate } = useFetchOrganisationApplications(organisationId);
-
 
 
 	function handleImportFileButtonClick() {
@@ -157,7 +205,7 @@ export default function ListOfApplicationsPage() {
 
 
 			<ListOfApplicationsComponent
-				data={data}
+				data={data.filter(app => search === '' || app.name.toLowerCase().includes(search.toLowerCase()))}
 				organisationId={organisationId}
 			/>
 

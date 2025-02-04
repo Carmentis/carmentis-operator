@@ -52,9 +52,10 @@ export class ApplicationService {
      */
     async findAllApplicationsInOrganisationByOrganisationId(organisationId: number) {
         return this.applicationRepository
-            .createQueryBuilder('application')
-            .innerJoin('application.organisation', 'organisation')
+            .createQueryBuilder('a')
+            .innerJoin('a.organisation', 'organisation')
             .where('organisation.id = :organisationId', { organisationId })
+            .select(['a.id', 'a.name', 'a.version', 'a.published', 'a.publishedAt', 'a.isDraft', 'a.version'])
             .getMany();
     }
 
