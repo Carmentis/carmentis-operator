@@ -2,6 +2,7 @@ import { UserSearchResult } from '@/entities/user.entity';
 import { ReactNode, useState } from 'react';
 import Spinner from '@/components/spinner';
 import { Input } from '@material-tailwind/react';
+import { useSearchUser } from '@/components/api.hook';
 
 export function SearchUserInputComponent(
 	input: {
@@ -13,6 +14,7 @@ export function SearchUserInputComponent(
 	const [searchInput, setSearchInput] = useState('');
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
+	const searchUser = useSearchUser();
 
 	// the function used to search users
 	function handleSearch(searchInput: string) {
@@ -25,20 +27,11 @@ export function SearchUserInputComponent(
 		}
 
 		setIsLoading(true);
-		fetch(process.env.NEXT_PUBLIC_WORKSPACE_API + `/search/user?query=${searchInput}`)
-			.then(response => {
-				if (response.status === 404) {
-					throw new Error("No entry found");
-				}
-				if (!response.ok) { throw new Error(response.statusText); }
-				return response.json();
-			})
-			.then(data => {
-				setSearchResults(data);
+		searchUser(searchInput, {
+			onSuccessData: data => setSearchResults(data),
+			onEnd: () => setIsLoading(false)
+		})
 
-			})
-			.catch(console.error)
-			.finally(() => setIsLoading(false));
 	}
 
 	function selectUser(user: UserSearchResult) {

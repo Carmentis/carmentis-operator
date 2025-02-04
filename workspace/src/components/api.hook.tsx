@@ -1,6 +1,5 @@
-import { env } from 'next-runtime-env';
 import User, { AccessRight, UserSummary, UserSummaryList } from '@/entities/user.entity';
-import useSWR from 'swr';
+import useSWR, { SWRResponse } from 'swr';
 import { Organisation, OrganisationSummary, OrganisationSummaryList } from '@/entities/organisation.entity';
 import { Application, ApplicationSummary } from '@/entities/application.entity';
 import { Oracle, OracleSummary } from '@/entities/oracle.entity';
@@ -10,21 +9,53 @@ import { Oracle, OracleSummary } from '@/entities/oracle.entity';
 const API = process.env.NEXT_PUBLIC_WORKSPACE_API;
 console.log("Api:", API)
 
+/**
+ * Represents an entity with a unique identifier.
+ * This type is typically used to define objects that are distinguished by their `id` field.
+ */
 export type IdentifiedEntity = {
 	id: number;
 }
 
 
+/**
+ * Represents a field with a name, type, and an optional mask ID.
+ *
+ * @typedef {Object} Field
+ * @property {string} name - The name of the field.
+ * @property {number} type - The type of the field represented as a number.
+ * @property {number} [maskId] - An optional identifier for masking operations.
+ */
 export type Field = {
 	name: string,
 	type: number,
 	maskId?: number
 }
 
+/**
+ * Represents the initialization status of an operator.
+ *
+ * The `OperatorInitialisationStatus` type is used to indicate whether
+ * the operator has been successfully initialized. It includes a single
+ * property, `initialised`, which is a boolean set to `true` when
+ * initialization is complete.
+ */
 export type OperatorInitialisationStatus = {
 	initialised: true
 }
 
+/**
+ * Represents the response from a global search operation.
+ *
+ * This type is used to encapsulate the search results categorized into
+ * various entity types such as users, oracles, applications, and organisations.
+ *
+ * @typedef {Object} GlobalSearchResponse
+ * @property {UserSummary[]} users - The list of users returned by the search.
+ * @property {OracleSummary[]} oracles - The list of oracles returned by the search.
+ * @property {ApplicationSummary[]} applications - The list of applications returned by the search.
+ * @property {OrganisationSummary[]} organisations - The list of organisations returned by the search.
+ */
 export type GlobalSearchResponse = {
 	users: UserSummary[];
 	oracles: OracleSummary[];
@@ -33,6 +64,19 @@ export type GlobalSearchResponse = {
 }
 
 
+/**
+ * Represents statistics related to an organisation.
+ *
+ * This interface is used to encapsulate various statistics and metrics
+ * associated with an organisation, such as the number of applications,
+ * oracles, users, as well as the organisation's balance.
+ *
+ * Properties:
+ * - `applicationsNumber`: The total number of applications associated with the organisation.
+ * - `oraclesNumber`: The total count of oracles in the organisation.
+ * - `usersNumber`: The number of users within the organisation.
+ * - `balance`: The organisation's financial balance.
+ */
 export interface OrganisationStats {
 	applicationsNumber: number
 	oraclesNumber: number
@@ -41,6 +85,20 @@ export interface OrganisationStats {
 }
 
 
+/**
+ * Represents a log entry for an organization operation.
+ *
+ * This interface is used to log operations performed on an organization,
+ * capturing details about the operation, the type of entity affected,
+ * the time the operation occurred, and any related organization data.
+ *
+ * Properties:
+ * - operation: The type of operation performed (e.g., create, update, delete).
+ * - entityType: The type of entity involved in the operation (e.g., organization).
+ * - timestamp: The date and time at which the operation occurred, formatted as a string.
+ * - relatedOrganisationId: The ID of the related organization linked to this log entry.
+ * - data: An object holding additional information about the organization, such as its name.
+ */
 export interface OrganisationLog {
 	operation: string,
 	entityType: string,
@@ -49,6 +107,17 @@ export interface OrganisationLog {
 	data: {name: string}
 }
 
+/**
+ * Represents the response containing the details of an authenticated user.
+ *
+ * This type is used to encapsulate user-related information that is returned after successful authentication.
+ *
+ * Fields:
+ * - `publicKey`: The public key associated with the authenticated user.
+ * - `firstname`: The first name of the authenticated user.
+ * - `lastname`: The last name of the authenticated user.
+ * - `isAdmin`: A boolean value indicating whether the authenticated user has administrative privileges.
+ */
 export type AuthenticatedUserDetailsResponse = {
 	publicKey: string,
 	firstname: string,
@@ -56,6 +125,21 @@ export type AuthenticatedUserDetailsResponse = {
 	isAdmin: boolean,
 }
 
+
+/**
+ * Represents a successful response for a challenge.
+ *
+ * This type is used to encapsulate the response details provided
+ * when a challenge is successfully completed, including a unique
+ * token issued upon success.
+ *
+ * @typedef {Object} ChallengeSuccessResponse
+ * @property {string} token - A unique token issued to indicate
+ * the successful completion of the challenge.
+ */
+export type ChallengeSuccessResponse = {
+	token: string,
+}
 
 
 export interface APICallbacks<T> {
@@ -65,15 +149,29 @@ export interface APICallbacks<T> {
 	onError?: undefined | ((error: string) => void),
 	onEnd?: undefined | (() => void),
 }
+
+
+
+
+export const TOKEN_STORAGE_ITEM = "carmentis-token";
+const getAuthToken = () => localStorage.getItem(TOKEN_STORAGE_ITEM);
+
 export async function CallApi<T>(
 	url: string,
 	cb: APICallbacks<T> | undefined,
 	params: RequestInit | undefined,
 ) {
+	const token = getAuthToken();
 	if ( cb && cb.onStart ) cb.onStart();
 	const targetUrl = API + url;
 	console.log(`Contacting API at ${targetUrl}`)
-	fetch(targetUrl, params)
+	fetch(targetUrl, {
+		...params,
+		headers: {
+			...params?.headers,
+            Authorization: `Bearer ${token}`,
+        },
+	})
 		.then(async (response) =>  {
 			if ( response.ok ) {
 				if ( cb && cb.onSuccess ) { cb.onSuccess() }
@@ -105,7 +203,12 @@ export class WorkspaceApiError extends Error {
 }
 
 export async function fetcherJSON<T>(url: string) : Promise<T> {
-	const res = await fetch(url)
+	const token = getAuthToken();
+	const res = await fetch(url, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		}
+	})
 
 	if (!res.ok) {
 		throw new WorkspaceApiError(res.statusText, res.status);
@@ -123,9 +226,9 @@ export interface SWRConfig {
  *
  * @param {string | undefined} url - The relative API endpoint to fetch data from. If undefined, no request will be made.
  * @param config
- * @return {object} Returns the result of the SWR hook, which includes data, error, and other utilities for managing the request lifecycle.
+ * @return Returns the result of the SWR hook, which includes data, error, and other utilities for managing the request lifecycle.
  */
-export function useWorkspaceApi<T>( url: string | undefined, config : SWRConfig = {}) {
+export function useWorkspaceApi<T>( url: string | undefined, config : SWRConfig = {}): SWRResponse<T> {
 	return useSWR(
 		url ? API + url : url,
 		fetcherJSON<T>,
@@ -154,7 +257,7 @@ export const useFetchUsersInOrganisation = (organisationId: number) => {
 
 export const useFetchOrganisationsOfUser= (userPublicKey: string | undefined) => {
 	return useWorkspaceApi<OrganisationSummaryList>(
-		userPublicKey ? `/user/${userPublicKey}/organisation` : undefined
+		userPublicKey ? `/user/organisation` : undefined
 	);
 }
 
@@ -435,9 +538,7 @@ export function useObtainChallenge()  {
 	return useWorkspaceApi<{challenge: string}>(`/login/challenge`);
 }
 
-export type ChallengeSuccessResponse = {
-	token: string,
-}
+
 export function useChallengeVerification() {
 	return async (challenge: string, signature: string, publicKey: string, cb: APICallbacks<ChallengeSuccessResponse> | undefined) => {
 		return CallApi(`/login/challenge/verify`, cb, {
@@ -451,6 +552,27 @@ export function useChallengeVerification() {
 		});
 	};
 }
+
+
+/**
+ * A function to search for users based on the provided query string.
+ * This function calls the API endpoint to retrieve user summaries that match the given query.
+ *
+ * @return {Function} A function that takes a query string and an optional callback,
+ * executes an API call to retrieve user summaries and returns the result.
+ */
+export function useSearchUser() {
+	return async (query: string, cb: APICallbacks<UserSummaryList> | undefined) => {
+		return CallApi(`/search/user?query=${query}`, cb, undefined);
+	};
+}
+
+
+export function useAuthUserAccessRightInOrganisation(organisationId: number) {
+	return useWorkspaceApi<AccessRight>(`/organisation/${organisationId}/accessRights`);
+}
+
+
 
 
 

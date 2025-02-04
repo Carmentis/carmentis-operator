@@ -34,6 +34,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { SetupController } from './controllers/setup.controller';
 
 // Extracted imports, controllers, and providers into constants
+export const DEFAULT_JWT_TOKEN_VALIDITY = "8h"
 const WORKSPACE_IMPORTS = [
 	TypeOrmModule.forFeature([
 		UserEntity,
@@ -47,7 +48,7 @@ const WORKSPACE_IMPORTS = [
 	JwtModule.register({
 		global: true,
 		secret: process.env.JWT_SECRET || crypto.randomBytes(32),
-		signOptions: { expiresIn: '60s' },
+		signOptions: { expiresIn: process.env.JWT_TOKEN_VALIDITY || DEFAULT_JWT_TOKEN_VALIDITY },
 	}),
 ];
 

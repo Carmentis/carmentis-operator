@@ -1,5 +1,6 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Post, Req } from '@nestjs/common';
 import { OrganisationService } from '../services/organisation.service';
+import { getPublicKeyFromRequest } from '../../utils/request-public-key-access.hook';
 
 @Controller('/workspace/api')
 export class SandboxController {
@@ -9,8 +10,9 @@ export class SandboxController {
 
 
 	@Post('/sandbox')
-	async createSandbox() {
-		const sandbox = await this.organisationService.createSandbox();
+	async createSandbox(@Req() request: Request) {
+		const publicKey = getPublicKeyFromRequest(request);
+		const sandbox = await this.organisationService.createSandbox(publicKey);
 		return sandbox;
 	}
 }

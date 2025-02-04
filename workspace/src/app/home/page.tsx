@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useFetchOrganisationsOfUser, useOrganisationCreation, useSandboxCreationApi } from '@/components/api.hook';
 import SimpleTextModalComponent from '@/components/modals/simple-text-modal.component';
 import Avatar from 'boring-avatars';
-import { Button, Chip } from '@material-tailwind/react';
+import { Button, Chip, IconButton, Menu, MenuItem } from '@material-tailwind/react';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
 import { useToast } from '@/app/layout';
@@ -27,11 +27,48 @@ function OrganisationCard(input: { organisation: { id:number, name: string, isSa
 }
 
 
-function AdministrationPanelAccess() {
+
+function RightTopMenu() {
+	const [open, setOpen] = useState(false);
 	const navigation = useApplicationNavigationContext();
-	return <div className={"absolute left-5 top-5 w-72"}>
-			<Button onClick={navigation.navigateToAdmin}>move to administration page</Button>
-	</div>
+	const auth = useAuthenticationContext();
+
+	function handleClose() {
+		setOpen(false);
+	}
+
+	function handleLogout() {
+		auth.disconnect();
+		navigation.navigateToLogin()
+		setOpen(false)
+	}
+
+	function handleAdmin() {
+		navigation.navigateToAdmin()
+		setOpen(false)
+	}
+
+	return <div className={"absolute right-5 top-5"}>
+		<IconButton
+			id="basic-button"
+			aria-controls={open ? 'basic-menu' : undefined}
+			aria-haspopup="true"
+			aria-expanded={open ? 'true' : undefined}
+			onClick={() => setOpen(true)}
+		>
+			<i className={"bi bi-gear-fill"}></i>
+		</IconButton>
+		<div className={"relative"}>
+			<Menu
+				open={open}
+				onClose={handleClose}
+				className={"bg-white"}
+			>
+				<MenuItem onClick={handleAdmin}>Admin</MenuItem>
+				<MenuItem onClick={handleLogout}>Logout</MenuItem>
+			</Menu>
+		</div>
+	</div>;
 }
 
 export default function HomePage() {
@@ -41,7 +78,7 @@ export default function HomePage() {
 	const [organisations, setOrganisations] = useState<OrganisationSummaryList>([]);
 	const authenticationContext = useAuthenticationContext();
 	const authenticatedUser = authenticationContext.getAuthenticatedUser();
-	const {data, isLoading} = useFetchOrganisationsOfUser( authenticatedUser.publicKey );
+	const { data, isLoading } = useFetchOrganisationsOfUser(authenticatedUser.publicKey);
 	const [isSpinning, setIsSpinning] = useState(false);
 	const callOrganisationCreation = useOrganisationCreation();
 	const callSandboxCreation = useSandboxCreationApi();
@@ -88,7 +125,7 @@ export default function HomePage() {
 	}
 
 	return <section className="bg-gray-50 dark:bg-gray-900 p-8 h-screen ">
-		<AdministrationPanelAccess/>
+		<RightTopMenu/>
 		<div id="filter" className={'flex flex-col space-y-4 w-100 justify-center items-center mb-8'}>
 			<Image src={'/logo-full.svg'} alt={'logo'} width={120} height={120} />
 			<div className="relative z-0 w-3/12 mb-5 ">

@@ -1,7 +1,7 @@
 'use client';
 
-import { useParams } from 'next/navigation';
 import {
+	useAuthUserAccessRightInOrganisation,
 	useFetchUsersInOrganisation,
 	useUserCreation,
 	useUserOrganisationInsertion,
@@ -112,13 +112,12 @@ function InsertNewUserPanel(
 
 export default function UserPage() {
 
-
-	const params: { organisationId: string } = useParams();
-	const organisationId = parseInt(params.organisationId);
+	const organisation = useOrganisationContext();
+	const organisationId = organisation.id;
 	const insertExistingUserInOrganisation = useUserOrganisationInsertion();
 	const removeUserHook = useUserOrganisationRemoval();
-
-	const { data, isLoading, mutate } = useFetchUsersInOrganisation(organisationId);
+	const accessRightResponse = useAuthUserAccessRightInOrganisation(organisationId)
+	const usersInOrganisationResponse = useFetchUsersInOrganisation(organisationId);
 	const [search, setSearch] = useState('');
 	const notify = useToast();
 	const [chosenUserPublicKey, setChosenUserPublicKey] = useState<string|undefined>(undefined);
@@ -134,7 +133,7 @@ export default function UserPage() {
 		insertExistingUserInOrganisation(organisationId, user.publicKey, {
 			onSuccessData: (user) => {
 				notify.info(`User "${user.firstname} ${user.lastname}" added successfully.`);
-				mutate()
+				usersInOrganisationResponse.mutate()
 			},
 			onError: (error) => {
 				notify.error(error)
@@ -149,7 +148,7 @@ export default function UserPage() {
 	function removeUserFromOrganisation(userPublicKey: string) {
 		removeUserHook(organisationId, userPublicKey, {
 			onSuccess: () => {
-				mutate();
+				usersInOrganisationResponse.mutate();
 				setChosenUserPublicKey(undefined)
 				notify.info(`User ${userPublicKey} removed from organisation`)
 			},
@@ -157,54 +156,67 @@ export default function UserPage() {
 		})
 	}
 
-	if (!data || isLoading) {
+	if (!usersInOrganisationResponse.data || usersInOrganisationResponse.isLoading) {
+		return <Skeleton count={3} />;
+	}
+
+	if (!accessRightResponse.data || accessRightResponse.isLoading) {
 		return <Skeleton count={3} />;
 	}
 
 
+	// if the currently connected user is allowed to edit the current users, show the edition panel
+	let usersInOrganisationEditionPanels = <></>;
+	if (accessRightResponse.data.editUsers) {
+		usersInOrganisationEditionPanels = <>
+			<InsertNewUserPanel onUserAdded={() => usersInOrganisationResponse.mutate()} />
+			<InsertExistingUserPanel onClick={insertExistingUser} />
+		</>;
+	}
+
+	// if the user wants to show more about a user, show it
+	let chosenUserDetailsContent = <></>
+	if (chosenUserPublicKey) {
+		chosenUserDetailsContent = <UserInOrganisationDetailsPage
+			key={chosenUserPublicKey}
+			onRemove={removeUserFromOrganisation}
+			organisationId={organisationId}
+			userPublicKey={chosenUserPublicKey}
+		/>
+	}
 
 
 	return <>
 		<div className="w-full h-full flex flex-row space-x-4">
-			<div id="list-users" className={"w-8/12"}>
-				<Card className={"mb-4"}>
+			<div id="list-users" className={'w-8/12'}>
+				<Card className={'mb-4'}>
 					<CardBody>
 						<Typography variant="h5" color="blue-gray" className="mb-2">
 							Search user in organisation
 						</Typography>
-						<SearchInputForm searchFilter={search} setSearchFilter={setSearch}/>
+						<SearchInputForm searchFilter={search} setSearchFilter={setSearch} />
 					</CardBody>
 				</Card>
 				<div className="flex flex-wrap gap-4">
 					{
-						data
+						usersInOrganisationResponse.data
 							.filter((user) => search === "" || user.firstname.toLowerCase().includes(search.toLowerCase()))
 							.map(
 								(user: UserSearchResult, index: number) =>
-									<div key={index}>
-										<UserHorizontalCard
-											onClick={() => setChosenUserPublicKey(user.publicKey)}
-											className={ user.publicKey === chosenUserPublicKey ? 'shadow-xl bg-green-100' : '' }
-											user={user} />
-									</div>
+									<UserHorizontalCard
+										key={index}
+										onClick={() => setChosenUserPublicKey(user.publicKey)}
+										className={ user.publicKey === chosenUserPublicKey ? 'shadow-xl bg-green-100' : '' }
+										user={user} />
 							)
 					}
 				</div>
 			</div>
-
 			<div className="w-4/12 space-y-4">
-				<InsertNewUserPanel onUserAdded={() => mutate()}/>
-				<InsertExistingUserPanel onClick={insertExistingUser} />
-				{
-					chosenUserPublicKey &&
-					<UserInOrganisationDetailsPage
-						key={chosenUserPublicKey}
-						onRemove={removeUserFromOrganisation}
-						organisationId={organisationId}
-						userPublicKey={chosenUserPublicKey}
-					/>
-				}
+				{usersInOrganisationEditionPanels}
+				{chosenUserDetailsContent}
 			</div>
+
 		</div>
 	</>
 		;

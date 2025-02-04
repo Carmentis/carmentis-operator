@@ -9,7 +9,7 @@ import {
     NotFoundException,
     Param,
     Post,
-    Put, Query,
+    Put, Query, Req,
 } from '@nestjs/common';
 import { OrganisationService } from '../services/organisation.service';
 import { UserService } from '../services/user.service';
@@ -29,6 +29,8 @@ import { OracleEntity } from '../entities/oracle.entity';
 import { OracleService } from '../services/oracle.service';
 import { UpdateOrganisationDto } from '../dto/organisation-update.dto';
 import { UpdateOracleDto } from '../dto/update-oracle.dto';
+import { getPublicKeyFromRequest } from '../../utils/request-public-key-access.hook';
+import { AccessRightService } from '../services/access-right.service';
 
 
 
@@ -43,12 +45,25 @@ export class OrganisationController {
         private readonly applicationService: ApplicationService,
         private readonly auditService: AuditService,
         private readonly oracleService: OracleService,
+        private readonly accessRightService: AccessRightService
     ) {}
 
 
+
+    /**
+     * Adds a new organisation with the provided name and associates it with the currently connected user.
+     *
+     * @param {string} organisationName - The name of the organisation to be created.
+     * @param {Request} request - The HTTP request object used to determine the currently connected user.
+     * @return {Promise<OrganisationEntity>} - A promise that resolves to the created organisation entity.
+     */
     @Post()
-    async addOrganisation(@Body('name') organisationName: string): Promise<OrganisationEntity> {
-        const response = await this.organisationService.createByName(organisationName);
+    async addOrganisation(
+        @Body('name') organisationName: string,
+        @Req() request: Request
+    ): Promise<OrganisationEntity> {
+        const user = await this.userService.findCurrentlyConnectedUser(request);
+        const response = await this.organisationService.createByName(user, organisationName);
         if ( response ) {
             this.auditService.log(
                 EntityType.ORGANISATION,
@@ -61,10 +76,11 @@ export class OrganisationController {
     }
 
 
+
     /**
-     * Returns the list of organisation in which the current user is involved
+     * Retrieves a list of all organisations.
      *
-     */
+     * @return {Promise<Array<{ id: number, name: string, logoUrl: string }>>} A promise that resolves to*/
     @Get()
     async getAllOrganisations(): Promise<{ id: number, name: string, logoUrl: string }[]> {
         return await this.organisationService.findAll();
@@ -78,7 +94,22 @@ export class OrganisationController {
     async getAllApplications(
         @Param('organisationId') organisationId: number,
     ): Promise<{ id: number, name: string, logoUrl: string }[]> {
+        // TODO check that the user belongs to the organisation
         return await this.applicationService.findAllApplicationsInOrganisationByOrganisationId(organisationId);
+    }
+
+    @Get(':organisationId/accessRights')
+    async getAccessRightsOfCurrentUserInOrganisation(
+        @Req() request: Request,
+        @Param('organisationId') organisationId: number
+    ) {
+        // search the currently connected user.
+        const user = await this.userService.findCurrentlyConnectedUser(request);
+
+        // search the organisation
+        const organisation = await this.organisationService.findOne(organisationId);
+
+        return await this.organisationService.findAccessRightsOfUserInOrganisation(user, organisation)
     }
 
     /**
@@ -90,6 +121,7 @@ export class OrganisationController {
         @Param('organisationId') organisationId: number,
         @Param('applicationId') applicationId: number,
     ) {
+        // TODO check that the user belongs to the organisation
         const application = await this.applicationService.findApplication(applicationId);
         return instanceToPlain(application);
     }

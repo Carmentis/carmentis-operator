@@ -94,7 +94,17 @@ export class OrganisationService {
 		await this.organisationEntityRepository.delete(id);
 	}
 
-	async createByName(organisationName: string): Promise<OrganisationEntity> {
+
+
+
+	/**
+	 * Creates a new organisation with the specified name and associates the authenticated user with administrative access rights.
+	 *
+	 * @param {UserEntity} authUser - The authenticated user who will be granted administrative rights to the newly created organisation.
+	 * @param {string} organisationName - The name of the organisation to be created.
+	 * @return {Promise<OrganisationEntity>} A promise that resolves to the newly created organisation entity.
+	 */
+	async createByName(authUser: UserEntity, organisationName: string): Promise<OrganisationEntity> {
 		// create the organisation
 		const item = this.organisationEntityRepository.create({
 			name: organisationName,
@@ -105,12 +115,26 @@ export class OrganisationService {
 		const pk = sdk.crypto.secp256k1.publicKeyFromPrivateKey(sk);
 		item.privateSignatureKey = sk;
 		item.publicSignatureKey = pk;
+		const organisation = await this.organisationEntityRepository.save(item);
 
-		return this.organisationEntityRepository.save(item);
+		// we create an initial access right with the provided public key
+		const accessRight = this.accessRightRepository.create({
+			organisation,
+			user: authUser,
+			editApplications: true,
+			isAdmin: true,
+			editOracles: true,
+			editUsers: true,
+		})
+		await this.accessRightRepository.save(accessRight);
+		return organisation
 	}
 
 
-	async createSandbox() {
+	async createSandbox(publicKey: string) {
+		const user = await this.userRepository.findOneBy({ publicKey });
+		if (!user) throw new NotFoundException('User not found');
+
 		// recover the number of organisations
 		const numberOfOrganisations = await this.organisationEntityRepository.count();
 
@@ -149,6 +173,17 @@ export class OrganisationService {
 
 		// publish fileSign
 		await this.applicationService.publishApplication(fileSign.id);
+
+		// create an initial access right with the user associated with the provided public key
+		const accessRight = this.accessRightRepository.create({
+			organisation: sandbox,
+			user,
+			isAdmin: true,
+			editUsers: true,
+			editApplications: true,
+			editOracles: true,
+		})
+		await this.accessRightRepository.save(accessRight);
 
 		// return the created sandbox
 		return sandbox;
@@ -261,5 +296,16 @@ export class OrganisationService {
 
 		// Save the updated organisation back to the database
 		return this.organisationEntityRepository.save(updatedOrganisation);
+	}
+
+	async findAccessRightsOfUserInOrganisation(user: UserEntity, organisation: OrganisationEntity): Promise<OrganisationAccessRightEntity> {
+		return this.accessRightRepository
+			.createQueryBuilder('accessRight')
+			.select()
+			.innerJoin('accessRight.organisation', 'organisation')
+			.innerJoinAndSelect('accessRight.user', 'user')
+			.where('organisation.id = :organisationId', { organisationId: organisation.id })
+			.andWhere('user.publicKey = :publicKey', { publicKey: user.publicKey })
+			.getOne();
 	}
 }

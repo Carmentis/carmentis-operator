@@ -5,8 +5,9 @@ import { Typography } from '@material-tailwind/react';
 import FlexCenter from '@/components/flex-center.component';
 import { useEffect, useState } from 'react';
 import FullSpaceSpinner from '@/components/full-page-spinner.component';
-import { useChallengeVerification, useObtainChallenge } from '@/components/api.hook';
+import { TOKEN_STORAGE_ITEM, useChallengeVerification, useObtainChallenge } from '@/components/api.hook';
 import { useToast } from '@/app/layout';
+import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 
 
 export default function Login() {
@@ -24,10 +25,19 @@ type ChallengeResponse = {
 function ChallengeLogin({challenge}: {challenge: string}) {
     const toast = useToast();
     const verifyChallenge = useChallengeVerification();
+    const navigation = useApplicationNavigationContext();
+
+    function storeToken(token: string) {
+        localStorage.setItem(TOKEN_STORAGE_ITEM, token)
+    }
 
     function onChallengeResponse(answer: ChallengeResponse) {
         verifyChallenge(answer.challenge, answer.signature, answer.publicKey, {
-            onSuccessData: (response) => console.log("Connected, obtained token:", response.token),
+            onSuccessData: (response) => {
+                storeToken(response.token);
+                toast.success("You are connected")
+                navigation.navigateToHome();
+            },
             onError: () => toast.error('Connection failure')
         })
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import { AuthenticatedUserDetailsResponse, useFetchAuthenticatedUser } from '@/components/api.hook';
+import { AuthenticatedUserDetailsResponse, TOKEN_STORAGE_ITEM, useFetchAuthenticatedUser } from '@/components/api.hook';
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
@@ -32,7 +32,7 @@ export function UserAuthenticationContextProvider({children}: PropsWithChildren)
 	if (!data || isLoading)
 		return <FullPageLoadingComponent/>
 
-	if (error)
+	if (error || localStorage.getItem(TOKEN_STORAGE_ITEM) === undefined)
 		navigation.navigateToLogin();
 
 
@@ -40,7 +40,9 @@ export function UserAuthenticationContextProvider({children}: PropsWithChildren)
 		authenticatedUser: currentUser,
 		isAuthenticated: () => currentUser !== undefined,
 		connect: (pk: string) => {},
-		disconnect: () => {},
+		disconnect: () => {
+			localStorage.clear()
+		},
 		getAuthenticatedUser: () => {
 			if (!currentUser) {
 				throw new Error("Cannot access authenticated user: Currently not authenticated")

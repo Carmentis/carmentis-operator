@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Query, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Query, Put, Req } from '@nestjs/common';
 import { OrganisationService } from '../services/organisation.service';
 import { UserService } from '../services/user.service';
 import CreateUserDto from '../dto/create-user.dto';
 import { CreateOrganisationDto } from '../dto/create-organisation.dto';
 import { OrganisationEntity } from '../entities/organisation.entity';
 import { UserEntity } from '../entities/user.entity';
+import { getPublicKeyFromRequest } from '../../utils/request-public-key-access.hook';
 
 @Controller('/workspace/api/admin')
 export class AdminController {
@@ -46,9 +47,13 @@ export class AdminController {
 	}
 
 	@Post('/organisation')
-	async addOrganisation(@Body() createOrganisationDto: CreateOrganisationDto): Promise<OrganisationEntity> {
+	async addOrganisation(
+		@Req() request: Request,
+		@Body() createOrganisationDto: CreateOrganisationDto
+	): Promise<OrganisationEntity> {
+		const user = await this.userServer.findCurrentlyConnectedUser(request);
 		const organisationName = createOrganisationDto.name;
-		return await this.organisationService.createByName(organisationName);
+		return await this.organisationService.createByName(user, organisationName);
 
 	}
 

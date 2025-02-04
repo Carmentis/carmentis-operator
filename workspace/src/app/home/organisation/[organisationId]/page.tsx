@@ -14,6 +14,7 @@ import { useToast } from '@/app/layout';
 import { useOrganisationContext } from '@/contexts/organisation-store.context';
 import { useOrganisationMutationContext } from '@/contexts/organisation-mutation.context';
 import WelcomeCards from '@/components/welcome-cards.component';
+import OrganisationAccountBalance from '@/components/organisation-account-balance.component';
 
 
 /**
@@ -31,7 +32,7 @@ function OverviewOrganisationWelcomeCards() {
 	const { balance, applicationsNumber, oraclesNumber, usersNumber } = organisationStats.data;
 
 	const welcomeCardData = [
-		{ icon: 'bi-currency-dollar', title: 'Balance', value: balance.toString() + ' CMTS' },
+		{ icon: 'bi-currency-dollar', title: 'Balance', value: <OrganisationAccountBalance/> },
 		{ icon: 'bi-layers', title: 'Applications', value: applicationsNumber.toString() },
 		{ icon: 'bi-layers', title: 'Oracles', value: oraclesNumber.toString() },
 		{ icon: 'bi-people', title: 'Users', value: usersNumber.toString() },
