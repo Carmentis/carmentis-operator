@@ -3,10 +3,25 @@
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useInterfaceContext } from '@/contexts/interface.context';
-import { SidebarItem } from '@/components/sidebar-components';
 import {version} from '@/../package.json';
 import { Typography } from '@material-tailwind/react';
 
+
+/**
+ * A functional component that renders a sidebar item, which can either be a clickable link or a div.
+ * The item can display an icon and text, and supports additional styling, callbacks, and active state detection.
+ *
+ * @param {Object} input - The input object containing the configuration for the sidebar item.
+ * @param {string} input.icon - The icon class to display in the sidebar item.
+ * @param {string} input.text - The text to display alongside the icon in the sidebar item.
+ * @param {string} [input.link] - The optional URL path to link to. If provided, the sidebar item will render as a link.
+ * @param {string} [input.className] - Additional CSS classes to apply to the sidebar item.
+ * @param {Function} [input.onClick] - Optional event handler for click events when the sidebar item is not a link.
+ * @param {RegExp} [input.activeRegex] - Optional regular expression to determine if the item should be marked as active.
+ * @param {string} [input.id] - Optional ID to assign to the sidebar item element.
+ *
+ * @return {JSX.Element} The rendered sidebar item as a link or div element, styled and configured based on the input.
+ */
 function SidebarItem(
 	input: { icon: string, text: string, link?: string, className?: string, onClick?: () => void, activeRegex?: RegExp, id?: string },
 ) {
@@ -39,6 +54,13 @@ function SidebarItem(
 }
 
 
+/**
+ * This function renders a sidebar item that displays the application version.
+ * The item is positioned at the bottom-left corner of the interface.
+ * If the sidebar is hidden, it renders an empty fragment.
+ *
+ * @return {JSX.Element} A JSX element representing the application version sidebar item or an empty fragment if the sidebar is hidden.
+ */
 function ApplicationVersionSidebarItem() {
 	const interfaceStore = useInterfaceContext();
 	if (interfaceStore.sidebarHidden) return <></>
@@ -49,6 +71,15 @@ function ApplicationVersionSidebarItem() {
     );
 }
 
+
+
+/**
+ * Sidebar component that renders a navigation menu with multiple selectable items.
+ * Items include links to various sections such as Home, Users, Applications, Oracles, and Exchange.
+ * It also includes a toggle button to show or hide the sidebar.
+ *
+ * @return {JSX.Element} A JSX element representing the sidebar with navigation items and functionality.
+ */
 export default function Sidebar() {
 	const interfaceStore = useInterfaceContext();
 
