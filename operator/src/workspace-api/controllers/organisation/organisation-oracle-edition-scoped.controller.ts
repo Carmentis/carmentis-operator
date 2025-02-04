@@ -1,7 +1,7 @@
 import {
 	Body,
 	Controller,
-	Delete,
+	Delete, ForbiddenException,
 	InternalServerErrorException,
 	NotFoundException,
 	Param,
@@ -109,6 +109,10 @@ export class OrganisationOracleEditionScopedController {
 		@Param('organisationId') organisationId: number,
 		@Param('oracleId') oracleId: number,
 	) {
+		// reject the publication of an application if the organisation is not published itself
+		const organisationIsPublished = await this.organisationService.isPublished(organisationId);
+		if (!organisationIsPublished) throw new ForbiddenException("Publish first the organisation before to publish an oracle.")
+
 
 		try {
 			await this.oracleService.publishOracle(oracleId);

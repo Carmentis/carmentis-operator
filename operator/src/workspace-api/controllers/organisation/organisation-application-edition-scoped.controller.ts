@@ -1,6 +1,6 @@
 import {
 	Body,
-	Controller, Delete,
+	Controller, Delete, ForbiddenException,
 	HttpException, HttpStatus,
 	InternalServerErrorException,
 	Logger,
@@ -41,6 +41,10 @@ export class OrganisationApplicationEditionScopedController {
 		@Param('organisationId') organisationId: number,
 		@Param('applicationId') applicationId: number,
 	) {
+		// reject the publication of an application if the organisation is not published itself
+		const organisationIsPublished = await this.organisationService.isPublished(organisationId);
+		if (!organisationIsPublished) throw new ForbiddenException("Publish first the organisation before to publish an application.")
+
 		try {
 			await this.applicationService.publishApplication(applicationId);
 		} catch (e) {

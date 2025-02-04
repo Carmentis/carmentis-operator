@@ -317,4 +317,12 @@ export class OrganisationService {
 			.andWhere('accessRight.isAdmin = :isAdmin', {isAdmin: true})
 			.getCount();
 	}
+
+	async isPublished(organisationId: number) {
+		const organisation = await this.organisationEntityRepository.findOneBy({ id: organisationId });
+		if (!organisation) {
+			throw new NotFoundException(`Organisation with id ${organisationId} not found`);
+		}
+		return organisation.published;
+	}
 }
