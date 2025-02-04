@@ -9,7 +9,7 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { UserInOrganisationGuard } from '../../guards/user-in-organisation.guard';
-import { CanEditApplications } from '../../guards/user-has-valid-access-right.guard';
+import { CanEditApplications, IsAdminInOrganisation } from '../../guards/user-has-valid-access-right.guard';
 import { OrganisationService } from '../../services/organisation.service';
 import { UserService } from '../../services/user.service';
 import { ApplicationService } from '../../services/application.service';
@@ -35,6 +35,7 @@ export class OrganisationApplicationEditionScopedController {
 		private readonly oracleService: OracleService,
 	) {}
 
+	@UseGuards(IsAdminInOrganisation)
 	@Post(":organisationId/application/:applicationId/publish")
 	async publishApplication(
 		@Param('organisationId') organisationId: number,

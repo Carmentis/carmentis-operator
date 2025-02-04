@@ -10,7 +10,11 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import { UserInOrganisationGuard } from '../../guards/user-in-organisation.guard';
-import { CanEditApplications, CanEditOracles } from '../../guards/user-has-valid-access-right.guard';
+import {
+	CanEditApplications,
+	CanEditOracles,
+	IsAdminInOrganisation,
+} from '../../guards/user-has-valid-access-right.guard';
 import { UpdateOracleDto } from '../../dto/update-oracle.dto';
 import { OracleEntity } from '../../entities/oracle.entity';
 import { plainToInstance } from 'class-transformer';
@@ -99,7 +103,7 @@ export class OrganisationOracleEditionScopedController {
 	}
 
 
-
+	@UseGuards(IsAdminInOrganisation)
 	@Post(":organisationId/oracle/:oracleId/publish")
 	async publishOracle(
 		@Param('organisationId') organisationId: number,
