@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable,  OnModuleInit } from '@nestjs/common';
+import {
+	Injectable,
+	InternalServerErrorException,
+	Logger,
+	OnModuleInit,
+} from '@nestjs/common';
 import * as sdk from "@cmts-dev/carmentis-sdk/server";
 import { ApplicationEntity } from '../entities/application.entity';
 import { OrganisationEntity } from '../entities/organisation.entity';
@@ -19,11 +24,12 @@ import { OracleEntity } from '../entities/oracle.entity';
 @Injectable()
 export default class ChainService implements OnModuleInit{
 
-
+	private logger = new Logger(ChainService.name);
 	constructor() {}
 
 	onModuleInit() {
-		sdk.blockchain.blockchainCore.setNode("http://127.0.0.1:4000");
+		this.logger.log(`Linking operator with node located at ${process.env.NODE_URL}`)
+		sdk.blockchain.blockchainCore.setNode(process.env.NODE_URL);
 	}
 
 	/**
@@ -35,7 +41,6 @@ export default class ChainService implements OnModuleInit{
 	async publishOrganisation(
 		organisation: OrganisationEntity
 	) : Promise<MicroBlock> {
-		// TODO remove the hardcoded node
 		// initialise the blockchain sdk
 		sdk.blockchain.blockchainCore.setUser(
 			sdk.blockchain.ROLES.OPERATOR,
@@ -78,7 +83,7 @@ export default class ChainService implements OnModuleInit{
 			return await organisationVb.publish();
 		} catch (e) {
 			console.error(e);
-			throw new HttpException("Failed to publish the organisation", HttpStatus.NOT_ACCEPTABLE);
+			throw new InternalServerErrorException("Failed to publish the organisation");
 		}
 
 	}

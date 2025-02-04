@@ -181,6 +181,11 @@ function ListOfUsers({ existingUsers }: { existingUsers: UserSummary[] }) {
 	);
 }
 
+
+function PageTitle() {
+	return <Typography><i className={"bi bi-person mr-2"}></i>Users</Typography>
+}
+
 /**
  * Represents the UserPage component which provides functionality for displaying,
  * adding, and removing users. It integrates with the administration APIs for listing,
@@ -217,6 +222,7 @@ export default function UserPage() {
 
 	return (
 		<div className="space-y-4 p-4">
+			<PageTitle/>
 			<UserAddition addUser={addUser} />
 			<UserDeletion removeUser={removeUser} />
 			{isLoading || !data ? <Skeleton /> : <ListOfUsers existingUsers={data} />}

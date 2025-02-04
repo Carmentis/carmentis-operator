@@ -31,11 +31,13 @@ export class UserService {
 
 	// Find one item by public key
 	async findOneByPublicKey(publicKey: string): Promise<UserEntity> {
-		return this.userEntityRepository.findOne({
+		const user = this.userEntityRepository.findOne({
 			where: {
 				publicKey: publicKey
 			},
 		});
+		if (!user) throw new NotFoundException();
+		return user;
 	}
 
 	// Find all items

@@ -95,8 +95,6 @@ export class OrganisationService {
 	}
 
 
-
-
 	/**
 	 * Creates a new organisation with the specified name and associates the authenticated user with administrative access rights.
 	 *
@@ -231,13 +229,6 @@ export class OrganisationService {
 			.getCount();
 	}
 
-	async getBalanceOfOrganisation(organisationId: number) {
-		const entity = await this.organisationEntityRepository.findOneBy({
-			id: organisationId,
-		});
-		return entity.balance;
-	}
-
 	async search(query: string) {
 		return this.organisationEntityRepository.createQueryBuilder('org')
 			.select(['org.id', 'org.name'])
@@ -269,7 +260,6 @@ export class OrganisationService {
 			organisation.published = true;
 			organisation.isDraft = false;
 			organisation.publishedAt = new Date();
-			organisation.balance -= mb.header.gas; // TODO get the balance account from the node
 			return await this.update(organisation.id, organisation);
 		} catch (e) {
 			console.error(e)
@@ -298,14 +288,33 @@ export class OrganisationService {
 		return this.organisationEntityRepository.save(updatedOrganisation);
 	}
 
-	async findAccessRightsOfUserInOrganisation(user: UserEntity, organisation: OrganisationEntity): Promise<OrganisationAccessRightEntity> {
+	async findAccessRightsOfUserInOrganisation(user: UserEntity, organisation: OrganisationEntity | number): Promise<OrganisationAccessRightEntity> {
 		return this.accessRightRepository
 			.createQueryBuilder('accessRight')
 			.select()
 			.innerJoin('accessRight.organisation', 'organisation')
 			.innerJoinAndSelect('accessRight.user', 'user')
-			.where('organisation.id = :organisationId', { organisationId: organisation.id })
+			.where('organisation.id = :organisationId', { organisationId: typeof  organisation === 'number' ? organisation : organisation.id })
 			.andWhere('user.publicKey = :publicKey', { publicKey: user.publicKey })
 			.getOne();
+	}
+
+	countUsers(organisationId: number) {
+		return this.userRepository
+			.createQueryBuilder('user')
+			.innerJoinAndSelect('user.accessRights', 'accessRight')
+			.innerJoin('accessRight.organisation', 'organisation')
+			.where('organisation.id = :organisationId', { organisationId })
+			.getCount();
+	}
+
+	async countAdminInOrganisations(organisationId: number) {
+		return this.userRepository
+			.createQueryBuilder('user')
+			.innerJoinAndSelect('user.accessRights', 'accessRight')
+			.innerJoin('accessRight.organisation', 'organisation')
+			.where('organisation.id = :organisationId', { organisationId })
+			.andWhere('accessRight.isAdmin = :isAdmin', {isAdmin: true})
+			.getCount();
 	}
 }

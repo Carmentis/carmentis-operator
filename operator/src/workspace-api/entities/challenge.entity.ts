@@ -6,5 +6,5 @@ export class ChallengeEntity {
 	challenge: string;
 
 	@CreateDateColumn()
-	createdAt: Date;
+	validUntil: Date;
 }

@@ -18,6 +18,11 @@ The Operator can be configured using the following environment variables:
 - **`PORT`**: Defines the port the server will use to listen for requests.
 - **`JWT_SECRET`**: Secret key used to sign JWT tokens for authentication.
 - **`NODE_URL`**: URL of a blockchain node, useful for operations such as publishing data on-chain.
+- **`OPERATOR_DATABASE_URL`**: URL of the database used by the Operator.
+- **`OPERATOR_DATABASE_PORT`**: Port number of the database.
+- **`OPERATOR_DATABASE_USERNAME`**: Username for authenticating with the database.
+- **`OPERATOR_DATABASE_PASSWORD`**: Password for authenticating with the database.
+- **`OPERATOR_DATABASE_NAME`**: Name of the database.
 
 ## Installation
 

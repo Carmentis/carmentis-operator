@@ -20,7 +20,4 @@ export class UpdateOrganisationDto {
 	@IsNotEmpty()
 	@IsUrl()
 	website: string;
-
-	@IsNotEmpty()
-	operatorEndpoint:  string;
 }

@@ -1,11 +1,26 @@
 import NavbarSearchBar from '@/components/navbar/searchBar';
-import { useFetchOrganisationsOfUser } from '@/components/api.hook';
-import { Button, Menu, MenuHandler, MenuItem, MenuList, Spinner } from '@material-tailwind/react';
+import {
+	useFetchAuthenticatedUser,
+	useFetchOrganisationsOfUser,
+	useUserAccessRightInOrganisation,
+} from '@/components/api.hook';
+import {
+	Button,
+	IconButton,
+	Menu,
+	MenuHandler,
+	MenuItem,
+	MenuList,
+	Spinner,
+	Typography,
+} from '@material-tailwind/react';
 import { Organisation, OrganisationSummaryList } from '@/entities/organisation.entity';
 import { useAuthenticationContext } from '@/contexts/user-authentication.context';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import { useOrganisationContext } from '@/contexts/organisation-store.context';
-import CarmentisLogo from '@/components/carmentis-logo.component';
+import AvatarOrganisation from '@/components/avatar-organisation';
+import Skeleton from 'react-loading-skeleton';
+import Avatar from 'boring-avatars';
 
 
 const SEARCH_BAR_CLASSES = 'search-bar w-full';
@@ -19,8 +34,7 @@ export default function Navbar() {
 	return (
 		<>
 			<div className={'flex-1 flex items-center'}>
-
-				<CarmentisLogo/>
+				<OrganisationDisplay />
 			</div>
 			<div className="flex-2 w-4/12">
 
@@ -28,13 +42,54 @@ export default function Navbar() {
 			</div>
 
 			<div className={'flex flex-1 flex-row items-center justify-end space-x-4'}>
-				<OrganisationDisplay />
+				<UserDisplay/>
 			</div>
 		</>
 	);
 }
 
 
+function UserDisplay() {
+	const navigation = useApplicationNavigationContext();
+	const authentication = useAuthenticationContext();
+	const {data, isLoading} = useFetchAuthenticatedUser();
+	const organisation = useOrganisationContext();
+	const accessRightsResponse = useUserAccessRightInOrganisation(authentication.getAuthenticatedUser().publicKey, organisation.id);
+	if (!data || isLoading) return <Skeleton width={25} height={25} circle={true} />
+
+	function disconnect() {
+		authentication.disconnect();
+		navigation.navigateToLogin()
+	}
+
+	function goToHome() {
+		navigation.navigateToHome();
+	}
+
+	return <div className={"flex space-x-4 items-center"}>
+		<Avatar width={25} height={25} name={data.publicKey} variant={"beam"}/>
+		<Typography color={"gray"} className={"uppercase"}>{data.firstname} {data.lastname}</Typography>
+		<Menu>
+			<MenuHandler>
+				<IconButton color={"white"} className={"bg-white shadow-none"}>
+					<i className={"bi bi-three-dots-vertical"}/>
+				</IconButton>
+			</MenuHandler>
+			<MenuList>
+				<MenuItem onClick={goToHome}>See organisations</MenuItem>
+				<MenuItem onClick={disconnect}>Logout</MenuItem>
+				{	accessRightsResponse.data && accessRightsResponse.data.isAdmin &&
+					<>
+						<hr className="my-2 border-blue-gray-50" />
+						<MenuItem disabled={true}>You are admin</MenuItem>
+					</>
+				}
+
+			</MenuList>
+		</Menu>
+
+	</div>
+}
 
 /**
  * Represents a search bar component that wraps the NavbarSearchBar.
@@ -59,9 +114,9 @@ function OrganisationSwitcher({ currentOrganisation, organisations }: Props) {
 	return (
 		<Menu>
 			<MenuHandler>
-				<Button size="md" className={"bg-primary-light flex space-x-2"}>
-					<span>{currentOrganisation.name || "Switch Organisation"}</span>
-					<i className={"bi bi-chevron-down"}></i>
+				<Button className={'bg-white flex flex-row justify-between items-center space-x-4 p-2 shadow-none'}>
+					<AvatarOrganisation organisationId={currentOrganisation.id} width={20} height={20} />
+					<Typography color={'gray'}>{currentOrganisation.name || 'Switch Organisation'}</Typography>
 				</Button>
 			</MenuHandler>
 			<MenuList>
@@ -85,18 +140,17 @@ export function OrganisationDisplay() {
 
 	// Load the current user and ensure it is not null
 	const authenticationContext = useAuthenticationContext();
-	const userOrganisationsResponse = useFetchOrganisationsOfUser(authenticationContext.authenticatedUser?.publicKey)
+	const userOrganisationsResponse = useFetchOrganisationsOfUser(authenticationContext.authenticatedUser?.publicKey);
 	if (userOrganisationsResponse.isLoading || !userOrganisationsResponse.data)
-		return <Spinner/>
+		return <Spinner />;
 
 	const organisations = userOrganisationsResponse.data;
 	return <>
-		{  currentOrganisation.isSandbox && <Button className={"border-secondary-light text-secondary-light bg-white"} disabled variant={'outlined'}>sandbox</Button> }
 		<OrganisationSwitcher
 			organisations={organisations}
 			currentOrganisation={currentOrganisation}
 		/>
-	</>
+	</>;
 }
 
 

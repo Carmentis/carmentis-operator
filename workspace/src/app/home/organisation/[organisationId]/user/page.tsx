@@ -1,34 +1,109 @@
 'use client';
 
 import {
-	useAuthUserAccessRightInOrganisation,
-	useFetchUsersInOrganisation,
-	useUserCreation,
+	useAuthUserAccessRightInOrganisation, useCountUserInOrganisation, useFetchUserInOrganisation,
+	useFetchUsersInOrganisation, useUpdateAccessRight, useUserAccessRightInOrganisation,
+	useUserCreation, useUserDeletion,
 	useUserOrganisationInsertion,
 	useUserOrganisationRemoval,
 } from '@/components/api.hook';
 import { FormEvent, useState } from 'react';
 import { UserSearchResult, UserSummary } from '@/entities/user.entity';
 import Skeleton from 'react-loading-skeleton';
-import { Button, Card, CardBody, Input, Typography } from '@material-tailwind/react';
+import { Button, Card, CardBody, IconButton, Input, Typography } from '@material-tailwind/react';
 import { SearchInputForm } from '@/components/form/search-input.form';
 import { SearchUserInputComponent } from '@/components/form/search-user-form';
 import { useToast } from '@/app/layout';
-import UserInOrganisationDetailsPage from '@/app/home/organisation/[organisationId]/user/user-edition-component';
 import Avatar from 'boring-avatars';
 import { useOrganisationContext } from '@/contexts/organisation-store.context';
+import SwitchForm from '@/components/form/switch.form';
 
 
-function UserHorizontalCard(input: { user: UserSearchResult, onClick: () => void, className?: string }) {
+function UserHorizontalCard(input: { user: UserSearchResult, onClick: () => void, className?: string, onRemove: (publicKey: string) => void }) {
 	const user = input.user;
+	const notify = useToast();
+	const updateAccessRight = useUpdateAccessRight();
+	const organisation = useOrganisationContext();
+	const organisationId = organisation.id;
+	const userPublicKey = user.publicKey;
+	const accessRightsResponse = useUserAccessRightInOrganisation(userPublicKey, organisationId)
+	const mutate = () => accessRightsResponse.mutate();
+
+	if (!accessRightsResponse.data || accessRightsResponse.isLoading) return <Skeleton/>
+	const rights = accessRightsResponse.data;
+
+	function notifyUpdate() {
+		notify.info('Access rights updated')
+	}
+
+	const cb = {
+		onSuccess: notifyUpdate,
+		onError: notify.error,
+		onEnd: mutate
+	}
+
+	function toggleAdmin() {
+		if ( !rights ) return;
+		rights.isAdmin = !rights.isAdmin
+		updateAccessRight(organisationId, userPublicKey, rights, cb)
+	}
+
+	function toggleEditUsers() {
+		if ( !rights ) return;
+		rights.editUsers = !rights.editUsers;
+
+		updateAccessRight(organisationId, userPublicKey, rights, cb)
+	}
+
+	function toggleEditApplications() {
+		if ( !rights ) return;
+		rights.editApplications = !rights.editApplications;
+
+		updateAccessRight(organisationId, userPublicKey, rights, cb)
+	}
+
+	function toggleEditOracles() {
+		if ( !rights ) return;
+		rights.editOracles = !rights.editOracles;
+
+		updateAccessRight(organisationId, userPublicKey, rights, cb)
+	}
+
+
+
 	return <Card
 		onClick={() => input.onClick()}
-		className={`w-full flex flex-row justify-between items-center w-100 hover:shadow-xl transition-shadow cursor-pointer ${input.className}`}>
-		<CardBody className="flex flex-col justify-center items-center w-52 ">
-
-			<Avatar name={`${user.firstname} ${user.lastname}`} variant={"bauhaus"} width={42} className={"mb-4"}/>
-			<span>{user.firstname} {user.lastname}</span>
-
+		className={`w-full flex flex-row justify-between items-center hover:shadow-xl transition-shadow cursor-pointer`}>
+		<CardBody className="flex flex-row items-center  w-full">
+			<div className="w-36 flex flex-1 flex-col items-center justify-start">
+				<Avatar name={user.publicKey} variant={"beam"} width={42} className={"mb-4"}/>
+				<span>{user.firstname} {user.lastname}</span>
+			</div>
+			<div className="w-auto flex-2 justify-center items-center">
+				<div className="flex space-x-2">
+					<div className="flex flex-col space-y-2">
+						<SwitchForm property="Administrator"
+									value={rights.isAdmin}
+									onChange={() => toggleAdmin()}
+						/>
+						<SwitchForm property="Edit oracles" value={rights.editOracles}
+									onChange={() => toggleEditOracles()} />
+					</div>
+					<div className="flex flex-col space-y-2">
+						<SwitchForm property="Edit user" value={rights.editUsers}
+									onChange={() => toggleEditUsers()} />
+					</div>
+					<div className="flex flex-col space-y-2">
+						<SwitchForm property="Edit application" value={rights.editApplications}
+									onChange={() => toggleEditApplications()} />
+					</div>
+				</div>
+			</div>
+			<div className="flex flex-1 justify-end items-center">
+					<IconButton onClick={() => input.onRemove(userPublicKey)}>
+						<i className={"bi bi-trash-fill"}/>
+					</IconButton>
+			</div>
 		</CardBody>
 	</Card>
 
@@ -38,9 +113,9 @@ function UserHorizontalCard(input: { user: UserSearchResult, onClick: () => void
 function InsertExistingUserPanel(
 	input: { onClick: (user: UserSearchResult) => void },
 ) {
-	return <Card className={`shadow transition-all hover:shadow-xl relative left-0`} title={"Search user"}>
+	return <Card className={`shadow transition-all hover:shadow-xl relative left-0`} title={'Search user'}>
 		<CardBody>
-			<h1 className={"mb-4"}>Add existing user</h1>
+			<h1 className={'mb-4'}>Add existing user</h1>
 			<SearchUserInputComponent
 				formatUserSearchResult={(user: UserSearchResult) => {
 					return <li
@@ -51,7 +126,7 @@ function InsertExistingUserPanel(
 				}}
 				onSelectedUser={(user) => input.onClick(user)} />
 		</CardBody>
-	</Card>
+	</Card>;
 }
 
 
@@ -174,18 +249,6 @@ export default function UserPage() {
 		</>;
 	}
 
-	// if the user wants to show more about a user, show it
-	let chosenUserDetailsContent = <></>
-	if (chosenUserPublicKey) {
-		chosenUserDetailsContent = <UserInOrganisationDetailsPage
-			key={chosenUserPublicKey}
-			onRemove={removeUserFromOrganisation}
-			organisationId={organisationId}
-			userPublicKey={chosenUserPublicKey}
-		/>
-	}
-
-
 	return <>
 		<div className="w-full h-full flex flex-row space-x-4">
 			<div id="list-users" className={'w-8/12'}>
@@ -205,6 +268,7 @@ export default function UserPage() {
 								(user: UserSearchResult, index: number) =>
 									<UserHorizontalCard
 										key={index}
+										onRemove={removeUserFromOrganisation}
 										onClick={() => setChosenUserPublicKey(user.publicKey)}
 										className={ user.publicKey === chosenUserPublicKey ? 'shadow-xl bg-green-100' : '' }
 										user={user} />
@@ -214,7 +278,6 @@ export default function UserPage() {
 			</div>
 			<div className="w-4/12 space-y-4">
 				{usersInOrganisationEditionPanels}
-				{chosenUserDetailsContent}
 			</div>
 
 		</div>

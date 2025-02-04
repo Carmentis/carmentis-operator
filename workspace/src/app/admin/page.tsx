@@ -1,11 +1,12 @@
 'use client';
 
-const PAGE_TITLE = 'Administration page';
+import FlexCenter from '@/components/flex-center.component';
+import CarmentisLogo from '@/components/carmentis-logo.component';
 
 export default function AdministrationPage() {
 	return (
-		<>
-			<h1>{PAGE_TITLE}</h1>
-		</>
+		<FlexCenter>
+			<CarmentisLogo/>
+		</FlexCenter>
 	);
 }

@@ -6,18 +6,19 @@ import Link from 'next/link';
 import { useFetchOrganisationsOfUser, useOrganisationCreation, useSandboxCreationApi } from '@/components/api.hook';
 import SimpleTextModalComponent from '@/components/modals/simple-text-modal.component';
 import Avatar from 'boring-avatars';
-import { Button, Chip, IconButton, Menu, MenuItem } from '@material-tailwind/react';
+import { Button, Chip, IconButton, Menu, MenuHandler, MenuItem, MenuList, Typography } from '@material-tailwind/react';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
 import { useToast } from '@/app/layout';
 import ConditionallyHiddenLayout from '@/components/conditionally-hidden-layout.component';
 import { Organisation, OrganisationSummaryList } from '@/entities/organisation.entity';
 import { useAuthenticationContext } from '@/contexts/user-authentication.context';
+import AvatarOrganisation from '@/components/avatar-organisation';
 
 function OrganisationCard(input: { organisation: { id:number, name: string, isSandbox: boolean } }) {
 	return <Link className={'card w-52 flex flex-col justify-center items-center space-y-2 h-52 hover:cursor-pointer'}
 				 href={`/home/organisation/${input.organisation.id}`}>
-			<Avatar name={input.organisation.name} variant={"beam"} width={60} height={60} />
+			<AvatarOrganisation organisationId={input.organisation.id} width={60} height={60} />
 		<p className={'organisation-name'}>{input.organisation.name}</p>
 
 		<ConditionallyHiddenLayout showOn={input.organisation.isSandbox}>
@@ -26,12 +27,15 @@ function OrganisationCard(input: { organisation: { id:number, name: string, isSa
 	</Link>;
 }
 
+function LeftTopMenu() {
 
+}
 
 function RightTopMenu() {
 	const [open, setOpen] = useState(false);
 	const navigation = useApplicationNavigationContext();
 	const auth = useAuthenticationContext();
+	const user = auth.getAuthenticatedUser();
 
 	function handleClose() {
 		setOpen(false);
@@ -48,26 +52,27 @@ function RightTopMenu() {
 		setOpen(false)
 	}
 
-	return <div className={"absolute right-5 top-5"}>
-		<IconButton
-			id="basic-button"
-			aria-controls={open ? 'basic-menu' : undefined}
-			aria-haspopup="true"
-			aria-expanded={open ? 'true' : undefined}
-			onClick={() => setOpen(true)}
-		>
-			<i className={"bi bi-gear-fill"}></i>
-		</IconButton>
-		<div className={"relative"}>
-			<Menu
-				open={open}
-				onClose={handleClose}
-				className={"bg-white"}
-			>
+	return <div className={'absolute right-5 top-5 bg-white flex items-center shadow rounded p-4 space-x-4'}>
+		<div className={"flex items-center"}>
+			<Avatar variant={'beam'} name={user.publicKey} width={30} height={30} />
+			<Typography className={'ml-4'}>{user.firstname} {user.lastname}</Typography>
+		</div>
+		<Menu>
+			<MenuHandler>
+				<IconButton
+					id="basic-button"
+					aria-controls={open ? 'basic-menu' : undefined}
+					aria-haspopup="true"
+					aria-expanded={open ? 'true' : undefined}
+					onClick={() => setOpen(true)}
+				><i className={'bi bi-gear-fill'}></i>
+				</IconButton>
+			</MenuHandler>
+			<MenuList>
 				<MenuItem onClick={handleAdmin}>Admin</MenuItem>
 				<MenuItem onClick={handleLogout}>Logout</MenuItem>
-			</Menu>
-		</div>
+			</MenuList>
+		</Menu>
 	</div>;
 }
 
@@ -125,6 +130,7 @@ export default function HomePage() {
 	}
 
 	return <section className="bg-gray-50 dark:bg-gray-900 p-8 h-screen ">
+		<LeftTopMenu/>
 		<RightTopMenu/>
 		<div id="filter" className={'flex flex-col space-y-4 w-100 justify-center items-center mb-8'}>
 			<Image src={'/logo-full.svg'} alt={'logo'} width={120} height={120} />

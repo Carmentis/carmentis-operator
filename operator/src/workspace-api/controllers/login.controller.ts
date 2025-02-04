@@ -25,6 +25,7 @@ export class LoginController {
 	@Public()
 	@Post('/challenge/verify')
 	async verifyChallenge(@Body() dto: ChallengeVerificationDto) {
+		await this.challengeService.deleteOutdatedChallenges();
 		const isVerified = await this.challengeService.verifyChallenge(
 			dto.challenge,
 			dto.publicKey,

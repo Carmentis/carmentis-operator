@@ -15,6 +15,7 @@ import { useOrganisationContext } from '@/contexts/organisation-store.context';
 import { useOrganisationMutationContext } from '@/contexts/organisation-mutation.context';
 import WelcomeCards from '@/components/welcome-cards.component';
 import OrganisationAccountBalance from '@/components/organisation-account-balance.component';
+import AvatarOrganisation from '@/components/avatar-organisation';
 
 
 /**
@@ -54,7 +55,6 @@ function OrganisationEdition() {
 	const [city, setCity] = useState(organisation.city);
 	const [countryCode, setCountryCode] = useState(organisation.countryCode);
 	const [website, setWebsite] = useState(organisation.website);
-	const [operatorEndpoint, setOperatorEndpoint] = useState(organisation.operatorEndpoint);
 	const [isModified, setIsModified] = useState(false);
 	const notify = useToast();
 	const callOrganisationPublication = useOrganisationPublication();
@@ -66,7 +66,6 @@ function OrganisationEdition() {
 			setCity(organisation.city);
 			setCountryCode(organisation.countryCode);
 			setWebsite(organisation.website);
-			setOperatorEndpoint(organisation.operatorEndpoint)
 		}
 	}, [organisation]);
 
@@ -76,8 +75,7 @@ function OrganisationEdition() {
 			name,
 			city,
 			countryCode,
-			website,
-			operatorEndpoint
+			website
 		}, {
 			onSuccess: () => {
 				setIsModified(false);
@@ -163,14 +161,6 @@ function OrganisationEdition() {
 						setWebsite(e.target.value);
 					}}
 				/>
-				<Input
-					value={operatorEndpoint}
-					label={'Operator endpoint'}
-					onChange={e => {
-						setIsModified(true);
-						setOperatorEndpoint(e.target.value);
-					}}
-				/>
 
 				<div className="input">
 					<Typography>Public key</Typography>
@@ -201,7 +191,7 @@ export default function Home() {
 		<>
 			<div className="w-full">
 				<div id="welcome-logo" className={'my-12 w-full flex flex-col justify-center items-center'}>
-					<Avatar name={organisation.name} className={'w-32 h-32 mb-2'} variant={'beam'}></Avatar>
+					<AvatarOrganisation organisationId={organisation.id} className={'w-32 h-32 mb-2'}/>
 					<Typography variant={'h4'} className={"text-primary-dark"}>{organisation.name}</Typography>
 
 					<div id="actions" className={"mt-4"}>

@@ -61,9 +61,6 @@ export class OrganisationEntity {
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
 	createdAt: Date;
 
-	@Column({ default: 0 })
-	balance: number;
-
 	@UpdateDateColumn()
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
 	lastUpdateAt: Date;
@@ -79,7 +76,4 @@ export class OrganisationEntity {
 	
 	@Column({nullable: true})
 	virtualBlockchainId: string;
-
-	@Column({nullable: true})
-	operatorEndpoint: string;
 }

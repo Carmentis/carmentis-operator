@@ -1,9 +1,11 @@
 import * as sdk from '@cmts-dev/carmentis-sdk/client';
-import { useOrganisationContext } from '@/contexts/organisation-store.context';
 import { useEffect, useState } from 'react';
+import { Organisation } from '@/entities/organisation.entity';
 
-export default function OrganisationAccountBalance() {
-	const organisation = useOrganisationContext();
+export default function OrganisationAccountBalance(
+	input: {organisation: Organisation}
+) {
+	const organisation = input.organisation;
 	const [balance, setBalance] = useState<number|undefined>(undefined);
 
 	async function recoverOrganisationBalanceFromBlockchain():Promise<void> {

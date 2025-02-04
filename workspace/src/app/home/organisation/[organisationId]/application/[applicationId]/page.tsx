@@ -154,7 +154,7 @@ function ApplicationDataAccess() {
 
 	const editor = new ApplicationEditor(application);
 	return <>
-		<div className={'space-y-10'}>
+		<div className={'space-y-4'}>
 			<ApplicationDetailsNavbar
 				refreshApplication={() => mutate()}
 			/>

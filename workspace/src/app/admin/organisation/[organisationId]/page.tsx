@@ -18,6 +18,7 @@ import { useParams } from 'next/navigation';
 import { useToast } from '@/app/layout';
 import Skeleton from 'react-loading-skeleton';
 import { useEffect, useState } from 'react';
+import OrganisationAccountBalance from '@/components/organisation-account-balance.component';
 
 function OrganisationUsers({ organisationId }: { organisationId: number }) {
 	const { data, isLoading, mutate } = useFetchUsersInOrganisation(organisationId);
@@ -227,7 +228,7 @@ export default function OrganisationDetailsPage() {
 
 	// welcome data
 	const welcomeData = [
-		{ icon: 'bi-currency-dollar', title: 'Balance', value: organisation.balance.toString() + ' CMTS' },
+		{ icon: 'bi-currency-dollar', title: 'Balance', value: <OrganisationAccountBalance organisation={organisation}/> },
 	];
 
 

@@ -180,8 +180,14 @@ export async function CallApi<T>(
 					cb.onSuccessData( data );
 				}
 			} else {
+
 				if ( cb && cb.onError ) {
-					cb.onError(response.statusText)
+					try {
+						const data = await response.json();
+						cb.onError(data.message || response.statusText)
+					} catch {
+						cb.onError(response.statusText)
+					}
 				}
 			}
 		})
@@ -572,6 +578,18 @@ export function useAuthUserAccessRightInOrganisation(organisationId: number) {
 	return useWorkspaceApi<AccessRight>(`/organisation/${organisationId}/accessRights`);
 }
 
+export function useUserAccessRightInOrganisation(publicKey: string, organisationId: number) {
+	return useWorkspaceApi<AccessRight>(`/organisation/${organisationId}/accessRights/${publicKey}`);
+}
+
+export function useCountUserInOrganisation(organisationId: number) {
+	return useWorkspaceApi<{count: number}>(`/organisation/${organisationId}/countUsers`);
+}
+
+
+export function useFetchCurrentUserIsAdministrator() {
+	return useWorkspaceApi<{isAdmin: boolean}>(`/user/isAdmin`);
+}
 
 
 

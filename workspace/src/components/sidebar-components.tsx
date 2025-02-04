@@ -78,13 +78,13 @@ export function AuthenticatedUserSidebarItem() {
 	return <div className={"flex flex-row visible-sidebar-item"}>
 		{ interfaceContext.sidebarHidden &&
 			<>
-				<Avatar className={"w-full h-full"}  variant={"beam"} name={`${user.firstname} ${user.lastname}`}/>
+				<Avatar className={"w-full h-full"}  variant={"beam"} name={user.publicKey}/>
 			</>
 		}
 
 		{ !interfaceContext.sidebarHidden &&
 			<>
-				<Avatar width={20} variant={"beam"} name={`${user.firstname} ${user.lastname}`}/>
+				<Avatar width={20} variant={"beam"} name={user.publicKey}/>
 				<span className={"ml-2"} >{user.firstname} {user.lastname}</span>
 			</>
 		}

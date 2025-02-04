@@ -13,12 +13,13 @@ export class UserController {
 
     @Get("/current")
     async getCurrentAuthUser(@Req() request: Request) {
-        const publicKey = request['publicKey'];
-        const result = await this.userService.findOneByPublicKey(publicKey);
-        if (!result) {
-            throw new NotFoundException("Authenticated user not found.");
-        }
-        return result;
+        return await this.userService.findCurrentlyConnectedUser(request);
+    }
+
+    @Get('/isAdmin')
+    async currentUserIsAdmin(@Req() request: Request) {
+        const user = await this.userService.findCurrentlyConnectedUser(request);
+        return {isAdmin: user.isAdmin};
     }
 
     @Get("/organisation")

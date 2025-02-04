@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WorkspaceApiController } from './workspace-api.controller';
-import { OrganisationController } from './controllers/organisation.controller';
+import { OrganisationController } from './controllers/organisation/organisation.controller';
 import { SearchController } from './controllers/search.controller';
 import { UserController } from './controllers/user.controller';
 
@@ -32,6 +32,23 @@ import { AuthGuard } from './guards/authentication.guards';
 import { APP_GUARD } from '@nestjs/core';
 
 import { SetupController } from './controllers/setup.controller';
+import { OrganisationScopedController } from './controllers/organisation/organisation-scoped.controller';
+import { UserInOrganisationGuard } from './guards/user-in-organisation.guard';
+import {
+	CanEditApplications,
+	CanEditOracles,
+	CanEditUsers,
+	IsAdminInOrganisation,
+} from './guards/user-has-valid-access-right.guard';
+import {
+	OrganisationOracleEditionScopedController
+} from './controllers/organisation/organisation-oracle-edition-scoped.controller';
+import {
+	OrganisationApplicationEditionScopedController
+} from './controllers/organisation/organisation-application-edition-scoped.controller';
+import {
+	OrganisationUserEditionScopedController
+} from './controllers/organisation/organisation-user-edition-scoped.controller';
 
 // Extracted imports, controllers, and providers into constants
 export const DEFAULT_JWT_TOKEN_VALIDITY = "8h"
@@ -56,6 +73,10 @@ const WORKSPACE_CONTROLLERS = [
 	WorkspaceApiController,
 	AdminController,
 	OrganisationController,
+	OrganisationScopedController,
+	OrganisationOracleEditionScopedController,
+	OrganisationApplicationEditionScopedController,
+	OrganisationUserEditionScopedController,
 	SearchController,
 	UserController,
 	SandboxController,
@@ -75,6 +96,11 @@ const WORKSPACE_PROVIDERS = [
 	ChainService,
 	ChallengeService,
 	AuthGuard,
+	UserInOrganisationGuard,
+	CanEditApplications,
+	CanEditOracles,
+	CanEditUsers,
+	IsAdminInOrganisation,
 	{
 		provide: APP_GUARD,
 		useClass: AuthGuard,

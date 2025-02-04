@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
-import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import { useInterfaceContext } from '@/contexts/interface.context';
-import { AuthenticatedUserSidebarItem } from '@/components/sidebar-components';
+import { SidebarItem } from '@/components/sidebar-components';
+import {version} from '@/../package.json';
+import { Typography } from '@material-tailwind/react';
 
 function SidebarItem(
 	input: { icon: string, text: string, link?: string, className?: string, onClick?: () => void, activeRegex?: RegExp, id?: string },
@@ -38,23 +39,18 @@ function SidebarItem(
 }
 
 
-
+function ApplicationVersionSidebarItem() {
+	const interfaceStore = useInterfaceContext();
+	if (interfaceStore.sidebarHidden) return <></>
+	return (
+       <div className={"absolute bottom-5 left-5"}>
+		   <Typography color={'gray'}>Version {version}</Typography>
+	   </div>
+    );
+}
 
 export default function Sidebar() {
-
-
-	const router = useRouter();
-	const navigation = useApplicationNavigationContext();
 	const interfaceStore = useInterfaceContext();
-
-	function backRouter() {
-		router.back();
-	}
-
-
-	function exit() {
-		navigation.navigateToHome()
-	}
 
 	function toggleSidebar() {
 		interfaceStore.toggleSidebar()
@@ -69,10 +65,6 @@ export default function Sidebar() {
 			onClick={toggleSidebar}>
 		</SidebarItem>
 
-		<AuthenticatedUserSidebarItem/>
-		<SidebarItem icon={"bi-arrow-left"} text={"Back"} onClick={backRouter}></SidebarItem>
-		<SidebarItem icon={"bi-door-closed"} text={"Exit"} className={"separator"} onClick={exit}></SidebarItem>
-
 		<SidebarItem icon={"bi-house"} text={"Home"} link={"/"}
 					 activeRegex={new RegExp('/organisation/[0-9]+$')}></SidebarItem>
 		<SidebarItem icon={"bi-people"} text={"Users"} link={`/user`}
@@ -83,6 +75,8 @@ export default function Sidebar() {
 					 activeRegex={new RegExp('/oracle')}></SidebarItem>
 		<SidebarItem icon={"bi-currency-dollar"} text={"Exchange"} link={"/exchange"}
 					 activeRegex={new RegExp('/exchange')}></SidebarItem>
+
+		<ApplicationVersionSidebarItem/>
 
 	</>
 }

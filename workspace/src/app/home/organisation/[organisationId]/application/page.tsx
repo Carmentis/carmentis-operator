@@ -111,7 +111,7 @@ export default function ListOfApplicationsPage() {
 					`/home/organisation/${organisationId}/application/${data.id}`
 				)
 			},
-			onError: (error) => console.error(error),
+			onError: notify.error
 		});
 		setIsShowingNameForm(false);
 	}
@@ -127,7 +127,7 @@ export default function ListOfApplicationsPage() {
 
 
 	return (
-		<div className="space-y-12">
+		<div className="space-y-4">
 			<Card>
 				<CardBody >
 					<div className="flex justify-between mb-4">
