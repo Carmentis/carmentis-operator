@@ -47,6 +47,63 @@ To start the Operator, you can use the following commands based on your environm
   npm run start:dev
   ```
 
+## Launching the Operator
+
+There are three ways to launch the Operator:
+
+1. **Manually (like any other Nest.js project)**:
+   Follow the steps in the installation section, then use the appropriate command from the [Usage](#usage) section to
+   launch the server in production or development.
+
+2. **Build and launch with the provided Dockerfile**:
+   a. Build the Docker image:
+   ```bash
+   docker build -t operator-back .
+   ```
+   b. Run the image:
+   ```bash
+   docker run --rm --name operator-back \
+   --env PORT=4002 \
+   --env JWT_SECRET=toto \
+   --env NODE_URL=http://localhost:3500 \
+   --env OPERATOR_DATABASE_URL=your_database_url \
+   --env OPERATOR_DATABASE_PORT=5432 \
+   --env OPERATOR_DATABASE_USERNAME=your_database_username \
+   --env OPERATOR_DATABASE_PASSWORD=your_database_password \
+   --env OPERATOR_DATABASE_NAME=your_database_name \
+   --network host operator-back
+   ```
+
+3. **Use the published image**:
+   Run the following command to use the pre-built image available on GitHub Container Registry:
+   ```bash
+   docker run --rm --name carmentis-operator-back \
+   --env PORT=4002 \
+   --env JWT_SECRET=toto \
+   --env NODE_URL=http://localhost:3500 \
+   --env OPERATOR_DATABASE_URL=your_database_url \
+   --env OPERATOR_DATABASE_PORT=5432 \
+   --env OPERATOR_DATABASE_USERNAME=your_database_username \
+   --env OPERATOR_DATABASE_PASSWORD=your_database_password \
+   --env OPERATOR_DATABASE_NAME=your_database_name \
+   --network host ghcr.io/carmentis/operator/back
+   ```
+
+   Ensure that a PostgreSQL database is running and accessible before launching the server.
+
+## Launching a PostgreSQL Server with Docker
+
+To run a PostgreSQL server using Docker, you can use the following command:
+
+```bash
+docker run --rm --name postgres -e POSTGRES_USER=your_username \
+-e POSTGRES_PASSWORD=your_password -e POSTGRES_DB=your_database_name \
+-p 5432:5432 postgres
+```
+
+Replace `your_username`, `your_password`, and `your_database_name` with the corresponding values that match your
+environment configuration.
+
 ## Socket.io Integration
 
 The Operator's `socket.io` handler enables interaction with external wallets to facilitate various operations,

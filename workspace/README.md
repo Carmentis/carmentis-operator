@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Carmentis Workspace Front
 
-## Getting Started
+This repository provides the front-end server for the Carmentis Workspace. The workspace is a web application used by
+administrators to manage organizations, applications, and oracles within the Carmentis ecosystem. It operates closely
+with the Carmentis Operator (back-end server) to provide its functionality.
 
-First, run the development server:
+## Features
+
+- Create and manage organizations, applications, and oracles.
+- Interacts with the back-end operator to handle API requests, key signing, and blockchain publication.
+- Serves as the front-end interface for administrators.
+
+## Prerequisites
+
+- Node.js and npm installed on your local machine.
+- Docker (optional, for containerized deployment).
+
+## Manual Launch Instructions
+
+To run the workspace manually like any other Next.js project, follow these steps:
+
+1. Clone the repository.
+   ```bash
+   git clone <repository-url>
+   cd <repository-folder>
+   ```
+
+2. Install dependencies.
+   ```bash
+   npm install
+   ```
+
+3. Define the required environment variables:
+    - `PORT`: The port on which the workspace front will run.
+    - `OPERATOR_URL`: The URL of the operator (Carmentis back-end server).
+
+4. Run the development server.
+   ```bash
+   PORT=4005 OPERATOR_URL=http://localhost:4002 npm run dev
+   ```
+
+5. The application will be accessible at [http://localhost:4005](http://localhost:4005).
+
+## Docker Launch Instructions
+
+### Using Published Docker Image
+
+To run the workspace using the already published Docker image, use the following command:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker run --env PORT=4005 --env OPERATOR_URL=http://host.docker.internal:4002 -p 4005:4005 --name carmentis-operator-front --rm ghcr.io/carmentis/operator/front
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Build and Run Docker Image Locally
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To build and run the workspace Docker image locally, follow these steps:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Build the Docker image.
+   ```bash
+   docker build -t carmentis-operator-front .
+   ```
 
-## Learn More
+2. Run the Docker image.
+   ```bash
+   docker run --env PORT=4005 --env OPERATOR_URL=http://host.docker.internal:4002 -p 4005:4005 --name carmentis-operator-front --rm carmentis-operator-front
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+## Development Setup
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+For development and collaboration:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Ensure proper environment variables are set in a `.env` file or through other means.
+- Use `npm run dev` for a hot-reloading development server.
 
-## Deploy on Vercel
+## Environment Variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The following environment variables are required for running the workspace:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **PORT**: Specifies the port the front-end server will run on. Example: `4005`.
+- **OPERATOR_URL**: Specifies the back-end operator API URL. Example: `http://host.docker.internal:4002`.
+
+## Licensing
+
+The project is licensed under the terms of the applicable license.
+
+---
+
+For more information about Carmentis or its ecosystem, refer to the official documentation.
