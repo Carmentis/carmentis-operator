@@ -16,6 +16,9 @@ import { useToast } from '@/app/layout';
 import { useOrganisationContext } from '@/contexts/organisation-store.context';
 import Skeleton from 'react-loading-skeleton';
 import { ApplicationSummary } from '@/entities/application.entity';
+import * as sdk from '../../../../../../../../carmentis-core/dist/client';
+import CardTableComponent from '@/components/card-table.component';
+import { Container } from '@mui/material';
 
 /**
  * Component representing a horizontal card for an application.
@@ -49,58 +52,17 @@ function ListOfApplicationsComponent({ organisationId, data }: {
 		router.push(`/home/organisation/${organisationId}/application/${appId}`)
 	}
 
-	const TABLE_HEAD = ['Name', 'Draft', 'Published', 'Published at', 'Version'];
-	const TABLE_CONTENT : ((app:ApplicationSummary) => ReactNode)[] = [
-		(app) => <Typography>{app.name}</Typography>,
-		(app) => app.isDraft && <Chip value={'Draft'} className={'bg-primary-light w-min'} />,
-		(app) => app.published && <Chip value={'Published'} className={'bg-primary-light w-min'} />,
-		(app) => app.publishedAt && <Typography>{new Date(app.publishedAt).toLocaleString()}</Typography>,
-		(app) => <Typography>{app.version}</Typography>,
-	]
-
-	return (
-		<Card className="h-full w-full overflow-scroll-auto p-4">
-			<table className="w-full min-w-max table-auto text-left">
-				<thead>
-				<tr>
-					{TABLE_HEAD.map((head) => (
-						<th
-							key={head}
-							className="border-b border-blue-gray-100 p-4"
-						>
-							<Typography
-								variant="small"
-								color="blue-gray"
-								className="font-normal leading-none opacity-70"
-							>
-								{head}
-							</Typography>
-						</th>
-					))}
-				</tr>
-				</thead>
-				<tbody>
-				{data.map((app) => (
-					<tr
-						key={app.id}
-						className={"cursor-pointer hover:bg-gray-50 [&>td]:p-2"}
-						onClick={() => visitApplication(app.id)}
-					>
-						{
-							TABLE_CONTENT
-								.map(callback => {
-									return <td>
-										{callback(app)}
-									</td>
-								})
-						}
-					</tr>
-				))}
-
-				</tbody>
-			</table>
-		</Card>
-	);
+	return <CardTableComponent
+		data={data}
+		onRowClicked={(app) => visitApplication(app.id)}
+		extractor={(v, i) => [
+			{head: 'Name', value: <Typography>{v.name}</Typography>},
+			{head: 'Draft', value: v.isDraft && <Chip value={'Draft'} className={'bg-primary-light w-min'} />},
+			{head: 'Published', value: v.published && <Chip value={'Published'} className={'bg-primary-light w-min'} />},
+			{head: 'Published at', value: v.publishedAt && <Typography>{new Date(v.publishedAt).toLocaleString()}</Typography>},
+			{head: 'Version', value: <Typography>{v.version}</Typography>}
+		]}
+	/>
 }
 
 /**
@@ -172,10 +134,18 @@ export default function ListOfApplicationsPage() {
 	}
 
 
-
+	let nameForm = <></>;
+	if (isShowingNameForm) {
+		nameForm = <SimpleTextModalComponent
+			label="Application name"
+			onSubmit={submitApplicationNameCreation}
+			onClose={() => setIsShowingNameForm(false)}
+			placeholder="Name"
+		/>
+	}
 
 	return (
-		<div className="space-y-4">
+		<Container className="space-y-4">
 			<Card>
 				<CardBody >
 					<div className="flex justify-between mb-4">
@@ -209,14 +179,7 @@ export default function ListOfApplicationsPage() {
 				organisationId={organisationId}
 			/>
 
-			{isShowingNameForm && (
-				<SimpleTextModalComponent
-					label="Application name"
-					onSubmit={submitApplicationNameCreation}
-					onClose={() => setIsShowingNameForm(false)}
-					placeholder="Name"
-				/>
-			)}
-		</div>
+			{nameForm}
+		</Container>
 	);
 }

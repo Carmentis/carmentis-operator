@@ -35,6 +35,7 @@ import {
 	CanEditUsers,
 	IsAdminInOrganisation,
 } from '../../guards/user-has-valid-access-right.guard';
+import ChainService from '../../services/chain.service';
 
 
 
@@ -50,6 +51,7 @@ export class OrganisationScopedController {
 		private readonly applicationService: ApplicationService,
 		private readonly auditService: AuditService,
 		private readonly oracleService: OracleService,
+		private readonly chainService: ChainService,
 	) {}
 
 	/**
@@ -240,6 +242,35 @@ export class OrganisationScopedController {
 		@Param('applicationId') applicationId: number,
 	) {
 		return await this.applicationService.getPublicationCost(applicationId);
+	}
+
+
+	@Get(':organisationId/transactionsHistory')
+	async getTransactionsHistory(
+		@Param('organisationId') organisationId: number,
+		@Query('limit') limit: string,
+		@Query('fromHistoryHash') fromHistoryHash : string | undefined,
+	) {
+		const {publicSignatureKey} = await this.organisationService.findPublicKeyById(organisationId);
+		return await this.chainService.getTransactionsHistory(publicSignatureKey, fromHistoryHash, parseInt(limit))
+	}
+
+	@Get(':organisationId/hasTokenAccount')
+	async checkAccountExistence(
+		@Param('organisationId') organisationId: number
+	) {
+		const {publicSignatureKey} = await this.organisationService.findPublicKeyById(organisationId);
+		const hasTokenAccount = await this.chainService.checkAccountExistence(publicSignatureKey)
+		return {hasTokenAccount}
+	}
+
+	@Get(':organisationId/balance')
+	async getBalanceOfOrganisation(
+		@Param('organisationId') organisationId: number
+	) {
+		const {publicSignatureKey} = await this.organisationService.findPublicKeyById(organisationId);
+		const balance = await this.chainService.getBalanceOfAccount(publicSignatureKey)
+		return {balance}
 	}
 
 

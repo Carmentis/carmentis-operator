@@ -1,8 +1,8 @@
 import {
 	Injectable,
 	InternalServerErrorException,
-	Logger,
-	OnModuleInit,
+	Logger, NotFoundException,
+	OnModuleInit, UnprocessableEntityException,
 } from '@nestjs/common';
 import * as sdk from "@cmts-dev/carmentis-sdk/server";
 import { ApplicationEntity } from '../entities/application.entity';
@@ -190,5 +190,49 @@ export default class ChainService implements OnModuleInit{
 
 		await vc.sign();
 		return vc.publish()
+	}
+
+
+	async checkAccountExistence(publicSignatureKey: string) {
+		try {
+			this.logger.log(`Checking existence of token account from public key: '${publicSignatureKey}'`)
+			await sdk.blockchain.blockchainQuery.getAccountByPublicKey(publicSignatureKey);
+			return true;
+		} catch (e) {
+			this.logger.log('Organisation token account not found');
+			return false;
+		}
+	}
+
+
+	async getTransactionsHistory(publicSignatureKey, fromHistoryHash: string | undefined, limit: number) {
+		try {
+			const accountHash = await sdk.blockchain.blockchainQuery.getAccountByPublicKey(publicSignatureKey);
+			if (!accountHash) throw new NotFoundException('No account found');
+
+			const accountState = await sdk.blockchain.blockchainQuery.getAccountState(accountHash);
+			return await sdk.blockchain.blockchainQuery.getAccountHistory(
+				accountHash,
+				fromHistoryHash || accountState.lastHistoryHash,
+				limit
+			);
+
+		} catch (e) {
+			this.logger.log("Cannot produce history of transactions:", e);
+			throw new UnprocessableEntityException(e)
+		}
+
+	}
+
+	async getBalanceOfAccount(publicSignatureKey: string) {
+		try {
+			const accountHash = await sdk.blockchain.blockchainQuery.getAccountByPublicKey(publicSignatureKey);
+			if (!accountHash) throw new NotFoundException('No account found');
+
+			const accountState = await sdk.blockchain.blockchainQuery.getAccountState(accountHash);
+			return accountState.balance
+		} catch (e) {
+			throw new UnprocessableEntityException(e)
+		}
 	}
 }

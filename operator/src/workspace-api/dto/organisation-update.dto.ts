@@ -9,15 +9,14 @@ export class UpdateOrganisationDto {
 	@IsString()
 	name: string;
 
-	@IsNotEmpty()
+	@IsOptional()
 	@IsString()
 	city: string;
 
-	@IsNotEmpty()
+	@IsOptional()
 	@IsAlpha()
 	countryCode: string;
 
-	@IsNotEmpty()
-	@IsUrl()
+	@IsOptional()
 	website: string;
 }

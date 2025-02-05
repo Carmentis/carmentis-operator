@@ -104,8 +104,8 @@ export default function Sidebar() {
 					 activeRegex={new RegExp('/application')}></SidebarItem>
 		<SidebarItem icon={"bi-arrow-left-right"} text={"Oracles"} link={"/oracle"}
 					 activeRegex={new RegExp('/oracle')}></SidebarItem>
-		<SidebarItem icon={"bi-currency-dollar"} text={"Exchange"} link={"/exchange"}
-					 activeRegex={new RegExp('/exchange')}></SidebarItem>
+		<SidebarItem icon={"bi-currency-dollar"} text={"Transactions history"} link={"/transactions"}
+					 activeRegex={new RegExp('/transactions')}></SidebarItem>
 
 		<ApplicationVersionSidebarItem/>
 

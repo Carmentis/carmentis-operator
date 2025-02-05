@@ -30,6 +30,7 @@ export type Oracle = {
 	version: number,
 	lastUpdate: Date;
 	published: boolean;
+	publishedAt: Date;
 	isDraft: boolean,
 	data: {
 		services: OracleService[],
@@ -41,5 +42,5 @@ export type Oracle = {
 }
 
 
-export type OracleSummary = Pick<Oracle, 'id' | 'name'>;
+export type OracleSummary = Pick<Oracle, 'id' | 'name' | 'isDraft' | 'published' | 'version' | 'publishedAt'>;
 export type OracleSummaryList = OracleSummary[];

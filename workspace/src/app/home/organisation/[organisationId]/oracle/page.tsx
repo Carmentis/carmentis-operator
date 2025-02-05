@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Card, CardBody, Typography } from '@material-tailwind/react';
+import { Button, Card, CardBody, Chip, Typography } from '@material-tailwind/react';
 import { SearchInputForm } from '@/components/form/search-input.form';
 import { useState } from 'react';
 import { IdentifiedEntity, useFetchOraclesSummaryInOrganisation, useOracleCreation } from '@/components/api.hook';
@@ -8,9 +8,10 @@ import { useRouter } from 'next/navigation';
 import Skeleton from 'react-loading-skeleton';
 import SimpleTextModalComponent from '@/components/modals/simple-text-modal.component';
 import { useToast } from '@/app/layout';
-import Avatar from 'boring-avatars';
-import Link from 'next/link';
 import { useOrganisationContext } from '@/contexts/organisation-store.context';
+import CardTableComponent from '@/components/card-table.component';
+import { OracleSummary } from '@/entities/oracle.entity';
+import { Container } from '@mui/material';
 
 
 export default function OraclePage() {
@@ -37,16 +38,25 @@ export default function OraclePage() {
 
 
 	if (!data || isLoading) return <Skeleton count={2} />;
+	let oracleCreationModal = <></>;
+	if (showOracleCreationModal) {
+		oracleCreationModal = <SimpleTextModalComponent label={'Oracle name'}
+														onSubmit={CreateOracle}
+														onClose={() => {
+															setShowOracleCreationModal(false);
+														}}
+														placeholder={'Name'}
+		/>
+	}
 
 
-	return <>
-		{/* Search card */}
-		<Card className={"mb-8"}>
+	return <Container className={"space-y-4"}>
+		<Card>
 			<CardBody>
 				<div className="header flex justify-between">
 					<Typography variant={'h5'}>Oracles</Typography>
 					<div className="flex space-x-2 mb-4">
-						<Button  onClick={() => setShowOracleCreationModal(true)}>Create oracle</Button>
+						<Button onClick={() => setShowOracleCreationModal(true)}>Create oracle</Button>
 						<Button disabled>Import oracle</Button>
 					</div>
 				</div>
@@ -55,33 +65,44 @@ export default function OraclePage() {
 		</Card>
 
 
-		{/* Oracles */}
-		<div className={"flex flex-wrap gap-4"}>
-			{
-				data
-					.filter(oracle => searchInput === '' || oracle.name.toLowerCase().includes(searchInput.toLowerCase()))
-					.map((oracle, index) =><Link key={index} href={`oracle/${oracle.id}`}>
-						<Card className={"w-52"} >
-							<CardBody
-								className={"w-full flex flex-col justify-center items-center text-center"}>
-								<Avatar name={oracle.name} variant={"sunset"} width={54} className={"mb-4"}/>
-								{oracle.name}
-							</CardBody>
-						</Card>
-					</Link>)
+		<OracleSummaryTable
+			data={
+				data.filter(
+					oracle => searchInput === '' ||
+						oracle.name.toLowerCase().includes(searchInput.toLowerCase()),
+				)
 			}
-		</div>
+		/>
+
+		{oracleCreationModal}
+	</Container>;
+}
 
 
-		{
-			showOracleCreationModal &&
-			<SimpleTextModalComponent label={'Oracle name'}
-									  onSubmit={CreateOracle}
-									  onClose={() => {
-										  setShowOracleCreationModal(false);
-									  }}
-									  placeholder={'Name'} />
-		}
+function OracleSummaryTable(
+	{ data }: { data: OracleSummary[] },
+) {
+	const router = useRouter();
 
-	</>;
+	function visiteOracle(oracleId: number) {
+		router.push(`oracle/${oracleId}`);
+	}
+
+	return <CardTableComponent
+		data={data}
+		onRowClicked={(oracle) => visiteOracle(oracle.id)}
+		extractor={(v, i) => [
+			{ head: 'Name', value: <Typography>{v.name}</Typography> },
+			{ head: 'Draft', value: v.isDraft && <Chip value={'Draft'} className={'bg-primary-light w-min'} /> },
+			{
+				head: 'Published',
+				value: v.published && <Chip value={'Published'} className={'bg-primary-light w-min'} />,
+			},
+			{
+				head: 'Published at',
+				value: v.publishedAt && <Typography>{new Date(v.publishedAt).toLocaleString()}</Typography>,
+			},
+			{ head: 'Version', value: <Typography>{v.version}</Typography> },
+		]}
+	/>;
 }

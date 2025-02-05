@@ -33,7 +33,7 @@ function OverviewOrganisationWelcomeCards() {
 	const { balance, applicationsNumber, oraclesNumber, usersNumber } = organisationStats.data;
 
 	const welcomeCardData = [
-		{ icon: 'bi-currency-dollar', title: 'Balance', value: <OrganisationAccountBalance/> },
+		{ icon: 'bi-currency-dollar', title: 'Balance', value: <OrganisationAccountBalance organisation={organisation}/> },
 		{ icon: 'bi-layers', title: 'Applications', value: applicationsNumber.toString() },
 		{ icon: 'bi-layers', title: 'Oracles', value: oraclesNumber.toString() },
 		{ icon: 'bi-people', title: 'Users', value: usersNumber.toString() },

@@ -3,6 +3,7 @@ import useSWR, { SWRResponse } from 'swr';
 import { Organisation, OrganisationSummary, OrganisationSummaryList } from '@/entities/organisation.entity';
 import { Application, ApplicationSummary } from '@/entities/application.entity';
 import { Oracle, OracleSummary } from '@/entities/oracle.entity';
+import { AccountTransactionHistoryEntry } from '@/entities/transaction-history-entry.entity';
 
 
 
@@ -590,6 +591,23 @@ export function useCountUserInOrganisation(organisationId: number) {
 export function useFetchCurrentUserIsAdministrator() {
 	return useWorkspaceApi<{isAdmin: boolean}>(`/user/isAdmin`);
 }
+
+
+
+export function useFetchTokenAccountExistence(organisationId: number) {
+	return useWorkspaceApi<{hasTokenAccount: boolean}>(`/organisation/${organisationId}/hasTokenAccount`);
+}
+
+export function useFetchAccountBalance(organisationId: number) {
+	return useWorkspaceApi<{balance: number}>(`/organisation/${organisationId}/balance`);
+}
+
+export function useFetchOrganisationTransactions(organisationId: number, fromHistoryHash: string | undefined, limit: number) {
+	const historyHashParam = fromHistoryHash ? `fromHistoryHash=${fromHistoryHash}` : ''
+	return useWorkspaceApi<AccountTransactionHistoryEntry[]>(`/organisation/${organisationId}/transactionsHistory?${historyHashParam}&limit=${limit}`);
+}
+
+
 
 
 

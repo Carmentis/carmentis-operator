@@ -1,30 +1,27 @@
 import * as sdk from '@cmts-dev/carmentis-sdk/client';
-import { useEffect, useState } from 'react';
 import { Organisation } from '@/entities/organisation.entity';
+import { useFetchAccountBalance } from '@/components/api.hook';
+import Skeleton from 'react-loading-skeleton';
 
+export type OrganisationAccountBalanceProps = {
+	organisation: Organisation,
+	onErrorContent?: string,
+	formatBalance?: (balance:number) => string,
+}
 export default function OrganisationAccountBalance(
-	input: {organisation: Organisation}
+	input: OrganisationAccountBalanceProps
 ) {
 	const organisation = input.organisation;
-	const [balance, setBalance] = useState<number|undefined>(undefined);
+	const {data, isLoading, error} = useFetchAccountBalance(organisation.id);
 
-	async function recoverOrganisationBalanceFromBlockchain():Promise<void> {
-		try {
-			const publicKey = organisation.publicSignatureKey;
-			const accountVbHash = await sdk.blockchain.blockchainQuery.getAccountByPublicKey(publicKey);
-			const accountState = await sdk.blockchain.blockchainQuery.getAccountState(accountVbHash);
-			setBalance(accountState.balance / sdk.constants.ECO.TOKEN)
-		} catch (e) {
-			//throw new Error(`An error occured: ${e}`);
-		}
+	function formatBalance(balance:number) {
+		if (input.formatBalance) return input.formatBalance(balance)
+		return `${balance} CMTS`;
 	}
 
-	useEffect(() => {
-		recoverOrganisationBalanceFromBlockchain()
-			.catch(console.error);
-	}, [organisation]);
-
+	if (error) <>{input.onErrorContent || '--'}</>
+	if (!data || isLoading) return <Skeleton/>
 	return <>
-		{balance || '--'}
+		{formatBalance(data.balance / sdk.constants.ECO.TOKEN)}
 	</>
 }

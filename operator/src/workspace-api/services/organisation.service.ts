@@ -61,6 +61,13 @@ export class OrganisationService {
 		return organisation;
 	}
 
+	async findPublicKeyById(organisationId: number): Promise<{publicSignatureKey: string}> {
+		return await this.organisationEntityRepository.findOne({
+			where: {id: organisationId},
+			select: ['publicSignatureKey'],
+		});
+	}
+
 	async findAccessRightsByOrganisationId(organisationId: number): Promise<OrganisationAccessRightEntity[]> {
 		return this.accessRightRepository
 			.createQueryBuilder('accessRight')
@@ -262,8 +269,7 @@ export class OrganisationService {
 			organisation.publishedAt = new Date();
 			return await this.update(organisation.id, organisation);
 		} catch (e) {
-			console.error(e)
-			throw new InternalServerErrorException('Failed to publish the organisation');
+			throw new InternalServerErrorException(`Failed to publish the organisation: ${e.message}`);
 		}
 
 	}

@@ -62,6 +62,7 @@ export class OracleService {
 		return this.oracleRepository.createQueryBuilder('oracle')
 			.innerJoin('oracle.organisation', 'org')
 			.where('org.id = :organisationId', { organisationId })
+			.select(['oracle.id', 'oracle.version', 'oracle.name', 'oracle.published', 'oracle.isDraft', 'oracle.publishedAt'])
 			.getMany();
 	}
 
