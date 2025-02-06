@@ -19,7 +19,6 @@ export class OperatorApiController{
 		@Body() data: object
 	) {
 		this.logger.log("Handling event approval")
-
-		sdk.operatorCore.prepareUserApproval(data);
+		return sdk.operatorCore.prepareUserApproval(data);
 	}
 }
