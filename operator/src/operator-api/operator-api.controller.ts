@@ -14,7 +14,7 @@ export class OperatorApiController{
 
 
 	@Public()
-	@Post("/eventApproval")
+	@Post("/prepareUserApproval")
 	async handleRequest(
 		@Body() data: object
 	) {
