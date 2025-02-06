@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+# keys
+operator-keypair.json
+
 # Logs
 logs
 *.log
