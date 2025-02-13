@@ -1,7 +1,6 @@
 import { Body, Controller, Logger, Post, UnprocessableEntityException } from '@nestjs/common';
 import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { Public } from '../workspace-api/decorators/public.decorator';
-import { CryptoService } from './services/crypto.service';
 import { PrepareUserApprovalDto } from './dto/prepare-user-approval.dto';
 import { OrganisationService } from '../shared/services/organisation.service';
 import { EnvService } from '../services/env.service';
