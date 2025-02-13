@@ -136,7 +136,7 @@ export function FieldEditionCard(
 				hashable: isHashable.current,
 				array: isList.current,
 				type: fieldType.current,
-				maskable: true, // maskable by default, only considered if primitive
+				maskable: fieldMaskId.current !== undefined,
 			}),
 			maskId: fieldMaskId.current ? parseInt(fieldMaskId.current) : undefined,
 		};

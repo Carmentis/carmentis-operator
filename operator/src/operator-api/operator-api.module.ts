@@ -4,10 +4,12 @@ import { OperatorApiGateway } from './operator-api.gateway';
 import { CorsMiddleware } from './cors-middleware';
 import { OperatorApiController } from './operator-api.controller';
 import { CryptoService } from './services/crypto.service';
-import { EnvService } from './services/env.service';
+import { EnvService } from '../services/env.service';
+import { OrganisationService } from '../shared/services/organisation.service';
+import { SharedModule } from '../shared/shared.module';
 
 @Module({
-	imports: [],
+	imports: [SharedModule],
 	controllers: [OperatorApiController],
 	providers: [PackageConfigService, OperatorApiGateway, CryptoService, EnvService],
 })

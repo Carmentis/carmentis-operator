@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Logger, NotFoundException, Param, Post, Req } from '@nestjs/common';
-import {UserService} from "../services/user.service";
+import {UserService} from "../../shared/services/user.service";
 import CreateUserDto from '../dto/create-user.dto';
-import { OrganisationService } from '../services/organisation.service';
+import { OrganisationService } from '../../shared/services/organisation.service';
 
 @Controller('/workspace/api/user')
 export class UserController {

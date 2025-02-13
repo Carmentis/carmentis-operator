@@ -16,19 +16,20 @@ function FieldCreationForm(
 ) {
 	const [name, setName] = useState<string>('');
 
-	function submit() {
+	function submit(event: FormEvent) {
+		event.preventDefault();
 		const value = name;
 		setName('');
 		input.onCreateField(value)
 	}
-	return <>
+	return <form onSubmit={submit} className={"flex"}>
 		<div className="w-64">
 			<Input label={'Name'} value={name}
 				   onChange={e => setName(e.target.value)}
 				   className={'w-14'} />
 		</div>;
-		<Button size={'md'} onClick={submit}>Add Field</Button>
-	</>;
+		<Button size={'md'} type={"submit"}>Add Field</Button>
+	</form>;
 }
 
 
@@ -45,6 +46,7 @@ export default function StructurePanel(
 
 
 	function createStructure(event: FormEvent) {
+		console.log("Creating structure", structureName)
 		event.preventDefault();
 		setStructureName('');
 		setIsModified(true);
@@ -82,7 +84,7 @@ export default function StructurePanel(
 					<Input label={'name'} value={structureName} onChange={e => setStructureName(e.target.value)}
 						   className={'w-14'} />
 				</div>
-				<Button size={'md'}>Add structure</Button>
+				<Button size={'md'} type={'submit'}>Add structure</Button>
 			</form>
 		</div>
 

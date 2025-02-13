@@ -13,10 +13,6 @@ export class ImportApplicationDto {
 	@IsOptional()
 	domain?: string;
 
-	@IsUrl()
-	@IsOptional()
-	website?: string;
-
 
 	@IsOptional()
 	data?: string;

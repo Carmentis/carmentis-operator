@@ -2,7 +2,7 @@ import { Injectable, Logger, NotFoundException, NotImplementedException, OnModul
 import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { EnvService } from './env.service';
+import { EnvService } from '../../services/env.service';
 
 
 @Injectable()
@@ -59,6 +59,6 @@ export class CryptoService implements OnModuleInit{
 		// set the operator private key and update the
 		const nodeUrl = process.env.NODE_URL;
 		this.logger.log(`Linking operator api with node located at ${nodeUrl}`)
-		sdk.operatorCore.initialize(nodeUrl, operatorPrivateKey)
+		//TODO sdk.operatorCore.initialize(nodeUrl, operatorPrivateKey)
 	}
 }

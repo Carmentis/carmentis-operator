@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { OrganisationEntity } from './organisation.entity';
-import { OracleDataType } from '../types/oracle-data.type';
+import { OracleDataType } from '../../workspace-api/types/oracle-data.type';
 
 @Entity('oracle')
 export class OracleEntity {

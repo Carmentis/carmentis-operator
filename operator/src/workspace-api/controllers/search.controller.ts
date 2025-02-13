@@ -1,5 +1,5 @@
 import { Controller, Get, HttpException, HttpStatus, Query } from '@nestjs/common';
-import { UserService } from '../services/user.service';
+import { UserService } from '../../shared/services/user.service';
 
 const NOT_FOUND_MESSAGE = 'Not Found';
 

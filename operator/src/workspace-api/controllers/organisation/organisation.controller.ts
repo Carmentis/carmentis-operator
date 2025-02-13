@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Logger, Post, Req } from '@nestjs/common';
-import { OrganisationService } from '../../services/organisation.service';
-import { UserService } from '../../services/user.service';
-import { OrganisationEntity } from '../../entities/organisation.entity';
-import { ApplicationService } from '../../services/application.service';
-import { AuditService } from '../../services/audit.service';
-import { AuditOperation, EntityType } from '../../entities/audit-log.entity';
-import { OracleService } from '../../services/oracle.service';
-import { AccessRightService } from '../../services/access-right.service';
+import { OrganisationService } from '../../../shared/services/organisation.service';
+import { UserService } from '../../../shared/services/user.service';
+import { OrganisationEntity } from '../../../shared/entities/organisation.entity';
+import { ApplicationService } from '../../../shared/services/application.service';
+import { AuditService } from '../../../shared/services/audit.service';
+import { AuditOperation, EntityType } from '../../../shared/entities/audit-log.entity';
+import { OracleService } from '../../../shared/services/oracle.service';
+import { AccessRightService } from '../../../shared/services/access-right.service';
 
 
 @Controller('/workspace/api/organisation')

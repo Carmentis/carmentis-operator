@@ -19,6 +19,10 @@ export class ApplicationDto {
 
     @IsString()
     @IsOptional()
+    description: string;
+
+    @IsString()
+    @IsOptional()
     website: string;
 
 

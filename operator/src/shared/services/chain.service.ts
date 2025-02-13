@@ -98,7 +98,6 @@ export default class ChainService implements OnModuleInit{
 		organisation: OrganisationEntity,
 		application: ApplicationEntity
 	) {
-		// TODO remove the hardcoded node
 		// initialise the blockchain sdk
 		sdk.blockchain.blockchainCore.setUser(
 			sdk.blockchain.ROLES.OPERATOR,
@@ -122,6 +121,7 @@ export default class ChainService implements OnModuleInit{
 			logoUrl: application.logoUrl || '',
 			homepageUrl: application.website || '',
 			rootDomain: application.domain || '',
+			description: application.description
 		})
 
 		// merge the default empty application with the provided one

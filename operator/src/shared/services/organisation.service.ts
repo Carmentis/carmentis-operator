@@ -4,11 +4,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../entities/user.entity';
 import { OrganisationAccessRightEntity } from '../entities/organisation-access-right.entity';
-import { UpdateAccessRightDto } from '../dto/update-access-rights.dto';
+import { UpdateAccessRightDto } from '../../workspace-api/dto/update-access-rights.dto';
 import { ApplicationEntity } from '../entities/application.entity';
 import ChainService from './chain.service';
 import * as sdk from '@cmts-dev/carmentis-sdk/server';
-import { ApplicationDataType } from '../types/application-data.type';
+import { ApplicationDataType } from '../../workspace-api/types/application-data.type';
 import { ApplicationService } from './application.service';
 
 
@@ -330,5 +330,20 @@ export class OrganisationService {
 			throw new NotFoundException(`Organisation with id ${organisationId} not found`);
 		}
 		return organisation.published;
+	}
+
+	async findOrganisationFromApplicationVirtualBlockchainId(applicationId: string) {
+
+		const application = await this.applicationRepository
+			.createQueryBuilder('app')
+			.innerJoinAndSelect('app.organisation', 'organisation')
+			.where('app.virtualBlockchainId = :applicationId', { applicationId })
+			.getOne();
+
+		if (!application) {
+			throw new NotFoundException(`No application found with virtualBlockchainId: ${applicationId}`);
+		}
+
+		return application.organisation!;
 	}
 }

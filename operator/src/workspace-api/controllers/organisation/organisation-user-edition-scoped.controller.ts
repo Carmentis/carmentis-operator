@@ -12,14 +12,14 @@ import {
 } from '@nestjs/common';
 import { UserInOrganisationGuard } from '../../guards/user-in-organisation.guard';
 import { CanEditOracles, CanEditUsers } from '../../guards/user-has-valid-access-right.guard';
-import { OrganisationService } from '../../services/organisation.service';
-import { UserService } from '../../services/user.service';
-import { ApplicationService } from '../../services/application.service';
-import { AuditService } from '../../services/audit.service';
-import { OracleService } from '../../services/oracle.service';
+import { OrganisationService } from '../../../shared/services/organisation.service';
+import { UserService } from '../../../shared/services/user.service';
+import { ApplicationService } from '../../../shared/services/application.service';
+import { AuditService } from '../../../shared/services/audit.service';
+import { OracleService } from '../../../shared/services/oracle.service';
 import { UpdateAccessRightDto } from '../../dto/update-access-rights.dto';
-import { OrganisationAccessRightEntity } from '../../entities/organisation-access-right.entity';
-import { AuditOperation, EntityType } from '../../entities/audit-log.entity';
+import { OrganisationAccessRightEntity } from '../../../shared/entities/organisation-access-right.entity';
+import { AuditOperation, EntityType } from '../../../shared/entities/audit-log.entity';
 
 @UseGuards(UserInOrganisationGuard, CanEditUsers)
 @Controller('/workspace/api/organisation')

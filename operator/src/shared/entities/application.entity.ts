@@ -1,6 +1,6 @@
 import {Column, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 import {OrganisationEntity} from "./organisation.entity";
-import { ApplicationDataType } from '../types/application-data.type';
+import { ApplicationDataType } from '../../workspace-api/types/application-data.type';
 
 
 @Entity("application")
@@ -17,13 +17,16 @@ export class ApplicationEntity {
     @Column({ nullable: true, default: '' })
     logoUrl: string;
 
+    @Column({ default: '', type: "text" })
+    description: string;
+
     @Column({ nullable: true, default: '' })
     domain: string;
 
     @Column({ nullable: true, default: '' })
     website: string;
 
-    @Column({ nullable: true })
+    @Column({ nullable: true, unique: true })
     virtualBlockchainId: string;
 
     @ManyToOne(() => OrganisationEntity, (org) => org.applications)

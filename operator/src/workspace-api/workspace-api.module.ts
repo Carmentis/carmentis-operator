@@ -5,27 +5,27 @@ import { OrganisationController } from './controllers/organisation/organisation.
 import { SearchController } from './controllers/search.controller';
 import { UserController } from './controllers/user.controller';
 
-import { UserEntity } from './entities/user.entity';
-import { OrganisationEntity } from './entities/organisation.entity';
-import { OrganisationAccessRightEntity } from './entities/organisation-access-right.entity';
-import { ApplicationEntity } from './entities/application.entity';
-import { OracleEntity } from './entities/oracle.entity';
-import { AuditLogEntity } from './entities/audit-log.entity';
+import { UserEntity } from '../shared/entities/user.entity';
+import { OrganisationEntity } from '../shared/entities/organisation.entity';
+import { OrganisationAccessRightEntity } from '../shared/entities/organisation-access-right.entity';
+import { ApplicationEntity } from '../shared/entities/application.entity';
+import { OracleEntity } from '../shared/entities/oracle.entity';
+import { AuditLogEntity } from '../shared/entities/audit-log.entity';
 
 import PackageConfigService from '../package.service';
-import { AdministrationService } from './services/administration.service';
-import { OrganisationService } from './services/organisation.service';
-import { UserService } from './services/user.service';
-import { ApplicationService } from './services/application.service';
-import { AccessRightService } from './services/access-right.service';
-import { AuditService } from './services/audit.service';
-import { OracleService } from './services/oracle.service';
-import ChainService from './services/chain.service';
+import { AdministrationService } from '../shared/services/administration.service';
+import { OrganisationService } from '../shared/services/organisation.service';
+import { UserService } from '../shared/services/user.service';
+import { ApplicationService } from '../shared/services/application.service';
+import { AccessRightService } from '../shared/services/access-right.service';
+import { AuditService } from '../shared/services/audit.service';
+import { OracleService } from '../shared/services/oracle.service';
+import ChainService from '../shared/services/chain.service';
 import { AdminController } from './controllers/admin.controller';
 import { SandboxController } from './controllers/sandbox.controller';
 import { LoginController } from './controllers/login.controller';
-import { ChallengeService } from './services/challenge.service';
-import { ChallengeEntity } from './entities/challenge.entity';
+import { ChallengeService } from '../shared/services/challenge.service';
+import { ChallengeEntity } from '../shared/entities/challenge.entity';
 import { JwtModule } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 import { AuthGuard } from './guards/authentication.guards';
@@ -49,10 +49,12 @@ import {
 import {
 	OrganisationUserEditionScopedController
 } from './controllers/organisation/organisation-user-edition-scoped.controller';
+import { SharedModule } from '../shared/shared.module';
 
 // Extracted imports, controllers, and providers into constants
 export const DEFAULT_JWT_TOKEN_VALIDITY = "8h"
 const WORKSPACE_IMPORTS = [
+	SharedModule,
 	TypeOrmModule.forFeature([
 		UserEntity,
 		OrganisationEntity,
@@ -86,15 +88,6 @@ const WORKSPACE_CONTROLLERS = [
 
 const WORKSPACE_PROVIDERS = [
 	PackageConfigService,
-	AdministrationService,
-	OrganisationService,
-	UserService,
-	ApplicationService,
-	AccessRightService,
-	AuditService,
-	OracleService,
-	ChainService,
-	ChallengeService,
 	AuthGuard,
 	UserInOrganisationGuard,
 	CanEditApplications,

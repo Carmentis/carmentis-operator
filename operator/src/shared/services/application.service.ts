@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {ApplicationEntity} from "../entities/application.entity";
 import {plainToInstance} from "class-transformer";
-import { ImportApplicationDto } from '../dto/import-application.dto';
+import { ImportApplicationDto } from '../../workspace-api/dto/import-application.dto';
 import ChainService from './chain.service';
 
 

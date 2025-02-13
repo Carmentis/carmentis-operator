@@ -8,10 +8,11 @@ export default function OverviewInput(
 	},
 ) {
 	return <div className={'flex flex-col space-y-4 w-3/12'}>
-		<Typography variant="h6" color="blue-gray" className="-mb-3">
+		<Typography color="blue-gray" className="-mb-3">
 			{input.label}
 		</Typography>
 		<Input
+			label={""}
 			value={input.value}
 			onChange={(e) => input.onChange(e.target.value)}
 			className=" !border-t-blue-gray-200 focus:!border-t-gray-900"

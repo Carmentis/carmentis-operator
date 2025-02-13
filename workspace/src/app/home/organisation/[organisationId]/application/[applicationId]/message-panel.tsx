@@ -14,13 +14,13 @@ function MessageEditionCard(
 	const setApplication = useUpdateApplication();
 	const setIsModified = useSetEditionStatus();
 	const [name, setName] = useState<string>(message.name);
-	const [content, setContent] = useState<string>(message.message);
+	const [content, setContent] = useState<string>(message.content);
 
 	useEffect(() => {
 		setApplication((application, editor) => {
 			editor.updateMessage(message.name, {
 				name: name,
-				message: content,
+				content: content,
 			})
 		})
 	}, [name, content]);
@@ -47,13 +47,13 @@ function MessageEditionCard(
 		<CardHeader floated={false}
 					shadow={false}
 					color="transparent"
-					className="m-0 rounded-none rounded-t-md bg-gray-800 p-2 flex justify-between items-center">
+					className="m-0 rounded-none rounded-t-md bg-primary-light p-2 flex justify-between items-center">
 
 			<Typography variant={'h6'} color={'white'}>{message.name}</Typography>
 
 			{/* Icons */}
 			<div id="icons" className={'flex gap-2'}>
-				<IconButton variant={'filled'} color={'white'} size={'sm'}
+				<IconButton variant={'filled'} className={"bg-white text-gray-900"} size={'sm'}
 							onClick={() => removeMessage()}>
 					<i className="bi bi-trash" />
 				</IconButton>

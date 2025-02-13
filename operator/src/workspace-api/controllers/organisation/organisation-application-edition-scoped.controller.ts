@@ -10,14 +10,14 @@ import {
 } from '@nestjs/common';
 import { UserInOrganisationGuard } from '../../guards/user-in-organisation.guard';
 import { CanEditApplications, IsAdminInOrganisation } from '../../guards/user-has-valid-access-right.guard';
-import { OrganisationService } from '../../services/organisation.service';
-import { UserService } from '../../services/user.service';
-import { ApplicationService } from '../../services/application.service';
-import { AuditService } from '../../services/audit.service';
-import { OracleService } from '../../services/oracle.service';
+import { OrganisationService } from '../../../shared/services/organisation.service';
+import { UserService } from '../../../shared/services/user.service';
+import { ApplicationService } from '../../../shared/services/application.service';
+import { AuditService } from '../../../shared/services/audit.service';
+import { OracleService } from '../../../shared/services/oracle.service';
 import { ImportApplicationDto } from '../../dto/import-application.dto';
-import { ApplicationEntity } from '../../entities/application.entity';
-import { AuditOperation, EntityType } from '../../entities/audit-log.entity';
+import { ApplicationEntity } from '../../../shared/entities/application.entity';
+import { AuditOperation, EntityType } from '../../../shared/entities/audit-log.entity';
 import { ApplicationDto } from '../../dto/application.dto';
 import { plainToInstance } from 'class-transformer';
 
@@ -91,6 +91,7 @@ export class OrganisationApplicationEditionScopedController {
 		// create an application entity from the input DTO
 		const application: ApplicationEntity = plainToInstance(ApplicationEntity, applicationDto);
 		application.isDraft = true;
+		console.log("update of application:", application)
 		const success = await this.applicationService.update(application);
 		if ( success ) {
 			this.auditService.log(

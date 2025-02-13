@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Like, Or, Repository } from 'typeorm';
 import { UserEntity } from '../entities/user.entity';
-import CreateUserDto from '../dto/create-user.dto';
+import CreateUserDto from '../../workspace-api/dto/create-user.dto';
 import { getPublicKeyFromRequest } from '../../utils/request-public-key-access.hook';
 
 @Injectable()

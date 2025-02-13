@@ -42,7 +42,7 @@ function ApplicationHeader({ application, hideLogo, setHideLogo }: {
 					{application.name}
 				</Typography>
 			</div>
-			<div className={`${BORDER_CLASSES} px-4`}>Version {application.version}</div>
+			<Typography className={`${BORDER_CLASSES} px-4`}>Version {application.version}</Typography>
 			<div className="px-4 flex flex-row space-x-2">
 				{application.published && <Chip variant="filled" className={"bg-primary-light"} value="Published" />}
 				{application.isDraft && <Chip variant="outlined" className={"border-primary-light text-primary-light"} value="Draft" />}
@@ -125,8 +125,7 @@ export default function ApplicationDetailsNavbar({ refreshApplication }: { refre
 	}
 
 	return (
-		<Card>
-			<CardBody className="p-3">
+		<>
 				<div className="flex justify-between">
 					<ApplicationHeader
 						application={application}
@@ -153,7 +152,6 @@ export default function ApplicationDetailsNavbar({ refreshApplication }: { refre
 						</IconButton>
 					</div>
 				</div>
-			</CardBody>
-		</Card>
+		</>
 	);
 }

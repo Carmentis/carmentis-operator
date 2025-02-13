@@ -1,9 +1,9 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Logger, Post, SetMetadata } from '@nestjs/common';
 import PackageConfigService from '../../package.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from '../entities/user.entity';
+import { UserEntity } from '../../shared/entities/user.entity';
 import { Repository } from 'typeorm';
-import { AdministrationService } from '../services/administration.service';
+import { AdministrationService } from '../../shared/services/administration.service';
 import { OperatorSetupDto } from '../dto/operator-setup.dto';
 import { plainToInstance } from 'class-transformer';
 import { Public } from '../decorators/public.decorator';

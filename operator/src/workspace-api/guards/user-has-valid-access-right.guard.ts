@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserService } from '../services/user.service';
-import { OrganisationAccessRightEntity } from '../entities/organisation-access-right.entity';
-import { OrganisationService } from '../services/organisation.service';
+import { UserService } from '../../shared/services/user.service';
+import { OrganisationAccessRightEntity } from '../../shared/entities/organisation-access-right.entity';
+import { OrganisationService } from '../../shared/services/organisation.service';
 
 @Injectable()
 export abstract class UserHasValidAccessRightGuard implements CanActivate{

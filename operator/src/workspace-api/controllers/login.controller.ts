@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Logger, Post } from '@nestjs/common';
 import { ChallengeVerificationDto } from '../dto/challenge-verification.dto';
-import { ChallengeService } from '../services/challenge.service';
-import { UserService } from '../services/user.service';
+import { ChallengeService } from '../../shared/services/challenge.service';
+import { UserService } from '../../shared/services/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { Public } from '../decorators/public.decorator';
 

@@ -48,7 +48,7 @@ export default function WelcomeCards(
 	 * @returns {JSX.Element} A JSX element containing the WelcomeCard component inside a wrapper div.
 	 */
 	const renderWelcomeCard = (icon: string, title: string, value: string|ReactNode, key: number) => (
-		<div key={key} className="w-64">
+		<div key={key} className="flex-1 min-w-48">
 			<WelcomeCard icon={icon} title={title} value={value}></WelcomeCard>
 		</div>
 	);

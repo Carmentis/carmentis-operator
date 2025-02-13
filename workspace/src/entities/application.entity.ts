@@ -12,7 +12,7 @@ export interface AppDataEnum {
 
 export interface AppDataMessage {
 	name: string,
-	message: string,
+	content: string,
 }
 
 export interface AppDataMask {
@@ -30,8 +30,10 @@ export interface AppDataField {
 }
 
 export type Application = {
+	virtualBlockchainId: string | undefined;
 	id: number;
 	name: string;
+	description: string;
 	version: number;
 	logoUrl: string;
 	domain: string;

@@ -240,7 +240,7 @@ export class ApplicationEditor {
 		if ( !alreadyExists ) {
 			messages.push({
 				name: name,
-				message: ''
+				content: ''
 			})
 		}
 	}

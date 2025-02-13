@@ -1,9 +1,9 @@
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Logger, Param, Post } from '@nestjs/common';
 import PackageConfigService from '../package.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from './entities/user.entity';
+import { UserEntity } from '../shared/entities/user.entity';
 import { Repository } from 'typeorm';
-import { AdministrationService } from './services/administration.service';
+import { AdministrationService } from '../shared/services/administration.service';
 
 @Controller('/workspace/api')
 export class WorkspaceApiController {

@@ -11,23 +11,23 @@ import {
 	Put, Query,
 	Req, UseGuards,
 } from '@nestjs/common';
-import { OrganisationService } from '../../services/organisation.service';
-import { UserService } from '../../services/user.service';
-import { ApplicationService } from '../../services/application.service';
-import { AuditService } from '../../services/audit.service';
-import { OracleService } from '../../services/oracle.service';
-import { AccessRightService } from '../../services/access-right.service';
+import { OrganisationService } from '../../../shared/services/organisation.service';
+import { UserService } from '../../../shared/services/user.service';
+import { ApplicationService } from '../../../shared/services/application.service';
+import { AuditService } from '../../../shared/services/audit.service';
+import { OracleService } from '../../../shared/services/oracle.service';
+import { AccessRightService } from '../../../shared/services/access-right.service';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
-import { UserEntity } from '../../entities/user.entity';
+import { UserEntity } from '../../../shared/entities/user.entity';
 import { ImportApplicationDto } from '../../dto/import-application.dto';
-import { ApplicationEntity } from '../../entities/application.entity';
-import { AuditOperation, EntityType } from '../../entities/audit-log.entity';
+import { ApplicationEntity } from '../../../shared/entities/application.entity';
+import { AuditOperation, EntityType } from '../../../shared/entities/audit-log.entity';
 import { UpdateOrganisationDto } from '../../dto/organisation-update.dto';
-import { OrganisationEntity } from '../../entities/organisation.entity';
+import { OrganisationEntity } from '../../../shared/entities/organisation.entity';
 import { ApplicationDto } from '../../dto/application.dto';
 import { UpdateOracleDto } from '../../dto/update-oracle.dto';
-import { OracleEntity } from '../../entities/oracle.entity';
-import { OrganisationAccessRightEntity } from '../../entities/organisation-access-right.entity';
+import { OracleEntity } from '../../../shared/entities/oracle.entity';
+import { OrganisationAccessRightEntity } from '../../../shared/entities/organisation-access-right.entity';
 import { UpdateAccessRightDto } from '../../dto/update-access-rights.dto';
 import { UserInOrganisationGuard } from '../../guards/user-in-organisation.guard';
 import {
@@ -35,7 +35,7 @@ import {
 	CanEditUsers,
 	IsAdminInOrganisation,
 } from '../../guards/user-has-valid-access-right.guard';
-import ChainService from '../../services/chain.service';
+import ChainService from '../../../shared/services/chain.service';
 
 
 

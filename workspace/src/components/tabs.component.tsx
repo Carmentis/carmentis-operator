@@ -8,10 +8,10 @@ interface TabsComponentMap {
 // Constants for styles to enhance readability.
 const DEFAULT_TAB_CLASSNAME = 'w-full';
 const HEADER_CLASSNAME =
-	'rounded-none border-b border-blue-gray-50 bg-transparent p-0';
+	'bg-white';
 const INDICATOR_PROPS = {
 	className:
-		'bg-transparent border-b-2 border-gray-900 shadow-none rounded-none',
+		'bg-primary-light !text-white',
 };
 
 // Helper function to render tabs.

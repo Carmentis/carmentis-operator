@@ -1,5 +1,5 @@
 import { Controller, Post, Req } from '@nestjs/common';
-import { OrganisationService } from '../services/organisation.service';
+import { OrganisationService } from '../../shared/services/organisation.service';
 import { getPublicKeyFromRequest } from '../../utils/request-public-key-access.hook';
 
 @Controller('/workspace/api')

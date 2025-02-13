@@ -16,14 +16,14 @@ import {
 	IsAdminInOrganisation,
 } from '../../guards/user-has-valid-access-right.guard';
 import { UpdateOracleDto } from '../../dto/update-oracle.dto';
-import { OracleEntity } from '../../entities/oracle.entity';
+import { OracleEntity } from '../../../shared/entities/oracle.entity';
 import { plainToInstance } from 'class-transformer';
-import { AuditOperation, EntityType } from '../../entities/audit-log.entity';
-import { OrganisationService } from '../../services/organisation.service';
-import { UserService } from '../../services/user.service';
-import { ApplicationService } from '../../services/application.service';
-import { AuditService } from '../../services/audit.service';
-import { OracleService } from '../../services/oracle.service';
+import { AuditOperation, EntityType } from '../../../shared/entities/audit-log.entity';
+import { OrganisationService } from '../../../shared/services/organisation.service';
+import { UserService } from '../../../shared/services/user.service';
+import { ApplicationService } from '../../../shared/services/application.service';
+import { AuditService } from '../../../shared/services/audit.service';
+import { OracleService } from '../../../shared/services/oracle.service';
 
 @UseGuards(UserInOrganisationGuard, CanEditOracles)
 @Controller('/workspace/api/organisation')
