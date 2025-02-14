@@ -64,7 +64,7 @@ function TableRow({ user }: { user: UserSummary }) {
 			</td>
 			<td className="px-6 py-4">{user.firstname}</td>
 			<td className="px-6 py-4">{user.lastname}</td>
-			<td className="px-6 py-4">{user.isAdmin && <Chip value="admin" />}</td>
+			<td className="px-6 py-4">{user.isAdmin && <Typography>Super-Admin</Typography>}</td>
 		</tr>
 	);
 }

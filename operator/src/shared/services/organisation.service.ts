@@ -346,4 +346,21 @@ export class OrganisationService {
 
 		return application.organisation!;
 	}
+
+	async findByQuery(query: string) {
+		if (query.trim() === '') {
+			// Return the first 50 organisations if the query is empty
+			return await this.organisationEntityRepository.createQueryBuilder('org')
+				.select(['org.id', 'org.name'])
+				.limit(50)
+				.getMany();
+		} else {
+			// Search for organisations whose names include the query (case insensitive)
+			return await this.organisationEntityRepository.createQueryBuilder('org')
+				.select(['org.id', 'org.name'])
+				.where('LOWER(org.name) LIKE :query', { query: `%${query.toLowerCase()}%` })
+				.limit(50)
+				.getMany();
+		}
+	}
 }

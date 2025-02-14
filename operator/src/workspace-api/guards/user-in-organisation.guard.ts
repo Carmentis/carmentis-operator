@@ -26,6 +26,7 @@ export class UserInOrganisationGuard implements CanActivate {
 		const user = await this.userService.findCurrentlyConnectedUser(request);
 		const organisationId = request.params.organisationId;
 		const userInOrganisation = await this.userService.findUserInOrganisation(user.publicKey, organisationId);
+		console.log(`user in organisation (${user.publicKey}):`, user.isAdmin, userInOrganisation)
         if (user.isAdmin || userInOrganisation) {
 			return true;
         }

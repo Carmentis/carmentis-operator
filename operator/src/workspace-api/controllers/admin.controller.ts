@@ -18,8 +18,10 @@ export class AdminController {
 
 
 	@Get('/organisation')
-	async getAllOrganisations() {
-		return await this.organisationService.findAll();
+	async getAllOrganisations(
+		@Query('query') query: string
+	) {
+		return await this.organisationService.findByQuery(query)
 	}
 
 	@Get('/organisation/:organisationId')

@@ -128,7 +128,7 @@ function UserEditionCard(input: {
 		>
 			<CardBody className="w-full flex flex-row justify-between p-4">
 				<div className="flex flex-row justify-center items-center">
-					<Avatar width={30} name={`${user.firstname} ${user.lastname}`} className="mr-2" />
+					<Avatar width={30} variant={"beam"} name={user.publicKey} className="mr-2" />
 					<span>{user.firstname} {user.lastname}</span>
 				</div>
 				<div className="setting flex space-x-2">

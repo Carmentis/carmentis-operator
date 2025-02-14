@@ -8,7 +8,7 @@ export default function RootLayout({
 }>) {
 	return (
 		<div className={"flex flex-row h-full space-x-4"}>
-			<div className="w-3/12">
+			<div className="w-3/12 min-w-72">
 				<OrganisationsList></OrganisationsList>
 			</div>
 			<div className="w-9/12">

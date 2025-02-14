@@ -84,6 +84,11 @@ function UserDisplay() {
 						<MenuItem disabled={true}>You are admin</MenuItem>
 					</>
 				}
+				{	data.isAdmin &&
+					<>
+						<MenuItem disabled={true}>You are super-admin</MenuItem>
+					</>
+				}
 
 			</MenuList>
 		</Menu>

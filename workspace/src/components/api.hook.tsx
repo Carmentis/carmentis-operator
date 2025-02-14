@@ -309,9 +309,9 @@ export function useApplicationDeletionApi() {
 }
 
 
-export function useAdminListOfOrganisationsApi() {
+export function useAdminListOfOrganisationsApi(query: string) {
 	return useWorkspaceApi<OrganisationSummary[]>(
-		`/admin/organisation`
+		`/admin/organisation?query=${query}`
 	);
 }
 

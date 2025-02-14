@@ -8,61 +8,44 @@ import { useAdminListOfOrganisationsApi } from '@/components/api.hook';
 import { SearchInputForm } from '@/components/form/search-input.form';
 import Avatar from 'boring-avatars';
 import Skeleton from 'react-loading-skeleton';
+import { useAtom, useAtomValue } from 'jotai';
+import { organisationQueryAtom } from '@/app/admin/organisation/query.atom';
+import AvatarOrganisation from '@/components/avatar-organisation';
 
-/**
- * Represents the properties required for listing organisations.
- *
- * @typedef {Object} ListOrganisationsProps
- * @property {Function} createOrganisationClicked - A callback function invoked when the "Create Organisation" action is triggered.
- * @property {OrganisationSummary[]} organisations - An array containing summaries of organisations to be listed.
- */
-type ListOrganisationsProps = {
-	createOrganisationClicked: () => void,
-	organisations: OrganisationSummary[]
-}
 /**
  * Renders a list of organisations with search functionality and a button to create a new organisation.
  *
  * @param {Object} props - The properties for the component.
  * @param {Function} props.createOrganisationClicked - Callback function triggered when the "Create organisation" button is clicked.
- * @param {Array<OrganisationSummary>} props.organisations - Array of organisation summaries to display.
  *
  */
-function ListOrganisations(
-	{createOrganisationClicked, organisations}: ListOrganisationsProps
-) {
+function ListOrganisations() {
+
+	const organisationQuery = useAtomValue(organisationQueryAtom);
+
+	// load the organisations
+	const listOfOrganisationsResponse = useAdminListOfOrganisationsApi(organisationQuery);
+
 
 	function formatOrganisationSummary(organisation: OrganisationSummary) {
 		return <Link key={organisation.id} href={`/admin/organisation/${organisation.id}`}>
 			<li className={'p-2 hover:bg-gray-100 flex items-center'}>
-				<Avatar variant={"bauhaus"} width={30} name={organisation.name}
-						className={"mr-2"}
-				/>
+				<AvatarOrganisation organisationId={organisation.id} className={"mr-2"} height={30}/>
+
 				{organisation.name}
 			</li>
 		</Link>;
 	}
 
+	if (listOfOrganisationsResponse.isLoading || !listOfOrganisationsResponse.data) return <Skeleton className={"h-full w-full"}/>
+	const organisations = listOfOrganisationsResponse.data;
+	return <ul className={'w-full h-full justify-start max-h-auto overflow-y-auto'}>
+		{
+			organisations
+				.map(org => formatOrganisationSummary(org))
+		}
 
-	const [searchFilter, setSearchFilter] = useState('');
-
-	return <Card className={"h-full w-full"}>
-		<CardBody className={"flex flex-col justify-between h-full space-y-4"}>
-			<SearchInputForm searchFilter={searchFilter} setSearchFilter={setSearchFilter}></SearchInputForm>
-			<div id="search" className={'flex justify-start max-h-fit overflow-y-auto w-full'}>
-				<ul className={"w-full"}>
-					{
-						organisations
-							.filter(org => searchFilter === '' || org.name.toLowerCase().includes(searchFilter.toLowerCase()))
-							.map(org => formatOrganisationSummary(org))
-					}
-				</ul>
-			</div>
-			<div id="create">
-				<Button className={'w-full'} onClick={createOrganisationClicked}>Create organisation</Button>
-			</div>
-		</CardBody>
-	</Card>
+	</ul>;
 }
 
 /**
@@ -79,24 +62,7 @@ export default function OrganisationSidebar() {
 
 	// states to show the organisation creation additional popup
 	const [showNewOrganisationModal, setShowNewOrganisationModal] = useState(false);
-
-	// load the organisations
-	const listOfOrganisationsResponse = useAdminListOfOrganisationsApi();
-
-
-
-	function showOrganisationCreationModal() {
-		setShowNewOrganisationModal(true);
-	}
-
-
-	if (listOfOrganisationsResponse.isLoading || !listOfOrganisationsResponse.data) {
-		return <Skeleton className={"h-full rounded"}/>
-	}
-
-	const organisations = listOfOrganisationsResponse.data;
-	const content = <ListOrganisations createOrganisationClicked={showOrganisationCreationModal} organisations={organisations}/>;
-
+	const content = <ListOrganisations/>;
 
 	return <div id="organisation"
 				className={"h-full overflow-y-auto "}>
@@ -107,6 +73,29 @@ export default function OrganisationSidebar() {
 				onClose={() => setShowNewOrganisationModal(false)}
 				placeholder={"Name"}/>
 		}
-		{content}
+
+		<Card className={"h-full w-full"}>
+			<CardBody className={"flex flex-col h-full space-y-4 max-h-auto"}>
+				<div className={"h-auto"}>
+					<OrganisationQueryForm/>
+				</div>
+				{content}
+				<div id="search" className={'flex-1 max-h-full h-[calc(100%-200px)]'}>
+
+				</div>
+				<div id="create" className={"h-auto"}>
+					<Button className={'w-full'} onClick={() => setShowNewOrganisationModal(true)}>Create organisation</Button>
+				</div>
+			</CardBody>
+		</Card>
+
+
 	</div>
+}
+
+function OrganisationQueryForm() {
+	const [searchFilter, setSearchFilter] = useAtom(organisationQueryAtom);
+	return <>
+		<SearchInputForm searchFilter={searchFilter} setSearchFilter={setSearchFilter}></SearchInputForm>
+	</>;
 }

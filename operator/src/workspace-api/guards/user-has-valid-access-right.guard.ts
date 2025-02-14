@@ -10,12 +10,29 @@ export abstract class UserHasValidAccessRightGuard implements CanActivate{
 		private organisationServer: OrganisationService
 	) {}
 
+
+	/**
+	 * Determines whether the current user has access to the requested resource in a given organization.
+	 * This method checks the following conditions:
+	 * - Verifies if the organization exists.
+	 * - Checks if the user has access rights to the organization.
+	 * - Grants access if the user is an admin or has specific access rights.
+	 *
+	 * @param {ExecutionContext} context - The execution context containing the HTTP request and related metadata.
+	 * @return {Promise<boolean>} A promise that resolves to true if the user is authorized to access the resource, otherwise false.
+	 * @throws {UnauthorizedException} If the organization does not exist or the user lacks access rights.
+	 */
 	async canActivate(context: ExecutionContext) {
 		const request = context.switchToHttp().getRequest();
 		const user = await this.userService.findCurrentlyConnectedUser(request);
 		const organisationId = request.params.organisationId;
 		const organisation = await this.organisationServer.findOne(organisationId);
 		if (!organisation) throw new UnauthorizedException()
+
+		// if the user is admin, allow the transaction
+		if (user.isAdmin) return true;
+
+		// search if the user is allowed within the organisation
 		const accessRight = await this.organisationServer.findAccessRightsOfUserInOrganisation(user, organisation);
 		if (!accessRight) throw new UnauthorizedException()
 		return this.hasAccess(accessRight);
