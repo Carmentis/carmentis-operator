@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Logger, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, ForbiddenException, Get, Logger, Post } from '@nestjs/common';
 import { ChallengeVerificationDto } from '../dto/challenge-verification.dto';
 import { ChallengeService } from '../../shared/services/challenge.service';
 import { UserService } from '../../shared/services/user.service';
@@ -32,14 +32,12 @@ export class LoginController {
 			dto.signature
 		)
 		if (!isVerified) {
-			this.logger.log("Challenge not verified")
-			throw new BadRequestException();
+			throw new BadRequestException("Challenge not verified");
 		}
 
-		const user = this.userService.findOneByPublicKey(dto.publicKey);
+		const user = await this.userService.findOneByPublicKey(dto.publicKey);
 		if (!user) {
-			this.logger.log("User not found")
-			throw new BadRequestException();
+			throw new ForbiddenException("User not found.")
 		}
 
 		await this.challengeService.deleteChallenge(dto.challenge);

@@ -8,6 +8,7 @@ import FullSpaceSpinner from '@/components/full-page-spinner.component';
 import { TOKEN_STORAGE_ITEM, useChallengeVerification, useObtainChallenge } from '@/components/api.hook';
 import { useToast } from '@/app/layout';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
+import VersionDisplay from '@/components/version-number';
 
 
 export default function Login() {
@@ -34,11 +35,12 @@ function ChallengeLogin({challenge}: {challenge: string}) {
     function onChallengeResponse(answer: ChallengeResponse) {
         verifyChallenge(answer.challenge, answer.signature, answer.publicKey, {
             onSuccessData: (response) => {
+                console.log(response)
                 storeToken(response.token);
                 toast.success("You are connected")
                 navigation.navigateToHome();
             },
-            onError: () => toast.error('Connection failure')
+            onError: (e) => toast.error(`Connection failure: ${e}`)
         })
     }
 
@@ -77,5 +79,12 @@ function ChallengeLogin({challenge}: {challenge: string}) {
                 </div>
             </div>
         </div>
+        <BottomRightVersionNumber/>
     </section>
+}
+
+function BottomRightVersionNumber() {
+    return <div className={"absolute right-5 bottom-5"}>
+        <VersionDisplay/>
+    </div>
 }

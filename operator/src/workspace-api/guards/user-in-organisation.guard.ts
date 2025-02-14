@@ -2,16 +2,18 @@ import { CanActivate, ExecutionContext, Injectable, NotFoundException, Unauthori
 import { UserService } from '../../shared/services/user.service';
 
 
+
 /**
- * Guard that checks if the currently connected user belongs to the specified organisation.
+ * Guard that checks if the currently connected user is either an admin or a member of a specified organisation.
  *
- * This guard is responsible for intercepting incoming requests and verifying whether the
- * user making the request is associated with the organisation identified by the `organisationId`
- * parameter in the request. If the user is not found in the organisation, an `UnauthorizedException`
- * is thrown.
+ * This guard retrieves the currently connected user and the target organisation ID from the request.
+ * It then verifies whether the user is either an admin or belongs to the organisation.
+ * If neither condition is met, an UnauthorizedException is thrown.
  *
- * The guard relies on `UserService` to retrieve the currently connected user and to check their
- * membership within the organisation.
+ * Can be used to protect routes that require user membership in a specific organisation.
+ *
+ * Dependencies:
+ * - `UserService`: Used for retrieving the currently connected user and verifying user membership in the organisation.
  */
 @Injectable()
 export class UserInOrganisationGuard implements CanActivate {
@@ -24,9 +26,9 @@ export class UserInOrganisationGuard implements CanActivate {
 		const user = await this.userService.findCurrentlyConnectedUser(request);
 		const organisationId = request.params.organisationId;
 		const userInOrganisation = await this.userService.findUserInOrganisation(user.publicKey, organisationId);
-        if (!userInOrganisation) {
-            throw new UnauthorizedException('User not in organisation');
+        if (user.isAdmin || userInOrganisation) {
+			return true;
         }
-		return true;
+		throw new UnauthorizedException('User not in organisation');
 	}
 }
