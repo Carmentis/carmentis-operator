@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsUrl, IsAlpha, IsPositive, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsUrl, IsAlpha, IsPositive, IsOptional, ValidateIf } from 'class-validator';
 
 export class UpdateOrganisationDto {
 	@IsNotEmpty()
@@ -10,13 +10,11 @@ export class UpdateOrganisationDto {
 	name: string;
 
 	@IsOptional()
-	@IsString()
-	city: string;
+	city?: string;
 
 	@IsOptional()
-	@IsAlpha()
-	countryCode: string;
+	countryCode?: string;
 
 	@IsOptional()
-	website: string;
+	website?: string;
 }

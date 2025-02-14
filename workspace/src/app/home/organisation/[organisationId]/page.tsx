@@ -82,7 +82,10 @@ function OrganisationEdition() {
 				notify.info("Organisation updated successfully");
 				refreshOrganisation.mutate();
 			},
-			onError: notify.error
+			onError: (e) => {
+				console.error(e)
+				notify.error(e)
+			}
 		})
 	}
 

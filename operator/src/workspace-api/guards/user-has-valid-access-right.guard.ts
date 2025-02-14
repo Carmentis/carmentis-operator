@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../../shared/services/user.service';
 import { OrganisationAccessRightEntity } from '../../shared/entities/organisation-access-right.entity';
 import { OrganisationService } from '../../shared/services/organisation.service';
@@ -27,14 +27,14 @@ export abstract class UserHasValidAccessRightGuard implements CanActivate{
 		const user = await this.userService.findCurrentlyConnectedUser(request);
 		const organisationId = request.params.organisationId;
 		const organisation = await this.organisationServer.findOne(organisationId);
-		if (!organisation) throw new UnauthorizedException()
+		if (!organisation) throw new NotFoundException("The requested organisation do not exist.")
 
 		// if the user is admin, allow the transaction
 		if (user.isAdmin) return true;
 
 		// search if the user is allowed within the organisation
 		const accessRight = await this.organisationServer.findAccessRightsOfUserInOrganisation(user, organisation);
-		if (!accessRight) throw new UnauthorizedException()
+		if (!accessRight) throw new UnauthorizedException("You are not in the organisation.")
 		return this.hasAccess(accessRight);
 	}
 

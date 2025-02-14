@@ -23,10 +23,19 @@ const toastConfig: ToastContainerProps = {
 };
 
 // toast hooks into a single utility for consistent usage
+type handledErrorTypes =  string | string[];
 export const useToast = () => {
+
+	function handleError(message: handledErrorTypes) {
+		if (typeof message == 'string') toast.error(message)
+		if (Array.isArray(message) && message.every(item => typeof item === "string")) {
+			message.forEach(item => toast.error(item))
+		}
+	}
+
 	return {
 		success: (message: string) => toast.success(message),
-		error: (message: string) => toast.error(message),
+		error: (message:handledErrorTypes) => handleError(message),
 		info: (message: string) => toast.info(message),
 		warning: (message: string) => toast.warn(message),
 		notify: (message: string) => toast(message),
