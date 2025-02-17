@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { OrganisationEntity } from '../entities/organisation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,28 +10,9 @@ import ChainService from './chain.service';
 import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { ApplicationDataType } from '../../workspace-api/types/application-data.type';
 import { ApplicationService } from './application.service';
+import { UserService } from './user.service';
+import { AccessRightService } from './access-right.service';
 
-
-const FILESIGN_NAME = 'FileSign';
-const FILESIGN_APPLICATION_DOMAIN = 'https://filesign.carmentis.io?id={{id}}&version={{version}}'
-const FILESIGN_DATA: ApplicationDataType = {
-	fields: [
-		{
-			name: 'SenderEmail',
-			type: sdk.utils.data.createType({
-				type: sdk.constants.DATA.STRING,
-				public: false
-			}),
-		},
-		{
-			name: 'ReceiverEmail',
-			type: sdk.utils.data.createType({
-				type: sdk.constants.DATA.STRING,
-				public: false
-			}),
-		},
-	]
-}
 
 
 @Injectable()
@@ -46,7 +27,6 @@ export class OrganisationService {
 		@InjectRepository(ApplicationEntity)
 		private readonly applicationRepository: Repository<ApplicationEntity>,
 		private readonly chainService: ChainService,
-		private readonly applicationService: ApplicationService,
 	) {
 	}
 
@@ -115,7 +95,7 @@ export class OrganisationService {
 			name: organisationName,
 		});
 
-		// generate the signature key pair for the orgnisation
+		// generate the signature key pair for the organisation
 		const sk = sdk.crypto.generateKey256();
 		const pk = sdk.crypto.secp256k1.publicKeyFromPrivateKey(sk);
 		item.privateSignatureKey = sk;
@@ -136,64 +116,6 @@ export class OrganisationService {
 	}
 
 
-	async createSandbox(publicKey: string) {
-		const user = await this.userRepository.findOneBy({ publicKey });
-		if (!user) throw new NotFoundException('User not found');
-
-		// recover the number of organisations
-		const numberOfOrganisations = await this.organisationEntityRepository.count();
-
-		// create the sandbox
-		let sandbox = new OrganisationEntity();
-		sandbox.name = `Sandbox-${numberOfOrganisations}`;
-		sandbox.isSandbox = true;
-		sandbox.countryCode = 'FR';
-		sandbox.city = 'Paris';
-
-		// generate the signature key pair for the sandbox
-		const sk = sdk.crypto.generateKey256();
-		const pk = sdk.crypto.secp256k1.publicKeyFromPrivateKey(sk);
-		sandbox.privateSignatureKey = sk;
-		sandbox.publicSignatureKey = pk;
-
-		// save the sandbox
-		sandbox = await this.organisationEntityRepository.save(
-			this.organisationEntityRepository.create(sandbox)
-		);
-
-		// publish the sandbox
-		sandbox = await this.publishOrganisation(sandbox.id);
-
-		// create the pre-installed applications
-		let fileSign: ApplicationEntity = new ApplicationEntity();
-		fileSign.name = FILESIGN_NAME;
-		fileSign.data = FILESIGN_DATA;
-		fileSign.organisation = sandbox;
-		fileSign.domain = FILESIGN_APPLICATION_DOMAIN
-
-		// save the application
-		fileSign  = await this.applicationRepository.save(
-			this.applicationRepository.create(fileSign)
-		);
-
-		// publish fileSign
-		await this.applicationService.publishApplication(fileSign.id);
-
-		// create an initial access right with the user associated with the provided public key
-		const accessRight = this.accessRightRepository.create({
-			organisation: sandbox,
-			user,
-			isAdmin: true,
-			editUsers: true,
-			editApplications: true,
-			editOracles: true,
-		})
-		await this.accessRightRepository.save(accessRight);
-
-		// return the created sandbox
-		return sandbox;
-
-	}
 
 	// Insert a new item
 	async createAccessRight(
@@ -221,8 +143,15 @@ export class OrganisationService {
 	async getNumberOfApplicationsInOrganisation(organisationId: number) {
 		return this.applicationRepository
 			.createQueryBuilder('app')
-			.select()
 			.innerJoinAndSelect('app.organisation', 'org')
+			.where('org.id = :organisationId', { organisationId })
+			.getCount();
+	}
+
+	async getNumberOfOraclesInOrganisation(organisationId: number) {
+		return this.applicationRepository
+			.createQueryBuilder('or')
+			.innerJoinAndSelect('or.organisation', 'org')
 			.where('org.id = :organisationId', { organisationId })
 			.getCount();
 	}
@@ -362,5 +291,33 @@ export class OrganisationService {
 				.limit(50)
 				.getMany();
 		}
+	}
+
+	async getOrganisationByApplicationId(applicationId: number) {
+
+		return this.organisationEntityRepository.createQueryBuilder('organisation')
+			.innerJoin('organisation.applications', 'application')
+			.where('application.id = :applicationId', { applicationId })
+			.getOne();
+	}
+
+	async getOrganisationByOracleId(oracleId: number) {
+		const organisation = await this.organisationEntityRepository.createQueryBuilder('organisation')
+			.innerJoin('organisation.oracles', 'oracle')
+			.where('oracle.id = :oracleId', { oracleId })
+			.getOne();
+		if (!organisation) throw new NotFoundException(`Organisation associated with the oracle is not found: oracle id ${oracleId}`)
+		return organisation
+	}
+
+
+	async deleteOrganisationById(organisationId: number): Promise<void> {
+		const organisation = await this.organisationEntityRepository.findOneBy({ id: organisationId });
+
+		if (!organisation) {
+			throw new NotFoundException(`Organisation with id ${organisationId} not found`);
+		}
+
+		await this.organisationEntityRepository.remove(organisation);
 	}
 }

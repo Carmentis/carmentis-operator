@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ApplicationEntity } from '../entities/application.entity';
 import { Repository } from 'typeorm';
@@ -6,6 +6,7 @@ import { OrganisationEntity } from '../entities/organisation.entity';
 import { OracleEntity } from '../entities/oracle.entity';
 import ChainService from './chain.service';
 import { OrganisationService } from './organisation.service';
+import { EnvService } from './env.service';
 
 /**
  * The OracleService provides methods to perform CRUD operations
@@ -17,8 +18,8 @@ export class OracleService {
 		@InjectRepository(OracleEntity)
 		private readonly oracleRepository: Repository<OracleEntity>,
 		private readonly chainService: ChainService,
-		@InjectRepository(OrganisationEntity)
-		private readonly organisationRepository: Repository<OrganisationEntity>
+		private readonly organisationService: OrganisationService,
+		private readonly envService: EnvService,
 	) {
 	}
 
@@ -31,6 +32,15 @@ export class OracleService {
 	 * @return {Promise<OracleEntity>} A promise that resolves to the newly created and saved OracleEntity.
 	 */
 	async createOracleByName( organisation: OrganisationEntity, name: string ): Promise<OracleEntity> {
+
+		// Check if the organisation has reached its limit of 30 oracles
+		const oracleCount = await this.getNumberOfOraclesInOrganisation(organisation.id);
+		if (oracleCount >= this.envService.maxOraclesInOrganisation) {
+			throw new UnauthorizedException('The organisation has reached the limit of oracles.');
+		}
+
+
+		
 		const item = this.oracleRepository.create({
 			name: name,
 		});
@@ -142,7 +152,7 @@ export class OracleService {
 		const oracle = await this.oracleRepository.findOneBy({
 			id: oracleId,
 		});
-		const organisation = await this.getOrganisationByOracleId(oracleId);
+		const organisation = await this.organisationService.getOrganisationByOracleId(oracleId);
 		const mb : MicroBlock = await this.chainService.publishOracle(organisation, oracle);
 
 		oracle.isDraft = false;
@@ -157,12 +167,5 @@ export class OracleService {
 		await this.oracleRepository.save(oracle);
 	}
 
-	async getOrganisationByOracleId(oracleId: number) {
-		const organisation = await this.organisationRepository.createQueryBuilder('organisation')
-			.innerJoin('organisation.oracles', 'oracle')
-			.where('oracle.id = :oracleId', { oracleId })
-			.getOne();
-		if (!organisation) throw new NotFoundException(`Organisation associated with the oracle is not found: oracle id ${oracleId}`)
-		return organisation
-	}
+
 }

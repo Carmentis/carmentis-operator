@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, NotImplementedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotImplementedException, UnauthorizedException } from '@nestjs/common';
 import { OrganisationEntity } from '../entities/organisation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -6,7 +6,8 @@ import {ApplicationEntity} from "../entities/application.entity";
 import {plainToInstance} from "class-transformer";
 import { ImportApplicationDto } from '../../workspace-api/dto/import-application.dto';
 import ChainService from './chain.service';
-
+import { OrganisationService } from './organisation.service';
+import { EnvService } from './env.service';
 
 
 
@@ -15,11 +16,9 @@ export class ApplicationService {
     constructor(
         @InjectRepository(ApplicationEntity)
         private readonly applicationRepository: Repository<ApplicationEntity>,
-
-        @InjectRepository(OrganisationEntity)
-        private readonly organisationRepository: Repository<OrganisationEntity>,
-
+        private readonly organisationService: OrganisationService,
         private readonly chainService: ChainService,
+        private readonly envService: EnvService
     ) {
     }
 
@@ -33,6 +32,15 @@ export class ApplicationService {
         organisationEntity: OrganisationEntity,
         applicationName: string
     ): Promise<ApplicationEntity> {
+
+        // raise an exception if the number of applications in the organisation is reached.
+        const applicationCount = await this.organisationService.getNumberOfApplicationsInOrganisation(organisationEntity.id);
+        if (applicationCount >= this.envService.maxApplicationsInOrganisation) {
+            throw new UnauthorizedException(
+                `Organisation has reached the limit of applications.`
+            );
+        }
+        
         const application: ApplicationEntity = plainToInstance(ApplicationEntity, {
             name: applicationName,
         })
@@ -83,7 +91,7 @@ export class ApplicationService {
      * @param importApplication
      */
     async importApplicationInOrganisation(organisationId: number, importApplication: ImportApplicationDto): Promise<ApplicationEntity> {
-        const organisation = await this.organisationRepository.findOneBy({ id: organisationId });
+        const organisation = await this.organisationService.findOne(organisationId)
         const application = plainToInstance(ApplicationEntity, importApplication);
         application.organisation = organisation;
         const item = this.applicationRepository.create(application);
@@ -142,10 +150,6 @@ export class ApplicationService {
     }
 
     private async getOrganisationByApplicationId(applicationId: number) {
-
-        return this.organisationRepository.createQueryBuilder('organisation')
-            .innerJoin('organisation.applications', 'application')
-            .where('application.id = :applicationId', { applicationId })
-            .getOne();
+        return this.organisationService.getOrganisationByApplicationId(applicationId)
     }
 }

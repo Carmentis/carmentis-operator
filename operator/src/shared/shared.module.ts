@@ -20,9 +20,11 @@ import { ChallengeEntity } from './entities/challenge.entity';
 import { JwtModule } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 import { EnvService } from './services/env.service';
+import { SandboxService } from './services/sandbox.service';
 
 
 const WORKSPACE_PROVIDERS = [
+	SandboxService,
 	AdministrationService,
 	OrganisationService,
 	UserService,
