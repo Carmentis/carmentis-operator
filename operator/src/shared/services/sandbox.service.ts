@@ -61,11 +61,11 @@ export class SandboxService {
 		}
 
 		// recover the number of organisations
-		const numberOfOrganisations = await this.organisationEntityRepository.count();
+		const highestId = await this.organisationService.getHighestOrganisationId();
 
 		// create the sandbox
 		let sandbox = new OrganisationEntity();
-		sandbox.name = `Sandbox-${numberOfOrganisations}`;
+		sandbox.name = `Sandbox-${highestId + 1}`;
 		sandbox.isSandbox = true;
 		sandbox.countryCode = 'FR';
 		sandbox.city = 'Paris';

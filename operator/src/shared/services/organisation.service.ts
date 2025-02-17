@@ -8,10 +8,8 @@ import { UpdateAccessRightDto } from '../../workspace-api/dto/update-access-righ
 import { ApplicationEntity } from '../entities/application.entity';
 import ChainService from './chain.service';
 import * as sdk from '@cmts-dev/carmentis-sdk/server';
-import { ApplicationDataType } from '../../workspace-api/types/application-data.type';
-import { ApplicationService } from './application.service';
-import { UserService } from './user.service';
 import { AccessRightService } from './access-right.service';
+import { EnvService } from './env.service';
 
 
 
@@ -24,9 +22,11 @@ export class OrganisationService {
 		private readonly userRepository: Repository<UserEntity>,
 		@InjectRepository(OrganisationAccessRightEntity)
 		private readonly accessRightRepository: Repository<OrganisationAccessRightEntity>,
+		private readonly accessRightService: AccessRightService,
 		@InjectRepository(ApplicationEntity)
 		private readonly applicationRepository: Repository<ApplicationEntity>,
 		private readonly chainService: ChainService,
+		private readonly envService: EnvService,
 	) {
 	}
 
@@ -90,6 +90,15 @@ export class OrganisationService {
 	 * @return {Promise<OrganisationEntity>} A promise that resolves to the newly created organisation entity.
 	 */
 	async createByName(authUser: UserEntity, organisationName: string): Promise<OrganisationEntity> {
+
+		// Check if the user has reached the limit of organisations where they are an administrator
+		const adminOrganisationCount = await this.accessRightService.numberOfOrganisationsInWhichUserIsAdmin(
+			authUser
+		);
+		if (!authUser.isAdmin && adminOrganisationCount >= this.envService.maxOrganisationsInWhichUserIsAdmin) {
+			throw new UnauthorizedException('You have reached the limit of organisations where you can be an administrator.');
+		}
+
 		// create the organisation
 		const item = this.organisationEntityRepository.create({
 			name: organisationName,
@@ -318,5 +327,13 @@ export class OrganisationService {
 			throw new NotFoundException(`Organisation with id ${organisationId} not found`);
 		}
 		await this.organisationEntityRepository.remove(organisation);
+	}
+
+	async getHighestOrganisationId() : Promise<number> {
+		return this.organisationEntityRepository
+			.createQueryBuilder('organisation')
+			.select('MAX(organisation.id)', 'maxId')
+			.getRawOne()
+			.then(result => result?.maxId || 0);
 	}
 }

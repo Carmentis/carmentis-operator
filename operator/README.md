@@ -24,6 +24,9 @@ The Operator can be configured using the following environment variables:
 - **`OPERATOR_DATABASE_PASSWORD`**: Password for authenticating with the database.
 - **`OPERATOR_DATABASE_NAME`**: Name of the database.
 - **`ENABLE_PUBLIC_ACCOUNT_CREATION`**: Enable the public account creation (default at `0`).
+- **`MAX_ORACLES_IN_ORGANISATION`**: Maximum number of oracles by organisation (default at `30`).
+- **`MAX_ORACLES_IN_APPLICATIONS`**: Maximum number of applications by organisation (default at `30`).
+- **`MAX_ORGANISATIONS_IN_WHICH_USER_IS_ADMIN`**: Maximum number of organisations in which a user is involved as administrator (default at `10`).
 
 ## Installation
 
