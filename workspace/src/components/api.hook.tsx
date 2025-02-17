@@ -147,7 +147,7 @@ export interface APICallbacks<T> {
 	onStart?: undefined | (() => void),
 	onSuccessData?: undefined | ((data: T) => void),
 	onSuccess?: undefined | (() => void),
-	onError?: undefined | ((error: string) => void),
+	onError?: undefined | ((error: string, response: Response) => void),
 	onEnd?: undefined | (() => void),
 }
 
@@ -185,9 +185,9 @@ export async function CallApi<T>(
 				if ( cb && cb.onError ) {
 					try {
 						const data = await response.json();
-						cb.onError(data.message || response.statusText)
+						cb.onError(data.message || response.statusText, response)
 					} catch {
-						cb.onError(response.statusText)
+						cb.onError(response.statusText, response)
 					}
 				}
 			}
@@ -363,6 +363,16 @@ export function useUserCreation() {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ publicKey, firstname, lastname, isAdmin }),
+		});
+	};
+}
+
+export function useNotWhitelistedUserCreation() {
+	return async (publicKey: string, firstname: string, lastname: string,  cb: APICallbacks<UserSummary> | undefined) => {
+		return CallApi(`/user/createNotWhitelistedUser`, cb, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ publicKey, firstname, lastname }),
 		});
 	};
 }

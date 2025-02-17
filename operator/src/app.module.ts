@@ -7,7 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { getPostgresConfig } from './database/database.config';
 import { DatabaseInitService } from './database/database-init.service';
 import { OperatorApiModule } from './operator-api/operator-api.module';
-import { EnvService } from './services/env.service';
+import { EnvService } from './shared/services/env.service';
 import { SharedModule } from './shared/shared.module';
 
 @Module({
@@ -25,8 +25,8 @@ import { SharedModule } from './shared/shared.module';
 		}),
 	],
 	controllers: [AppController],
-	providers: [PackageConfigService,DatabaseInitService, EnvService],
-	exports: [PackageConfigService,EnvService],
+	providers: [PackageConfigService,DatabaseInitService],
+	exports: [PackageConfigService],
 })
 export class AppModule {
 }

@@ -23,6 +23,7 @@ The Operator can be configured using the following environment variables:
 - **`OPERATOR_DATABASE_USERNAME`**: Username for authenticating with the database.
 - **`OPERATOR_DATABASE_PASSWORD`**: Password for authenticating with the database.
 - **`OPERATOR_DATABASE_NAME`**: Name of the database.
+- **`ENABLE_PUBLIC_ACCOUNT_CREATION`**: Enable the public account creation (default at `0`).
 
 ## Installation
 
@@ -71,6 +72,7 @@ There are three ways to launch the Operator:
    --env OPERATOR_DATABASE_USERNAME=your_database_username \
    --env OPERATOR_DATABASE_PASSWORD=your_database_password \
    --env OPERATOR_DATABASE_NAME=your_database_name \
+   --env ENABLE_PUBLIC_ACCOUNT_CREATION=0\
    --network host operator-back
    ```
 
@@ -86,6 +88,7 @@ There are three ways to launch the Operator:
    --env OPERATOR_DATABASE_USERNAME=your_database_username \
    --env OPERATOR_DATABASE_PASSWORD=your_database_password \
    --env OPERATOR_DATABASE_NAME=your_database_name \
+   --env ENABLE_PUBLIC_ACCOUNT_CREATION=0\
    --network host ghcr.io/carmentis/operator/back
    ```
 

@@ -2,7 +2,7 @@ import { Injectable, Logger, NotFoundException, NotImplementedException, OnModul
 import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { EnvService } from '../../services/env.service';
+import { EnvService } from '../../shared/services/env.service';
 
 
 @Injectable()

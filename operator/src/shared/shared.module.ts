@@ -19,6 +19,7 @@ import { ChallengeService } from './services/challenge.service';
 import { ChallengeEntity } from './entities/challenge.entity';
 import { JwtModule } from '@nestjs/jwt';
 import * as crypto from 'crypto';
+import { EnvService } from './services/env.service';
 
 
 const WORKSPACE_PROVIDERS = [
@@ -31,6 +32,7 @@ const WORKSPACE_PROVIDERS = [
 	OracleService,
 	ChainService,
 	ChallengeService,
+	EnvService,
 ];
 
 // Extracted imports, controllers, and providers into constants

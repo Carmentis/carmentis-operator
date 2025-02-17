@@ -4,6 +4,7 @@ import { DeleteResult, Like, Or, Repository } from 'typeorm';
 import { UserEntity } from '../entities/user.entity';
 import CreateUserDto from '../../workspace-api/dto/create-user.dto';
 import { getPublicKeyFromRequest } from '../../utils/request-public-key-access.hook';
+import CreateNotWhitelistedUserDto from '../../workspace-api/dto/create-user-public.dto';
 
 @Injectable()
 export class UserService {
@@ -85,6 +86,16 @@ export class UserService {
 		);
 		return this.userEntityRepository.save(item);
 	}
+
+
+	async createNotWhitelistedUser(createUserDto: CreateNotWhitelistedUserDto) {
+		const item = this.userEntityRepository.create(
+			createUserDto,
+		);
+		item.isAdmin = false;
+		return this.userEntityRepository.save(item);
+	}
+
 
 	async search(query: string): Promise<UserEntity[]> {
 		return this.userEntityRepository.createQueryBuilder('user')

@@ -50,6 +50,7 @@ import {
 	OrganisationUserEditionScopedController
 } from './controllers/organisation/organisation-user-edition-scoped.controller';
 import { SharedModule } from '../shared/shared.module';
+import { EnvService } from '../shared/services/env.service';
 
 // Extracted imports, controllers, and providers into constants
 export const DEFAULT_JWT_TOKEN_VALIDITY = "8h"

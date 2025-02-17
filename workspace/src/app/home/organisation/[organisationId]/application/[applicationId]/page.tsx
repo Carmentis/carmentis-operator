@@ -111,18 +111,21 @@ function ApplicationOverview() {
 
 
 function ApplicationDetails() {
-	return <>
-		<TabsComponent
-			defaultTabValue={'Fields'}
-			panels={{
-				'Fields': <FieldsPanel></FieldsPanel>,
+	return <Card>
+		<CardBody>
+			<TabsComponent
+				defaultTabValue={'Fields'}
+				panels={{
+					'Fields': <FieldsPanel></FieldsPanel>,
 					'Structures': <StructurePanel></StructurePanel>,
 					'Enumerations': <EnumerationPanel />,
 					'Masks': <MasksPanel />,
 					'Messages': <MessagesPanel />,
 					'Code view': <CodeViewPanel />,
 				}} />
-	</>;
+		</CardBody>
+
+	</Card>;
 }
 
 
