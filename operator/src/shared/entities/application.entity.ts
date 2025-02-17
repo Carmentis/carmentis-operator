@@ -29,7 +29,7 @@ export class ApplicationEntity {
     @Column({ nullable: true, unique: true })
     virtualBlockchainId: string;
 
-    @ManyToOne(() => OrganisationEntity, (org) => org.applications)
+    @ManyToOne(() => OrganisationEntity, (org) => org.applications, { onDelete: "CASCADE" })
     organisation: OrganisationEntity;
 
     @UpdateDateColumn()

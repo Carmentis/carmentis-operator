@@ -19,7 +19,7 @@ export class OracleEntity {
 	@Column({ nullable: true })
 	domain: string;
 
-	@ManyToOne(() => OrganisationEntity, (org) => org.oracles)
+	@ManyToOne(() => OrganisationEntity, (org) => org.oracles, { onDelete: "CASCADE" })
 	organisation: OrganisationEntity;
 
 	@UpdateDateColumn()

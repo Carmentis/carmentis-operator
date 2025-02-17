@@ -9,10 +9,10 @@ export class OrganisationAccessRightEntity {
 	id: number;
 
 
-	@ManyToOne(() => OrganisationEntity, (org) => org.accessRights)
+	@ManyToOne(() => OrganisationEntity, (org) => org.accessRights, { onDelete: "CASCADE" })
 	organisation: OrganisationEntity;
 
-	@ManyToOne(() => UserEntity, (user) => user.accessRights)
+	@ManyToOne(() => UserEntity, (user) => user.accessRights, { onDelete: "CASCADE" })
 	user: UserEntity;
 
 	@Column({ default: false })

@@ -401,6 +401,14 @@ export function useOrganisationUpdateApi() {
 	};
 }
 
+export function useOrganisationDeletionApi() {
+	return async (organisation: Organisation, cb: APICallbacks<void> | undefined) => {
+		return CallApi(`/organisation/${organisation.id}`, cb, {
+			method: "DELETE",
+		});
+	};
+}
+
 export function useOrganisationPublication() {
 	return async (organisation: Organisation, cb: APICallbacks<void> | undefined) => {
 		return CallApi(`/organisation/${organisation.id}/publish`, cb, {

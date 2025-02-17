@@ -321,6 +321,21 @@ export class OrganisationScopedController {
 	}
 
 
+	/**
+	 * Deletes an organisation by its ID.
+	 *
+	 * @param {number} organisationId - The ID of the organisation to be deleted.
+	 * @return {Promise<{ message: string }>} - A promise that resolves to a success message.
+	 */
+	@UseGuards(IsAdminInOrganisation)
+	@Delete(':organisationId')
+	async deleteOrganisation(
+		@Param('organisationId') organisationId: number,
+	): Promise<{ message: string }> {
+		await this.organisationService.deleteOrganisationById(organisationId);
+		return { message: 'Organisation deleted successfully.' };
+	}
+
 
 
 }

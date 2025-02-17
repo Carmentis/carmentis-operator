@@ -52,10 +52,10 @@ export class OrganisationEntity {
 	@Column()
 	publicSignatureKey: string;
 
-	@OneToMany(() => ApplicationEntity, (app) => app.organisation)
+	@OneToMany(() => ApplicationEntity, (app) => app.organisation, { cascade: true })
 	applications: ApplicationEntity[];
 
-	@OneToMany(() => OracleEntity, (app) => app.organisation)
+	@OneToMany(() => OracleEntity, (app) => app.organisation, { cascade: true })
 	oracles: OracleEntity[];
 
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
@@ -65,7 +65,7 @@ export class OrganisationEntity {
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
 	lastUpdateAt: Date;
 
-	@OneToMany(() => OrganisationAccessRightEntity, (perm) => perm.organisation)
+	@OneToMany(() => OrganisationAccessRightEntity, (perm) => perm.organisation, { cascade: true })
 	accessRights: OrganisationAccessRightEntity[];
 
 	@Column({default: 0})

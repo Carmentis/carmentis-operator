@@ -317,7 +317,6 @@ export class OrganisationService {
 		if (!organisation) {
 			throw new NotFoundException(`Organisation with id ${organisationId} not found`);
 		}
-
 		await this.organisationEntityRepository.remove(organisation);
 	}
 }

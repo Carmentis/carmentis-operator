@@ -9,6 +9,11 @@ import { OracleService } from '../../../shared/services/oracle.service';
 import { AccessRightService } from '../../../shared/services/access-right.service';
 
 
+/**
+ * OrganisationController handles API endpoints related to organisations.
+ * It provides functionalities to create a new organisation and retrieve
+ * organisation details.
+ */
 @Controller('/workspace/api/organisation')
 export class OrganisationController {
 
@@ -17,10 +22,7 @@ export class OrganisationController {
     constructor(
         private readonly organisationService: OrganisationService,
         private readonly userService: UserService,
-        private readonly applicationService: ApplicationService,
         private readonly auditService: AuditService,
-        private readonly oracleService: OracleService,
-        private readonly accessRightService: AccessRightService
     ) {}
 
 
@@ -60,9 +62,6 @@ export class OrganisationController {
     async getAllOrganisations(): Promise<{ id: number, name: string, logoUrl: string }[]> {
         return await this.organisationService.findAll();
     }
-
-
-
 
 
 
