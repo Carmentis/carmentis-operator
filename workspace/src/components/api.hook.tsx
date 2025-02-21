@@ -315,6 +315,13 @@ export function useAdminListOfOrganisationsApi(query: string) {
 	);
 }
 
+export function useConfirmOrganisationPublicationOnChain(organisation: Organisation) {
+	return useWorkspaceApi<{published: boolean}>(
+		`/organisation/${organisation.id}/checkPublishedOnChain`
+	);
+}
+
+
 
 
 export function useOrganisationCreation() {

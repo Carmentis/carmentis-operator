@@ -234,6 +234,18 @@ export class OrganisationScopedController {
 		return await this.organisationService.getPublicationCost(organisationId);
 	}
 
+	@Get(":organisationId/checkPublishedOnChain")
+	async checkPublishedOnChain(
+		@Param('organisationId') organisationId: number,
+	) {
+		return {published: true}
+		const organisation = await this.organisationService.findOne(organisationId);
+		if (organisation.virtualBlockchainId === undefined) return { published: false }
+		const published = await this.chainService.checkPublishedOnChain(organisation);
+		return { published }
+	}
+
+
 
 
 	@Get(":organisationId/application/:applicationId/publicationCost")

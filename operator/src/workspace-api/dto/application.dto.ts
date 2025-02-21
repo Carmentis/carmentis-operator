@@ -10,6 +10,9 @@ export class ApplicationDto {
     name: string;
 
     @IsString()
+    tag: string;
+
+    @IsString()
     @IsOptional()
     logoUrl: string;
 

@@ -285,6 +285,20 @@ export class OrganisationService {
 		return application.organisation!;
 	}
 
+	async findOrganisationFromVirtualBlockchainId(organisationId: string) {
+
+		const organisation = await this.organisationEntityRepository
+			.createQueryBuilder('organisation')
+			.where('organisation.virtualBlockchainId = :organisationId', { organisationId })
+			.getOne();
+
+		if (!organisation) {
+			throw new NotFoundException(`No organisation found with virtualBlockchainId: ${organisationId}`);
+		}
+
+		return organisation;
+	}
+
 	async findByQuery(query: string) {
 		if (query.trim() === '') {
 			// Return the first 50 organisations if the query is empty

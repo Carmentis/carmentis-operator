@@ -49,6 +49,7 @@ function ApplicationOverview() {
 	const [logoUrl, setLogoUrl] = useState<string>(application.logoUrl);
 	const [homepageUrl, setHomepageUrl] = useState<string>('');
 	const [domainUrl, setDomainUrl] = useState<string>(application.domain);
+	const [tag, setTag] = useState<string|undefined>(application.tag);
 	const [description, setDescription] = useState<string>(application.description);
 
 
@@ -57,9 +58,10 @@ function ApplicationOverview() {
 			app.name = name;
 			app.logoUrl = logoUrl;
 			app.domain = domainUrl;
-			app.description = description
+			app.description = description;
+			app.tag = tag;
 		});
-	}, [name, logoUrl, domainUrl]);
+	}, [name, logoUrl, domainUrl, tag, description]);
 
 	function updateName(name: string) {
 		setIsModified(true);
@@ -82,8 +84,14 @@ function ApplicationOverview() {
 		setDescription(val)
 	}
 
+	function updateTag(val: string) {
+		setIsModified(true);
+		setTag(val)
+	}
+
 	const INPUTS = [
 		{ label: 'Application name', value: name, onChange: updateName },
+		{ label: 'Tag', value: tag, onChange: updateTag },
 		{ label: 'Logo URL', value: logoUrl, onChange: updateLogo },
 		{ label: 'Homepage URL', value: homepageUrl, onChange: console.log },
 		{ label: 'Domain', value: domainUrl, onChange: updateDomain },

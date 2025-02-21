@@ -23,6 +23,15 @@ export class ApplicationService {
     }
 
 
+    async findApplicationByTag(tag: string): Promise<ApplicationEntity> {
+        const application = await this.applicationRepository.findOneBy({ tag });
+
+        if (!application) {
+            throw new HttpException(`Application with tag "${tag}" not found`, HttpStatus.NOT_FOUND);
+        }
+
+        return application;
+    }
     /**
      * Creates an application from an application name in the specified organisation.
      * @param organisationEntity
@@ -63,7 +72,7 @@ export class ApplicationService {
             .createQueryBuilder('a')
             .innerJoin('a.organisation', 'organisation')
             .where('organisation.id = :organisationId', { organisationId })
-            .select(['a.id', 'a.name', 'a.version', 'a.published', 'a.publishedAt', 'a.isDraft', 'a.version'])
+            .select(['a.id', 'a.name', 'a.version', 'a.published', 'a.publishedAt', 'a.isDraft', 'a.version', 'a.tag'])
             .getMany();
     }
 

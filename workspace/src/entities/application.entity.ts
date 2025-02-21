@@ -33,6 +33,7 @@ export type Application = {
 	virtualBlockchainId: string | undefined;
 	id: number;
 	name: string;
+	tag: string | undefined;
 	description: string;
 	version: number;
 	logoUrl: string;
@@ -51,5 +52,5 @@ export type Application = {
 	}
 }
 
-export type ApplicationSummary = Pick<Application, 'id' | 'name' | 'logoUrl' | 'published' | 'publishedAt' | 'isDraft' | 'version'>
+export type ApplicationSummary = Pick<Application, 'id' | 'name' | 'tag' | 'logoUrl' | 'published' | 'publishedAt' | 'isDraft' | 'version'>
 export type ApplicationSummaryList = ApplicationSummary[];

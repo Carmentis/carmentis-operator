@@ -1,6 +1,7 @@
 'use client';
 
 import {
+	useConfirmOrganisationPublicationOnChain,
 	useFetchOrganisationStats,
 	useOrganisationPublication,
 	useOrganisationUpdateApi,
@@ -50,13 +51,14 @@ function OverviewOrganisationWelcomeCards() {
 
 function OrganisationEdition() {
 	const organisation = useOrganisationContext();
-	const refreshOrganisation = useOrganisationMutationContext();
 	const [name, setName] = useState(organisation.name);
 	const [city, setCity] = useState(organisation.city);
 	const [countryCode, setCountryCode] = useState(organisation.countryCode);
 	const [website, setWebsite] = useState(organisation.website);
 	const [isModified, setIsModified] = useState(false);
 	const notify = useToast();
+
+	const refreshOrganisation = useOrganisationMutationContext();
 	const callOrganisationPublication = useOrganisationPublication();
 	const callOrganisationUpdate = useOrganisationUpdateApi();
 
@@ -112,6 +114,7 @@ function OrganisationEdition() {
 						{ organisation.isSandbox && <Chip variant="filled" className={"bg-secondary-light"} value="Sandbox" />}
 						{ organisation.isDraft && <Chip value={"Draft"} variant={"outlined"} className={"border-primary-light text-primary-light"} />}
 						{ organisation.published && <Chip value={`Published - ${new Date(organisation.publishedAt).toLocaleString()}`} variant={"filled"} className={"bg-primary-light"} />}
+						<ChipOnChainPublication/>
 					</div>
 				</div>
 
@@ -185,6 +188,19 @@ function OrganisationEdition() {
 			</div>
 		</CardBody>
 	</Card>
+}
+
+function ChipOnChainPublication() {
+	const organisation = useOrganisationContext();
+	const checkResponse = useConfirmOrganisationPublicationOnChain(organisation);
+
+	if (checkResponse.data) {
+		const published = checkResponse.data.published;
+		if (!published && organisation.published) {
+			return <Chip value={`Organisation not on-chain`} variant={"filled"} className={"bg-deep-orange-400"} />;
+		}
+	}
+	return <></>
 }
 
 export default function Home() {

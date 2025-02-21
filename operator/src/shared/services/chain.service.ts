@@ -48,12 +48,12 @@ export default class ChainService implements OnModuleInit{
 		);
 
 
-		const organisationVb = new sdk.blockchain.organizationVb()
+		const organisationVb = new sdk.blockchain.organizationVb(organisation.virtualBlockchainId)
 
 		// if the organisation has already been published, load the existing block
 		if ( organisation.virtualBlockchainId ) {
 			console.log("Loading existing organisation block", organisation);
-			await organisationVb.load(organisation.virtualBlockchainId);
+			await organisationVb.load();
 		} else {
 			console.log("Creating new organisation block");
 			// set the organisation public signature key
@@ -104,7 +104,7 @@ export default class ChainService implements OnModuleInit{
 			organisation.privateSignatureKey
 		);
 
-		const vc = new sdk.blockchain.applicationVb();
+		const vc = new sdk.blockchain.applicationVb(application.virtualBlockchainId);
 		if ( !application.virtualBlockchainId ) {
 			console.log("Creating new application", application, organisation);
 			await vc.addDeclaration({
@@ -113,7 +113,7 @@ export default class ChainService implements OnModuleInit{
 
 		} else {
 			console.log("Loading existing application", application);
-			await vc.load(application.virtualBlockchainId);
+			await vc.load();
 		}
 
 		await vc.addDescription( {
@@ -157,13 +157,13 @@ export default class ChainService implements OnModuleInit{
 		);
 
 		console.log('oracle publication:', organisation)
-		const vc = new sdk.blockchain.oracleVb();
+		const vc = new sdk.blockchain.oracleVb(oracle.virtualBlockchainId);
 		if ( !oracle.virtualBlockchainId ) {
 			await vc.addDeclaration({
 				organizationId: organisation.virtualBlockchainId,
 			});
 		} else {
-			await vc.load(oracle.virtualBlockchainId);
+			await vc.load();
 		}
 
 		await vc.addDescription( {
@@ -233,6 +233,15 @@ export default class ChainService implements OnModuleInit{
 			return accountState.balance
 		} catch (e) {
 			throw new UnprocessableEntityException(e)
+		}
+	}
+
+	async checkPublishedOnChain(organisation: OrganisationEntity) {
+		try {
+			const response = await sdk.blockchain.blockchainQuery.getVirtualBlockchainInfo(organisation.virtualBlockchainId)
+			return response !== undefined
+		} catch (e) {
+			return false;
 		}
 	}
 }

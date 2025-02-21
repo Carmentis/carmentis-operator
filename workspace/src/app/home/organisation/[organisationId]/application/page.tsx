@@ -10,13 +10,11 @@ import {
 	useFetchOrganisationApplications,
 } from '@/components/api.hook';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { DynamicAppIcon } from '@/components/icons/default-user.icon';
 import { useToast } from '@/app/layout';
 import { useOrganisationContext } from '@/contexts/organisation-store.context';
 import Skeleton from 'react-loading-skeleton';
 import { ApplicationSummary } from '@/entities/application.entity';
-import * as sdk from '../../../../../../../../carmentis-core/dist/client';
 import CardTableComponent from '@/components/card-table.component';
 import { Container } from '@mui/material';
 
@@ -57,6 +55,7 @@ function ListOfApplicationsComponent({ organisationId, data }: {
 		onRowClicked={(app) => visitApplication(app.id)}
 		extractor={(v, i) => [
 			{head: 'Name', value: <Typography>{v.name}</Typography>},
+			{head: 'Tag', value: <Typography>{v.tag}</Typography>},
 			{head: 'Draft', value: v.isDraft && <Chip value={'Draft'} className={'bg-primary-light w-min'} />},
 			{head: 'Published', value: v.published && <Chip value={'Published'} className={'bg-primary-light w-min'} />},
 			{head: 'Published at', value: v.publishedAt && <Typography>{new Date(v.publishedAt).toLocaleString()}</Typography>},
