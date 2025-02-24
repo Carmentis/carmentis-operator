@@ -71,7 +71,11 @@ export class OperatorApiController{
 			...data.data,
 			appLedgerId: data.appLedgerVirtualBlockchainId
 		});
-		const dataId = result.data.dataId! as string
+		const dataId = result.data.dataId;
+		if (typeof dataId !== 'string') {
+			this.logger.error(`Invalid data id: Expected string, got ${dataId}`)
+		}
+		if (typeof dataId !== 'string') throw new InternalServerErrorException();
 		this.logger.log(`data id ${dataId} -> virtual blockchain id ${organisationId}`)
 		this.organisationIdByDataId.set(dataId, organisationId);
 		return result;
@@ -138,27 +142,23 @@ export class OperatorApiController{
 	}
 
 	async processOperatorMessage( msg: any) {
+
 		let answer;
-
-
-
-		try {
-			let [ id, object ] = sdk.serializers.schemaSerializer.decodeMessage(msg, sdk.constants.SCHEMAS.OP_OP_MESSAGES);
-			this.logger.log("processOperatorMessage:", id, object)
-			const dataId = object.dataId;
-			const organisation : OrganisationEntity = await this.loadOrganisationFromDataId(dataId);
-			const core = this.createOperatorCoreInstanceFromOrganisation(organisation);
-			switch(id) {
-				case sdk.constants.SCHEMAS.MSG_SUBMIT_ORACLE_REQUEST: {
-					answer = await core.receivedOracleRequest(object);
-					break;
-				}
+		let [ id, object ] = sdk.serializers.schemaSerializer.decodeMessage(msg, sdk.constants.SCHEMAS.OP_OP_MESSAGES);
+		this.logger.log("processOperatorMessage:", id, object)
+		const dataId = object.dataId;
+		if (typeof dataId !== 'string') throw new BadRequestException(`Invalid dataId: Expected string, got ${typeof dataId}`);
+		const organisation : OrganisationEntity = await this.loadOrganisationFromDataId(dataId);
+		const core = this.createOperatorCoreInstanceFromOrganisation(organisation);
+		switch(id) {
+			case sdk.constants.SCHEMAS.MSG_SUBMIT_ORACLE_REQUEST: {
+				answer = await core.receivedOracleRequest(object);
+				break;
 			}
+			// TODO add default
 		}
-		catch(err) {
-			console.error(err);
-			return sdk.operatorCore.processCatchedError(err);
-		}
+
+
 
 		return answer;
 	}
@@ -166,37 +166,32 @@ export class OperatorApiController{
 	async processWalletMessage(msg: any) {
 		let answer;
 
-		try {
-			let [ id, object ] = sdk.serializers.schemaSerializer.decodeMessage(msg, sdk.constants.SCHEMAS.WALLET_OP_MESSAGES);
-			this.logger.log("processWalletMessage:", id, object)
-			const dataId = object.dataId;
-			const organisation : OrganisationEntity = await this.loadOrganisationFromDataId(dataId);
-			const core = this.createOperatorCoreInstanceFromOrganisation(organisation);
+		let [ id, object ] = sdk.serializers.schemaSerializer.decodeMessage(msg, sdk.constants.SCHEMAS.WALLET_OP_MESSAGES);
+		this.logger.log("processWalletMessage:", id, object)
+		const dataId = object.dataId;
+		if (typeof dataId !== 'string') throw new BadRequestException(`Invalid dataId: Expected string, got ${typeof dataId}`);
+		const organisation : OrganisationEntity = await this.loadOrganisationFromDataId(dataId);
+		const core = this.createOperatorCoreInstanceFromOrganisation(organisation);
 
-			switch(id) {
-				case sdk.constants.SCHEMAS.MSG_APPROVAL_HANDSHAKE: {
-					answer = await core.approvalHandshake(object);
-					break;
-				}
-				case sdk.constants.SCHEMAS.MSG_ACTOR_KEY: {
-					answer = await core.approvalActorKey(object);
-					break;
-				}
-				case sdk.constants.SCHEMAS.MSG_APPROVAL_SIGNATURE:
-					answer = await core.approvalSignature(object, sdk.constants.ECO.TOKEN);
-					break;
-				default:
-					const errorMessage = `Unknown request type: ${id}`
-					this.logger.error(errorMessage)
-					throw new BadRequestException(errorMessage);
+		switch(id) {
+			case sdk.constants.SCHEMAS.MSG_APPROVAL_HANDSHAKE: {
+				answer = await core.approvalHandshake(object);
+				break;
 			}
+			case sdk.constants.SCHEMAS.MSG_ACTOR_KEY: {
+				answer = await core.approvalActorKey(object);
+				break;
+			}
+			case sdk.constants.SCHEMAS.MSG_APPROVAL_SIGNATURE:
+				answer = await core.approvalSignature(object, sdk.constants.ECO.TOKEN);
+				break;
+			default:
+				const errorMessage = `Unknown request type: ${id}`
+				this.logger.error(errorMessage)
+				throw new BadRequestException(errorMessage);
+		}
 
-			return answer
-		}
-		catch(err) {
-			console.error(err);
-			return  sdk.operatorCore.processCatchedError(err);
-		}
+		return answer
 	}
 
 }
