@@ -74,6 +74,7 @@ export class OperatorApiController{
 		const dataId = result.data.dataId;
 		if (typeof dataId !== 'string') {
 			this.logger.error(`Invalid data id: Expected string, got ${dataId}`)
+			this.logger.error("Obtained result:", result)
 		}
 		if (typeof dataId !== 'string') throw new InternalServerErrorException();
 		this.logger.log(`data id ${dataId} -> virtual blockchain id ${organisationId}`)

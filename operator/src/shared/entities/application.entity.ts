@@ -17,7 +17,7 @@ export class ApplicationEntity {
     @Column({ nullable: true, default: '' })
     logoUrl: string;
 
-    @Column({nullable: true, unique: true, default: ''})
+    @Column({nullable: true})
     tag: string;
 
     @Column({ default: '', type: "text" })
