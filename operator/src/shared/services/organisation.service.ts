@@ -350,4 +350,12 @@ export class OrganisationService {
 			.getRawOne()
 			.then(result => result?.maxId || 0);
 	}
+
+	async erasePublicationInformation(organisation: OrganisationEntity) {
+		organisation.published = false;
+		organisation.version = 0;
+		organisation.virtualBlockchainId = undefined;
+		organisation.publishedAt = undefined;
+		await this.organisationEntityRepository.save(organisation);
+	}
 }

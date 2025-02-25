@@ -238,12 +238,12 @@ export class OrganisationScopedController {
 	async checkPublishedOnChain(
 		@Param('organisationId') organisationId: number,
 	) {
-		return {published: true}
 		const organisation = await this.organisationService.findOne(organisationId);
 		if (organisation.virtualBlockchainId === undefined) return { published: false }
 		const published = await this.chainService.checkPublishedOnChain(organisation);
 		return { published }
 	}
+
 
 
 
@@ -304,6 +304,13 @@ export class OrganisationScopedController {
 		await this.organisationService.publishOrganisation(organisationId);
 	}
 
+
+	@UseGuards(IsAdminInOrganisation)
+	@Put(":organisationId/erasePublication")
+	async erasePublication(@Param('organisationId') organisationId: number) {
+		const organisation: OrganisationEntity = await this.organisationService.findOne( organisationId );
+		await this.organisationService.erasePublicationInformation(organisation);
+	}
 
 	/**
 	 * Update an organisation

@@ -1,7 +1,7 @@
 'use client';
 
 import {
-	useConfirmOrganisationPublicationOnChain,
+	useConfirmOrganisationPublicationOnChain, useErasePublicationInformation,
 	useFetchOrganisationStats,
 	useOrganisationPublication,
 	useOrganisationUpdateApi,
@@ -17,6 +17,7 @@ import { useOrganisationMutationContext } from '@/contexts/organisation-mutation
 import WelcomeCards from '@/components/welcome-cards.component';
 import OrganisationAccountBalance from '@/components/organisation-account-balance.component';
 import AvatarOrganisation from '@/components/avatar-organisation';
+import { Modal } from '@mui/material';
 
 
 /**
@@ -114,7 +115,7 @@ function OrganisationEdition() {
 						{ organisation.isSandbox && <Chip variant="filled" className={"bg-secondary-light"} value="Sandbox" />}
 						{ organisation.isDraft && <Chip value={"Draft"} variant={"outlined"} className={"border-primary-light text-primary-light"} />}
 						{ organisation.published && <Chip value={`Published - ${new Date(organisation.publishedAt).toLocaleString()}`} variant={"filled"} className={"bg-primary-light"} />}
-						<ChipOnChainPublication/>
+						<ChipOnChainPublicationChecker/>
 					</div>
 				</div>
 
@@ -190,17 +191,81 @@ function OrganisationEdition() {
 	</Card>
 }
 
-function ChipOnChainPublication() {
+function ChipOnChainPublicationChecker() {
+	const toast = useToast();
 	const organisation = useOrganisationContext();
+	const mutate = useOrganisationMutationContext();
 	const checkResponse = useConfirmOrganisationPublicationOnChain(organisation);
+	const synchronisation = useErasePublicationInformation();
+	const [openModal, setOpenModal] = useState(false);
 
+	function synchronise() {
+		synchronisation(organisation.id, {
+			onSuccess: () => {
+				mutate.mutate()
+				toast.success("Organisation updated")
+			},
+			onError: (e) => toast.error(`Organisation updated failed: ${e}`),
+		})
+	}
+
+	let content = <></>
 	if (checkResponse.data) {
 		const published = checkResponse.data.published;
 		if (!published && organisation.published) {
-			return <Chip value={`Organisation not on-chain`} variant={"filled"} className={"bg-deep-orange-400"} />;
+			content = <>
+				<Chip
+					value={`Organisation not on-chain`}
+					variant={"filled"}
+					className={"bg-deep-orange-400 hover:cursor-pointer"}
+					onClick={() => setOpenModal(true)}
+				/>
+				<BlockchainInconsistencyModal
+					open={openModal}
+					onClose={() => setOpenModal(false)}
+					onSynchronise={synchronise}
+				/>
+			</>;
 		}
 	}
-	return <></>
+	return content;
+}
+
+
+
+
+function BlockchainInconsistencyModal({ open, onClose, onSynchronise }: {
+	open: boolean,
+	onClose: () => void,
+	onSynchronise: () => void
+}) {
+	return (
+		<Modal open={open} onClose={onClose} className="flex items-center justify-center">
+			<Card className="w-1/3">
+				<CardBody>
+					<Typography variant="h5" className="text-center mb-4">
+						Blockchain Inconsistency Detected
+					</Typography>
+					<Typography className="text-gray-700 mb-4">
+						It seems that the current organisation has not been found on the blockchain. This indicates an
+						inconsistency between the current state of the blockchain and the workspace.
+					</Typography>
+					<Typography className="text-gray-700 mb-8">
+						You can resolve this issue by synchronising the workspace with the blockchain. This will erase
+						the previous publication status.
+					</Typography>
+					<div className="flex justify-end space-x-4">
+						<Button variant="outlined"  onClick={onClose}>
+							Cancel
+						</Button>
+						<Button variant="filled" color="green" onClick={onSynchronise}>
+							Synchronise
+						</Button>
+					</div>
+				</CardBody>
+			</Card>
+		</Modal>
+	);
 }
 
 export default function Home() {

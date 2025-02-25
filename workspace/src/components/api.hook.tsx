@@ -334,6 +334,14 @@ export function useOrganisationCreation() {
 	};
 }
 
+export function useErasePublicationInformation() {
+	return async (organisationId : number, cb: APICallbacks<void> | undefined) => {
+		return CallApi(`/organisation/${organisationId}/erasePublication`, cb, {
+			method: "PUT",
+		});
+	};
+}
+
 export function useSandboxCreationApi() {
 	return async (cb: APICallbacks<IdentifiedEntity> | undefined) => {
 		return CallApi(`/sandbox`, cb, {
