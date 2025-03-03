@@ -1,27 +1,22 @@
-import {
-	ApplicationEditor,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import { useEffect, useState } from 'react';
 import { Button, Input } from '@material-tailwind/react';
 import { useToast } from '@/app/layout';
 import ApplicationFieldEditionCard
-	from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
-import { useApplicationFields, useUpdateApplication } from '@/contexts/application-store.context';
-import { useSetEditionStatus } from '@/contexts/edition-status.context';
+	from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-component';
 import { AppDataField } from '@/entities/application.entity';
+import { useFieldEdition } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
+import { useAtomValue } from 'jotai';
+import { applicationFieldsAtom } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
+import { Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@mui/material';
 
 export default function FieldsPanel() {
 
 	const notify = useToast();
-	const applicationFields = useApplicationFields();
-	const updateApplication = useUpdateApplication();
-	const setIsModified = useSetEditionStatus();
+	const fields = useAtomValue(applicationFieldsAtom);
+	const fieldEditionActions = useFieldEdition();
 	const [fieldName, setFieldName] = useState<string>('');
-	const [fields, setFields] = useState<AppDataField[]>(applicationFields);
 
-	useEffect(() => {
-		setFields(applicationFields);
-	}, [applicationFields]);
+
 
 	/**
 	 * Add a new field.
@@ -29,47 +24,54 @@ export default function FieldsPanel() {
 	function addField() {
 		// aborts if the field name is empty
 		if ( fieldName !== '' ) {
+			fieldEditionActions.addField(fieldName);
 			setFieldName('')
-			setIsModified(true);
-			updateApplication(application => {
-				const editor = new ApplicationEditor(application)
-				editor.createField(fieldName)
-			})
 		}  else {
 			notify.error("Cannot add field with an empty name")
 		}
 
 	}
 
-	function removeField(fieldName: string) {
-		setIsModified(true);
-		updateApplication(application => {
-			const editor = new ApplicationEditor(application)
-			editor.removeFieldByName(fieldName)
-		})
+	function removeField(fieldId: string) {
+		fieldEditionActions.removeField(fieldId);
 	}
 
+	const content =
+		fields.map(field =>
+			<ApplicationFieldEditionCard
+				key={field.id}
+				field={field}
+				onRemoveField={removeField} />)
 
 	return <>
-		{/* Field creation */}
-		<div id="add-field" className={'flex flex-row p-1 gap-2 mt-4 mb-4'}>
-			<div className="w-64">
-				<Input label={'name'} value={fieldName} onChange={e => setFieldName(e.target.value)}
-					   className={'w-14'} />
-			</div>
-			<Button size={'md'} onClick={addField}>Add field</Button>
-		</div>
-
-
 		{/* List of fields */}
-		<div id="fields" className={'flex flex-wrap gap-4'}>
-			{
-				fields.map((field, index) =>
-					<ApplicationFieldEditionCard
-						key={index}
-						field={field}
-						onRemoveField={removeField} />)
-			}
-		</div>
+		<Table id="fields" className={'w-full'}>
+			<TableHead>
+			<TableRow>
+				<TableCell>Name</TableCell>
+				<TableCell>Kind</TableCell>
+				<TableCell>Type</TableCell>
+				<TableCell>Array</TableCell>
+				<TableCell>Required</TableCell>
+				<TableCell>Public</TableCell>
+				<TableCell>Hashable</TableCell>
+				<TableCell>Mask</TableCell>
+				<TableCell></TableCell>
+			</TableRow>
+			</TableHead>
+			<TableBody className={'w-full'}>
+				{content}
+			<TableRow>
+				<TableCell colSpan={8}>
+					<div className={"w-[500px] flex gap-2"}>
+						<TextField size={'small'} value={fieldName} onChange={e => setFieldName(e.target.value)}
+							   className={""}/>
+						<Button size={'md'} className={"w-[150px]"} onClick={addField}>Add field</Button>
+					</div>
+				</TableCell>
+			</TableRow>
+			</TableBody>
+
+		</Table>
 	</>;
 }

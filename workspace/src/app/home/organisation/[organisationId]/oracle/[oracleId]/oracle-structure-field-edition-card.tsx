@@ -2,8 +2,8 @@
 import { useOracle, useOracleEditor } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/data-access-layer';
 
 import {
-	FieldEditionCard,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
+	FieldEditionComponent,
+} from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-component';
 import { OracleStructureField } from '@/entities/oracle.entity';
 
 export default function OracleStructureFieldEditionCard(
@@ -30,7 +30,7 @@ export default function OracleStructureFieldEditionCard(
 		))
 	}
 
-	return <FieldEditionCard
+	return <FieldEditionComponent
 		field={input.field}
 		onRemoveField={() => input.onRemoveField(field.name)}
 		refreshType={refreshType}

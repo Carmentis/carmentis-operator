@@ -17,7 +17,6 @@ import { useToast } from '@/app/layout';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import VersionDisplay from '@/components/version-number';
 import { Dialog, DialogHeader, DialogBody, DialogFooter, Input, Button } from '@material-tailwind/react';
-import { toast } from 'react-toastify';
 
 
 export default function Login() {

@@ -1,135 +1,157 @@
-import { FormEvent, useState } from 'react';
-import { SearchInputForm } from '@/components/form/search-input.form';
-import { Button, Input, Typography } from '@material-tailwind/react';
-import LargeCardEdition from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/large-edition-card';
-import ApplicationFieldEditionCard
-	from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
-import { useApplicationStrutures, useUpdateApplication } from '@/contexts/application-store.context';
-import { useSetEditionStatus } from '@/contexts/edition-status.context';
-import Form from 'next/form';
-
-
-function FieldCreationForm(
-	input: {
-		onCreateField: (fieldName: string) => void,
-	}
-) {
-	const [name, setName] = useState<string>('');
-
-	function submit(event: FormEvent) {
-		event.preventDefault();
-		const value = name;
-		setName('');
-		input.onCreateField(value)
-	}
-	return <form onSubmit={submit} className={"flex"}>
-		<div className="w-64">
-			<Input label={'Name'} value={name}
-				   onChange={e => setName(e.target.value)}
-				   className={'w-14'} />
-		</div>;
-		<Button size={'md'} type={"submit"}>Add Field</Button>
-	</form>;
-}
-
-
-
+import { useEffect, useRef, useState } from 'react';
+import { Button, IconButton } from '@material-tailwind/react';
+import {
+	FieldEditionComponent,
+} from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-component';
+import { useStructEdition } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
+import { useAtomValue } from 'jotai';
+import { applicationStructuresAtom } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
+import {
+	Accordion,
+	AccordionDetails,
+	AccordionSummary,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableRow,
+	TextField,
+} from '@mui/material';
+import { AppDataField, AppDataStruct } from '@/entities/application.entity';
+import { generateRandomString } from 'ts-randomstring/lib';
 
 
 export default function StructurePanel(
 ) {
 
-	const structures = useApplicationStrutures();
-	const setApplication = useUpdateApplication();
-	const setIsModified = useSetEditionStatus();
-	const [structureName, setStructureName] = useState<string>('');
+	const structures = useAtomValue(applicationStructuresAtom)
+	const structureEdition = useStructEdition();
 
 
-	function createStructure(event: FormEvent) {
-		console.log("Creating structure", structureName)
-		event.preventDefault();
-		setStructureName('');
-		setIsModified(true);
-		setApplication((app, editor) => {
-			editor.createStructure(structureName);
-		});
-	}
+	return <StructuresView
+		structures={structures}
+	 	addField={structureEdition.addField}
+		editField={structureEdition.editField}
+		removeField={structureEdition.removeField}
 
-	function createFieldInStructure( structureName: string, fieldName: string ) {
-		setIsModified(true);
-		setApplication((app, editor) => {
-			editor.createFieldInStructure(structureName, fieldName);
-		});
-	}
-
-	function removeStructure(structureName: string) {
-		setIsModified(true);
-		setApplication((app, editor) => {
-			editor.removeStructureByName(structureName)
-		});
-	}
-
-	function removeFieldFromStructure(structureName: string, fieldName: string) {
-		setIsModified(true);
-		setApplication((app, editor) => {
-			editor.removeFieldInStructureByName(structureName, fieldName);
-		});
-	}
-
-	return <>
-		{/* Structure search and creation */}
-		<div className={'flex flex-row p-1 gap-2 mt-4 mb-4'}>
-			<form onSubmit={createStructure} className={'flex space-x-2'}>
-				<div className="w-64">
-					<Input label={'name'} value={structureName} onChange={e => setStructureName(e.target.value)}
-						   className={'w-14'} />
-				</div>
-				<Button size={'md'} type={'submit'}>Add structure</Button>
-			</form>
-		</div>
+		addStruct={structureEdition.add}
+		editStruct={structureEdition.edit}
+		removeStruct={structureEdition.remove}
+	/>
 
 
-		{/* List of structures */}
-		<div id="fields" className={'flex flex-wrap gap-4'}>
-			{
-				structures
-					.map((struct, index) =>
-						<LargeCardEdition
-							key={index}
-							name={struct.name}
-							onRemove={() => removeStructure(struct.name)}>
-							<Input variant={'outlined'} size={'md'} label={'Name'} value={struct.name} />
-
-							{/* Fields in the structure */}
-							<div id="fields">
-
-								<Typography variant={'h6'}>Fields</Typography>
-
-								{/* Search and add field */}
-								<div className={'flex flex-row gap-2 mt-2 mb-4'}>
-									<FieldCreationForm onCreateField={(fieldName: string) => {
-										createFieldInStructure(struct.name, fieldName);
-									}}/>
-								</div>
-								<div className="flex flex-wrap gap-4">
-									{
-										struct.properties
-											.map((field, index) => {
-												return <ApplicationFieldEditionCard
-													structureName={struct.name}
-													key={index}
-													field={field}
-													onRemoveField={() => removeFieldFromStructure(
-														struct.name,
-														field.name
-													)} />;
-											})
-									}
-								</div>
-							</div>
-						</LargeCardEdition>
-					)
-			}
-		</div>
-	</>;
 }
+
+type StructuresViewProps = {
+	structures: AppDataStruct[],
+	addStruct: (structName: string) => void
+	editStruct: (structName: string, structure: AppDataStruct) => void
+	removeStruct: (structName: string) => void
+	addField: (structName: string, fieldName: string) => void
+	editField: (structName: string, fieldName: string, field: AppDataField) => void,
+	removeField: (structName: string, fieldName: string) => void
+}
+
+
+
+function StructuresView(input: StructuresViewProps) {
+	const [structName, setStructName] = useState('');
+	return <div>
+		<TextField value={structName} onChange={(e) => setStructName(e.target.value)} size={"small"} />
+		<Button size={"md"} onClick={() => input.addStruct(structName)}>Add structure</Button>
+		{
+			input.structures
+				.map((struct, index) => <SingleStructureView structure={struct} {...input} key={struct.id}/>)
+		}
+	</div>;
+
+}
+
+function SingleStructureView(input: {
+	structure: AppDataStruct,
+	editStruct: (structId: string, structure: AppDataStruct) => void,
+	removeStruct: (structId: string) => void,
+	addField: (structId: string, fieldName: string) => void
+	editField: (structId: string, fieldId: string, field: AppDataField) => void,
+	removeField: (structId: string, fieldId: string) => void
+}) {
+	const struct = input.structure;
+	const [structName, setStructName] = useState(struct.name);
+
+	useEffect(() => {
+		input.editStruct(struct.id, {...struct, name: structName})
+	}, [structName]);
+
+	return <Accordion >
+		<AccordionSummary
+			aria-controls="panel1-content"
+			id="panel1-header"
+		>
+			Structure {struct.name}
+		</AccordionSummary>
+		<AccordionDetails>
+			<div className={"flex justify-between items-center"}>
+				<TextField size={"small"} label={"Structure name"} value={structName} onChange={e => setStructName(e.target.value)}/>
+				<IconButton color={"primary"} onClick={() => input.removeStruct(struct.id)}>
+					<i className={"bi bi-trash"}></i>
+				</IconButton>
+			</div>
+			<StructureFieldsView {...input}/>
+		</AccordionDetails>
+	</Accordion>
+}
+
+type StructureFieldsViewProps = {
+	structure: AppDataStruct,
+	addField: (structName: string, fieldName: string) => void
+	editField: (structName: string, fieldName: string, field: AppDataField) => void,
+	removeField: (structName: string, fieldName: string) => void
+}
+function StructureFieldsView(input: StructureFieldsViewProps) {
+	const [fieldName, setFieldName] = useState('');
+	const structure = input.structure;
+	const structName = structure.name;
+	const fields = input.structure.properties;
+
+	function addField() {
+		input.addField(structName, fieldName)
+		setFieldName('')
+	}
+
+	return <Table id="fields" className={'w-full'}>
+		<TableHead>
+			<TableRow>
+				<TableCell>Name</TableCell>
+				<TableCell>Kind</TableCell>
+				<TableCell>Type</TableCell>
+				<TableCell>Array</TableCell>
+				<TableCell>Required</TableCell>
+				<TableCell>Public</TableCell>
+				<TableCell>Hashable</TableCell>
+				<TableCell>Mask</TableCell>
+				<TableCell></TableCell>
+			</TableRow>
+		</TableHead>
+		<TableBody className={'w-full'}>
+			{
+				fields.map(field =>
+					<FieldEditionComponent
+						key={field.id}
+						field={field}
+						onUpdateField={updatedField => input.editField(input.structure.id, field.id, updatedField)}
+						onRemoveField={name => input.removeField(structName, name)} />)
+			}
+			<TableRow>
+				<TableCell colSpan={8}>
+					<div className={"w-[500px] flex gap-2"}>
+						<TextField size={'small'} value={fieldName} onChange={e => setFieldName(e.target.value)}
+								   className={""}/>
+						<Button size={'md'} className={"w-[150px]"} onClick={addField}>Add field</Button>
+					</div>
+				</TableCell>
+			</TableRow>
+		</TableBody>
+	</Table>
+}
+
+

@@ -54,7 +54,13 @@ export class ApplicationService {
             name: applicationName,
         })
         application.organisation = organisationEntity;
-        application.data = {};
+        application.data = {
+            fields: [],
+            structures: [],
+            enumerations: [],
+            masks: [],
+            messages: [],
+        };
 
         const item = this.applicationRepository.create(
             application

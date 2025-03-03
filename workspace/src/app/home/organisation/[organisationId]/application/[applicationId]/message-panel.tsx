@@ -1,103 +1,95 @@
-import InputButtonForm from '@/components/form/input-button.form';
-import { Card, CardBody, CardHeader, IconButton, Input, Typography } from '@material-tailwind/react';
+import { Button, IconButton } from '@material-tailwind/react';
 import { useEffect, useState } from 'react';
-import { useApplicationMessages, useUpdateApplication } from '@/contexts/application-store.context';
-import { useSetEditionStatus } from '@/contexts/edition-status.context';
 import { AppDataMessage } from '@/entities/application.entity';
+import { useMessageEdition } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
+import { useAtomValue } from 'jotai';
+import { applicationMessagesAtom } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
+import { Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@mui/material';
 
-function MessageEditionCard(
-	input: {
-		message: AppDataMessage
-	}
-) {
-	const message = input.message;
-	const setApplication = useUpdateApplication();
-	const setIsModified = useSetEditionStatus();
-	const [name, setName] = useState<string>(message.name);
-	const [content, setContent] = useState<string>(message.content);
+export default function MessagesPanel() {
+	const messages = useAtomValue(applicationMessagesAtom);
+	const edition = useMessageEdition();
 
-	useEffect(() => {
-		setApplication((application, editor) => {
-			editor.updateMessage(message.name, {
-				name: name,
-				content: content,
-			})
-		})
-	}, [name, content]);
-
-	function removeMessage() {
-		setApplication((application, editor) => {
-			editor.removeMessageByName(message.name)
-		})
-		setIsModified(true);
-	}
-
-	function updateName( name: string ) {
-		setIsModified(true);
-		setName(name);
-	}
-
-	function updateContent( content: string ) {
-		setIsModified(true);
-		setContent(content);
-	}
-
-
-	return <Card className={' w-72 shadow-lg'}>
-		<CardHeader floated={false}
-					shadow={false}
-					color="transparent"
-					className="m-0 rounded-none rounded-t-md bg-primary-light p-2 flex justify-between items-center">
-
-			<Typography variant={'h6'} color={'white'}>{message.name}</Typography>
-
-			{/* Icons */}
-			<div id="icons" className={'flex gap-2'}>
-				<IconButton variant={'filled'} className={"bg-white text-gray-900"} size={'sm'}
-							onClick={() => removeMessage()}>
-					<i className="bi bi-trash" />
-				</IconButton>
-			</div>
-		</CardHeader>
-		<CardBody className={'flex flex-col space-y-3'}>
-			<Input variant={'outlined'} size={'md'} label={'Name'}
-				   value={name} onChange={(e) => updateName(e.target.value)} />
-			<Input variant={'outlined'} size={'md'} label={'Message'}
-				   value={content} onChange={(e) => updateContent(e.target.value)} />
-		</CardBody>
-	</Card>
+	return <MessagesView
+		messages={messages}
+		addMessage={edition.add}
+		editMessage={edition.edit}
+		removeMessage={edition.remove}
+	/>
 }
-export default function MessagePanel() {
 
-	const messages = useApplicationMessages();
-	const setApplication = useUpdateApplication();
-	const setIsModified = useSetEditionStatus();
 
-	function createMessage( name: string ) {
-		setApplication((application, editor) => {
-			editor.createMessageByName(name)
-		})
-		setIsModified(true);
-	}
-
+type MessagesViewProps = {
+	messages: AppDataMessage[]
+	addMessage: (messageName: string) => void,
+	editMessage: (messageId: string, messgae: AppDataMessage) => void,
+	removeMessage: (messageId: string) => void,
+}
+function MessagesView( input: MessagesViewProps ) {
+	const [name, setName] = useState('');
 
 	return <>
-		{/* enum creation */}
-		<InputButtonForm
-			inputLabel={"Name"}
-			buttonLabel={"Add Message"}
-			onConfirm={(value) => createMessage(value)}
-		/>
 
-		<div className="flex flex-wrap gap-4">
-			{
-				messages.map((msg, index) => {
-					return <MessageEditionCard
-						message={msg}
-						key={index}
-					/>
-				})
-			}
-		</div>
+		<Table  className={'w-full'}>
+			<TableHead>
+				<TableRow>
+					<TableCell>Message Name</TableCell>
+					<TableCell>Message Content</TableCell>
+					<TableCell></TableCell>
+				</TableRow>
+			</TableHead>
+			<TableBody className={'w-full'}>
+				{
+					input.messages.map((message, index) => {
+						return <SingleMessageView
+							key={message.id}
+							message={message}
+							{...input}
+						/>
+					})
+				}
+				<TableRow>
+					<TableCell colSpan={4}>
+						<div className={"flex flew-row gap-2"}>
+							<TextField value={name} size={"small"} onChange={e => setName(e.target.value)}></TextField>
+							<Button onClick={() => input.addMessage(name)}>Add Mask</Button>
+						</div>
+					</TableCell>
+				</TableRow>
+			</TableBody>
+		</Table>
 	</>;
+}
+
+
+type SingleMessageViewProps = { message: AppDataMessage } & MessagesViewProps
+function SingleMessageView(input: SingleMessageViewProps) {
+	const [messageName, setMessageName] = useState(input.message.name);
+	const [messageContent, setMessageContent] = useState(input.message.content);
+
+	useEffect(() => {
+		input.editMessage(input.message.id, {
+			...input.message,
+			name: messageName,
+			content: messageContent,
+		})
+	}, [messageName, messageContent]);
+
+
+	return <TableRow>
+		<TableCell valign={"top"} sx={{height: '100%'}}>
+			<div
+				className={"flex items-start justify-start w-full h-full align-top"}>
+				<TextField size={"small"} value={messageName} fullWidth={true} onChange={e => setMessageName(e.target.value)} />
+			</div>
+		</TableCell>
+		<TableCell>
+			<TextField size={"small"} value={messageContent} onChange={e => setMessageContent(e.target.value)} multiline={true} rows={4} fullWidth={true}/>
+		</TableCell>
+		<TableCell>
+			<IconButton onClick={() => input.removeMessage(input.message.id)}>
+				<i className={"bi bi-trash"}/>
+			</IconButton>
+		</TableCell>
+	</TableRow>
 }

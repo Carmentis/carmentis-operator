@@ -1,6 +1,6 @@
 import {
 	Body,
-	Controller, Delete, ForbiddenException,
+	Controller, Delete, ForbiddenException, Get,
 	HttpException, HttpStatus,
 	InternalServerErrorException,
 	Logger,
@@ -20,6 +20,10 @@ import { ApplicationEntity } from '../../../shared/entities/application.entity';
 import { AuditOperation, EntityType } from '../../../shared/entities/audit-log.entity';
 import { ApplicationDto } from '../../dto/application.dto';
 import { plainToInstance } from 'class-transformer';
+import { Public } from '../../decorators/public.decorator';
+import { SupportedPrimitiveType } from '../../types/data.type';
+import * as sdk from '@cmts-dev/carmentis-sdk/server';
+import { EnvService } from '../../../shared/services/env.service';
 
 @UseGuards(UserInOrganisationGuard, CanEditApplications)
 @Controller('/workspace/api/organisation')
@@ -33,6 +37,7 @@ export class OrganisationApplicationEditionScopedController {
 		private readonly applicationService: ApplicationService,
 		private readonly auditService: AuditService,
 		private readonly oracleService: OracleService,
+		private readonly envService: EnvService,
 	) {}
 
 	@UseGuards(IsAdminInOrganisation)
@@ -51,6 +56,19 @@ export class OrganisationApplicationEditionScopedController {
 			console.error(e)
 			throw new InternalServerErrorException();
 		}
+	}
+
+	@Public()
+	@Get(":organisationId/application/:applicationId/primitiveTypes")
+	async getSupportedPrimitiveTypes() {
+		return Object.keys(SupportedPrimitiveType);
+	}
+
+	@Public()
+	@Get(":organisationId/application/:applicationId/oracles")
+	async getSupportedOracles() {
+		sdk.blockchain.blockchainCore.setNode(this.envService.nodeUrl)
+		return await sdk.blockchain.blockchainQuery.getOracles();
 	}
 
 	@Post(':organisationId/application/import')

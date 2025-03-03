@@ -36,6 +36,7 @@ import {
 	IsAdminInOrganisation,
 } from '../../guards/user-has-valid-access-right.guard';
 import ChainService from '../../../shared/services/chain.service';
+import { Public } from '../../decorators/public.decorator';
 
 
 
@@ -284,6 +285,7 @@ export class OrganisationScopedController {
 		const balance = await this.chainService.getBalanceOfAccount(publicSignatureKey)
 		return {balance}
 	}
+
 
 
 	/**

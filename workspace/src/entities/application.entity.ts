@@ -1,21 +1,25 @@
 
 export interface AppDataStruct {
+	id: string,
 	name: string;
 	properties: AppDataField[];
 }
 
 
 export interface AppDataEnum {
+	id: string,
 	name: string,
 	values: string[]
 }
 
 export interface AppDataMessage {
+	id: string,
 	name: string,
 	content: string,
 }
 
 export interface AppDataMask {
+	id: string,
 	name: string;
 	regex: string;
 	substitution: string;
@@ -24,9 +28,28 @@ export interface AppDataMask {
 
 
 export interface AppDataField {
+	id: string,
 	name: string;
-	type: number;
-	maskId?: number;
+	required: boolean;
+	array: boolean;
+	kind: 'primitive' | 'enumeration' | 'structure' | 'oracleAnswer' | 'undefined'
+	primitiveType?: {
+		type: string;
+		mask?: string
+		private: boolean
+		hashable: boolean
+	};
+	structureType?: {
+		structure: string
+	};
+	enumerationType?: {
+		enumeration: string
+	};
+	oracleAnswerType?: {
+		oracleHash: string,
+		service: string,
+		version: number
+	};
 }
 
 export type Application = {

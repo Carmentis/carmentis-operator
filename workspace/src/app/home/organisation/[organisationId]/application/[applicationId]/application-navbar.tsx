@@ -1,18 +1,24 @@
 'use client';
-import { Button, Card, CardBody, Chip, IconButton, Spinner, Typography } from '@material-tailwind/react';
+import { Button, Chip, IconButton, Spinner, Typography } from '@material-tailwind/react';
 import { ArrowDownOnSquareIcon, ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/16/solid';
 import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
 	useApplicationDeletionApi,
 	useApplicationPublicationApi,
 	useApplicationUpdateApi,
 } from '@/components/api.hook';
 import { useToast } from '@/app/layout';
-import { useApplication } from '@/contexts/application-store.context';
-import { useEditionStatus, useSetEditionStatus } from '@/contexts/edition-status.context';
 import { Application } from '@/entities/application.entity';
 import { useOrganisationContext } from '@/contexts/organisation-store.context';
+import { useApplication } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
+import {
+	useApplicationEditionStatus
+} from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
+import { useSetAtom } from 'jotai';
+import { referenceApplicationAtom } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
+
+
 
 const BORDER_CLASSES = 'border-r-2 border-gray-200';
 const ICON_ROTATION_CLASSES = 'h-5 w-5 transition-transform group-hover:rotate-45';
@@ -51,12 +57,12 @@ function ApplicationHeader({ application, hideLogo, setHideLogo }: {
 	);
 }
 
-export default function ApplicationDetailsNavbar({ refreshApplication }: { refreshApplication: () => void }) {
+export default function ApplicationDetailsNavbar() {
 	const organisation = useOrganisationContext();
 	const organisationId = organisation.id;
 	const application = useApplication();
-	const isModified = useEditionStatus();
-	const setIsModified = useSetEditionStatus();
+	const setReferenceApplication = useSetAtom(referenceApplicationAtom);
+	const isModified = useApplicationEditionStatus();
 	const callApplicationUpdate = useApplicationUpdateApi();
 	const callApplicationDeletion = useApplicationDeletionApi();
 	const callApplicationPublish = useApplicationPublicationApi();
@@ -70,14 +76,13 @@ export default function ApplicationDetailsNavbar({ refreshApplication }: { refre
 		callApplicationUpdate(organisationId, application, {
 			onSuccess: () => {
 				setApplicationSaving(false);
-				setIsModified(false);
+				setReferenceApplication(application);
 				notify.info('Application saved');
 			},
 			onError: (error) => {
 				notify.error(error);
 				setApplicationSaving(false);
 			},
-			onEnd: refreshApplication
 		});
 	};
 
@@ -116,7 +121,6 @@ export default function ApplicationDetailsNavbar({ refreshApplication }: { refre
 		callApplicationPublish(organisationId, application, {
 			onSuccess: () => {
 				notify.info('Application published');
-				refreshApplication();
 			},
 			onError: (error) => {
 				notify.error(error);

@@ -1,111 +1,117 @@
 import InputButtonForm from '@/components/form/input-button.form';
-import { useApplicationEnum, useUpdateApplication } from '@/contexts/application-store.context';
-import { useSetEditionStatus } from '@/contexts/edition-status.context';
 import LargeCardEdition from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/large-edition-card';
 import { AppDataEnum } from '@/entities/application.entity';
+import { useEnumerationEdition } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
+import { useAtomValue } from 'jotai';
+import {
+	applicationEnumerationsAtom,
+} from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
+import { Accordion, Table, TableBody, TableCell, TableHead, TableRow, TextField, Chip } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Button } from '@material-tailwind/react';
 
-export function MyChip(
-	input: {
-		enumId: string;
-		enumValue: string;
-		removeEnumValue: (enumValue: string) => void;
-	}
-) {
-	return <div className={'border-2 border-gray-900  rounded-full flex flex-row items-center justify-center'}>
-		<div className="value px-4">
-			{input.enumValue}
-		</div>
-		<div className="cursor-pointer px-3 py-2 bg-gray-900 rounded-r-full text-white" onClick={() => input.removeEnumValue(input.enumValue)}>
-			<i className={"bi bi-x-lg"}></i>
-		</div>
-	</div>
+
+
+
+
+export default function EnumerationPanel() {
+	const enumerations = useAtomValue(applicationEnumerationsAtom)
+	const edition = useEnumerationEdition();
+
+
+	return <EnumerationsView
+		enumerations={enumerations}
+		addEnum={edition.add}
+		editEnum={edition.edit}
+		removeEnum={edition.remove}
+		addEnumValue={edition.addEnumValue}
+		removeEnumValue={edition.removeEnumValue}
+	/>
+
 }
 
-function EnumerationEditionCard(
-	input: {
-		enumeration: AppDataEnum
-	}
+
+type EnumerationsViewProps = {
+	enumerations: AppDataEnum[]
+	addEnum: (enumName: string) => void,
+	editEnum: (enumId: string, enumeration: AppDataEnum) => void,
+	removeEnum: (enumId: string) => void,
+	addEnumValue: (enumId: string, value: string) => void,
+	removeEnumValue: (enumId: string, value: string) => void,
+}
+function EnumerationsView( input: EnumerationsViewProps ) {
+	const [name, setName] = useState('');
+	return <>
+
+		<Table id="fields" className={'w-full'}>
+			<TableHead>
+				<TableRow>
+					<TableCell>Name</TableCell>
+					<TableCell>Values</TableCell>
+					<TableCell></TableCell>
+				</TableRow>
+			</TableHead>
+			<TableBody className={'w-full'}>
+				{
+					input.enumerations.map((enumeration, index) => {
+						return <SingleEnumerationView
+							key={index}
+							enumeration={enumeration}
+							{...input}
+						/>
+					})
+				}
+				<TableRow>
+					<TableCell>
+						<div className={"flex flew-row gap-2"}>
+							<TextField value={name} size={"small"} onChange={e => setName(e.target.value)}></TextField>
+							<Button onClick={() => input.addEnum(name)}>Add enumeration</Button>
+						</div>
+					</TableCell>
+				</TableRow>
+			</TableBody>
+		</Table>
+	</>;
+}
+
+function SingleEnumerationView(
+	input: { enumeration: AppDataEnum } & EnumerationsViewProps
 ) {
 
 	const enumeration = input.enumeration;
-	const setApplication = useUpdateApplication();
-	const setIsModified = useSetEditionStatus();
+	const [name, setName] = useState(enumeration.name);
+	const [newValue, setNewValue] = useState("");
 
-	function removeEnum() {
-		setApplication((application, editor) => {
-			editor.removeEnumerationByName(enumeration.name);
+
+	useEffect(() => {
+		input.editEnum(enumeration.id, {
+			...enumeration,
+			name
 		})
-		setIsModified(true);
-	}
-
-	function createEnumValue( value: string ) {
-		setApplication((application, editor) => {
-			editor.createValueInEnum(enumeration.name, value);
-		})
-		setIsModified(true);
-	}
-
-	function removeEnumValue(value: string) {
-		setApplication((application, editor) => {
-			editor.removeValueInEnum(enumeration.name, value);
-		})
-		setIsModified(true);
-	}
-
-	return <LargeCardEdition
-		name={enumeration.name}
-		onRemove={() => removeEnum()}>
-				<InputButtonForm
-					inputLabel={"Name"}
-					buttonLabel={"Add value"}
-					onConfirm={createEnumValue}/>
-
-				<div className="values flex flex-wrap gap-2">
-					{
-						enumeration.values.map((v,index) => {
-							return <MyChip
-								key={index}
-								enumId={v}
-								enumValue={v}
-								removeEnumValue={(value) => removeEnumValue(value)}
-							></MyChip>
-						})
-					}
-				</div>
-	</LargeCardEdition>
-}
-
-export default function EnumerationPanel() {
-	const enumerations = useApplicationEnum();
-	const setApplication = useUpdateApplication();
-	const setIsModified = useSetEditionStatus();
-
-	function createEnumeration( name: string ) {
-		setApplication((app, editor) => {
-			editor.createEnumeration(name);
-		})
-		setIsModified(true);
-	}
-
-	return <>
-		{/* enum creation */}
-		<InputButtonForm
-			inputLabel={"Name"}
-			buttonLabel={"Add enumeration"}
-			onConfirm={(value) => createEnumeration(value)}
-		/>
+	}, [name]);
 
 
-		{/* List of enum */}
-		<div id="fields" className={'flex flex-wrap gap-4'}>
-			{
-				enumerations.map((enumeration, index) => {
-					return <EnumerationEditionCard
-						key={index}
-						enumeration={enumeration}
-					/>
-				})
-			}
-		</div>
-	</>;
+	return  <>
+		<TableRow>
+			<TableCell>
+				<TextField size={'small'} value={name} onChange={(e) => setName(e.target.value)} />
+			</TableCell>
+			<TableCell>
+			<div className={"w-full flex flex-wrap gap-2"}>
+				{
+					enumeration.values.map(v => {
+						return <Chip key={v}
+									 label={v}
+									 variant="outlined"
+									 onDelete={() =>  input.removeEnumValue(enumeration.id, v)} />
+					})
+				}
+			</div>
+			</TableCell>
+			<TableCell>
+				<TextField size={"small"} value={newValue} onChange={(e) => setNewValue(e.target.value)} />
+				<Button onClick={() => input.addEnumValue(enumeration.id, newValue)}>Add value</Button>
+			</TableCell>
+		</TableRow>
+	</>
 }

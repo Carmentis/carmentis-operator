@@ -2,8 +2,8 @@
 import { useOracle, useOracleEditor } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/data-access-layer';
 
 import {
-	FieldEditionCard,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-card';
+	FieldEditionComponent,
+} from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-component';
 import { OracleServiceInputField } from '@/entities/oracle.entity';
 
 /**
@@ -43,7 +43,7 @@ export function OracleServiceInputFieldEditionCard(
 		))
 	}
 
-	return <FieldEditionCard
+	return <FieldEditionComponent
 		field={input.field}
 		onRemoveField={input.onRemoveField}
 		refreshType={refreshType}

@@ -16,22 +16,7 @@ import { EnvService } from './env.service';
 const FILESIGN_NAME = 'FileSign';
 const FILESIGN_APPLICATION_DOMAIN = 'https://filesign.carmentis.io?id={{id}}&version={{version}}'
 const FILESIGN_DATA: ApplicationDataType = {
-	fields: [
-		{
-			name: 'SenderEmail',
-			type: sdk.utils.data.createType({
-				type: sdk.constants.DATA.STRING,
-				public: false
-			}),
-		},
-		{
-			name: 'ReceiverEmail',
-			type: sdk.utils.data.createType({
-				type: sdk.constants.DATA.STRING,
-				public: false
-			}),
-		},
-	]
+	fields: []
 }
 
 @Injectable()

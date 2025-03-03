@@ -10,7 +10,7 @@ import {
 	AppDataStruct,
 	Application,
 } from '@/entities/application.entity';
-
+/*
 export type ApplicationStore = {
 	application: Application|undefined;
 	setApplication: Dispatch<SetStateAction<Application | undefined>>
@@ -31,6 +31,7 @@ export function ApplicationStoreContextProvider({children}: PropsWithChildren) {
 	</ApplicationStoreContext.Provider>
 }
 
+
 export function useApplicationStoreContext()  {
 	const context = useContext(ApplicationStoreContext);
 	if ( !context ) {
@@ -39,10 +40,10 @@ export function useApplicationStoreContext()  {
 	return context;
 }
 
+
+
 export const useApplication = () => {
-	const store = useApplicationStoreContext();
-	if (!store.application) throw new Error("Undefined application")
-	return store.application;
+
 }
 
 export function useApplicationFields(): AppDataField[] {
@@ -84,3 +85,5 @@ export const useUpdateApplication = () => {
 		})
 	}
 };
+
+ */
