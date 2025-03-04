@@ -1,28 +1,23 @@
-import { Field,  } from '@/components/api.hook';
+import { AppDataEnum, AppDataField, AppDataMask } from '@/entities/application.entity';
 
 
-export type OracleStructureField = OracleServiceOutputField;
-export type OracleMask =  {
-	name: string,
-	regex: string;
-	substitution: string;
-};
-export type OracleEnumeration = {
+export type OracleDataStructureField = OracleDataServiceOutputField;
+export type OracleDataMask =  AppDataMask;
+export type OracleDataEnum = AppDataEnum;
+export type OracleDataStructure = {
+	id: string;
 	name: string;
-	values: string[]
-};
-export type OracleStructure = {
-	name: string;
-	properties: OracleStructureField[];
+	properties: OracleDataStructureField[];
 };
 
-export type OracleService = {
+export type OracleDataService = {
+	id: string;
 	name: string;
-	request: OracleServiceInputField[],
-	answer:  OracleServiceOutputField[]
+	request: OracleDataServiceInputField[],
+	answer:  OracleDataServiceOutputField[]
 }
-export type OracleServiceInputField = Field;
-export type OracleServiceOutputField = Field
+export type OracleDataServiceInputField = AppDataField;
+export type OracleDataServiceOutputField = AppDataField;
 
 export type Oracle = {
 	id: number,
@@ -32,12 +27,12 @@ export type Oracle = {
 	published: boolean;
 	publishedAt: Date;
 	isDraft: boolean,
+	virtualBlockchainId?: string,
 	data: {
-		services: OracleService[],
-		structures: OracleStructure[];
-		enumerations: OracleEnumeration[];
-		masks: OracleMask[]
-
+		services: OracleDataService[],
+		structures: OracleDataStructure[];
+		enumerations: OracleDataEnum[];
+		masks: OracleDataMask[]
 	};
 }
 

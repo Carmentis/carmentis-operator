@@ -25,7 +25,7 @@ type MasksViewProps = {
 	editMask: (maskId: string, mask: AppDataMask) => void,
 	removeMask: (maskId: string) => void,
 }
-function MasksView( input: MasksViewProps ) {
+export function MasksView( input: MasksViewProps ) {
 	const [name, setName] = useState('');
 
 	return <>

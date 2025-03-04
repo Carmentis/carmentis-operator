@@ -46,10 +46,17 @@ export interface AppDataField {
 		enumeration: string
 	};
 	oracleAnswerType?: {
-		oracleHash: string,
-		service: string,
-		version: number
+		oracleName: string,
 	};
+
+}
+
+export interface AppDataOracle {
+	id: string,
+	name: string,
+	oracleHash: string,
+	service: string,
+	version: number
 }
 
 export type Application = {
@@ -72,6 +79,7 @@ export type Application = {
 		enumerations: AppDataEnum[];
 		messages: AppDataMessage[];
 		masks: AppDataMask[];
+		oracles: AppDataOracle[];
 	}
 }
 

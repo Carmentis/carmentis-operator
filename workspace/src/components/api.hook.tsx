@@ -20,20 +20,6 @@ export type IdentifiedEntity = {
 
 
 /**
- * Represents a field with a name, type, and an optional mask ID.
- *
- * @typedef {Object} Field
- * @property {string} name - The name of the field.
- * @property {number} type - The type of the field represented as a number.
- * @property {number} [maskId] - An optional identifier for masking operations.
- */
-export type Field = {
-	name: string,
-	type: number,
-	maskId?: number
-}
-
-/**
  * Represents the initialization status of an operator.
  *
  * The `OperatorInitialisationStatus` type is used to indicate whether

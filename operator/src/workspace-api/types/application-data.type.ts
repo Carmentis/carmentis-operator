@@ -1,4 +1,11 @@
-import { EnumerationDataType, FieldDataType, MaskDataType, MessageDataType, StructureDataType } from './data.type';
+import {
+	DataOracle,
+	EnumerationDataType,
+	FieldDataType,
+	MaskDataType,
+	MessageDataType,
+	StructureDataType,
+} from './data.type';
 
 
 export type ApplicationDataType = {
@@ -7,4 +14,5 @@ export type ApplicationDataType = {
 	enumerations?: EnumerationDataType[];
 	messages?: MessageDataType[];
 	masks?: MaskDataType[];
+	oracles?: DataOracle[]
 }

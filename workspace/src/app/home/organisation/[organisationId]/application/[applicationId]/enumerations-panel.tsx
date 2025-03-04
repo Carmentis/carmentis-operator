@@ -1,17 +1,12 @@
-import InputButtonForm from '@/components/form/input-button.form';
-import LargeCardEdition from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/large-edition-card';
 import { AppDataEnum } from '@/entities/application.entity';
 import { useEnumerationEdition } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
 import { useAtomValue } from 'jotai';
 import {
 	applicationEnumerationsAtom,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
-import { Accordion, Table, TableBody, TableCell, TableHead, TableRow, TextField, Chip } from '@mui/material';
+import { Chip, Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Button } from '@material-tailwind/react';
-
-
-
 
 
 export default function EnumerationPanel() {
@@ -39,7 +34,7 @@ type EnumerationsViewProps = {
 	addEnumValue: (enumId: string, value: string) => void,
 	removeEnumValue: (enumId: string, value: string) => void,
 }
-function EnumerationsView( input: EnumerationsViewProps ) {
+export function EnumerationsView( input: EnumerationsViewProps ) {
 	const [name, setName] = useState('');
 	return <>
 

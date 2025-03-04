@@ -48,8 +48,8 @@ export default function TabsComponent(
 	},
 ) {
 	return (
-		<Tabs className={DEFAULT_TAB_CLASSNAME} value={defaultTabValue}>
-			<TabsHeader className={HEADER_CLASSNAME} indicatorProps={INDICATOR_PROPS}>
+		<Tabs  value={defaultTabValue}>
+			<TabsHeader >
 				{renderTabs(panels)}
 			</TabsHeader>
 			<TabsBody>

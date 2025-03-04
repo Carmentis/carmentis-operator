@@ -27,6 +27,9 @@ import {
 	referenceApplicationAtom,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { useUpdateApplication } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
+import OraclesPanel from '@/app/home/organisation/[organisationId]/application/[applicationId]/oracles-panel';
+import { TextField } from '@mui/material';
+import ErrorsPanel from '@/app/home/organisation/[organisationId]/application/[applicationId]/errors-panel';
 
 
 export default function ApplicationPage() {
@@ -92,9 +95,11 @@ function ApplicationEditionView() {
 							'Fields': <FieldsPanel/>,
 							'Structures': <StructurePanel/>,
 							'Enumerations': <EnumerationPanel/>,
+							'Oracles': <OraclesPanel/>,
 							'Masks': <MasksPanel/>,
 							'Messages': <MessagesPanel/>,
 							'Code view': <CodeViewPanel/>,
+							'Errors': <ErrorsPanel/>,
 						}} />
 				</CardBody>
 
@@ -116,7 +121,6 @@ function ApplicationOverview() {
 
 
 	useEffect(() => {
-		console.log(name)
 		updateApplication({
 			...application,
 			name,
@@ -138,8 +142,7 @@ function ApplicationOverview() {
 	];
 
 	const overviewContent = INPUTS.map((i,index) => <div key={index} className={`flex flex-col flex-1`}>
-		<Typography>{i.label}</Typography>
-		<Input value={i.value} disabled={i.disabled} onChange={(e) => i.onChange && i.onChange(e.target.value)} className={i.className}/>
+		<TextField size={"small"} label={i.label} value={i.value} disabled={i.disabled} onChange={(e) => i.onChange && i.onChange(e.target.value)} className={i.className}/>
 	</div>)
 
 	const overviewWrapper = <form className="mb-2 w-full" onSubmit={e => e.preventDefault()}>

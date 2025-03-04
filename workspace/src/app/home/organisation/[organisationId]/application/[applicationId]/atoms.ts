@@ -42,4 +42,11 @@ export const applicationEnumerationsAtom = atom((get) => {
 	return application.data.enumerations ?? []
 })
 
+export const applicationOraclesAtom = atom((get) => {
+	const application = get(applicationAtom);
+	if (!application) return [];
+	return application.data.oracles ?? []
+})
+
+
 

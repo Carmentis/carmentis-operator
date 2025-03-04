@@ -18,7 +18,6 @@ import {
 	TextField,
 } from '@mui/material';
 import { AppDataField, AppDataStruct } from '@/entities/application.entity';
-import { generateRandomString } from 'ts-randomstring/lib';
 
 
 export default function StructurePanel(
@@ -54,7 +53,7 @@ type StructuresViewProps = {
 
 
 
-function StructuresView(input: StructuresViewProps) {
+export function StructuresView(input: StructuresViewProps) {
 	const [structName, setStructName] = useState('');
 	return <div>
 		<TextField value={structName} onChange={(e) => setStructName(e.target.value)} size={"small"} />

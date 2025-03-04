@@ -1,11 +1,11 @@
 import * as sdk from '@cmts-dev/carmentis-sdk/client';
 import {
 	Oracle,
-	OracleEnumeration,
-	OracleMask,
-	OracleService,
-	OracleServiceInputField, OracleServiceOutputField,
-	OracleStructure, OracleStructureField,
+	OracleDataEnum,
+	OracleDataMask,
+	OracleDataService,
+	OracleDataServiceInputField, OracleDataServiceOutputField,
+	OracleDataStructure, OracleDataStructureField,
 } from '@/entities/oracle.entity';
 
 /**
@@ -40,13 +40,13 @@ export class OracleEditor {
 	 * Creates a new OracleService with the given name and adds it to the list of services if it does not already exist.
 	 *
 	 * @param {string} name - The name of the service to be created.
-	 * @return {OracleService | null} The newly created OracleService if the service did not already exist, otherwise null.
+	 * @return {OracleDataService | null} The newly created OracleService if the service did not already exist, otherwise null.
 	 */
-	createService(name: string): OracleService | null {
+	createService(name: string): OracleDataService | null {
 		if ( this.oracle.data.services.some(s => s.name === name) )
 			return null;
 
-		const newService: OracleService = {
+		const newService: OracleDataService = {
 			name,
 			request: [],
 			answer: []
@@ -79,10 +79,10 @@ export class OracleEditor {
 	 * Updates a service in the list by its name.
 	 *
 	 * @param {string} name - The name of the service to be updated.
-	 * @param {OracleService} service - The updated service object to replace the existing service.
+	 * @param {OracleDataService} service - The updated service object to replace the existing service.
 	 * @return {boolean} Returns true if the service was successfully updated, false if no matching service was found.
 	 */
-	updateServiceByName(name: string, service: OracleService): boolean {
+	updateServiceByName(name: string, service: OracleDataService): boolean {
 		// Find the index of the service with the same ID
 		const index = this.oracle.data.services.findIndex(s => s.name === name);
 
@@ -102,14 +102,14 @@ export class OracleEditor {
 	 * If a structure with the same name already exists, the method returns null.
 	 *
 	 * @param {string} name - The name of the structure to be created.
-	 * @return {OracleStructure | null} The newly created structure object if successful, or null if a structure with the same name already exists.
+	 * @return {OracleDataStructure | null} The newly created structure object if successful, or null if a structure with the same name already exists.
 	 */
-	createStructure(name: string): OracleStructure | null {
+	createStructure(name: string): OracleDataStructure | null {
 		if (this.oracle.data.structures.some(structure => structure.name === name)) {
 			return null; // Skip creation if name already exists
 		}
 
-		const newStructure: OracleStructure = {
+		const newStructure: OracleDataStructure = {
 			name,
 			properties: []
 		};
@@ -123,10 +123,10 @@ export class OracleEditor {
 	 * Updates a structure by its name in the Oracle data structures collection.
 	 *
 	 * @param {string} name - The name of the structure to be updated.
-	 * @param {OracleStructure} structure - The new structure object to replace the existing one.
+	 * @param {OracleDataStructure} structure - The new structure object to replace the existing one.
 	 * @return {boolean} Returns true if the structure was found and updated, otherwise returns false.
 	 */
-	updateStructureByName(name: string, structure: OracleStructure): boolean {
+	updateStructureByName(name: string, structure: OracleDataStructure): boolean {
 		const index = this.oracle.data.structures.findIndex(s => s.name === name);
 
 		if (index !== -1) {
@@ -157,14 +157,14 @@ export class OracleEditor {
 	 * Creates a new enumeration with the specified name if it does not already exist.
 	 *
 	 * @param {string} name - The name of the enumeration to be created.
-	 * @return {OracleEnumeration | null} The newly created enumeration if successful, or null if an enumeration with the specified name already exists.
+	 * @return {OracleDataEnum | null} The newly created enumeration if successful, or null if an enumeration with the specified name already exists.
 	 */
-	createEnumeration(name: string): OracleEnumeration | null {
+	createEnumeration(name: string): OracleDataEnum | null {
 		if (this.oracle.data.enumerations.some(enumeration => enumeration.name === name)) {
 			return null; // Skip creation if name already exists
 		}
 
-		const newEnumeration: OracleEnumeration = {
+		const newEnumeration: OracleDataEnum = {
 			name,
 			values: []
 		};
@@ -178,10 +178,10 @@ export class OracleEditor {
 	 * Updates an existing enumeration by its name with the provided enumeration object.
 	 *
 	 * @param {string} name - The name of the enumeration to update.
-	 * @param {OracleEnumeration} enumeration - The new enumeration object to replace the existing one.
+	 * @param {OracleDataEnum} enumeration - The new enumeration object to replace the existing one.
 	 * @return {boolean} Returns true if the enumeration was successfully updated, or false if no enumeration with the given name was found.
 	 */
-	updateEnumerationByName(name: string, enumeration: OracleEnumeration): boolean {
+	updateEnumerationByName(name: string, enumeration: OracleDataEnum): boolean {
 		const index = this.oracle.data.enumerations.findIndex(e => e.name === name);
 
 		if (index !== -1) {
@@ -212,14 +212,14 @@ export class OracleEditor {
 	 * Creates a new mask with the specified name if it does not already exist.
 	 *
 	 * @param {string} name - The name of the mask to create.
-	 * @return {OracleMask | null} Returns the newly created OracleMask object if the name does not already exist, otherwise returns null.
+	 * @return {OracleDataMask | null} Returns the newly created OracleMask object if the name does not already exist, otherwise returns null.
 	 */
-	createMask(name: string): OracleMask | null {
+	createMask(name: string): OracleDataMask | null {
 		if (this.oracle.data.masks.some(mask => mask.name === name)) {
 			return null; // Skip creation if name already exists
 		}
 
-		const newMask: OracleMask = {
+		const newMask: OracleDataMask = {
 			name,
 			regex: "",
 			substitution: ""
@@ -236,10 +236,10 @@ export class OracleEditor {
 	 * If no mask with the given name is found, no updates are made.
 	 *
 	 * @param {string} name - The name of the oracle mask to update.
-	 * @param {OracleMask} mask - The new mask object to replace the existing one with the same name.
+	 * @param {OracleDataMask} mask - The new mask object to replace the existing one with the same name.
 	 * @return {boolean} - Returns true if the mask was successfully updated, otherwise returns false.
 	 */
-	updateMaskByName(name: string, mask: OracleMask): boolean {
+	updateMaskByName(name: string, mask: OracleDataMask): boolean {
 		const index = this.oracle.data.masks.findIndex(m => m.name === name);
 
 		if (index !== -1) {
@@ -272,15 +272,15 @@ export class OracleEditor {
 	 *
 	 * @param {string} serviceName - The name of the service where the new input field will be added.
 	 * @param {string} name - The name of the input field to be created.
-	 * @return {OracleServiceInputField | null} The created input field object if successful, or null if the service is not found or the input already exists.
+	 * @return {OracleDataServiceInputField | null} The created input field object if successful, or null if the service is not found or the input already exists.
 	 */
-	createServiceInput(serviceName: string, name: string): OracleServiceInputField | null {
+	createServiceInput(serviceName: string, name: string): OracleDataServiceInputField | null {
 		const service = this.oracle.data.services.find(s => s.name === serviceName);
 		if (!service) return null;
 
 		if (service.request.some(value => value.name === name)) return null;
 
-		const newInput: OracleServiceInputField = {
+		const newInput: OracleDataServiceInputField = {
 			name,
 			type: sdk.utils.data.createType({
 				public: true,
@@ -298,10 +298,10 @@ export class OracleEditor {
 	 *
 	 * @param {string} serviceName - The name of the service to update.
 	 * @param {string} inputName - The name of the input field to update within the service request.
-	 * @param {OracleServiceInputField} input - The new input field data to replace the existing one.
+	 * @param {OracleDataServiceInputField} input - The new input field data to replace the existing one.
 	 * @return {boolean} Returns true if the input field was updated successfully, otherwise returns false.
 	 */
-	updateServiceInput(serviceName: string, inputName: string, input: OracleServiceInputField): boolean {
+	updateServiceInput(serviceName: string, inputName: string, input: OracleDataServiceInputField): boolean {
 		const service = this.oracle.data.services.find(s => s.name === serviceName);
 		if (!service) return false;
 
@@ -341,15 +341,15 @@ export class OracleEditor {
 	 *
 	 * @param {string} serviceName - The name of the service where the output field should be added.
 	 * @param {string} name - The name of the output field to be created.
-	 * @return {OracleServiceOutputField | null} The newly created output field, or `null` if the
+	 * @return {OracleDataServiceOutputField | null} The newly created output field, or `null` if the
 	 * service or field with the specified name does not exist.
 	 */
-	createServiceOutput(serviceName: string, name: string): OracleServiceOutputField | null {
+	createServiceOutput(serviceName: string, name: string): OracleDataServiceOutputField | null {
 		const service = this.oracle.data.services.find(s => s.name === serviceName);
 		if (!service) return null;
 		if (service.answer.some(o => o.name === name)) return null;
 
-		const newOutput: OracleServiceOutputField = {
+		const newOutput: OracleDataServiceOutputField = {
 			name,
 			type: sdk.utils.data.createType({
 				type: sdk.constants.DATA.STRING,
@@ -367,10 +367,10 @@ export class OracleEditor {
 	 *
 	 * @param {string} serviceName - The name of the service to be updated.
 	 * @param {string} outputName - The name of the output field to be updated.
-	 * @param {OracleServiceOutputField} output - The new output field object containing updated data.
+	 * @param {OracleDataServiceOutputField} output - The new output field object containing updated data.
 	 * @return {boolean} Returns true if the output field was successfully updated, otherwise false if the service or output field is not found.
 	 */
-	updateServiceOutput(serviceName: string, outputName: string, output: OracleServiceOutputField): boolean {
+	updateServiceOutput(serviceName: string, outputName: string, output: OracleDataServiceOutputField): boolean {
 		const service = this.oracle.data.services.find(s => s.name === serviceName);
 		if (!service) return false;
 
@@ -388,11 +388,11 @@ export class OracleEditor {
 	 *
 	 * @param {string} structureName - The name of the structure to update.
 	 * @param {string} fieldName - The name of the field to update within the structure.
-	 * @param {OracleStructureField} field - The new field data to replace the existing field.
+	 * @param {OracleDataStructureField} field - The new field data to replace the existing field.
 	 * @return {boolean} Returns true if the specified field is successfully updated or added,
 	 *                   otherwise returns false if the structure does not exist.
 	 */
-	updateStructureField(structureName: string, fieldName: string, field: OracleStructureField) {
+	updateStructureField(structureName: string, fieldName: string, field: OracleDataStructureField) {
 		const structure = this.oracle.data.structures.find(s => s.name === structureName);
 		if (!structure) return false;
 
@@ -430,14 +430,14 @@ export class OracleEditor {
 	 *
 	 * @param {string} structureName - The name of the structure where the new field will be added.
 	 * @param {string} name - The name of the new field to be created.
-	 * @return {OracleStructureField | null} The newly created field if successful, or null if the structure does not exist or the field already exists.
+	 * @return {OracleDataStructureField | null} The newly created field if successful, or null if the structure does not exist or the field already exists.
 	 */
-	createStructureField(structureName: string, name: string): OracleStructureField | null {
+	createStructureField(structureName: string, name: string): OracleDataStructureField | null {
 		const structure = this.oracle.data.structures.find(s => s.name === structureName);
 		if (!structure) return null;
 		if (structure.properties.some(f => f.name === name)) return null;
 
-		const newField: OracleStructureField = {
+		const newField: OracleDataStructureField = {
 			name,
 			type: sdk.utils.data.createType({
 				type: sdk.constants.DATA.STRING,

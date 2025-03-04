@@ -2,7 +2,7 @@ import {
 	AppDataEnum,
 	AppDataField,
 	AppDataMask,
-	AppDataMessage,
+	AppDataMessage, AppDataOracle,
 	AppDataStruct,
 	Application,
 } from '@/entities/application.entity';
@@ -41,12 +41,15 @@ type Action =
 	| { type: 'ADD_ENUMERATION'; payload: { name: string } }
 	| { type: 'EDIT_ENUMERATION'; payload: { enumId: string, enumeration: AppDataEnum } }
 	| { type: 'REMOVE_ENUMERATION'; payload: { enumId: string } }
-
 	| { type: 'ADD_ENUMERATION_VALUE'; payload: { enumId: string, value: string } }
-	| { type: 'REMOVE_ENUMERATION_VALUE'; payload: { enumId: string, value: string } };
+	| { type: 'REMOVE_ENUMERATION_VALUE'; payload: { enumId: string, value: string } }
+
+	| { type: 'ADD_ORACLE'; payload: { name: string, oracleHash: string, service: string, version: number } }
+	| { type: 'EDIT_ORACLE'; payload: { oracleId: string, oracle: AppDataOracle } }
+	| { type: 'REMOVE_ORACLE'; payload: { oracleId: string } };
 
 
-function createDefaultField( name: string ) : AppDataField {
+export function createDefaultField( name: string ) : AppDataField {
 	return {
 		id: generateRandomString(),
 		name,
@@ -72,6 +75,7 @@ const applicationReducer = (application: Application | undefined, action: Action
 	const messages = application.data.messages ?? [];
 	const masks = application.data.masks ?? [];
 	const enumerations = application.data.enumerations ?? [];
+	const oracles = application.data.oracles ?? [];
 
 	switch (action.type) {
 		case 'UPDATE_APPLICATION':
@@ -187,7 +191,7 @@ const applicationReducer = (application: Application | undefined, action: Action
 						const properties = struct.properties ?? [];
 						return {
 							...struct,
-							properties: properties.filter(f => f.name !== action.payload.fieldId)
+							properties: properties.filter(f => f.id !== action.payload.fieldId)
 						}
 					})
 				},
@@ -334,6 +338,45 @@ const applicationReducer = (application: Application | undefined, action: Action
 				},
 			};
 
+		case 'ADD_ORACLE':
+			const payload = action.payload;
+			return {
+				...application,
+				data: {
+					...application.data,
+					oracles: [...oracles, {
+						id: generateRandomString(),
+						name: payload.name,
+						oracleHash: payload.oracleHash,
+						service: payload.service,
+						version: payload.version,
+					}],
+				},
+			};
+
+		case 'EDIT_ORACLE':
+			return {
+				...application,
+				data: {
+					...application.data,
+					oracles: oracles
+						.map(
+							o => o.id === action.payload.oracleId
+								? action.payload.oracle
+								: o
+						)
+				},
+			};
+
+		case 'REMOVE_ORACLE':
+			return {
+				...application,
+				data: {
+					...application.data,
+					oracles: oracles.filter(o => o.id !== action.payload.oracleId),
+				},
+			};
+
 
 		default:
 			throw 'Undefined case: '
@@ -380,6 +423,20 @@ export const useMaskEdition = () => {
 	};
 	const remove = (maskId: string) => {
 		dispatch({ type: 'REMOVE_MASK', payload: { maskId } });
+	}
+	return {add, edit, remove}
+}
+
+export const useApplicationOraclesEdition = () => {
+	const dispatch = useSetAtom(applicationWithReducerAtom);
+	const add = (name: string, oracleHash: string, service: string, version: number) => {
+		dispatch({ type: 'ADD_ORACLE', payload: { name, oracleHash, service, version } });
+	}
+	const edit = (oracleId: string, oracle: AppDataOracle) => {
+		dispatch({ type: 'EDIT_ORACLE', payload: { oracleId, oracle: oracle } });
+	};
+	const remove = (oracleId: string) => {
+		dispatch({ type: 'REMOVE_ORACLE', payload: { oracleId } });
 	}
 	return {add, edit, remove}
 }

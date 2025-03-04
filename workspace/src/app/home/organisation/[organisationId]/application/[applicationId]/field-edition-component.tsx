@@ -85,9 +85,8 @@ export function FieldEditionComponent(
 				}
 				break;
 			case 'oracleAnswer':
-				// TODO
 				field.oracleAnswerType = {
-					oracleHash: '', service: '', version: 0
+					oracleName: fieldType
 				}
 				break;
 			case 'structure':
@@ -119,7 +118,7 @@ export function FieldEditionComponent(
 	const showRequiredField = !noTypes && fieldKind !== 'undefined'
 	const showPublicField = !noTypes && fieldKind === 'primitive'
 	const showHashableField = !noTypes && fieldKind === 'primitive'
-	const showMaskField = masks.length === 0 && fieldKind === 'primitive'
+	const showMaskField =  !input.disableMask && masks.length !== 0 && fieldKind === 'primitive'
 	const showType = fieldKind !== 'undefined' && types.length !== 0;
 
 	return <TableRow>
@@ -185,6 +184,7 @@ export function FieldEditionComponent(
 			{
 				showPublicField &&
 				<Checkbox checked={isPublic}
+						  disabled={input.defaultIsPublic !== undefined}
 						  onChange={e => setIsPublic(e.target.checked)} />
 			}
 		</TableCell>

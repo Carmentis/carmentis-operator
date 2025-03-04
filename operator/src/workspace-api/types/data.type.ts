@@ -22,6 +22,15 @@ export type EnumerationDataType = {
 	values: string[]
 };
 
+
+export interface DataOracle {
+	id: string,
+	name: string,
+	oracleHash: string,
+	service: string,
+	version: number
+}
+
 export type FieldDataType =  {
 	name: string;
 	required: boolean;
@@ -40,9 +49,7 @@ export type FieldDataType =  {
 		enumeration: string
 	};
 	oracleAnswerType?: {
-		oracleHash: string,
-		service: string,
-		version: number
+		oracleName: string,
 	};
 };
 
