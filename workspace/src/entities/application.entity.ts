@@ -40,13 +40,13 @@ export interface AppDataField {
 		hashable: boolean
 	};
 	structureType?: {
-		structure: string
+		structureId: string
 	};
 	enumerationType?: {
-		enumeration: string
+		enumerationId: string
 	};
 	oracleAnswerType?: {
-		oracleName: string,
+		oracleId: string,
 	};
 
 }

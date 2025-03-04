@@ -35,7 +35,7 @@ export type FieldDataType =  {
 	name: string;
 	required: boolean;
 	array: boolean;
-	kind: 'primitive' | 'enumeration' | 'structure' | 'oracleAnswer'
+	kind: 'primitive' | 'enumeration' | 'structure' | 'oracleAnswer' | 'undefined'
 	primitiveType?: {
 		type: string;
 		mask?: string

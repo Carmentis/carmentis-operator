@@ -1,14 +1,11 @@
 'use client';
 
 
-import { Card, CardBody, Input, Typography } from '@material-tailwind/react';
+import { Card, CardBody } from '@material-tailwind/react';
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useFetchApplicationInOrganisation } from '@/components/api.hook';
-import {
-	ApplicationBuilder,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-editor';
 import ApplicationDetailsNavbar
 	from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-navbar';
 import StructurePanel from '@/app/home/organisation/[organisationId]/application/[applicationId]/structures-panel';
@@ -17,11 +14,9 @@ import EnumerationPanel from '@/app/home/organisation/[organisationId]/applicati
 import MasksPanel from '@/app/home/organisation/[organisationId]/application/[applicationId]/masks-panel';
 import MessagesPanel from '@/app/home/organisation/[organisationId]/application/[applicationId]/message-panel';
 import CodeViewPanel from '@/app/home/organisation/[organisationId]/application/[applicationId]/code-panel';
-import { EditionStatusContextProvider, useSetEditionStatus } from '@/contexts/edition-status.context';
 import TabsComponent from '@/components/tabs.component';
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
-import { Application } from '@/entities/application.entity';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import {
 	applicationAtom,
 	referenceApplicationAtom,

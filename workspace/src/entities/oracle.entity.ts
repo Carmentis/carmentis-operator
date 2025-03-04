@@ -1,23 +1,20 @@
 import { AppDataEnum, AppDataField, AppDataMask } from '@/entities/application.entity';
 
 
-export type OracleDataStructureField = OracleDataServiceOutputField;
 export type OracleDataMask =  AppDataMask;
 export type OracleDataEnum = AppDataEnum;
 export type OracleDataStructure = {
 	id: string;
 	name: string;
-	properties: OracleDataStructureField[];
+	properties: AppDataField[];
 };
 
 export type OracleDataService = {
 	id: string;
 	name: string;
-	request: OracleDataServiceInputField[],
-	answer:  OracleDataServiceOutputField[]
+	request: AppDataField[],
+	answer:  AppDataField[]
 }
-export type OracleDataServiceInputField = AppDataField;
-export type OracleDataServiceOutputField = AppDataField;
 
 export type Oracle = {
 	id: number,

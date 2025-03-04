@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
-import { Button, Input } from '@material-tailwind/react';
+import { useState } from 'react';
+import { Button } from '@material-tailwind/react';
 import { useToast } from '@/app/layout';
 import ApplicationFieldEditionCard
 	from '@/app/home/organisation/[organisationId]/application/[applicationId]/field-edition-component';
-import { AppDataField } from '@/entities/application.entity';
 import { useFieldEdition } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
 import { useAtomValue } from 'jotai';
 import { applicationFieldsAtom } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
@@ -16,11 +15,6 @@ export default function FieldsPanel() {
 	const fieldEditionActions = useFieldEdition();
 	const [fieldName, setFieldName] = useState<string>('');
 
-
-
-	/**
-	 * Add a new field.
-	 */
 	function addField() {
 		// aborts if the field name is empty
 		if ( fieldName !== '' ) {
@@ -29,7 +23,6 @@ export default function FieldsPanel() {
 		}  else {
 			notify.error("Cannot add field with an empty name")
 		}
-
 	}
 
 	function removeField(fieldId: string) {

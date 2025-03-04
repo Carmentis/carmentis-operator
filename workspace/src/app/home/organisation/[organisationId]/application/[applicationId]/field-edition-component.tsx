@@ -6,7 +6,7 @@ import { AppDataField } from '@/entities/application.entity';
 import { useAtomValue } from 'jotai';
 import {
 	applicationEnumerationsAtom,
-	applicationMasksAtom,
+	applicationMasksAtom, applicationOraclesAtom,
 	applicationStructuresAtom,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { useFieldEdition } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
@@ -46,8 +46,8 @@ export function FieldEditionComponent(
 
 	const [fieldName, setFieldName] = useState(field.name);
 	const [fieldKind, setFieldKind] = useState(field.kind);
-	const [fieldType, setFieldType] = useState(field.primitiveType?.type || field.structureType?.structure);
-	const [fieldMask, setFieldMask] = useState<string|undefined>(field.primitiveType?.mask ?? undefined);
+	const [fieldType, setFieldType] = useState(field.primitiveType?.type || field.structureType?.structureId || field.enumerationType?.enumerationId || field.oracleAnswerType?.oracleId);
+	const [fieldMask, setFieldMask] = useState<string|undefined>(field.primitiveType?.mask || undefined);
 	const [isList, setIsList] = useState(field.array);
 	const [isPublic, setIsPublic] = useState(input.defaultIsPublic || !field.primitiveType?.private);
 	const [isRequired, setIsRequired] = useState(field.required);
@@ -56,12 +56,16 @@ export function FieldEditionComponent(
 	const structures = useAtomValue(applicationStructuresAtom);
 	const enumerations = useAtomValue(applicationEnumerationsAtom);
 	const masks = useAtomValue(applicationMasksAtom);
+	const oracleAnswers = useAtomValue(applicationOraclesAtom);
 
+
+	console.log("mask:", fieldMask)
 	useEffect(() => {
 		//if (fieldType === undefined) throw 'The field type is required';
 
 
-		const field: AppDataField = {
+		const f: AppDataField = {
+			...field,
 			id: input.field.id,
 			name: fieldName,
 			array: isList,
@@ -69,43 +73,60 @@ export function FieldEditionComponent(
 			kind: fieldKind,
 		}
 
+		input.onUpdateField(f);
 
-		switch (fieldKind) {
-			case 'primitive':
-				field.primitiveType = {
-					hashable: isHashable,
-					mask: fieldMask,
-					private: !isPublic,
-					type: fieldType
-				};
-				break;
-			case 'enumeration':
-				field.enumerationType = {
-					enumeration: fieldType
-				}
-				break;
-			case 'oracleAnswer':
-				field.oracleAnswerType = {
-					oracleName: fieldType
-				}
-				break;
-			case 'structure':
-				field.structureType = {
-					structure: fieldType
-				}
-				break;
+	}, [fieldName, fieldMask, fieldType, isList, isPublic, isRequired, isHashable]);
+
+	useEffect(() => {
+		const f : AppDataField = {
+			...field,
+			kind: fieldKind,
+			primitiveType: undefined,
+			structureType: undefined,
+			enumerationType: undefined,
+			oracleAnswerType: undefined,
+		};
+		if (fieldKind === 'primitive') {
+			f.primitiveType = {
+				hashable: isHashable,
+				mask: fieldMask,
+				private: !isPublic,
+				type: fieldType
+			}
+		} else if (fieldKind === 'enumeration') {
+			const firstEnumerationId = enumerations.length !== 0 ? enumerations[0].id : undefined;
+			f.enumerationType = {
+				enumerationId: firstEnumerationId
+			}
+		} else if (fieldKind === 'structure') {
+			const firstStructureId = structures.length !== 0 ? structures[0].id : undefined;
+			f.structureType = {
+				structureId: firstStructureId
+			}
+		} else if (fieldKind === 'oracleAnswer') {
+			const firstOracleAnswerId = oracleAnswers.length !== 0 ? oracleAnswers[0].id : undefined;
+			f.oracleAnswerType = {
+				oracleId: firstOracleAnswerId
+			}
 		}
 
-		input.onUpdateField(field);
+		console.log("on update kind of field:", f)
+		input.onUpdateField(f);
+	}, [fieldKind]);
 
-	}, [fieldName, fieldMask, fieldType, isList, isPublic, isRequired, isHashable, fieldKind]);
 
-
-	function getTypesFromKind(kind: string) {
+	function getTypesFromKind(kind: string): { label: string; value: string }[] {
 		switch (kind) {
 			case 'primitive': return Object.keys(sdk.constants.DATA.PrimitiveTypes)
-			case 'enumeration': return enumerations.map(e => e.name)
-			case 'structure': return structures.map(e => e.name)
+				.map(k => {
+					return {label: k, value: k}
+				})
+			case 'enumeration': return enumerations.map(e => {
+				return {label: e.id, value: e.name}
+			})
+			case 'structure': return structures.map(e => {
+				return {label: e.id, value: e.name}
+			})
 			case 'oracleAnswer': return []
 			case 'undefined': return []
 			default: throw `Undefined kind of property: ${kind}`
@@ -156,8 +177,8 @@ export function FieldEditionComponent(
 					size={"small"} variant={"outlined"}>
 
 					{
-						types.map((k, index) =>
-							<option key={index} value={`${k}`}>{k}</option>
+						types.map((t, index) =>
+							<option key={index} value={t.label}>{t.value}</option>
 						)
 					}
 
@@ -199,15 +220,16 @@ export function FieldEditionComponent(
 			{
 				showMaskField &&
 				<Select
+					native={true}
 					size={"small"}
 					fullWidth={true}
 					hidden={fieldKind !== 'primitive'}
-					value={fieldMask ?? ''}
+					value={fieldMask || ''}
 					onChange={e => setFieldMask(e.target.value)}
 				>
 					{
 						masks.map((mask, index) =>
-							<MenuItem key={index} value={`enum-${mask.name}`}>{mask.name}</MenuItem>
+							<option key={index} value={mask.id}>{mask.name}</option>
 						)
 					}
 				</Select>

@@ -64,6 +64,28 @@ export function createDefaultField( name: string ) : AppDataField {
     };
 }
 
+
+export function unassignedIdOfFields( fields: AppDataField[], id: string )  {
+	console.log(`removing type of fields associated with ${id}:`, fields)
+	return fields.map(f => {
+		switch (f.kind) {
+			case 'structure':
+				if (f.structureType?.structureId === id ) {
+					f.kind = 'undefined'
+					f.structureType = undefined;
+				}
+				break;
+			case 'enumeration':
+				if (f.enumerationType?.enumerationId === id) {
+					f.kind = 'undefined'
+					f.enumerationType = undefined;
+				}
+				break;
+		}
+		return {...f}
+	})
+}
+
 const applicationReducer = (application: Application | undefined, action: Action): Application | undefined => {
 	if (!application) return application;
 
@@ -299,11 +321,13 @@ const applicationReducer = (application: Application | undefined, action: Action
 			};
 
 		case 'REMOVE_ENUMERATION':
+			const id = action.payload.enumId;
 			return {
 				...application,
 				data: {
 					...application.data,
-					enumerations: enumerations.filter(e => e.id !== action.payload.enumId),
+					fields: unassignedIdOfFields(application.data.fields, id),
+					enumerations: enumerations.filter(e => e.id !== id),
 				},
 			};
 
