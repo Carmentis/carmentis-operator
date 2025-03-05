@@ -16,6 +16,13 @@ export type OracleDataService = {
 	answer:  AppDataField[]
 }
 
+export type OracleDataType = {
+	services: OracleDataService[],
+	structures: OracleDataStructure[];
+	enumerations: OracleDataEnum[];
+	masks: OracleDataMask[]
+}
+
 export type Oracle = {
 	id: number,
 	name: string,
@@ -25,12 +32,7 @@ export type Oracle = {
 	publishedAt: Date;
 	isDraft: boolean,
 	virtualBlockchainId?: string,
-	data: {
-		services: OracleDataService[],
-		structures: OracleDataStructure[];
-		enumerations: OracleDataEnum[];
-		masks: OracleDataMask[]
-	};
+	data: OracleDataType;
 }
 
 

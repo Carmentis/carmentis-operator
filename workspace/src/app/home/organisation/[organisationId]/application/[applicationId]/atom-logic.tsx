@@ -13,6 +13,7 @@ import {
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { generateRandomString } from 'ts-randomstring/lib';
+import { Oracle } from '@/entities/oracle.entity';
 
 type Action =
 
@@ -56,40 +57,136 @@ export function createDefaultField( name: string ) : AppDataField {
 		array: false,
 		required: false,
 		kind: 'primitive',
-		primitiveType: {
-			type: 'STRING',
+		type: {
+			id: 'STRING',
 			private: false,
 			hashable: false,
+			mask: '',
 		}
     };
 }
 
 
-export function unassignedIdOfFields( fields: AppDataField[], id: string )  {
+export function markStructFieldsLinkedWithEntityWithIdAsUndefined(object: Record<string, any>, id: string): Record<string, any> {
+	const processNode = (node: any): any => {
+		// If the node isn't an object or array, return it as is
+		if (typeof node !== 'object' || node === null) return node;
+
+		// If the current node has both "kind" and "type" fields
+		if (node.kind && node.type?.id === id) {
+			return {
+				...node,
+				kind: 'undefined',
+				type: {},
+			};
+		}
+
+		// If node is an array, map through each item
+		if (Array.isArray(node)) {
+			return node.map(processNode);
+		}
+
+		// Otherwise, it's an object. Process its key-value pairs.
+		return Object.keys(node).reduce((acc, key) => {
+			acc[key] = processNode(node[key]);
+			return acc;
+		}, {} as Record<string, any>);
+	};
+
+	// Start processing the passed object
+	return processNode(object);
+}
+
+export function unassignedIdOfFields( fields: AppDataField[], id: string ): AppDataField[]  {
 	console.log(`removing type of fields associated with ${id}:`, fields)
 	return fields.map(f => {
-		switch (f.kind) {
-			case 'structure':
-				if (f.structureType?.structureId === id ) {
-					f.kind = 'undefined'
-					f.structureType = undefined;
+		const kind = f.kind;
+		if (kind === 'structure' || kind === 'enumeration') {
+			const referencedStructure = f.type?.id;
+			if (id === referencedStructure) {
+				return {
+					...f,
+					kind: 'undefined',
+					type: {}
 				}
-				break;
-			case 'enumeration':
-				if (f.enumerationType?.enumerationId === id) {
-					f.kind = 'undefined'
-					f.enumerationType = undefined;
-				}
-				break;
+			} else {
+				return f;
+			}
+		} else {
+			return f;
 		}
-		return {...f}
 	})
 }
 
+
+
+export function addStructure( object: Application | Oracle, structName: string ) {
+	const data = object.data
+	const structures = data.structures ?? []
+	return {
+		...object,
+		data: {
+			...data,
+			structures: [...structures, {
+				id: generateRandomString(),
+				name: structName,
+				properties: []
+			}],
+		}
+	}
+}
+
+export function editStructure( object: Application | Oracle, structId: string, struct: AppDataStruct ) {
+	const data = object.data
+	const structures = data.structures ?? []
+	return {
+		...object,
+		data: {
+			...data,
+			structures: structures
+				.map(
+					s => s.id === structId ? struct : s
+				)
+		},
+	}
+}
+
+export function removeStructure( object: Application | Oracle, structId: string ) {
+	const data = object.data
+	const structures = (data.structures ?? [])
+			.filter(s => s.id !== structId);
+	const updatedObject = {
+		...object,
+		data: {
+			...data,
+			structures
+		},
+	}
+
+	return markStructFieldsLinkedWithEntityWithIdAsUndefined(updatedObject, structId)
+}
+
+
+export function removeEnumeration( object: Application | Oracle, enumId: string ) {
+	const data = object.data
+	const enumerations = (data.enumerations ?? [])
+		.filter(e => e.id !== enumId);
+	const updatedObject = {
+		...object,
+		data: {
+			...data,
+			enumerations
+		},
+	}
+
+	return markStructFieldsLinkedWithEntityWithIdAsUndefined(updatedObject, enumId)
+}
+
+
+
+
 const applicationReducer = (application: Application | undefined, action: Action): Application | undefined => {
 	if (!application) return application;
-
-	console.log("Application reducer:", application, action)
 
 	// prevent empty data
 	const fields = application.data.fields ?? [];
@@ -133,39 +230,9 @@ const applicationReducer = (application: Application | undefined, action: Action
 				},
 			};
 
-		case 'ADD_STRUCT':
-			return {
-				...application,
-				data: {
-					...application.data,
-					structures: [...structures, {
-						id: generateRandomString(),
-						name: action.payload.name,
-						properties: []
-					}],
-				},
-			};
-
-		case 'EDIT_STRUCT':
-			return {
-				...application,
-				data: {
-					...application.data,
-					structures: structures
-						.map(
-							s => s.id === action.payload.structId ? action.payload.struct : s
-						)
-				},
-			};
-
-		case 'REMOVE_STRUCT':
-			return {
-				...application,
-				data: {
-					...application.data,
-					structures: structures.filter(s => s.id !== action.payload.structId),
-				},
-			};
+		case 'ADD_STRUCT': return addStructure( application, action.payload.name ) as Application
+		case 'EDIT_STRUCT': return editStructure( application, action.payload.structId, action.payload.struct ) as Application
+		case 'REMOVE_STRUCT': return removeStructure( application, action.payload.structId ) as Application
 
 
 
@@ -320,16 +387,7 @@ const applicationReducer = (application: Application | undefined, action: Action
 				},
 			};
 
-		case 'REMOVE_ENUMERATION':
-			const id = action.payload.enumId;
-			return {
-				...application,
-				data: {
-					...application.data,
-					fields: unassignedIdOfFields(application.data.fields, id),
-					enumerations: enumerations.filter(e => e.id !== id),
-				},
-			};
+		case 'REMOVE_ENUMERATION': return removeEnumeration(application, action.payload.enumId) as Application;
 
 		case 'ADD_ENUMERATION_VALUE':
 

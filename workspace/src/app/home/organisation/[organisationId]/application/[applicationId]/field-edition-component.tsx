@@ -5,11 +5,17 @@ import * as sdk from '@cmts-dev/carmentis-sdk/client';
 import { AppDataField } from '@/entities/application.entity';
 import { useAtomValue } from 'jotai';
 import {
+	applicationAtom,
 	applicationEnumerationsAtom,
 	applicationMasksAtom, applicationOraclesAtom,
 	applicationStructuresAtom,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { useFieldEdition } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
+import {
+	oracleAtom,
+	oracleEnumerationAtom, oracleMasksAtom,
+	oracleStructureAtom,
+} from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/atoms';
 
 
 export default function ApplicationFieldEditionCard(
@@ -46,67 +52,88 @@ export function FieldEditionComponent(
 
 	const [fieldName, setFieldName] = useState(field.name);
 	const [fieldKind, setFieldKind] = useState(field.kind);
-	const [fieldType, setFieldType] = useState(field.primitiveType?.type || field.structureType?.structureId || field.enumerationType?.enumerationId || field.oracleAnswerType?.oracleId);
-	const [fieldMask, setFieldMask] = useState<string|undefined>(field.primitiveType?.mask || undefined);
-	const [isList, setIsList] = useState(field.array);
-	const [isPublic, setIsPublic] = useState(input.defaultIsPublic || !field.primitiveType?.private);
-	const [isRequired, setIsRequired] = useState(field.required);
-	const [isHashable, setIsHashable] = useState(input.defaultHashable || field.primitiveType?.hashable || false);
+	const [fieldType, setFieldType] = useState(field.type?.id);
 
-	const structures = useAtomValue(applicationStructuresAtom);
-	const enumerations = useAtomValue(applicationEnumerationsAtom);
-	const masks = useAtomValue(applicationMasksAtom);
+	const mask = field.kind === 'primitive' ? field.type.mask : undefined;
+	const [fieldMask, setFieldMask] = useState<string|undefined>(mask);
+	const [isList, setIsList] = useState(field.array);
+
+	const visibility = field.kind === 'primitive' ? field.type.private : false;
+	const [isPublic, setIsPublic] = useState(input.defaultIsPublic || !visibility);
+	const [isRequired, setIsRequired] = useState(field.required);
+
+	const hashable = field.kind === 'primitive' ? field.type.hashable : false;
+	const [isHashable, setIsHashable] = useState(input.defaultHashable || hashable);
+
+	// load structures, enumeration, masks and oracle answers
+	const application = useAtomValue(applicationAtom);
+	const structures = useAtomValue(application ? applicationStructuresAtom : oracleStructureAtom);
+	const enumerations = useAtomValue(application ? applicationEnumerationsAtom : oracleEnumerationAtom);
+	const masks = useAtomValue(application ? applicationMasksAtom : oracleMasksAtom);
 	const oracleAnswers = useAtomValue(applicationOraclesAtom);
 
-
-	console.log("mask:", fieldMask)
 	useEffect(() => {
-		//if (fieldType === undefined) throw 'The field type is required';
+		if (field.kind === 'undefined')
+			setFieldKind('undefined');
+	}, [field.kind]);
 
-
+	useEffect(() => {
 		const f: AppDataField = {
 			...field,
 			id: input.field.id,
 			name: fieldName,
 			array: isList,
 			required: isRequired,
-			kind: fieldKind,
 		}
 
 		input.onUpdateField(f);
 
-	}, [fieldName, fieldMask, fieldType, isList, isPublic, isRequired, isHashable]);
+	}, [fieldName, fieldType, isList, isPublic, isRequired]);
+
+
+	// update the field when mask or hashable are updated
+	useEffect(() => {
+		if (field.kind !== 'primitive') {
+			console.warn(`I have received an update for fieldMask or isHashable but is kind ${field.kind}`)
+			return
+		}
+
+		input.onUpdateField({
+			...field,
+			type: {
+				...field.type,
+				hashable: isHashable,
+				mask: fieldMask,
+			}
+		})
+	}, [fieldMask, isHashable]);
 
 	useEffect(() => {
 		const f : AppDataField = {
 			...field,
 			kind: fieldKind,
-			primitiveType: undefined,
-			structureType: undefined,
-			enumerationType: undefined,
-			oracleAnswerType: undefined,
 		};
 		if (fieldKind === 'primitive') {
-			f.primitiveType = {
+			f.type = {
 				hashable: isHashable,
 				mask: fieldMask,
 				private: !isPublic,
-				type: fieldType
+				id: fieldType
 			}
 		} else if (fieldKind === 'enumeration') {
 			const firstEnumerationId = enumerations.length !== 0 ? enumerations[0].id : undefined;
-			f.enumerationType = {
-				enumerationId: firstEnumerationId
+			f.type = {
+				id: firstEnumerationId
 			}
 		} else if (fieldKind === 'structure') {
 			const firstStructureId = structures.length !== 0 ? structures[0].id : undefined;
-			f.structureType = {
-				structureId: firstStructureId
+			f.type = {
+				id: firstStructureId
 			}
 		} else if (fieldKind === 'oracleAnswer') {
 			const firstOracleAnswerId = oracleAnswers.length !== 0 ? oracleAnswers[0].id : undefined;
-			f.oracleAnswerType = {
-				oracleId: firstOracleAnswerId
+			f.type = {
+				id: firstOracleAnswerId
 			}
 		}
 
@@ -227,6 +254,7 @@ export function FieldEditionComponent(
 					value={fieldMask || ''}
 					onChange={e => setFieldMask(e.target.value)}
 				>
+					<option value={""}></option>
 					{
 						masks.map((mask, index) =>
 							<option key={index} value={mask.id}>{mask.name}</option>

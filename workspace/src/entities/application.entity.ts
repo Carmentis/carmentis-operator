@@ -26,32 +26,23 @@ export interface AppDataMask {
 }
 
 
+export type AppDataFieldType =
+	| { kind: "primitive", type: { id: string; mask?: string; private: boolean; hashable: boolean }  }
+	| { kind: 'enumeration', type: { id: string } }
+	| { kind: 'structure', type: { id: string } }
+	| { kind: 'oracleAnswer', type: { id: string } }
+	| { kind: 'undefined', type: undefined }
+	;
 
-export interface AppDataField {
+export type AppDataField = {
 	id: string,
 	name: string;
 	required: boolean;
 	array: boolean;
-	kind: 'primitive' | 'enumeration' | 'structure' | 'oracleAnswer' | 'undefined'
-	primitiveType?: {
-		type: string;
-		mask?: string
-		private: boolean
-		hashable: boolean
-	};
-	structureType?: {
-		structureId: string
-	};
-	enumerationType?: {
-		enumerationId: string
-	};
-	oracleAnswerType?: {
-		oracleId: string,
-	};
+} & AppDataFieldType
 
-}
 
-export interface AppDataOracle {
+export type AppDataOracle = {
 	id: string,
 	name: string,
 	oracleHash: string,
@@ -59,6 +50,14 @@ export interface AppDataOracle {
 	version: number
 }
 
+export type ApplicationDataType = {
+	fields: AppDataField[];
+	structures: AppDataStruct[];
+	enumerations: AppDataEnum[];
+	messages: AppDataMessage[];
+	masks: AppDataMask[];
+	oracles: AppDataOracle[];
+}
 export type Application = {
 	virtualBlockchainId: string | undefined;
 	id: number;
@@ -73,14 +72,7 @@ export type Application = {
 	published: boolean;
 	isDraft: boolean;
 	publishedAt: Date;
-	data: {
-		fields: AppDataField[];
-		structures: AppDataStruct[];
-		enumerations: AppDataEnum[];
-		messages: AppDataMessage[];
-		masks: AppDataMask[];
-		oracles: AppDataOracle[];
-	}
+	data: ApplicationDataType
 }
 
 export type ApplicationSummary = Pick<Application, 'id' | 'name' | 'tag' | 'logoUrl' | 'published' | 'publishedAt' | 'isDraft' | 'version'>

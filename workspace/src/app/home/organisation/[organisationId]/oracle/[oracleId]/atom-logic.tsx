@@ -1,27 +1,14 @@
-import {
-	AppDataEnum,
-	AppDataField,
-	AppDataMask,
-	AppDataMessage, AppDataOracle,
-	AppDataStruct,
-	Application,
-} from '@/entities/application.entity';
+import { AppDataField, AppDataMask, AppDataStruct } from '@/entities/application.entity';
 import { atom } from 'jotai/index';
-import {
-	applicationAtom,
-	applicationIsModifiedAtom,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
+import { applicationIsModifiedAtom } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { generateRandomString } from 'ts-randomstring/lib';
-import {
-	Oracle,
-	OracleDataEnum,
-	OracleDataMask,
-	OracleDataService,
-	OracleDataServiceInputField, OracleDataServiceOutputField,
-} from '@/entities/oracle.entity';
+import { Oracle, OracleDataEnum, OracleDataMask, OracleDataService } from '@/entities/oracle.entity';
 import { oracleAtom } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/atoms';
-import { createDefaultField } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
+import {
+	addStructure,
+	createDefaultField, editStructure, removeEnumeration, removeStructure,
+} from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
 
 type Action =
 
@@ -32,11 +19,11 @@ type Action =
 	| { type: 'REMOVE_SERVICE'; payload: { serviceId: string } }
 
 	| { type: 'ADD_SERVICE_INPUT'; payload: { serviceId: string, name: string } }
-	| { type: 'EDIT_SERVICE_INPUT'; payload: { serviceId: string, fieldId: string, field: OracleDataServiceInputField } }
+	| { type: 'EDIT_SERVICE_INPUT'; payload: { serviceId: string, fieldId: string, field: AppDataField } }
 	| { type: 'REMOVE_SERVICE_INPUT'; payload: { serviceId: string, fieldId: string } }
 
 	| { type: 'ADD_SERVICE_OUTPUT'; payload: { serviceId: string, name: string } }
-	| { type: 'EDIT_SERVICE_OUTPUT'; payload: { serviceId: string, fieldId: string, field: OracleDataServiceOutputField } }
+	| { type: 'EDIT_SERVICE_OUTPUT'; payload: { serviceId: string, fieldId: string, field: AppDataField } }
 	| { type: 'REMOVE_SERVICE_OUTPUT'; payload: { serviceId: string, fieldId: string } }
 
 	| { type: 'ADD_MASK'; payload: { name: string } }
@@ -80,40 +67,9 @@ const oracleReducer = (oracle: Oracle | undefined, action: Action): Oracle | und
 		case 'UPDATE_ORACLE':
 			return action.payload.oracle
 
-		case 'ADD_STRUCT':
-			return {
-				...oracle,
-				data: {
-					...oracle.data,
-					structures: [...structures, {
-						id: generateRandomString(),
-						name: action.payload.name,
-						properties: []
-					}],
-				},
-			};
-
-		case 'EDIT_STRUCT':
-			return {
-				...oracle,
-				data: {
-					...oracle.data,
-					structures: structures
-						.map(
-							s => s.id === action.payload.structId ? action.payload.struct : s
-						)
-				},
-			};
-
-		case 'REMOVE_STRUCT':
-			return {
-				...oracle,
-				data: {
-					...oracle.data,
-					structures: structures.filter(s => s.id !== action.payload.structId),
-				},
-			};
-
+		case 'ADD_STRUCT': return addStructure(oracle, action.payload.name) as Oracle;
+		case 'EDIT_STRUCT': return editStructure(oracle, action.payload.structId, action.payload.struct) as Oracle;
+		case 'REMOVE_STRUCT': return removeStructure(oracle, action.payload.structId) as Oracle;
 
 
 		case 'ADD_STRUCT_FIELD':
@@ -228,14 +184,7 @@ const oracleReducer = (oracle: Oracle | undefined, action: Action): Oracle | und
 				},
 			};
 
-		case 'REMOVE_ENUMERATION':
-			return {
-				...oracle,
-				data: {
-					...oracle.data,
-					enumerations: enumerations.filter(e => e.id !== action.payload.enumId),
-				},
-			};
+		case 'REMOVE_ENUMERATION': return removeEnumeration(oracle, action.payload.enumId) as Oracle
 
 		case 'ADD_ENUMERATION_VALUE':
 

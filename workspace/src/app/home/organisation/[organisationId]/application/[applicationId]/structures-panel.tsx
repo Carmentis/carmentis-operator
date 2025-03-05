@@ -44,11 +44,11 @@ export default function StructurePanel(
 type StructuresViewProps = {
 	structures: AppDataStruct[],
 	addStruct: (structName: string) => void
-	editStruct: (structName: string, structure: AppDataStruct) => void
-	removeStruct: (structName: string) => void
-	addField: (structName: string, fieldName: string) => void
-	editField: (structName: string, fieldName: string, field: AppDataField) => void,
-	removeField: (structName: string, fieldName: string) => void
+	editStruct: (structId: string, structure: AppDataStruct) => void
+	removeStruct: (structId: string) => void
+	addField: (structId: string, fieldName: string) => void
+	editField: (structId: string, fieldId: string, field: AppDataField) => void,
+	removeField: (structId: string, fieldId: string) => void
 }
 
 
@@ -66,14 +66,8 @@ export function StructuresView(input: StructuresViewProps) {
 
 }
 
-function SingleStructureView(input: {
-	structure: AppDataStruct,
-	editStruct: (structId: string, structure: AppDataStruct) => void,
-	removeStruct: (structId: string) => void,
-	addField: (structId: string, fieldName: string) => void
-	editField: (structId: string, fieldId: string, field: AppDataField) => void,
-	removeField: (structId: string, fieldId: string) => void
-}) {
+type SingleStructureViewProps = {structure: AppDataStruct} & StructuresViewProps;
+function SingleStructureView(input: SingleStructureViewProps) {
 	const struct = input.structure;
 	const [structName, setStructName] = useState(struct.name);
 
@@ -102,18 +96,17 @@ function SingleStructureView(input: {
 
 type StructureFieldsViewProps = {
 	structure: AppDataStruct,
-	addField: (structName: string, fieldName: string) => void
-	editField: (structName: string, fieldName: string, field: AppDataField) => void,
-	removeField: (structName: string, fieldName: string) => void
+	addField: (structId: string, fieldName: string) => void
+	editField: (structId: string, fieldId: string, field: AppDataField) => void,
+	removeField: (structId: string, fieldId: string) => void
 }
 function StructureFieldsView(input: StructureFieldsViewProps) {
 	const [fieldName, setFieldName] = useState('');
 	const structure = input.structure;
-	const structName = structure.name;
 	const fields = input.structure.properties;
 
 	function addField() {
-		input.addField(structName, fieldName)
+		input.addField(structure.id, fieldName)
 		setFieldName('')
 	}
 
@@ -138,7 +131,7 @@ function StructureFieldsView(input: StructureFieldsViewProps) {
 						key={field.id}
 						field={field}
 						onUpdateField={updatedField => input.editField(input.structure.id, field.id, updatedField)}
-						onRemoveField={name => input.removeField(structName, name)} />)
+						onRemoveField={() => input.removeField(structure.id, field.id)} />)
 			}
 			<TableRow>
 				<TableCell colSpan={8}>
