@@ -28,6 +28,7 @@ import CodeViewPanel from '@/app/home/organisation/[organisationId]/oracle/[orac
 import StructurePanel from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/structure-panel';
 import EnumerationsPanel from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/enumeration-panel';
 import MasksPanel from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/masks-panel';
+import ErrorsPanel from '@/app/home/organisation/[organisationId]/application/[applicationId]/errors-panel';
 
 
 export default function OraclePage() {
@@ -87,7 +88,8 @@ function OracleView() {
 						'Structures': <StructurePanel />,
 						'Enumerations': <EnumerationsPanel />,
 						'Masks': <MasksPanel />,
-						'Code View': <CodeViewPanel/>
+						'Code View': <CodeViewPanel/>,
+						'Errors': <ErrorsPanel context={"oracle"}/>
 					}} />
 			</CardBody>
 		</Card>

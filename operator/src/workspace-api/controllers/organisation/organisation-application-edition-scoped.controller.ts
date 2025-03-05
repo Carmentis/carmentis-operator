@@ -1,27 +1,29 @@
 import {
 	Body,
-	Controller, Delete, ForbiddenException, Get,
-	HttpException, HttpStatus,
+	Controller,
+	Delete,
+	ForbiddenException,
+	Get,
+	HttpException,
+	HttpStatus,
 	InternalServerErrorException,
 	Logger,
 	Param,
-	Post, Put,
+	Post,
+	Put,
 	UseGuards,
 } from '@nestjs/common';
 import { UserInOrganisationGuard } from '../../guards/user-in-organisation.guard';
 import { CanEditApplications, IsAdminInOrganisation } from '../../guards/user-has-valid-access-right.guard';
 import { OrganisationService } from '../../../shared/services/organisation.service';
-import { UserService } from '../../../shared/services/user.service';
 import { ApplicationService } from '../../../shared/services/application.service';
 import { AuditService } from '../../../shared/services/audit.service';
-import { OracleService } from '../../../shared/services/oracle.service';
 import { ImportApplicationDto } from '../../dto/import-application.dto';
 import { ApplicationEntity } from '../../../shared/entities/application.entity';
 import { AuditOperation, EntityType } from '../../../shared/entities/audit-log.entity';
 import { ApplicationDto } from '../../dto/application.dto';
 import { plainToInstance } from 'class-transformer';
 import { Public } from '../../decorators/public.decorator';
-import { SupportedPrimitiveType } from '../../types/data.type';
 import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { EnvService } from '../../../shared/services/env.service';
 
@@ -33,10 +35,8 @@ export class OrganisationApplicationEditionScopedController {
 
 	constructor(
 		private readonly organisationService: OrganisationService,
-		private readonly userService: UserService,
 		private readonly applicationService: ApplicationService,
 		private readonly auditService: AuditService,
-		private readonly oracleService: OracleService,
 		private readonly envService: EnvService,
 	) {}
 
@@ -53,15 +53,8 @@ export class OrganisationApplicationEditionScopedController {
 		try {
 			await this.applicationService.publishApplication(applicationId);
 		} catch (e) {
-			console.error(e)
 			throw new InternalServerErrorException();
 		}
-	}
-
-	@Public()
-	@Get(":organisationId/application/:applicationId/primitiveTypes")
-	async getSupportedPrimitiveTypes() {
-		return Object.keys(SupportedPrimitiveType);
 	}
 
 	@Public()

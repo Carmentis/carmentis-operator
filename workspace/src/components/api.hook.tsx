@@ -564,6 +564,10 @@ export function useObtainChallenge()  {
 	return useWorkspaceApi<{challenge: string}>(`/login/challenge`);
 }
 
+export function useOracleTranslationErrors( organisationId: number, oracleId: number )  {
+	return useWorkspaceApi<string[]>(`/organisation/${organisationId}/oracle/${oracleId}/translation/status`, {});
+}
+
 
 export function useChallengeVerification() {
 	return async (challenge: string, signature: string, publicKey: string, cb: APICallbacks<ChallengeSuccessResponse> | undefined) => {

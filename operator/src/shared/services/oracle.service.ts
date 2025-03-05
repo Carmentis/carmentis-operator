@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+	BadRequestException,
+	Injectable,
+	InternalServerErrorException,
+	NotFoundException,
+	UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ApplicationEntity } from '../entities/application.entity';
 import { Repository } from 'typeorm';
@@ -83,7 +89,7 @@ export class OracleService {
 	 * @return {Promise<OracleEntity>} A promise that resolves to the oracle entity associated with the provided ID.
 	 */
 	async getOracleById( oracleId: number ) : Promise<OracleEntity> {
-		return this.oracleRepository.findOneBy({id: oracleId});
+		return this.oracleRepository.findOneByOrFail({id: oracleId});
 	}
 
 
@@ -153,18 +159,27 @@ export class OracleService {
 			id: oracleId,
 		});
 		const organisation = await this.organisationService.getOrganisationByOracleId(oracleId);
-		const mb : MicroBlock = await this.chainService.publishOracle(organisation, oracle);
+		try {
+			const mb : MicroBlock = await this.chainService.publishOracle(organisation, oracle);
+			oracle.isDraft = false;
+			oracle.published = true;
+			oracle.publishedAt = new Date();
+			oracle.version += 1;
+			oracle.organisation = organisation;
+			if ( mb.header.height === 1 ) {
+				oracle.virtualBlockchainId = mb.hash;
+			}
 
-		oracle.isDraft = false;
-		oracle.published = true;
-		oracle.publishedAt = new Date();
-		oracle.version += 1;
-		oracle.organisation = organisation;
-		if ( mb.header.height === 1 ) {
-			oracle.virtualBlockchainId = mb.hash;
+			await this.oracleRepository.save(oracle);
+		} catch (e) {
+			if (e.code === 'ECONNREFUSED') {
+				throw new InternalServerErrorException("Cannot connect to the node.");
+			} else {
+				throw new InternalServerErrorException(e)
+			}
 		}
 
-		await this.oracleRepository.save(oracle);
+
 	}
 
 

@@ -1,23 +1,18 @@
-import * as sdk from '@cmts-dev/carmentis-sdk/server';
-
-export const SupportedPrimitiveType = {
-	INT: 6,
-	FLOAT:  sdk.constants.DATA.FLOAT,
-	STRING: sdk.constants.DATA.STRING,
-}
-
 export type MaskDataType = {
+	id: string,
 	name: string;
 	regex: string;
 	substitution: string;
 };
 
 export type MessageDataType = {
+	id: string,
 	name: string,
 	content: string,
 }
 
 export type EnumerationDataType = {
+	id: string,
 	name: string,
 	values: string[]
 };
@@ -31,29 +26,25 @@ export interface DataOracle {
 	version: number
 }
 
+
+
+export type FieldType =
+	| { kind: "primitive", type: { id: string; mask?: string; private: boolean; hashable: boolean }  }
+	| { kind: 'enumeration', type: { id: string } }
+	| { kind: 'structure', type: { id: string } }
+	| { kind: 'oracleAnswer', type: { id: string } }
+	| { kind: 'undefined', type?: undefined }
+	;
+
 export type FieldDataType =  {
+	id: string,
 	name: string;
 	required: boolean;
 	array: boolean;
-	kind: 'primitive' | 'enumeration' | 'structure' | 'oracleAnswer' | 'undefined'
-	primitiveType?: {
-		type: string;
-		mask?: string
-		private: boolean
-		hashable: boolean
-	};
-	structureType?: {
-		structure: string
-	};
-	enumerationType?: {
-		enumeration: string
-	};
-	oracleAnswerType?: {
-		oracleName: string,
-	};
-};
+} & FieldType;
 
 export type StructureDataType = {
+	id: string,
 	name: string;
 	properties: FieldDataType[];
 }

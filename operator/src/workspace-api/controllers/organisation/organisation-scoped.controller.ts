@@ -37,6 +37,7 @@ import {
 } from '../../guards/user-has-valid-access-right.guard';
 import ChainService from '../../../shared/services/chain.service';
 import { Public } from '../../decorators/public.decorator';
+import { CarmentisTranslator } from '../../../utils/translator';
 
 
 
@@ -189,6 +190,19 @@ export class OrganisationScopedController {
 		if (!oracle) throw new NotFoundException('Oracle not found');
 		return oracle;
 	}
+
+	@Get(':organisationId/oracle/:oracleId/translation/status')
+	async getOracleTranslationStatus(@Param('organisationId') organisationId: number, @Param('oracleId') oracleId: number): Promise<string[]> {
+		const oracle = await this.oracleService.getOracleById(oracleId);
+		const builder = CarmentisTranslator.buildOracleToTranslator();
+		try {
+			builder.translate(oracle.data)
+			return []
+		} catch (error) {
+			return builder.getErrors();
+		}
+	}
+
 
 
 

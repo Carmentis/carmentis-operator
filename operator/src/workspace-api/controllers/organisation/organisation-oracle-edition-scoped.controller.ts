@@ -43,7 +43,6 @@ export class OrganisationOracleEditionScopedController {
 		@Body() oracleDto: UpdateOracleDto
 	) {
 		const oracle: OracleEntity = plainToInstance(OracleEntity, oracleDto);
-		console.log("oracle to update", oracleDto)
 		oracle.isDraft = true;
 		const success = await this.oracleService.update(oracleId, oracle);
 		if ( success ) {
@@ -112,14 +111,7 @@ export class OrganisationOracleEditionScopedController {
 		// reject the publication of an application if the organisation is not published itself
 		const organisationIsPublished = await this.organisationService.isPublished(organisationId);
 		if (!organisationIsPublished) throw new ForbiddenException("Publish first the organisation before to publish an oracle.")
-
-
-		try {
-			await this.oracleService.publishOracle(oracleId);
-		} catch (e) {
-			console.error(e)
-			throw new InternalServerErrorException();
-		}
+		await this.oracleService.publishOracle(oracleId);
 	}
 
 }

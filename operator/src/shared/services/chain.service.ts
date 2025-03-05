@@ -8,6 +8,7 @@ import * as sdk from "@cmts-dev/carmentis-sdk/server";
 import { ApplicationEntity } from '../entities/application.entity';
 import { OrganisationEntity } from '../entities/organisation.entity';
 import { OracleEntity } from '../entities/oracle.entity';
+import { CarmentisTranslator } from '../../utils/translator';
 
 
 /**
@@ -82,8 +83,11 @@ export default class ChainService implements OnModuleInit{
 		try {
 			return await organisationVb.publish();
 		} catch (e) {
-			console.error(e);
-			throw new InternalServerErrorException("Failed to publish the organisation");
+			if (e.code === 'ECONNREFUSED') {
+				throw new InternalServerErrorException("Cannot connect to the node.");
+			} else {
+				throw new InternalServerErrorException(e)
+			}
 		}
 
 	}
@@ -149,14 +153,12 @@ export default class ChainService implements OnModuleInit{
 
 
 	async publishOracle(organisation: OrganisationEntity, oracle: OracleEntity) {
-		// TODO remove the hardcoded node
 		// initialise the blockchain sdk
 		sdk.blockchain.blockchainCore.setUser(
 			sdk.blockchain.ROLES.OPERATOR,
 			organisation.privateSignatureKey
 		);
 
-		console.log('oracle publication:', organisation)
 		const vc = new sdk.blockchain.oracleVb(oracle.virtualBlockchainId);
 		if ( !oracle.virtualBlockchainId ) {
 			await vc.addDeclaration({
@@ -166,30 +168,33 @@ export default class ChainService implements OnModuleInit{
 			await vc.load();
 		}
 
-		await vc.addDescription( {
+
+		console.log("Adding description")
+		const description =  {
 			name: oracle.name,
 			logoUrl: oracle.logoUrl || '',
 			rootDomain: oracle.domain || '',
-		})
+		}
+		console.log("oracle description:", description)
+		await vc.addDescription(description)
 
-		// merge the default empty application with the provided one
+
+		const builder = CarmentisTranslator.buildOracleToTranslator();
+		const data = builder.translate(oracle.data);
+		console.log("source oracle data:", oracle.data);
+		console.log("Translated oracle data:", data)
 		await vc.addDefinition({
-			version: oracle.version + 1, // we increment the version number
-			definition: {
-				services: [],
-				structures: [],
-				masks: [],
-				enumerations: [],
-				...oracle.data // replace default empty data with the application data if any
-			}
+			version: oracle.version + 1,
+			definition: data
 		});
+
 
 		vc.setGasPrice(
 			sdk.constants.ECO.TOKEN
 		);
 
 		await vc.sign();
-		return vc.publish()
+		return await vc.publish()
 	}
 
 

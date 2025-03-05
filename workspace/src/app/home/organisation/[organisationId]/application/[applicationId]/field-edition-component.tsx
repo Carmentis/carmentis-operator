@@ -72,10 +72,6 @@ export function FieldEditionComponent(
 	const masks = useAtomValue(application ? applicationMasksAtom : oracleMasksAtom);
 	const oracleAnswers = useAtomValue(applicationOraclesAtom);
 
-	useEffect(() => {
-		if (field.kind === 'undefined')
-			setFieldKind('undefined');
-	}, [field.kind]);
 
 	useEffect(() => {
 		const f: AppDataField = {
@@ -112,6 +108,7 @@ export function FieldEditionComponent(
 		const f : AppDataField = {
 			...field,
 			kind: fieldKind,
+			type: undefined,
 		};
 		if (fieldKind === 'primitive') {
 			f.type = {
