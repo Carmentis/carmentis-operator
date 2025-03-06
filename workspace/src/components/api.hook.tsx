@@ -550,6 +550,11 @@ export function useAdminListOfUsersApi() {
 	);
 }
 
+export function useFetchOraclesOnChain() {
+	return useWorkspaceApi<{hash: string, oracleName: string, version: number, serviceName: string}[]>(
+		`/chain/oracles`
+	);
+}
 
 
 export function useOraclePublication() {

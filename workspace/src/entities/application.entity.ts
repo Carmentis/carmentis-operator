@@ -45,6 +45,7 @@ export type AppDataField = {
 export type AppDataOracle = {
 	id: string,
 	name: string,
+	oracleName: string,
 	oracleHash: string,
 	service: string,
 	version: number

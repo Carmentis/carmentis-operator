@@ -13,11 +13,12 @@ export default function ErrorsPanel(input: { context: "application" | "oracle" }
 	const referencedOracle = useAtomValue(referenceOracleAtom);
 	const {data, isLoading, error, mutate} = useOracleTranslationErrors(organisation.id, oracle.id);
 
+
 	useEffect(() => {
 		mutate()
 	}, [referencedOracle]);
 
-	if (isLoading) return <FullPageLoadingComponent/>
+	if (isLoading) return <>Loading...</>
 	if (!data || error) return <>An error occured: {error}</>
 	return <>
 		{data.map((value,index) =>

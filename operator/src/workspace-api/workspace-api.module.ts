@@ -13,18 +13,9 @@ import { OracleEntity } from '../shared/entities/oracle.entity';
 import { AuditLogEntity } from '../shared/entities/audit-log.entity';
 
 import PackageConfigService from '../package.service';
-import { AdministrationService } from '../shared/services/administration.service';
-import { OrganisationService } from '../shared/services/organisation.service';
-import { UserService } from '../shared/services/user.service';
-import { ApplicationService } from '../shared/services/application.service';
-import { AccessRightService } from '../shared/services/access-right.service';
-import { AuditService } from '../shared/services/audit.service';
-import { OracleService } from '../shared/services/oracle.service';
-import ChainService from '../shared/services/chain.service';
 import { AdminController } from './controllers/admin.controller';
 import { SandboxController } from './controllers/sandbox.controller';
 import { LoginController } from './controllers/login.controller';
-import { ChallengeService } from '../shared/services/challenge.service';
 import { ChallengeEntity } from '../shared/entities/challenge.entity';
 import { JwtModule } from '@nestjs/jwt';
 import * as crypto from 'crypto';
@@ -41,16 +32,16 @@ import {
 	IsAdminInOrganisation,
 } from './guards/user-has-valid-access-right.guard';
 import {
-	OrganisationOracleEditionScopedController
+	OrganisationOracleEditionScopedController,
 } from './controllers/organisation/organisation-oracle-edition-scoped.controller';
 import {
-	OrganisationApplicationEditionScopedController
+	OrganisationApplicationEditionScopedController,
 } from './controllers/organisation/organisation-application-edition-scoped.controller';
 import {
-	OrganisationUserEditionScopedController
+	OrganisationUserEditionScopedController,
 } from './controllers/organisation/organisation-user-edition-scoped.controller';
 import { SharedModule } from '../shared/shared.module';
-import { EnvService } from '../shared/services/env.service';
+import { ChainController } from './controllers/chain.controller';
 
 // Extracted imports, controllers, and providers into constants
 export const DEFAULT_JWT_TOKEN_VALIDITY = "8h"
@@ -73,6 +64,7 @@ const WORKSPACE_IMPORTS = [
 ];
 
 const WORKSPACE_CONTROLLERS = [
+	ChainController,
 	WorkspaceApiController,
 	AdminController,
 	OrganisationController,

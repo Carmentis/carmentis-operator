@@ -57,12 +57,7 @@ export class OrganisationApplicationEditionScopedController {
 		}
 	}
 
-	@Public()
-	@Get(":organisationId/application/:applicationId/oracles")
-	async getSupportedOracles() {
-		sdk.blockchain.blockchainCore.setNode(this.envService.nodeUrl)
-		return await sdk.blockchain.blockchainQuery.getOracles();
-	}
+
 
 	@Post(':organisationId/application/import')
 	async importApplication(

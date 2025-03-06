@@ -6,14 +6,15 @@ import Link from 'next/link';
 import { useFetchOrganisationsOfUser, useOrganisationCreation, useSandboxCreationApi } from '@/components/api.hook';
 import SimpleTextModalComponent from '@/components/modals/simple-text-modal.component';
 import Avatar from 'boring-avatars';
-import { Button, Chip, IconButton, Menu, MenuHandler, MenuItem, MenuList, Typography } from '@material-tailwind/react';
+import { Chip, IconButton, Menu, MenuHandler, MenuItem, MenuList, Typography } from '@material-tailwind/react';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
 import { useToast } from '@/app/layout';
 import ConditionallyHiddenLayout from '@/components/conditionally-hidden-layout.component';
-import { Organisation, OrganisationSummaryList } from '@/entities/organisation.entity';
+import { OrganisationSummaryList } from '@/entities/organisation.entity';
 import { useAuthenticationContext } from '@/contexts/user-authentication.context';
 import AvatarOrganisation from '@/components/avatar-organisation';
+import { Container } from '@mui/material';
 
 function OrganisationCard(input: { organisation: { id:number, name: string, isSandbox: boolean } }) {
 	return <Link className={'card w-52 flex flex-col justify-center items-center space-y-2 h-52 hover:cursor-pointer'}
@@ -129,7 +130,7 @@ export default function HomePage() {
 		return <FullPageLoadingComponent label={""}/>
 	}
 
-	return <section className="bg-gray-50 dark:bg-gray-900 p-8 h-screen ">
+	return <Container sx={{p: 4}}>
 		<LeftTopMenu/>
 		<RightTopMenu/>
 		<div id="filter" className={'flex flex-col space-y-4 w-100 justify-center items-center mb-8'}>
@@ -145,7 +146,7 @@ export default function HomePage() {
 			</div>
 		</div>
 
-		<div
+		<Container
 			className="flex flex-row items-center justify-center px-6 py-4 mx-auto  lg:py-0 gap-2 flex-wrap w-8/12">
 			<div
 				onClick={() => setShowNewOrganisationModal(true)}
@@ -169,7 +170,7 @@ export default function HomePage() {
 					.map((organisation, index) => <OrganisationCard key={index} organisation={organisation} />)
 			}
 
-		</div>
+		</Container>
 
 		{
 			showNewOrganisationModal &&
@@ -178,5 +179,5 @@ export default function HomePage() {
 									  onClose={() => setShowNewOrganisationModal(false)}
 									  placeholder={"Name"} />
 		}
-	</section>;
+	</Container>;
 }

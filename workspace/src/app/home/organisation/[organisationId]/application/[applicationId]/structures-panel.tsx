@@ -9,7 +9,7 @@ import { applicationStructuresAtom } from '@/app/home/organisation/[organisation
 import {
 	Accordion,
 	AccordionDetails,
-	AccordionSummary,
+	AccordionSummary, Box,
 	Table,
 	TableBody,
 	TableCell,
@@ -56,8 +56,10 @@ type StructuresViewProps = {
 export function StructuresView(input: StructuresViewProps) {
 	const [structName, setStructName] = useState('');
 	return <div>
-		<TextField value={structName} onChange={(e) => setStructName(e.target.value)} size={"small"} />
-		<Button size={"md"} onClick={() => input.addStruct(structName)}>Add structure</Button>
+		<Box display={"flex"} flexDirection={"row"} mb={2} gap={2}>
+			<TextField value={structName} onChange={(e) => setStructName(e.target.value)} size={"small"} />
+			<Button size={"md"} onClick={() => input.addStruct(structName)}>Add structure</Button>
+		</Box>
 		{
 			input.structures
 				.map((struct, index) => <SingleStructureView structure={struct} {...input} key={struct.id}/>)

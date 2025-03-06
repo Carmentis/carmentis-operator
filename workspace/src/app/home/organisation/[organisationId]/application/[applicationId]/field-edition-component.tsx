@@ -12,7 +12,6 @@ import {
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { useFieldEdition } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
 import {
-	oracleAtom,
 	oracleEnumerationAtom, oracleMasksAtom,
 	oracleStructureAtom,
 } from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/atoms';
@@ -138,6 +137,29 @@ export function FieldEditionComponent(
 		input.onUpdateField(f);
 	}, [fieldKind]);
 
+	useEffect(() => {
+		const f : AppDataField = {
+			...field,
+			kind: fieldKind,
+			type: undefined,
+		};
+		if (fieldKind === 'primitive') {
+			f.type = {
+				hashable: isHashable,
+				mask: fieldMask,
+				private: !isPublic,
+				id: fieldType
+			}
+		} else {
+			f.type = {
+				id: fieldType
+			}
+		}
+
+		console.log("on update type of field:", f)
+		input.onUpdateField(f);
+	}, [fieldType]);
+
 
 	function getTypesFromKind(kind: string): { label: string; value: string }[] {
 		switch (kind) {
@@ -151,9 +173,11 @@ export function FieldEditionComponent(
 			case 'structure': return structures.map(e => {
 				return {label: e.id, value: e.name}
 			})
-			case 'oracleAnswer': return []
+			case 'oracleAnswer': return oracleAnswers.map(o => {
+				return { label: o.id, value: o.name }
+			})
 			case 'undefined': return []
-			default: throw `Undefined kind of property: ${kind}`
+			default: console.error(`Undefined kind of property: ${kind}`)
 		}
 	}
 	const types = getTypesFromKind(fieldKind);

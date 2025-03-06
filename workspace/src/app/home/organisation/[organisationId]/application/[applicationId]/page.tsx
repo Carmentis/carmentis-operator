@@ -59,7 +59,7 @@ export default function ApplicationPage() {
 
 export const useApplication = () => {
 	const application = useAtomValue(applicationAtom);
-	if (!application) throw 'Undefined application';
+	if (!application) throw new Error('Undefined application');
 	return application;
 }
 
@@ -94,7 +94,7 @@ function ApplicationEditionView() {
 							'Masks': <MasksPanel/>,
 							'Messages': <MessagesPanel/>,
 							'Code view': <CodeViewPanel/>,
-							'Errors': <ErrorsPanel/>,
+							//'Errors': <ErrorsPanel context={"application"}/>,
 						}} />
 				</CardBody>
 

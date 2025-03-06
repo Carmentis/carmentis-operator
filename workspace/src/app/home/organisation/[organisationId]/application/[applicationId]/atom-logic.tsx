@@ -45,7 +45,7 @@ type Action =
 	| { type: 'ADD_ENUMERATION_VALUE'; payload: { enumId: string, value: string } }
 	| { type: 'REMOVE_ENUMERATION_VALUE'; payload: { enumId: string, value: string } }
 
-	| { type: 'ADD_ORACLE'; payload: { name: string, oracleHash: string, service: string, version: number } }
+	| { type: 'ADD_ORACLE'; payload: { name: string, oracleName: string, oracleHash: string, service: string, version: number } }
 	| { type: 'EDIT_ORACLE'; payload: { oracleId: string, oracle: AppDataOracle } }
 	| { type: 'REMOVE_ORACLE'; payload: { oracleId: string } };
 
@@ -429,6 +429,7 @@ const applicationReducer = (application: Application | undefined, action: Action
 					oracles: [...oracles, {
 						id: generateRandomString(),
 						name: payload.name,
+						oracleName: payload.oracleHash,
 						oracleHash: payload.oracleHash,
 						service: payload.service,
 						version: payload.version,
@@ -461,7 +462,7 @@ const applicationReducer = (application: Application | undefined, action: Action
 
 
 		default:
-			throw 'Undefined case: '
+			console.warn(`Undefined case: `)
 	}
 };
 
@@ -511,8 +512,8 @@ export const useMaskEdition = () => {
 
 export const useApplicationOraclesEdition = () => {
 	const dispatch = useSetAtom(applicationWithReducerAtom);
-	const add = (name: string, oracleHash: string, service: string, version: number) => {
-		dispatch({ type: 'ADD_ORACLE', payload: { name, oracleHash, service, version } });
+	const add = (name: string, oracleName: string, oracleHash: string, service: string, version: number) => {
+		dispatch({ type: 'ADD_ORACLE', payload: { name, oracleName, oracleHash, service, version } });
 	}
 	const edit = (oracleId: string, oracle: AppDataOracle) => {
 		dispatch({ type: 'EDIT_ORACLE', payload: { oracleId, oracle: oracle } });
