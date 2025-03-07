@@ -259,7 +259,7 @@ function OracleOverview() {
 						className={"w-full bg-gray-300 p-2 rounded"}>{oracle.virtualBlockchainId}</Typography>
 				</div>
 				<div>
-					<Typography variant={"paragraph"}>Application Version</Typography>
+					<Typography variant={"paragraph"}>Oracle Version</Typography>
 					<Typography
 						className={"w-full bg-gray-300 p-2 rounded"}>{oracle.version}</Typography>
 				</div>
