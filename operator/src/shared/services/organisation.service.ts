@@ -207,7 +207,11 @@ export class OrganisationService {
 			organisation.publishedAt = new Date();
 			return await this.update(organisation.id, organisation);
 		} catch (e) {
-			throw new InternalServerErrorException(`Failed to publish the organisation: ${e.message}`);
+			if (e.code === 'ECONNREFUSED') {
+				throw new InternalServerErrorException("Cannot connect to the node.");
+			} else {
+				throw new InternalServerErrorException(e)
+			}
 		}
 
 	}

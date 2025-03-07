@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import {
 	Box, DialogActions,
 	DialogContent,
-	DialogTitle, List, ListItem, ListItemButton, ListItemText,
+	DialogTitle, Icon, List, ListItem, ListItemButton, ListItemText,
 	Paper,
 	Table,
 	TableBody,
@@ -18,7 +18,7 @@ import {
 	TextField,
 } from '@mui/material';
 import { Button, Dialog, IconButton, Typography } from '@material-tailwind/react';
-import { useFetchOraclesOnChain } from '@/components/api.hook';
+import { OnChainOracle, useFetchOraclesOnChain } from '@/components/api.hook';
 import Skeleton from 'react-loading-skeleton';
 
 export default function OraclesPanel() {
@@ -38,7 +38,7 @@ export default function OraclesPanel() {
 
 type ApplicationOraclesViewProps = {
 	oracles: AppDataOracle[]
-	addOracle: (name: string, oracleName: string, oracleHash: string, service: string, version: number) => void,
+	addOracle: (name: string, oracle: OnChainOracle) => void,
 	editOracle: (oracleId: string, oracle: AppDataOracle) => void,
 	removeOracle: (oracleId: string) => void,
 }
@@ -48,9 +48,9 @@ function ApplicationOraclesView( input: ApplicationOraclesViewProps ) {
 
 
 	return <>
-		<SearchOracleModal open={open} onClose={() => setOpen(false)} onSelect={(name, oracleName, oracleHash, service, version) => {
+		<SearchOracleModal open={open} onClose={() => setOpen(false)} onSelect={(name,oracle) => {
 			setOpen(false);
-			input.addOracle(name, oracleName, oracleHash, service, version);
+			input.addOracle(name, oracle);
 		}}/>
 			<Box display="flex" flexDirection="row" gap={2}>
 			<Table id="fields" className={'w-full'}>
@@ -86,7 +86,7 @@ function ApplicationOraclesView( input: ApplicationOraclesViewProps ) {
 }
 
 
-function SearchOracleModal({ open, onClose, onSelect } : {open: boolean, onClose: () => void, onSelect: (name: string, oracleName: string, oracleHash: string, oracleService: string, version: number) => void}) {
+function SearchOracleModal({ open, onClose, onSelect } : {open: boolean, onClose: () => void, onSelect: (name: string, oracle: OnChainOracle) => void}) {
 	const [search, setSearch] = useState('');
 	const [name, setName] = useState('');
 	const [error, setError] = useState('');
@@ -101,12 +101,12 @@ function SearchOracleModal({ open, onClose, onSelect } : {open: boolean, onClose
 		setError('')
 	}, [name]);
 
-	function selectOracle(o: { oracleName: string, hash: string, serviceName: string, version: number}) {
+	function selectOracle(o: OnChainOracle) {
 		if (name === '') {
 			setError("Empty oracle name")
 		} else {
 			setName("")
-			onSelect(name, o.oracleName, o.hash, o.serviceName, o.version)
+			onSelect(name, o)
 		}
 	}
 

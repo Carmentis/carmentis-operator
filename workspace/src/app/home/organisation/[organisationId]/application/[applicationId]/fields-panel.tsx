@@ -42,7 +42,7 @@ export default function FieldsPanel() {
 			<TableHead>
 			<TableRow>
 				<TableCell>Name</TableCell>
-				<TableCell>Kind</TableCell>
+				<TableCell>Category</TableCell>
 				<TableCell>Type</TableCell>
 				<TableCell>Array</TableCell>
 				<TableCell>Required</TableCell>

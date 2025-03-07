@@ -550,8 +550,9 @@ export function useAdminListOfUsersApi() {
 	);
 }
 
+export type OnChainOracle = { oracleName: string, hash: string, serviceName: string, version: number }
 export function useFetchOraclesOnChain() {
-	return useWorkspaceApi<{hash: string, oracleName: string, version: number, serviceName: string}[]>(
+	return useWorkspaceApi<OnChainOracle[]>(
 		`/chain/oracles`
 	);
 }

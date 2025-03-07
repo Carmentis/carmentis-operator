@@ -29,11 +29,14 @@ import StructurePanel from '@/app/home/organisation/[organisationId]/oracle/[ora
 import EnumerationsPanel from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/enumeration-panel';
 import MasksPanel from '@/app/home/organisation/[organisationId]/oracle/[oracleId]/masks-panel';
 import ErrorsPanel from '@/app/home/organisation/[organisationId]/application/[applicationId]/errors-panel';
+import { useConfirmationModal } from '@/contexts/popup-modal.component';
+import EntityStatusHeader from '@/components/application-oracle-header';
+import Skeleton from 'react-loading-skeleton';
 
 
 export default function OraclePage() {
 	const [oracle, setOracle] = useAtom(oracleAtom);
-	const [referenceOracle, setReferenceOracle] = useAtom(referenceOracleAtom);
+	const setReferenceOracle = useSetAtom(referenceOracleAtom);
 	const params = useParams<{organisationId: string, oracleId: string}>()
 	const organisationId = parseInt(params.organisationId);
 	const oracleId = parseInt(params.oracleId);
@@ -42,10 +45,8 @@ export default function OraclePage() {
 
 	// init
 	useEffect(() => {
-		if (!oracle || !referenceOracle) {
-			setOracle(data);
-			setReferenceOracle(data)
-		}
+		setOracle(data);
+		setReferenceOracle(data)
 	}, [data]);
 
 
@@ -56,7 +57,9 @@ export default function OraclePage() {
 	if (!oracle || !data || error) return <>An error occurred</>
 
 
-	return <OracleView/>
+	return <OracleView
+		refreshOracle={() => mutate()}
+	/>
 }
 
 export const useOracle = () => {
@@ -66,31 +69,46 @@ export const useOracle = () => {
 }
 
 
-function OracleView() {
+function OracleView(
+	{refreshOracle}: {refreshOracle: () => void}
+) {
 
-	return <Box display={"flex"} flexDirection={"column"} gap={2}>
-		<Card>
+	return <Box className={"space-y-4 flex flex-col relative"}>
+		<Card className={"w-full top-0 z-20 sticky bg-white"}>
 			<CardBody>
-				<Box className={"flex flex-row justify-between mb-4"}>
-					<OracleNavbar />
-				</Box>
-				<OracleOverview />
+				<OracleNavbar refreshOracle={refreshOracle}/>
 			</CardBody>
 		</Card>
 
 
 		<Card>
-			<CardBody>
-				<TabsComponent
-					defaultTabValue={'Services'}
-					panels={{
-						'Services': <ServicesPanel />,
-						'Structures': <StructurePanel />,
-						'Enumerations': <EnumerationsPanel />,
-						'Masks': <MasksPanel />,
-						'Code View': <CodeViewPanel/>,
-						'Errors': <ErrorsPanel context={"oracle"}/>
-					}} />
+			<CardBody className={"flex flex-col gap-4"}>
+				<OracleOverview />
+				<div className={"flex flex-col"}>
+					<Box display={"flex"} flexDirection={"row"} justifyContent={"space-between"}>
+						<Box>
+							<Typography variant={"h6"}>Oracle Definition</Typography>
+							<Typography variant={"paragraph"}>
+								Edit the definition of your oracle below.
+							</Typography>
+						</Box>
+						<Box>
+							<a href={"https://docs.carmentis.io/how-to/declare-oracle"}  target={"_blank"} className={"hover:cursor-pointer"}>
+								<i className={"bi bi-question-circle-fill"} />
+							</a>
+						</Box>
+					</Box>
+					<TabsComponent
+						defaultTabValue={'Services'}
+						panels={{
+							'Services': <ServicesPanel />,
+							'Structures': <StructurePanel />,
+							'Enumerations': <EnumerationsPanel />,
+							'Masks': <MasksPanel />,
+							'Code View': <CodeViewPanel/>,
+							'Errors': <ErrorsPanel context={"oracle"}/>
+						}} />
+				</div>
 			</CardBody>
 		</Card>
 	</Box>
@@ -98,29 +116,45 @@ function OracleView() {
 
 
 
-function OracleNavbar() {
+function OracleNavbar(
+	{refreshOracle}: {refreshOracle: () => void}
+) {
 	const callOracleUpdate = useOracleUpdate();
 	const router = useRouter();
 	const notify = useToast();
-	const oracle = useOracle();
+	const oracle = useAtomValue(oracleAtom)
 	const organisation = useOrganisationContext();
 	const organisationId = organisation.id;
 	const callOracleDeletion = useOracleDeletion();
 	const callOraclePublication = useOraclePublication();
 	const isModified = useAtomValue(oracleIsModifiedAtom);
 	const setReferenceOracle = useSetAtom(referenceOracleAtom);
+	const confirmationModal = useConfirmationModal();
 
 	const [saving, setSaving] = useState(false);
 	const [isPublishing, setIsPublishing] = useState(false);
 
+	console.log("oracle.isDraft?", oracle.isDraft)
+
 	function deleteOracle() {
-		callOracleDeletion(organisationId, oracle.id, {
-			onSuccess: () => {
-				notify.info('Oracle deleted');
-				router.push(`/home/organisation/${organisationId}/oracle`);
-			},
-			onError: notify.error,
-		});
+		confirmationModal(
+			"Publish Oracle",
+			"This action cannot be undone",
+			'Publish',
+			"Cancel",
+			() => {
+				callOracleDeletion(organisationId, oracle.id, {
+					onSuccess: () => {
+						refreshOracle()
+						notify.info('Oracle deleted');
+						router.push(`/home/organisation/${organisationId}/oracle`);
+					},
+					onError: notify.error,
+				});
+			}
+		)
+
+
 	}
 
 	function save() {
@@ -129,6 +163,7 @@ function OracleNavbar() {
 			onSuccess: () => {
 				setReferenceOracle(oracle);
 				notify.info('Oracle saved');
+				refreshOracle()
 			},
 			onError: notify.error,
 			onEnd: () => {
@@ -138,37 +173,39 @@ function OracleNavbar() {
 	}
 
 	function publish() {
-		setIsPublishing(true);
-		callOraclePublication(organisation.id, oracle.id, {
-			onSuccess: () => {
-				notify.success('Oracle published');
-			},
-			onError: notify.error,
-			onEnd: () => setIsPublishing(false)
-		})
+		confirmationModal(
+			"Publish Oracle",
+			"This action cannot be undone",
+			'Publish',
+			"Cancel",
+			() => {
+				setIsPublishing(true);
+				callOraclePublication(organisation.id, oracle.id, {
+					onSuccess: () => {
+						notify.success('Oracle published');
+						refreshOracle()
+					},
+					onError: notify.error,
+					onEnd: () => setIsPublishing(false)
+				})
+			}
+		)
+
 	}
 
-	return <>
-		<div id="left" className={"flex flex-row items-center"}>
-				<Typography variant="h5" className={"border-r-2 mr-2 pr-2"}>{oracle.name}</Typography>
-				<Typography>Version {oracle.version}</Typography>
-			</div>
-			<div className={"space-x-2"}>
-				{isModified && <Button onClick={save}>
-					{saving && <Spinner />}
-					{!saving && <><i className={'bi bi-floppy-fill  mr-2'}></i><span>save</span></>}
-				</Button>}
-
-				{!isModified && oracle.isDraft && <Button onClick={publish}>
-					{isPublishing && <Spinner />}
-					{!isPublishing && <><i className={'bi bi-floppy-fill  mr-2'}></i><span>publish</span></>}
-				</Button>}
-
-				<IconButton  onClick={deleteOracle}>
-					<TrashIcon className="h-5 w-5 transition-transform group-hover:rotate-45" />
-				</IconButton>
-			</div>
-	</>;
+	if (!oracle) return <Skeleton/>
+	return <EntityStatusHeader
+	 	name={oracle.name}
+		version={oracle.version}
+		published={oracle.published}
+		isDraft={oracle.isDraft}
+		save={save}
+		isSaving={saving}
+		isModified={isModified}
+	 	delete={deleteOracle}
+		download={() => {}}
+	 	publish={publish}
+	/>
 }
 
 
@@ -188,14 +225,45 @@ function OracleOverview() {
 
 	const inputs = [
 		{ label: 'Oracle name', value: name, onChange: setName },
-		{ label: 'Virtual Blockchain Id', value: oracle.virtualBlockchainId, disabled: true },
-		{ label: 'Version', value: oracle.version, disabled: true },
 	]
 
 	const content = inputs.map(
 		(i,index) => <TextField key={index} size={"small"} label={i.label} value={i.value} onChange={(e) => i.onChange && i.onChange(e.target.value)} disabled={i.disabled}/>
 	)
-	return <Box display={"flex"}  gap={2}>{content}</Box>
+	return <>
+		<div className={"flex flex-col space-y-4"}>
+			<div>
+				<Typography variant={"h6"}>Oracle Information</Typography>
+				<Typography variant={"paragraph"}>
+					Edit the name of the oracle below.
+				</Typography>
+			</div>
+			<div className="flex flex-col gap-3">
+				{content}
+			</div>
+		</div>
+		<div className={"mflex flex-col space-y-4"}>
+			<div>
+				<Typography variant={"h6"}>Publication Information</Typography>
+				<Typography variant={"paragraph"}>
+					Below are listed the oracle id and version. These information are useful to use this
+					oracle.
+				</Typography>
+			</div>
+			<div className="flex flex-col gap-3">
+				<div>
+					<Typography variant={"paragraph"}>Oracle Id</Typography>
+					<Typography
+						className={"w-full bg-gray-300 p-2 rounded"}>{oracle.virtualBlockchainId}</Typography>
+				</div>
+				<div>
+					<Typography variant={"paragraph"}>Application Version</Typography>
+					<Typography
+						className={"w-full bg-gray-300 p-2 rounded"}>{oracle.version}</Typography>
+				</div>
+			</div>
+		</div>
+	</>
 }
 
 

@@ -1,13 +1,22 @@
 import { OracleDataType, OracleServiceDataType } from '../workspace-api/types/oracle-data.type';
 import {
+	CarmentisApplicationDataType,
 	CarmentisEnumerationDataType,
-	CarmentisFieldDataType, CarmentisMaskDataType,
+	CarmentisFieldDataType, CarmentisMaskDataType, CarmentisMessageDataType, CarmentisOracleAnswerDataType,
 	CarmentisOracleDataType,
 	CarmentisOracleServiceDataType, CarmentisStructureDataType,
 } from '../workspace-api/types/carments-data.type';
-import { EnumerationDataType, FieldDataType, MaskDataType, StructureDataType } from '../workspace-api/types/data.type';
+import {
+	DataOracle,
+	EnumerationDataType,
+	FieldDataType,
+	MaskDataType,
+	MessageDataType,
+	StructureDataType,
+} from '../workspace-api/types/data.type';
 import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import * as assert from 'node:assert';
+import { ApplicationDataType } from '../workspace-api/types/application-data.type';
 
 
 export class CarmentisTranslator {
@@ -17,6 +26,10 @@ export class CarmentisTranslator {
 
 	static buildOracleToTranslator() : OracleForwardTranslator {
 		return new OracleForwardTranslator()
+	}
+
+	static buildApplicationTranslator() : ApplicationForwardTranslator {
+		return new ApplicationForwardTranslator()
 	}
 }
 
@@ -375,6 +388,48 @@ class OracleForwardTranslator extends CarmentisForwardTranslator<OracleDataType,
 			internalStructures: structures,
 			masks,
 			services
+		}
+	}
+}
+
+class ApplicationForwardTranslator extends CarmentisForwardTranslator<ApplicationDataType, CarmentisApplicationDataType> {
+
+
+	private translateMessage( message: MessageDataType ): CarmentisMessageDataType {
+		assert( message.id, 'Message id must be defined' );
+		assert( typeof message.name === 'string', 'Message name must be a string' );
+		assert( typeof message.content === 'string', 'Message content must be a string' );
+		return {
+			content: message.content,
+			name: message.name,
+		}
+	}
+
+	private translateOracleAnswerStructure( oracle: DataOracle ) : CarmentisOracleAnswerDataType {
+		return {
+			oracle: oracle.oracleHash,
+			serviceName: oracle.service,
+			version: oracle.version
+		}
+	}
+
+
+	protected translateSource(): CarmentisApplicationDataType {
+		const input = this.getSource();
+		const fields = (input.fields ?? []).map(f => this.translateField(f))
+		const enumerations = (input.enumerations ?? []).map(e => this.translateEnumeration(e))
+		const masks = (input.masks ?? []).map(m => this.translateMask(m))
+		const messages = (input.messages ?? []).map(m => this.translateMessage(m))
+		const internalStructures = (input.structures ?? []).map(s => this.translateStructure(s))
+		const oracleStructures = (input.oracles ?? []).map(s => this.translateOracleAnswerStructure(s))
+
+		return {
+			fields,
+			enumerations,
+			messages,
+			oracleStructures,
+			internalStructures,
+			masks,
 		}
 	}
 }

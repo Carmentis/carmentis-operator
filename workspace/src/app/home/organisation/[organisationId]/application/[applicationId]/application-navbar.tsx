@@ -1,6 +1,4 @@
 'use client';
-import { Button, Chip, IconButton, Spinner, Typography } from '@material-tailwind/react';
-import { ArrowDownOnSquareIcon, ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/16/solid';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -9,58 +7,29 @@ import {
 	useApplicationUpdateApi,
 } from '@/components/api.hook';
 import { useToast } from '@/app/layout';
-import { Application } from '@/entities/application.entity';
 import { useOrganisationContext } from '@/contexts/organisation-store.context';
-import { useApplication } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
 import {
-	useApplicationEditionStatus
+	useApplicationEditionStatus,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
-import { useSetAtom } from 'jotai';
-import { referenceApplicationAtom } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
+import { useAtomValue, useSetAtom } from 'jotai';
+import {
+	applicationAtom,
+	referenceApplicationAtom,
+} from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
+import { useConfirmationModal } from '@/contexts/popup-modal.component';
+import Skeleton from 'react-loading-skeleton';
+import EntityStatusHeader from '@/components/application-oracle-header';
 
 
-
-const BORDER_CLASSES = 'border-r-2 border-gray-200';
-const ICON_ROTATION_CLASSES = 'h-5 w-5 transition-transform group-hover:rotate-45';
-
-function ApplicationHeader({ application, hideLogo, setHideLogo }: {
-	application: Application,
-	hideLogo: boolean,
-	setHideLogo: (state: boolean) => void
-}) {
-	return (
-		<div className="begin-section justify-center items-center content-center flex">
-			<div className={`${BORDER_CLASSES} px-2 pr-4 flex`}>
-				<img
-					src={application.logoUrl}
-					alt=""
-					className="mr-4 px-0"
-					width={15}
-					hidden={!application.logoUrl || hideLogo}
-					onError={() => setHideLogo(true)}
-					onLoad={() => setHideLogo(false)}
-				/>
-				<Typography
-					variant="h5"
-					color="blue-gray"
-					className="justify-center items-center content-center"
-				>
-					{application.name}
-				</Typography>
-			</div>
-			<Typography className={`${BORDER_CLASSES} px-4`}>Version {application.version}</Typography>
-			<div className="px-4 flex flex-row space-x-2">
-				{application.published && <Chip variant="filled" className={"bg-primary-light"} value="Published" />}
-				{application.isDraft && <Chip variant="outlined" className={"border-primary-light text-primary-light"} value="Draft" />}
-			</div>
-		</div>
-	);
+export type ApplicationDetailsNavbarProps = {
+	refreshApplication: () => void
 }
-
-export default function ApplicationDetailsNavbar() {
+export default function ApplicationDetailsNavbar(
+	{refreshApplication}: ApplicationDetailsNavbarProps
+) {
 	const organisation = useOrganisationContext();
 	const organisationId = organisation.id;
-	const application = useApplication();
+	const application = useAtomValue(applicationAtom);
 	const setReferenceApplication = useSetAtom(referenceApplicationAtom);
 	const isModified = useApplicationEditionStatus();
 	const callApplicationUpdate = useApplicationUpdateApi();
@@ -69,12 +38,13 @@ export default function ApplicationDetailsNavbar() {
 	const router = useRouter();
 	const notify = useToast();
 	const [isApplicationSaving, setApplicationSaving] = useState(false);
-	const [hideLogo, setHideLogo] = useState(false);
+	const confirmModal = useConfirmationModal();
 
 	const saveApplication = () => {
 		setApplicationSaving(true);
 		callApplicationUpdate(organisationId, application, {
 			onSuccess: () => {
+				refreshApplication()
 				setApplicationSaving(false);
 				setReferenceApplication(application);
 				notify.info('Application saved');
@@ -106,56 +76,58 @@ export default function ApplicationDetailsNavbar() {
 	};
 
 	const deleteApplication = () => {
-		callApplicationDeletion(organisationId, application.id, {
-			onSuccess: () => {
-				notify.info('Application deleted');
-				router.replace(`/home/organisation/${organisationId}/application`);
-			},
-			onError: (error) => {
-				notify.error(error);
-			},
-		});
+		confirmModal(
+			'Delete Application',
+			'This action cannot be undone.',
+			'Delete',
+			'Cancel',
+			() => {
+				callApplicationDeletion(organisationId, application.id, {
+					onSuccess: () => {
+						notify.info('Application deleted');
+						router.replace(`/home/organisation/${organisationId}/application`);
+					},
+					onError: (error) => {
+						notify.error(error);
+					},
+				});
+			}
+		)
 	};
 
 	function publishApplication() {
-		callApplicationPublish(organisationId, application, {
-			onSuccess: () => {
-				notify.info('Application published');
-			},
-			onError: (error) => {
-				notify.error(error);
-			},
-		})
+		confirmModal(
+			'Publish Application',
+            'This action cannot be undone.',
+            'Publish',
+            'Cancel',
+            () => {
+				callApplicationPublish(organisationId, application, {
+					onSuccess: () => {
+						refreshApplication()
+						notify.info('Application published');
+					},
+					onError: (error) => {
+						notify.error(error);
+					},
+				})
+			}
+		)
 	}
 
-	return (
-		<>
-				<div className="flex justify-between">
-					<ApplicationHeader
-						application={application}
-						hideLogo={hideLogo}
-						setHideLogo={setHideLogo}
-					/>
-					<div className="flex">
-						<div className={`space-x-2 ${BORDER_CLASSES} pr-2 flex flex-row`}>
-							{isModified && <Button className={"flex items-center space-x-2"}   onClick={saveApplication} >
-								{isApplicationSaving ? <Spinner /> : <i className="bi bi-floppy-fill"></i>}
-								<span>save</span>
-							</Button>}
-							{application.isDraft && <Button className={"flex items-center space-x-2"} onClick={publishApplication}>
-								<ArrowUpOnSquareIcon className={ICON_ROTATION_CLASSES} />
-								<span>Publish</span>
-							</Button>}
-							<Button  className={"flex items-center space-x-2"} onClick={downloadApplicationAsJson}>
-								<ArrowDownOnSquareIcon className={ICON_ROTATION_CLASSES} />
-								<span>Download</span>
-							</Button>
-						</div>
-						<IconButton className="border-l-2 border-gray-200 ml-2" onClick={deleteApplication}>
-							<TrashIcon className={ICON_ROTATION_CLASSES} />
-						</IconButton>
-					</div>
-				</div>
-		</>
-	);
+	if (!application) return <Skeleton/>
+	return <EntityStatusHeader
+		name={application.name}
+		version={application.version}
+		published={application.published}
+		isDraft={application.isDraft}
+		save={saveApplication}
+		isSaving={isApplicationSaving}
+		isModified={isModified}
+		delete={deleteApplication}
+		download={downloadApplicationAsJson}
+		publish={publishApplication}
+	/>
+
+
 }

@@ -1,4 +1,12 @@
-import { HttpException, HttpStatus, Injectable, NotImplementedException, UnauthorizedException } from '@nestjs/common';
+import {
+    BadRequestException,
+    HttpException,
+    HttpStatus,
+    Injectable,
+    InternalServerErrorException, Logger,
+    NotImplementedException,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { OrganisationEntity } from '../entities/organisation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -13,6 +21,7 @@ import { EnvService } from './env.service';
 
 @Injectable()
 export class ApplicationService {
+    private logger = new Logger(ApplicationService.name);
     constructor(
         @InjectRepository(ApplicationEntity)
         private readonly applicationRepository: Repository<ApplicationEntity>,
@@ -147,21 +156,30 @@ export class ApplicationService {
 	}
 
     async publishApplication(applicationId: number) {
-        const application = await this.applicationRepository.findOneBy({
-            id: applicationId,
-        });
-        const organisation = await this.getOrganisationByApplicationId(applicationId);
-        const mb : MicroBlock = await this.chainService.publishApplication(organisation, application);
+        try {
+            const application = await this.applicationRepository.findOneBy({
+                id: applicationId,
+            });
+            const organisation = await this.getOrganisationByApplicationId(applicationId);
+            const mb : MicroBlock = await this.chainService.publishApplication(organisation, application);
 
-        application.isDraft = false;
-        application.published = true;
-        application.publishedAt = new Date();
-        application.version += 1;
-        if ( mb.header.height === 1 ) {
-            application.virtualBlockchainId = mb.hash;
+            application.isDraft = false;
+            application.published = true;
+            application.publishedAt = new Date();
+            application.version += 1;
+            if ( mb.header.height === 1 ) {
+                application.virtualBlockchainId = mb.hash;
+            }
+
+            return await this.applicationRepository.save(application);
+        } catch (e) {
+            this.logger.error(e)
+            if (e.code === 'ECONNREFUSED') {
+                throw new InternalServerErrorException("Cannot connect to the node.");
+            } else {
+                throw new BadRequestException(e);
+            }
         }
-
-        return await this.applicationRepository.save(application);
     }
 
     private async getOrganisationByApplicationId(applicationId: number) {

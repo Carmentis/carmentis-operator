@@ -14,6 +14,7 @@ import {
 import { useAtomValue, useSetAtom } from 'jotai';
 import { generateRandomString } from 'ts-randomstring/lib';
 import { Oracle } from '@/entities/oracle.entity';
+import { OnChainOracle } from '@/components/api.hook';
 
 type Action =
 
@@ -45,7 +46,7 @@ type Action =
 	| { type: 'ADD_ENUMERATION_VALUE'; payload: { enumId: string, value: string } }
 	| { type: 'REMOVE_ENUMERATION_VALUE'; payload: { enumId: string, value: string } }
 
-	| { type: 'ADD_ORACLE'; payload: { name: string, oracleName: string, oracleHash: string, service: string, version: number } }
+	| { type: 'ADD_ORACLE'; payload: { name: string, oracle: OnChainOracle } }
 	| { type: 'EDIT_ORACLE'; payload: { oracleId: string, oracle: AppDataOracle } }
 	| { type: 'REMOVE_ORACLE'; payload: { oracleId: string } };
 
@@ -422,6 +423,7 @@ const applicationReducer = (application: Application | undefined, action: Action
 
 		case 'ADD_ORACLE':
 			const payload = action.payload;
+			const oracle = payload.oracle;
 			return {
 				...application,
 				data: {
@@ -429,10 +431,10 @@ const applicationReducer = (application: Application | undefined, action: Action
 					oracles: [...oracles, {
 						id: generateRandomString(),
 						name: payload.name,
-						oracleName: payload.oracleHash,
-						oracleHash: payload.oracleHash,
-						service: payload.service,
-						version: payload.version,
+						oracleName: oracle.oracleName,
+						oracleHash: oracle.hash,
+						service: oracle.serviceName,
+						version: oracle.version,
 					}],
 				},
 			};
@@ -512,8 +514,8 @@ export const useMaskEdition = () => {
 
 export const useApplicationOraclesEdition = () => {
 	const dispatch = useSetAtom(applicationWithReducerAtom);
-	const add = (name: string, oracleName: string, oracleHash: string, service: string, version: number) => {
-		dispatch({ type: 'ADD_ORACLE', payload: { name, oracleName, oracleHash, service, version } });
+	const add = (name: string, oracle: OnChainOracle) => {
+		dispatch({ type: 'ADD_ORACLE', payload: { name, oracle } });
 	}
 	const edit = (oracleId: string, oracle: AppDataOracle) => {
 		dispatch({ type: 'EDIT_ORACLE', payload: { oracleId, oracle: oracle } });

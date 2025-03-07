@@ -80,15 +80,8 @@ export default class ChainService implements OnModuleInit{
 		await organisationVb.sign()
 
 		// publish the micro-block
-		try {
-			return await organisationVb.publish();
-		} catch (e) {
-			if (e.code === 'ECONNREFUSED') {
-				throw new InternalServerErrorException("Cannot connect to the node.");
-			} else {
-				throw new InternalServerErrorException(e)
-			}
-		}
+		return await organisationVb.publish();
+
 
 	}
 
@@ -110,13 +103,11 @@ export default class ChainService implements OnModuleInit{
 
 		const vc = new sdk.blockchain.applicationVb(application.virtualBlockchainId);
 		if ( !application.virtualBlockchainId ) {
-			console.log("Creating new application", application, organisation);
 			await vc.addDeclaration({
 				organizationId: organisation.virtualBlockchainId,
 			});
 
 		} else {
-			console.log("Loading existing application", application);
 			await vc.load();
 		}
 
@@ -129,16 +120,11 @@ export default class ChainService implements OnModuleInit{
 		})
 
 		// merge the default empty application with the provided one
+		const translator = CarmentisTranslator.buildApplicationTranslator();
+		const data = translator.translate(application.data);
 		await vc.addDefinition({
 			version: application.version + 1, // we increment the version number
-			definition: {
-				fields: [],
-				structures: [],
-				masks: [],
-				enumerations: [],
-				messages: [],
-				...application.data // replace default empty data with the application data if any
-			}
+			definition: data,
 		});
 
 		vc.setGasPrice(
@@ -147,7 +133,6 @@ export default class ChainService implements OnModuleInit{
 
 
 		await vc.sign();
-
 		return vc.publish()
 	}
 

@@ -53,8 +53,8 @@ export function FieldEditionComponent(
 	const [fieldKind, setFieldKind] = useState(field.kind);
 	const [fieldType, setFieldType] = useState(field.type?.id);
 
-	const mask = field.kind === 'primitive' ? field.type.mask : undefined;
-	const [fieldMask, setFieldMask] = useState<string|undefined>(mask);
+	const mask = field.kind === 'primitive' && field.type && field.type.mask ? field.type.mask : '';
+	const [fieldMask, setFieldMask] = useState<string>(mask);
 	const [isList, setIsList] = useState(field.array);
 
 	const visibility = field.kind === 'primitive' ? field.type.private : false;
@@ -75,7 +75,6 @@ export function FieldEditionComponent(
 	useEffect(() => {
 		const f: AppDataField = {
 			...field,
-			id: input.field.id,
 			name: fieldName,
 			array: isList,
 			required: isRequired,
@@ -83,7 +82,28 @@ export function FieldEditionComponent(
 
 		input.onUpdateField(f);
 
-	}, [fieldName, fieldType, isList, isPublic, isRequired]);
+	}, [fieldName, fieldType, isList, isRequired]);
+
+	useEffect(() => {
+		if (field.kind === 'primitive') {
+			const f: AppDataField = {
+				...field,
+				name: fieldName,
+				array: isList,
+				required: isRequired,
+				kind: 'primitive',
+				type: {
+					...field.type,
+					private: !isPublic
+				}
+			}
+
+			input.onUpdateField(f);
+
+		} else {
+			console.warn(`I have received an update for fieldMask or isHashable but is kind ${field.kind}`)
+		}
+	}, [isPublic]);
 
 
 	// update the field when mask or hashable are updated
@@ -133,7 +153,6 @@ export function FieldEditionComponent(
 			}
 		}
 
-		console.log("on update kind of field:", f)
 		input.onUpdateField(f);
 	}, [fieldKind]);
 
@@ -156,7 +175,6 @@ export function FieldEditionComponent(
 			}
 		}
 
-		console.log("on update type of field:", f)
 		input.onUpdateField(f);
 	}, [fieldType]);
 

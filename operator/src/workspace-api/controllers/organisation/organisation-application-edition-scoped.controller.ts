@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	Body,
 	Controller,
 	Delete,
@@ -53,7 +54,7 @@ export class OrganisationApplicationEditionScopedController {
 		try {
 			await this.applicationService.publishApplication(applicationId);
 		} catch (e) {
-			throw new InternalServerErrorException();
+			throw new BadRequestException(e);
 		}
 	}
 

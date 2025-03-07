@@ -48,7 +48,7 @@ export default function TabsComponent(
 	},
 ) {
 	return (
-		<Tabs  value={defaultTabValue}>
+		<Tabs  value={defaultTabValue} className={"z-10"}>
 			<TabsHeader >
 				{renderTabs(panels)}
 			</TabsHeader>

@@ -1,7 +1,7 @@
 'use client';
 
 
-import { Card, CardBody } from '@material-tailwind/react';
+import { Button, Card, CardBody, IconButton, Typography } from '@material-tailwind/react';
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
@@ -23,8 +23,9 @@ import {
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { useUpdateApplication } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
 import OraclesPanel from '@/app/home/organisation/[organisationId]/application/[applicationId]/oracles-panel';
-import { TextField } from '@mui/material';
+import { Box, TextField } from '@mui/material';
 import ErrorsPanel from '@/app/home/organisation/[organisationId]/application/[applicationId]/errors-panel';
+import { AppDataOracle } from '@/entities/application.entity';
 
 
 export default function ApplicationPage() {
@@ -38,10 +39,8 @@ export default function ApplicationPage() {
 
 	// init
 	useEffect(() => {
-		if (!application || !referenceApplication) {
-			setApplication(data);
-			setReferenceApplication(data)
-		}
+		setApplication(data);
+		setReferenceApplication(data)
 	}, [data]);
 
 
@@ -52,8 +51,8 @@ export default function ApplicationPage() {
 	if (!application || !data || error) return <>An error occurred</>
 
 
-	return <ApplicationEditionLogic
-		mutate={mutate}
+	return <ApplicationEditionView
+		refreshApplication={() => mutate()}
 	/>
 }
 
@@ -63,39 +62,52 @@ export const useApplication = () => {
 	return application;
 }
 
-function ApplicationEditionLogic(
-	 input: {
-		 mutate: () => void,
-	 }
-) {
-	return <ApplicationEditionView/>
+
+
+type ApplicationEditionViewProps = {
+	refreshApplication: () => void;
 }
-
-
-function ApplicationEditionView() {
+function ApplicationEditionView( props: ApplicationEditionViewProps ) {
 	return <>
-		<div className={'space-y-4'}>
-			<Card>
+		<div className={'space-y-4 flex flex-col relative'}>
+			<Card className={"w-full top-0 z-20 sticky"}>
 				<CardBody>
-					<ApplicationDetailsNavbar/>
-					<ApplicationOverview />
+					<ApplicationDetailsNavbar refreshApplication={props.refreshApplication}/>
 				</CardBody>
 			</Card>
 
 			<Card>
-				<CardBody>
-					<TabsComponent
-						defaultTabValue={'Fields'}
-						panels={{
-							'Fields': <FieldsPanel/>,
-							'Structures': <StructurePanel/>,
-							'Enumerations': <EnumerationPanel/>,
-							'Oracles': <OraclesPanel/>,
-							'Masks': <MasksPanel/>,
-							'Messages': <MessagesPanel/>,
-							'Code view': <CodeViewPanel/>,
-							//'Errors': <ErrorsPanel context={"application"}/>,
-						}} />
+				<CardBody className={"flex flex-col gap-6"}>
+					<ApplicationOverview />
+
+					<Box display={"flex"} flexDirection={"column"}>
+						<Box display={"flex"} flexDirection={"row"} justifyContent={"space-between"}>
+							<Box>
+								<Typography variant={"h6"}>Application Definition</Typography>
+								<Typography variant={"paragraph"}>
+									Edit the definition of your application below.
+								</Typography>
+							</Box>
+							<Box>
+								<a href={"https://docs.carmentis.io/how-to/declare-your-application"}  target={"_blank"} className={"hover:cursor-pointer"}>
+									<i className={"bi bi-question-circle-fill"} />
+								</a>
+							</Box>
+						</Box>
+						<TabsComponent
+							defaultTabValue={'Fields'}
+							panels={{
+								'Fields': <FieldsPanel/>,
+								'Structures': <StructurePanel/>,
+								'Enumerations': <EnumerationPanel/>,
+								'Oracles': <OraclesPanel/>,
+								'Masks': <MasksPanel/>,
+								'Messages': <MessagesPanel/>,
+								'Code view': <CodeViewPanel/>,
+								//'Errors': <ErrorsPanel context={"application"}/>,
+							}} />
+					</Box>
+
 				</CardBody>
 
 			</Card>
@@ -131,24 +143,49 @@ function ApplicationOverview() {
 		{ label: 'Tag', value: tag, onChange: setTag },
 		{ label: 'Logo URL', value: logoUrl, onChange: setLogoUrl },
 		{ label: 'Website', value: domainUrl, onChange: setDomainUrl },
-		{ label: 'Application ID', value: application.virtualBlockchainId, disabled: true },
-		{ label: 'Application version', value: application.version, disabled: true },
+		//{ label: 'Application ID', value: application.virtualBlockchainId, disabled: true },
+	//	{ label: 'Application version', value: application.version, disabled: true },
 		{ label: 'Description', value: description, className: "w-full", onChange: setDescription }
 	];
 
 	const overviewContent = INPUTS.map((i,index) => <div key={index} className={`flex flex-col flex-1`}>
-		<TextField size={"small"} label={i.label} value={i.value} disabled={i.disabled} onChange={(e) => i.onChange && i.onChange(e.target.value)} className={i.className}/>
+		<TextField size={"small"} label={i.label} value={i.value} onChange={(e) => i.onChange && i.onChange(e.target.value)} className={i.className}/>
 	</div>)
 
-	const overviewWrapper = <form className="mb-2 w-full" onSubmit={e => e.preventDefault()}>
-		<div className="flex flex-wrap gap-6">
-			{overviewContent}
+
+	return <>
+		<div className={"flex flex-col space-y-4"}>
+			<div>
+				<Typography variant={"h6"}>Application Information</Typography>
+				<Typography variant={"paragraph"}>
+					Edit the name of the application, the tag, the logo and the description below.
+				</Typography>
+			</div>
+			<div className="flex flex-col gap-3">
+				{overviewContent}
+			</div>
 		</div>
-	</form>;
-
-
-	return <div className={"mt-4"}>
-		{overviewWrapper}
-	</div>;
+		<div className={"mflex flex-col space-y-4"}>
+			<div>
+				<Typography variant={"h6"}>Publication Information</Typography>
+				<Typography variant={"paragraph"}>
+					Below are listed the application id and version. These information are useful to use this application declaration.
+				</Typography>
+			</div>
+			<div className="flex flex-col gap-3">
+				<div>
+					<Typography variant={"paragraph"}>Application Id</Typography>
+					<Typography
+						className={"w-full bg-gray-300 p-2 rounded"}>{application.virtualBlockchainId}</Typography>
+				</div>
+				<div>
+					<Typography variant={"paragraph"}>Application Version</Typography>
+					<Typography
+						className={"w-full bg-gray-300 p-2 rounded"}>{application.version}</Typography>
+				</div>
+			</div>
+		</div>
+	</>;
 }
+
 

@@ -143,7 +143,7 @@ function ServiceFieldsTable({children, addField}: PropsWithChildren<{addField: (
 		<TableHead>
 			<TableRow>
 				<TableCell>Name</TableCell>
-				<TableCell>Kind</TableCell>
+				<TableCell>Category</TableCell>
 				<TableCell>Type</TableCell>
 				<TableCell>Array</TableCell>
 				<TableCell>Required</TableCell>

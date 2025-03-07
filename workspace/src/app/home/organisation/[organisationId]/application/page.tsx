@@ -1,54 +1,40 @@
 'use client';
 
-import { Button, Card, CardBody, Chip, Typography } from '@material-tailwind/react';
+import { Button, Card, CardBody, Chip, IconButton, Typography } from '@material-tailwind/react';
 import { SearchInputForm } from '@/components/form/search-input.form';
-import { BaseSyntheticEvent, ReactNode, useRef, useState } from 'react';
+import { BaseSyntheticEvent, useRef, useState } from 'react';
 import SimpleTextModalComponent from '@/components/modals/simple-text-modal.component';
 import {
 	useApplicationCreation,
+	useApplicationDeletionApi,
 	useApplicationImport,
 	useFetchOrganisationApplications,
 } from '@/components/api.hook';
 import { useRouter } from 'next/navigation';
-import { DynamicAppIcon } from '@/components/icons/default-user.icon';
 import { useToast } from '@/app/layout';
 import { useOrganisationContext } from '@/contexts/organisation-store.context';
 import Skeleton from 'react-loading-skeleton';
 import { ApplicationSummary } from '@/entities/application.entity';
 import CardTableComponent from '@/components/card-table.component';
 import { Container } from '@mui/material';
+import { useConfirmationModal } from '@/contexts/popup-modal.component';
 
-/**
- * Component representing a horizontal card for an application.
- */
-function ApplicationHorizontalCard({ application, className }: {
-	application: ApplicationSummary;
-	className?: string;
-}) {
-	return (
-		<Card
-			className={`w-72 h-72 hover:shadow-xl transition-shadow cursor-pointer ${className} items-center justify-center`}
-		>
-			<CardBody>
-					<DynamicAppIcon src={application.logoUrl} className={"mb-8"}/>
-					<p>{application.name}</p>
-			</CardBody>
-		</Card>
-	);
-}
 
 /**
  * Component that displays a list of application cards with links.
  */
-function ListOfApplicationsComponent({ organisationId, data }: {
+function ListOfApplicationsComponent({ organisationId, data, deleteApplication }: {
 	organisationId: number;
 	data: ApplicationSummary[];
+	deleteApplication: (applicationId: number) => void;
 }) {
 
 	const router = useRouter();
 	function visitApplication(appId: number) {
 		router.push(`/home/organisation/${organisationId}/application/${appId}`)
 	}
+
+
 
 	return <CardTableComponent
 		data={data}
@@ -59,7 +45,10 @@ function ListOfApplicationsComponent({ organisationId, data }: {
 			{head: 'Draft', value: v.isDraft && <Chip value={'Draft'} className={'bg-primary-light w-min'} />},
 			{head: 'Published', value: v.published && <Chip value={'Published'} className={'bg-primary-light w-min'} />},
 			{head: 'Published at', value: v.publishedAt && <Typography>{new Date(v.publishedAt).toLocaleString()}</Typography>},
-			{head: 'Version', value: <Typography>{v.version}</Typography>}
+			{head: 'Version', value: <Typography>{v.version}</Typography>},
+			{head: '', value: <IconButton size={"sm"} onClick={(e) => {
+				e.stopPropagation(); deleteApplication(v.id)
+			}}><i className={"bi bi-trash-fill"}/></IconButton>}
 		]}
 	/>
 }
@@ -80,6 +69,24 @@ export default function ListOfApplicationsPage() {
 
 	const { data, isLoading, mutate } = useFetchOrganisationApplications(organisationId);
 
+
+	const deleteApplicationApi = useApplicationDeletionApi();
+	const confirmModal = useConfirmationModal();
+	function deleteApplication(applicationId: number) {
+		confirmModal(
+			'Delete Application',
+			'This operation cannot be undone',
+			'Delete',
+			'Cancel',
+			() => deleteApplicationApi(organisation.id, applicationId, {
+				onSuccess: () => {
+					notify.info('Application deleted');
+					mutate()
+				},
+				onError: notify.error
+			}),
+		)
+	}
 
 	function handleImportFileButtonClick() {
 		// @ts-expect-error Input file is undefined by default
@@ -176,6 +183,7 @@ export default function ListOfApplicationsPage() {
 			<ListOfApplicationsComponent
 				data={data.filter(app => search === '' || app.name.toLowerCase().includes(search.toLowerCase()))}
 				organisationId={organisationId}
+				deleteApplication={deleteApplication}
 			/>
 
 			{nameForm}
