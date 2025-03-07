@@ -1,6 +1,6 @@
 import { Public } from '../decorators/public.decorator';
 import { Controller, Get } from '@nestjs/common';
-import * as sdk from '../../../../../carmentis-core';
+import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { EnvService } from '../../shared/services/env.service';
 
 @Controller('/workspace/api/chain')
