@@ -82,7 +82,7 @@ function OracleView(
 
 
 		<Card>
-			<CardBody className={"flex flex-col gap-4"}>
+			<CardBody className={"flex flex-col gap-16"}>
 				<OracleOverview />
 				<div className={"flex flex-col"}>
 					<Box display={"flex"} flexDirection={"row"} justifyContent={"space-between"}>
@@ -98,16 +98,18 @@ function OracleView(
 							</a>
 						</Box>
 					</Box>
-					<TabsComponent
-						defaultTabValue={'Services'}
-						panels={{
-							'Services': <ServicesPanel />,
-							'Structures': <StructurePanel />,
-							'Enumerations': <EnumerationsPanel />,
-							'Masks': <MasksPanel />,
-							'Code View': <CodeViewPanel/>,
-							'Errors': <ErrorsPanel context={"oracle"}/>
-						}} />
+					<div className={"min-h-screen"}>
+						<TabsComponent
+							defaultTabValue={'Services'}
+							panels={{
+								'Services': <ServicesPanel />,
+								'Structures': <StructurePanel />,
+								'Enumerations': <EnumerationsPanel />,
+								'Masks': <MasksPanel />,
+								'Code View': <CodeViewPanel/>,
+								'Errors': <ErrorsPanel context={"oracle"}/>
+							}} />
+					</div>
 				</div>
 			</CardBody>
 		</Card>
@@ -238,7 +240,7 @@ function OracleOverview() {
 					Edit the name of the oracle below.
 				</Typography>
 			</div>
-			<div className="flex flex-col gap-3">
+			<div className="flex flex-col gap-6">
 				{content}
 			</div>
 		</div>
@@ -250,7 +252,7 @@ function OracleOverview() {
 					oracle.
 				</Typography>
 			</div>
-			<div className="flex flex-col gap-3">
+			<div className="flex flex-col gap-4">
 				<div>
 					<Typography variant={"paragraph"}>Oracle Id</Typography>
 					<Typography

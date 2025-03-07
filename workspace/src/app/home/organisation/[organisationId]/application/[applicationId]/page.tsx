@@ -16,7 +16,7 @@ import MessagesPanel from '@/app/home/organisation/[organisationId]/application/
 import CodeViewPanel from '@/app/home/organisation/[organisationId]/application/[applicationId]/code-panel';
 import TabsComponent from '@/components/tabs.component';
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
-import { useAtom, useAtomValue } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
 	applicationAtom,
 	referenceApplicationAtom,
@@ -30,7 +30,7 @@ import { AppDataOracle } from '@/entities/application.entity';
 
 export default function ApplicationPage() {
 	const [application, setApplication] = useAtom(applicationAtom);
-	const [referenceApplication, setReferenceApplication] = useAtom(referenceApplicationAtom);
+	const setReferenceApplication= useSetAtom(referenceApplicationAtom);
 	const params = useParams<{organisationId: string, applicationId: string}>()
 	const organisationId = parseInt(params.organisationId);
 	const applicationId = parseInt(params.applicationId);
@@ -77,7 +77,7 @@ function ApplicationEditionView( props: ApplicationEditionViewProps ) {
 			</Card>
 
 			<Card>
-				<CardBody className={"flex flex-col gap-6"}>
+				<CardBody className={"flex flex-col gap-12"}>
 					<ApplicationOverview />
 
 					<Box display={"flex"} flexDirection={"column"}>
@@ -94,18 +94,20 @@ function ApplicationEditionView( props: ApplicationEditionViewProps ) {
 								</a>
 							</Box>
 						</Box>
-						<TabsComponent
-							defaultTabValue={'Fields'}
-							panels={{
-								'Fields': <FieldsPanel/>,
-								'Structures': <StructurePanel/>,
-								'Enumerations': <EnumerationPanel/>,
-								'Oracles': <OraclesPanel/>,
-								'Masks': <MasksPanel/>,
-								'Messages': <MessagesPanel/>,
-								'Code view': <CodeViewPanel/>,
-								//'Errors': <ErrorsPanel context={"application"}/>,
-							}} />
+						<Box className={"min-h-screen z-10"}>
+							<TabsComponent
+								defaultTabValue={'Fields'}
+								panels={{
+									'Fields': <FieldsPanel/>,
+									'Structures': <StructurePanel/>,
+									'Enumerations': <EnumerationPanel/>,
+									'Oracles': <OraclesPanel/>,
+									'Masks': <MasksPanel/>,
+									'Messages': <MessagesPanel/>,
+									'Code view': <CodeViewPanel/>,
+									//'Errors': <ErrorsPanel context={"application"}/>,
+								}} />
+						</Box>
 					</Box>
 
 				</CardBody>
@@ -143,8 +145,6 @@ function ApplicationOverview() {
 		{ label: 'Tag', value: tag, onChange: setTag },
 		{ label: 'Logo URL', value: logoUrl, onChange: setLogoUrl },
 		{ label: 'Website', value: domainUrl, onChange: setDomainUrl },
-		//{ label: 'Application ID', value: application.virtualBlockchainId, disabled: true },
-	//	{ label: 'Application version', value: application.version, disabled: true },
 		{ label: 'Description', value: description, className: "w-full", onChange: setDescription }
 	];
 
@@ -161,7 +161,7 @@ function ApplicationOverview() {
 					Edit the name of the application, the tag, the logo and the description below.
 				</Typography>
 			</div>
-			<div className="flex flex-col gap-3">
+			<div className="flex flex-col gap-6">
 				{overviewContent}
 			</div>
 		</div>
@@ -172,11 +172,11 @@ function ApplicationOverview() {
 					Below are listed the application id and version. These information are useful to use this application declaration.
 				</Typography>
 			</div>
-			<div className="flex flex-col gap-3">
+			<div className="flex flex-col gap-4">
 				<div>
 					<Typography variant={"paragraph"}>Application Id</Typography>
 					<Typography
-						className={"w-full bg-gray-300 p-2 rounded"}>{application.virtualBlockchainId}</Typography>
+						className={"w-full bg-gray-300 p-2 rounded"}>{application.virtualBlockchainId || ''}</Typography>
 				</div>
 				<div>
 					<Typography variant={"paragraph"}>Application Version</Typography>

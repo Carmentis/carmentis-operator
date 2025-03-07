@@ -1,5 +1,5 @@
 import { Tab, TabPanel, Tabs, TabsBody, TabsHeader } from '@material-tailwind/react';
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 
 interface TabsComponentMap {
 	[key: string]: ReactNode;
@@ -47,8 +47,9 @@ export default function TabsComponent(
 		defaultTabValue?: string;
 	},
 ) {
+	const [tab, setTab] = useState<string>(defaultTabValue);
 	return (
-		<Tabs  value={defaultTabValue} className={"z-10"}>
+		<Tabs  value={tab} className={"z-10"}>
 			<TabsHeader >
 				{renderTabs(panels)}
 			</TabsHeader>
