@@ -337,10 +337,9 @@ export function useSandboxCreationApi() {
 }
 
 
-export function useFetchOperatorInitialisationStatus(cb: APICallbacks<OperatorInitialisationStatus>) {
-	return CallApi(`/setup/status`, cb, {
-		method: 'GET'
-	});
+
+export function useFetchOperatorInitialisationStatus() {
+	return useWorkspaceApi<OperatorInitialisationStatus>(`/setup/status`);
 }
 
 

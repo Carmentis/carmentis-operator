@@ -29,8 +29,11 @@ export function UserAuthenticationContextProvider({children}: PropsWithChildren)
 		return navigation.navigateToIndex();
 	}
 
-	if (!data || isLoading)
+	if (isLoading)
 		return <FullPageLoadingComponent/>
+
+	if (!data || error)
+		return <>An error occurred</>
 
 	if (error || localStorage.getItem(TOKEN_STORAGE_ITEM) === undefined)
 		navigation.navigateToLogin();

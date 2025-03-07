@@ -7,10 +7,10 @@ import { usePathname } from 'next/navigation';
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
 
 export function InitialisationStatusContext({children}: PropsWithChildren) {
-	const [initialised, setInitialised] = useState<boolean | undefined>(undefined);
-	const [errorEncountered, setErrorEncountered] = useState(false);
+	const node = process.env.NEXT_PUBLIC_OPERATOR_URL;
 
-	useFetchOperatorInitialisationStatus({
+	const {data, isLoading, error} = useFetchOperatorInitialisationStatus();
+	/*{
 		onSuccessData: data => {
 			setInitialised(data.initialised)
 		},
@@ -18,23 +18,43 @@ export function InitialisationStatusContext({children}: PropsWithChildren) {
 			setErrorEncountered(true)
 		}
 	});
+	 */
 
 	const navigation = useApplicationNavigationContext();
 	const pathname = usePathname();
 
-	if (errorEncountered && pathname !== '/operator-setup') {
-		navigation.navigateToOperatorStatus();
-		return <h1>Redirecting to operator status...</h1>
-	}
+	if (isLoading) return <FullPageLoadingComponent />;
+	if (error) return <OperatorErrorAlert
+		message={`It seems that the operator located at ${node} is down. (${error.message})`}
+	/>
+	if ( !data || !data.initialised || typeof data.initialised !== 'boolean')return <OperatorErrorAlert
+		message={`It seems that the server has responded with invalid data. Are you sure to have correctly set the operator url? Current url set to ${node}.`}
+	/>
 
-	if (initialised === false && pathname !== '/setup')
+
+	const initialised = data.initialised;
+	if (!initialised && pathname !== '/setup')
 		navigation.navigateToSetup();
 
-	if (initialised === undefined && pathname !== '/operator-setup')
-		return <FullPageLoadingComponent/>
-
-	if (initialised !== undefined && pathname === '/operator-status')
+	if (pathname === '/operator-status')
 		return <>{children}</>
 
 	return <>{children}</>
+}
+
+
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+
+type ErrorMessageProps = {
+	message: string;
+};
+
+export function OperatorErrorAlert({ message }: ErrorMessageProps) {
+	return (
+		<Alert severity="error">
+			<AlertTitle>Error</AlertTitle>
+			{message}
+		</Alert>
+	);
 }

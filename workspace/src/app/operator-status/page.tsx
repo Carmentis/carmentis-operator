@@ -29,19 +29,10 @@ function OperatorConnectionCard() {
 }
 
 function OperatorConnectionStatus() {
-    const [online, setOnline] = useState<boolean|undefined>(undefined);
-    const [errorMessage, setErrorMessage] = useState('');
+    const {data, error, isLoading} = useFetchOperatorInitialisationStatus();
 
-    useFetchOperatorInitialisationStatus({
-        onSuccess: () => setOnline(true),
-        onError: (error) => {
-            setErrorMessage(error)
-            setOnline(false)
-        }
-    })
-
-    if (online === undefined)  return 'Contacting...'
-    if (online) return 'Connected'
-    if (!online) return 'Connection failure'
+    if (isLoading)  return 'Contacting...'
+    if (!data || error) return 'Connection failure'
+    return `Connected (${data.initialised ? 'Initialised' : 'Not initialised'})`
 }
 
