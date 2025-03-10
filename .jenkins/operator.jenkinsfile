@@ -1,8 +1,15 @@
 @Library('helper-building-scripts')_
 
-buildAndPushNest(
+buildAndPushDockerImage(
     GIT_REPO_URL: 'https://github.com/carmentis/carmentis-operator.git',
     PROJECT_DIR: './operator',
-    DOCKER_IMAGE_NAME: 'operator-back',
+    DOCKER_IMAGE_NAME: 'operator/back',
+    GIT_REPO_BRANCH: 'main'
+)
+
+buildAndPushDockerImage(
+    GIT_REPO_URL: 'https://github.com/carmentis/carmentis-operator.git',
+    PROJECT_DIR: './workspace',
+    DOCKER_IMAGE_NAME: 'operator/front',
     GIT_REPO_BRANCH: 'main'
 )
