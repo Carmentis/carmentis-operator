@@ -1,9 +1,9 @@
 @Library('helper-building-scripts')
 
-buildAndPublishNest(
+buildAndPublishNest([
     GIT_REPO_URL: 'https://github.com/carmentis/carmentis-operator.git',
     DOCKER_REGISTRY: 'ghcr.io/carmentis',
     PROJECT_DIR: './operator',
     DOCKER_IMAGE_NAME: 'operator-back',
     DOCKER_IMAGE_TAG: 'dev'
-)
+])
