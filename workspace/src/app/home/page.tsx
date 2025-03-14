@@ -11,15 +11,15 @@ import { useApplicationNavigationContext } from '@/contexts/application-navigati
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
 import { useToast } from '@/app/layout';
 import ConditionallyHiddenLayout from '@/components/conditionally-hidden-layout.component';
-import { OrganisationSummaryList } from '@/entities/organisation.entity';
+import { OrganisationSummary, OrganisationSummaryList } from '@/entities/organisation.entity';
 import { useAuthenticationContext } from '@/contexts/user-authentication.context';
 import AvatarOrganisation from '@/components/avatar-organisation';
 import { Container } from '@mui/material';
 
-function OrganisationCard(input: { organisation: { id:number, name: string, isSandbox: boolean } }) {
+function OrganisationCard(input: { organisation: OrganisationSummary }) {
 	return <Link className={'card w-52 flex flex-col justify-center items-center space-y-2 h-52 hover:cursor-pointer'}
 				 href={`/home/organisation/${input.organisation.id}`}>
-			<AvatarOrganisation organisationId={input.organisation.id} width={60} height={60} />
+			<AvatarOrganisation organisationId={input.organisation.publicSignatureKey || input.organisation.id} width={60} height={60} />
 		<p className={'organisation-name'}>{input.organisation.name}</p>
 
 		<ConditionallyHiddenLayout showOn={input.organisation.isSandbox}>

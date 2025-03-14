@@ -275,7 +275,7 @@ export default function Home() {
 		<>
 			<div className="w-full">
 				<div id="welcome-logo" className={'my-12 w-full flex flex-col justify-center items-center'}>
-					<AvatarOrganisation organisationId={organisation.id} className={'w-32 h-32 mb-2'}/>
+					<AvatarOrganisation organisationId={organisation.publicSignatureKey || organisation.id} className={'w-32 h-32 mb-2'}/>
 					<Typography variant={'h4'} className={"text-primary-dark"}>{organisation.name}</Typography>
 
 					<div id="actions" className={"mt-4"}>

@@ -18,5 +18,5 @@ export type Organisation = {
 	balance: number;
 }
 
-export type OrganisationSummary = Pick<Organisation, 'id' | 'name' | 'logoUrl' | 'isSandbox'>;
+export type OrganisationSummary = Pick<Organisation, 'id' | 'name' | 'logoUrl' | 'isSandbox' | 'publicSignatureKey'>;
 export type OrganisationSummaryList = OrganisationSummary[];

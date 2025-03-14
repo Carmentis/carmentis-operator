@@ -30,7 +30,7 @@ function ListOrganisations() {
 	function formatOrganisationSummary(organisation: OrganisationSummary) {
 		return <Link key={organisation.id} href={`/admin/organisation/${organisation.id}`}>
 			<li className={'p-2 hover:bg-gray-100 flex items-center'}>
-				<AvatarOrganisation organisationId={organisation.id} className={"mr-2"} height={30}/>
+				<AvatarOrganisation organisationId={organisation.publicSignatureKey || organisation.id} className={"mr-2"} height={30}/>
 
 				{organisation.name}
 			</li>

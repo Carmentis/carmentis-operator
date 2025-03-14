@@ -179,7 +179,7 @@ function OrganisationSwitcher({ currentOrganisation, organisations }: Props) {
 		<Menu>
 			<MenuHandler>
 				<Button className={'bg-white flex flex-row justify-between items-center space-x-4 p-2 shadow-none'}>
-					<AvatarOrganisation organisationId={currentOrganisation.id} width={20} height={20} />
+					<AvatarOrganisation organisationId={currentOrganisation.publicSignatureKey || currentOrganisation.id} width={20} height={20} />
 					<Typography color={'gray'}>{currentOrganisation.name || 'Switch Organisation'}</Typography>
 				</Button>
 			</MenuHandler>

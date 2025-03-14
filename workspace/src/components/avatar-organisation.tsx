@@ -1,6 +1,6 @@
 import Avatar from 'boring-avatars';
 
-export default function AvatarOrganisation(input: {organisationId: number, width?: number, height?: number, className?: string}) {
+export default function AvatarOrganisation(input: {organisationId: number|string, width?: number, height?: number, className?: string}) {
 	return <Avatar
 		name={input.organisationId.toString()}
 		variant={"marble"}

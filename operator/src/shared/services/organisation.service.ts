@@ -69,9 +69,9 @@ export class OrganisationService {
 	}
 
 	// Find all items
-	async findAll(): Promise<{ id: number, name: string, logoUrl: string }[]> {
+	async findAll(): Promise<{ id: number, name: string, logoUrl: string, publicSignatureKey: string }[]> {
 		return this.organisationEntityRepository.find({
-			select: ['id', 'name', 'logoUrl', 'isSandbox'],
+			select: ['id', 'name', 'logoUrl', 'isSandbox', 'publicSignatureKey'],
 		});
 	}
 
