@@ -1,4 +1,5 @@
 import {
+	BadRequestException,
 	Body,
 	Controller,
 	Delete,
@@ -222,7 +223,7 @@ export class OrganisationScopedController {
 	) {
 		// ignore empty query
 		if ( query === '' ) {
-			throw new HttpException('Not Found', HttpStatus.NOT_FOUND);
+			throw new BadRequestException('Empty queries not supported.');
 		}
 
 

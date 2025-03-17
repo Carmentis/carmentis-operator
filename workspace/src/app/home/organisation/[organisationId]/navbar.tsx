@@ -24,6 +24,7 @@ import Avatar from 'boring-avatars';
 import { Dialog, DialogBody, DialogFooter, DialogHeader } from '@material-tailwind/react';
 import { useState } from 'react';
 import { useToast } from '@/app/layout';
+import { useConfirmationModal } from '@/contexts/popup-modal.component';
 
 
 
@@ -54,7 +55,6 @@ export default function Navbar() {
 
 
 function UserDisplay() {
-	const [showOrganisationDeletionModal, setShowOrganisationDeletionModal] = useState(false);
 	const callOrganisationDeletionApi = useOrganisationDeletionApi()
 	const toast = useToast();
 	const navigation = useApplicationNavigationContext();
@@ -64,6 +64,7 @@ function UserDisplay() {
 	const accessRightsResponse = useUserAccessRightInOrganisation(authentication.getAuthenticatedUser().publicKey, organisation.id);
 	if (!data || isLoading) return <Skeleton width={25} height={25} circle={true} />
 	const isAdminInOrganisation = accessRightsResponse.data && accessRightsResponse.data.isAdmin;
+	const confirmationDialog = useConfirmationModal();
 
 	function disconnect() {
 		authentication.disconnect();
@@ -75,11 +76,16 @@ function UserDisplay() {
 	}
 
 	function deleteOrganisation() {
-		callOrganisationDeletionApi(organisation, {
-			onSuccess: () => navigation.navigateToHome(),
-			onError: (e) => toast.error(e)
-		})
-		;
+		confirmationDialog(
+			"Delete Organisation",
+			"This action cannot undone",
+			"Delete",
+			"Cancel",
+			() => callOrganisationDeletionApi(organisation, {
+				onSuccess: () => navigation.navigateToHome(),
+				onError: (e) => toast.error(e)
+			})
+		)
 	}
 
 	return <div className={"flex space-x-4 items-center"}>
@@ -95,7 +101,7 @@ function UserDisplay() {
 				<MenuItem onClick={goToHome}>See organisations</MenuItem>
 				{	isAdminInOrganisation &&
 					<>
-						<MenuItem onClick={() => setShowOrganisationDeletionModal(true)}>Delete organisation</MenuItem>
+						<MenuItem onClick={() => deleteOrganisation()}>Delete organisation</MenuItem>
 					</>
 				}
 				<MenuItem onClick={disconnect}>Logout</MenuItem>
@@ -113,47 +119,11 @@ function UserDisplay() {
 
 			</MenuList>
 		</Menu>
-		<ConfirmDeleteOrganisationModal
-			isOpen={showOrganisationDeletionModal}
-			onClose={() => setShowOrganisationDeletionModal(false)}
-			onConfirm={deleteOrganisation}
-		/>
 	</div>
 }
 
 
 
-interface ConfirmDeleteOrganisationModalProps {
-	isOpen: boolean;
-	onClose: () => void;
-	onConfirm: () => void;
-}
-
-function ConfirmDeleteOrganisationModal({
-											isOpen,
-											onClose,
-											onConfirm,
-										}: ConfirmDeleteOrganisationModalProps) {
-	return (
-		<Dialog open={isOpen} handler={onClose} size="sm">
-			<DialogHeader>Confirm Deletion</DialogHeader>
-			<DialogBody divider>
-				<p>Are you sure you want to delete this organisation? This action cannot be undone.</p>
-			</DialogBody>
-			<DialogFooter className="flex justify-end">
-				<Button
-					onClick={onClose}
-					className="mr-2"
-				>
-					Cancel
-				</Button>
-				<Button variant="filled" onClick={onConfirm}>
-					Delete
-				</Button>
-			</DialogFooter>
-		</Dialog>
-	);
-}
 
 /**
  * Represents a search bar component that wraps the NavbarSearchBar.
