@@ -5,6 +5,7 @@ import { useMaskEdition } from '@/app/home/organisation/[organisationId]/applica
 import { useAtomValue } from 'jotai';
 import { applicationMasksAtom } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@mui/material';
+import InputInTableRow from '@/components/input-in-table-row';
 
 export default function MasksPanel() {
 	const masks = useAtomValue(applicationMasksAtom);
@@ -49,14 +50,7 @@ export function MasksView( input: MasksViewProps ) {
 						/>
 					})
 				}
-				<TableRow>
-					<TableCell colSpan={4}>
-						<div className={"flex flew-row gap-2"}>
-							<TextField value={name} size={"small"} onChange={e => setName(e.target.value)}></TextField>
-							<Button onClick={() => input.addMask(name)}>Add Mask</Button>
-						</div>
-					</TableCell>
-				</TableRow>
+				<InputInTableRow label={"Add mask"} colSpan={4} onSubmit={input.addMask}/>
 			</TableBody>
 		</Table>
 	</>;

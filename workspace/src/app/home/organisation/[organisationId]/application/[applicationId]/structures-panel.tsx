@@ -18,6 +18,7 @@ import {
 	TextField,
 } from '@mui/material';
 import { AppDataField, AppDataStruct } from '@/entities/application.entity';
+import InputInTableRow from '@/components/input-in-table-row';
 
 
 export default function StructurePanel(
@@ -103,13 +104,11 @@ type StructureFieldsViewProps = {
 	removeField: (structId: string, fieldId: string) => void
 }
 function StructureFieldsView(input: StructureFieldsViewProps) {
-	const [fieldName, setFieldName] = useState('');
 	const structure = input.structure;
 	const fields = input.structure.properties;
 
-	function addField() {
+	function addField(fieldName: string) {
 		input.addField(structure.id, fieldName)
-		setFieldName('')
 	}
 
 	return <Table id="fields" className={'w-full'}>
@@ -135,15 +134,7 @@ function StructureFieldsView(input: StructureFieldsViewProps) {
 						onUpdateField={updatedField => input.editField(input.structure.id, field.id, updatedField)}
 						onRemoveField={() => input.removeField(structure.id, field.id)} />)
 			}
-			<TableRow>
-				<TableCell colSpan={8}>
-					<div className={"w-[500px] flex gap-2"}>
-						<TextField size={'small'} value={fieldName} onChange={e => setFieldName(e.target.value)}
-								   className={""}/>
-						<Button size={'md'} className={"w-[150px]"} onClick={addField}>Add field</Button>
-					</div>
-				</TableCell>
-			</TableRow>
+			<InputInTableRow label={"Add field"} colSpan={9} onSubmit={addField}/>
 		</TableBody>
 	</Table>
 }

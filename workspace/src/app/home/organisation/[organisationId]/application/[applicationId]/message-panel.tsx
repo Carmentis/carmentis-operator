@@ -5,6 +5,7 @@ import { useMessageEdition } from '@/app/home/organisation/[organisationId]/appl
 import { useAtomValue } from 'jotai';
 import { applicationMessagesAtom } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@mui/material';
+import InputInTableRow from '@/components/input-in-table-row';
 
 export default function MessagesPanel() {
 	const messages = useAtomValue(applicationMessagesAtom);
@@ -26,8 +27,6 @@ type MessagesViewProps = {
 	removeMessage: (messageId: string) => void,
 }
 function MessagesView( input: MessagesViewProps ) {
-	const [name, setName] = useState('');
-
 	return <>
 
 		<Table  className={'w-full'}>
@@ -40,7 +39,7 @@ function MessagesView( input: MessagesViewProps ) {
 			</TableHead>
 			<TableBody className={'w-full'}>
 				{
-					input.messages.map((message, index) => {
+					input.messages.map(message => {
 						return <SingleMessageView
 							key={message.id}
 							message={message}
@@ -48,14 +47,8 @@ function MessagesView( input: MessagesViewProps ) {
 						/>
 					})
 				}
-				<TableRow>
-					<TableCell colSpan={4}>
-						<div className={"flex flew-row gap-2"}>
-							<TextField value={name} size={"small"} onChange={e => setName(e.target.value)}></TextField>
-							<Button onClick={() => input.addMessage(name)}>Add Mask</Button>
-						</div>
-					</TableCell>
-				</TableRow>
+				<InputInTableRow label={"Add Message"} colSpan={4} onSubmit={input.addMessage} />
+
 			</TableBody>
 		</Table>
 	</>;

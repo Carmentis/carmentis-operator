@@ -7,22 +7,15 @@ import { useFieldEdition } from '@/app/home/organisation/[organisationId]/applic
 import { useAtomValue } from 'jotai';
 import { applicationFieldsAtom } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { Table, TableBody, TableCell, TableHead, TableRow, TextField } from '@mui/material';
+import InputInTableRow from '@/components/input-in-table-row';
 
 export default function FieldsPanel() {
 
-	const notify = useToast();
 	const fields = useAtomValue(applicationFieldsAtom);
 	const fieldEditionActions = useFieldEdition();
-	const [fieldName, setFieldName] = useState<string>('');
 
-	function addField() {
-		// aborts if the field name is empty
-		if ( fieldName !== '' ) {
-			fieldEditionActions.addField(fieldName);
-			setFieldName('')
-		}  else {
-			notify.error("Cannot add field with an empty name")
-		}
+	function addField(fieldName: string) {
+		fieldEditionActions.addField(fieldName);
 	}
 
 	function removeField(fieldId: string) {
@@ -54,15 +47,7 @@ export default function FieldsPanel() {
 			</TableHead>
 			<TableBody className={'w-full'}>
 				{content}
-			<TableRow>
-				<TableCell colSpan={8}>
-					<div className={"w-[500px] flex gap-2"}>
-						<TextField size={'small'} value={fieldName} onChange={e => setFieldName(e.target.value)}
-							   className={""}/>
-						<Button size={'md'} className={"w-[150px]"} onClick={addField}>Add field</Button>
-					</div>
-				</TableCell>
-			</TableRow>
+				<InputInTableRow label={"Add field"} colSpan={9} onSubmit={addField}/>
 			</TableBody>
 
 		</Table>
