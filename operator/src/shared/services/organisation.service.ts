@@ -10,6 +10,9 @@ import ChainService from './chain.service';
 import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { AccessRightService } from './access-right.service';
 import { EnvService } from './env.service';
+import { ApplicationService } from './application.service';
+import { OracleService } from './oracle.service';
+import { OracleEntity } from '../entities/oracle.entity';
 
 
 
@@ -25,6 +28,8 @@ export class OrganisationService {
 		private readonly accessRightService: AccessRightService,
 		@InjectRepository(ApplicationEntity)
 		private readonly applicationRepository: Repository<ApplicationEntity>,
+		@InjectRepository(OracleEntity)
+		private readonly oracleRepository: Repository<OracleEntity>,
 		private readonly chainService: ChainService,
 		private readonly envService: EnvService,
 	) {
@@ -379,5 +384,43 @@ export class OrganisationService {
 		organisation.publishedAt = null;
 		organisation.isDraft = true;
 		await this.organisationEntityRepository.save(organisation);
+
+		// erase publication status of existing applications
+		const applications = await this.applicationRepository.createQueryBuilder('application')
+			.innerJoin('application.organisation', 'organisation')
+			.where('organisation.id = :organisationId', { organisationId: organisation.id })
+			.getMany();
+
+		for (const application of applications) {
+			await this.eraseApplicationPublicationStatus(application)
+		}
+
+		// erase publication status of oracles
+		const oracles = await this.oracleRepository.createQueryBuilder('oracle')
+			.innerJoin('oracle.organisation', 'organisation')
+			.where('organisation.id = :organisationId', { organisationId: organisation.id })
+			.getMany();
+
+		for (const oracle of oracles) {
+			await this.eraseOraclePublicationStatus(oracle);
+		}
+	}
+
+	async eraseApplicationPublicationStatus(application: ApplicationEntity) {
+		application.virtualBlockchainId = null;
+		application.isDraft = true;
+		application.publishedAt = null;
+		application.version = 0;
+		application.published = false;
+		await this.applicationRepository.save(application);
+	}
+
+	async eraseOraclePublicationStatus(oracle: OracleEntity) {
+		oracle.virtualBlockchainId = null;
+		oracle.isDraft = true;
+		oracle.publishedAt = null;
+		oracle.version = 0;
+		oracle.published = false;
+		await this.oracleRepository.save(oracle);
 	}
 }
