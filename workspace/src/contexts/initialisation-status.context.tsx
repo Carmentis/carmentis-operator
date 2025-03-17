@@ -27,7 +27,7 @@ export function InitialisationStatusContext({children}: PropsWithChildren) {
 	if (error) return <OperatorErrorAlert
 		message={`It seems that the operator located at ${node} is down. (${error.message})`}
 	/>
-	if ( !data || !data.initialised || typeof data.initialised !== 'boolean')return <OperatorErrorAlert
+	if ( !data || typeof data.initialised !== 'boolean')return <OperatorErrorAlert
 		message={`It seems that the server has responded with invalid data. Are you sure to have correctly set the operator url? Current url set to ${node}.`}
 	/>
 
