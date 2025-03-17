@@ -36,7 +36,8 @@ export class AuditService {
 			where: { relatedOrganisationId: organisationId },
 			order: {
 				"timestamp": 'DESC'
-			}
+			},
+			take: 50
 		})
 	}
 }

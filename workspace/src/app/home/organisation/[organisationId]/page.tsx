@@ -18,6 +18,7 @@ import WelcomeCards from '@/components/welcome-cards.component';
 import OrganisationAccountBalance from '@/components/organisation-account-balance.component';
 import AvatarOrganisation from '@/components/avatar-organisation';
 import { Modal } from '@mui/material';
+import { useConfirmationModal } from '@/contexts/popup-modal.component';
 
 
 /**
@@ -197,7 +198,7 @@ function ChipOnChainPublicationChecker() {
 	const mutate = useOrganisationMutationContext();
 	const checkResponse = useConfirmOrganisationPublicationOnChain(organisation);
 	const synchronisation = useErasePublicationInformation();
-	const [openModal, setOpenModal] = useState(false);
+	const confirmationModal = useConfirmationModal()
 
 	function synchronise() {
 		synchronisation(organisation.id, {
@@ -209,63 +210,38 @@ function ChipOnChainPublicationChecker() {
 		})
 	}
 
+	useEffect(() => {
+		checkResponse.mutate()
+	}, [organisation, checkResponse.mutate]);
+
+	function openConfirmationModal() {
+		confirmationModal(
+			"Blockchain Inconsistency Detected",
+			"It seems that the current organisation has not been found on the blockchain. This indicates an " +
+			"inconsistency between the current state of the blockchain and the workspace. You can resolve this issue by synchronising the workspace with the blockchain. This will erase " +
+			"the previous publication status.",
+			"Synchronise",
+			"Cancel",
+			() => synchronise()
+		)
+	}
+
 	let content = <></>
 	if (checkResponse.data) {
 		const published = checkResponse.data.published;
-		if (!published && organisation.published) {
+		if (!published && (organisation.published || organisation.virtualBlockchainId)) {
 			content = <>
 				<Chip
 					value={`Organisation not on-chain`}
 					variant={"filled"}
 					className={"bg-deep-orange-400 hover:cursor-pointer"}
-					onClick={() => setOpenModal(true)}
+					onClick={openConfirmationModal}
 				/>
-				<BlockchainInconsistencyModal
-					open={openModal}
-					onClose={() => setOpenModal(false)}
-					onSynchronise={synchronise}
-				/>
+
 			</>;
 		}
 	}
 	return content;
-}
-
-
-
-
-function BlockchainInconsistencyModal({ open, onClose, onSynchronise }: {
-	open: boolean,
-	onClose: () => void,
-	onSynchronise: () => void
-}) {
-	return (
-		<Modal open={open} onClose={onClose} className="flex items-center justify-center">
-			<Card className="w-1/3">
-				<CardBody>
-					<Typography variant="h5" className="text-center mb-4">
-						Blockchain Inconsistency Detected
-					</Typography>
-					<Typography className="text-gray-700 mb-4">
-						It seems that the current organisation has not been found on the blockchain. This indicates an
-						inconsistency between the current state of the blockchain and the workspace.
-					</Typography>
-					<Typography className="text-gray-700 mb-8">
-						You can resolve this issue by synchronising the workspace with the blockchain. This will erase
-						the previous publication status.
-					</Typography>
-					<div className="flex justify-end space-x-4">
-						<Button variant="outlined"  onClick={onClose}>
-							Cancel
-						</Button>
-						<Button variant="filled" color="green" onClick={onSynchronise}>
-							Synchronise
-						</Button>
-					</div>
-				</CardBody>
-			</Card>
-		</Modal>
-	);
 }
 
 export default function Home() {

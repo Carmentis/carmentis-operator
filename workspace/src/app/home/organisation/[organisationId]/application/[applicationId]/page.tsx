@@ -141,15 +141,15 @@ function ApplicationOverview() {
 
 	const INPUTS = [
 		{ label: 'Application name', value: name, onChange: setName },
-		{ label: 'Tag', value: tag, onChange: setTag },
 		{ label: 'Logo URL', value: logoUrl, onChange: setLogoUrl },
 		{ label: 'Website', value: domainUrl, onChange: setDomainUrl },
 		{ label: 'Description', value: description, className: 'w-full', onChange: setDescription },
+		{ label: 'Tag', value: tag, onChange: setTag, disabled: true },
 	];
 
 	const overviewContent = INPUTS.map((i, index) => <div key={index} className={`flex flex-col flex-1`}>
 		<TextField size={'small'} label={i.label} value={i.value}
-				   onChange={(e) => i.onChange && i.onChange(e.target.value)} className={i.className} />
+				   onChange={(e) => i.onChange && i.onChange(e.target.value)} className={i.className} disabled={i.disabled} />
 	</div>);
 
 
@@ -158,7 +158,7 @@ function ApplicationOverview() {
 			<div>
 				<Typography variant={'h6'}>Application Information</Typography>
 				<Typography variant={'paragraph'}>
-					Edit the name of the application, the tag, the logo and the description below.
+					Edit the name of the application, the logo and the description below.
 				</Typography>
 			</div>
 			<div className="flex flex-col gap-6">

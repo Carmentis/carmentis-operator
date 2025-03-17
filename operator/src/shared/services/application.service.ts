@@ -58,9 +58,11 @@ export class ApplicationService {
                 `Organisation has reached the limit of applications.`
             );
         }
-        
+
+        const tag = Array.from({ length: 30 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
         const application: ApplicationEntity = plainToInstance(ApplicationEntity, {
             name: applicationName,
+            tag
         })
         application.organisation = organisationEntity;
         application.data = {

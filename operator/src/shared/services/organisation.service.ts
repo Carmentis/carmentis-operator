@@ -338,6 +338,13 @@ export class OrganisationService {
 	}
 
 
+	/**
+	 * Deletes an organisation using the specified organisation ID.
+	 *
+	 * @param {number} organisationId - The unique identifier of the organisation to be deleted.
+	 * @return {Promise<void>} A promise that resolves when the organisation is successfully deleted.
+	 * @throws {NotFoundException} Throws an error if the organisation with the specified ID is not found.
+	 */
 	async deleteOrganisationById(organisationId: number): Promise<void> {
 		const organisation = await this.organisationEntityRepository.findOneBy({ id: organisationId });
 
@@ -347,6 +354,10 @@ export class OrganisationService {
 		await this.organisationEntityRepository.remove(organisation);
 	}
 
+	/**
+	 * Retrieves the highest organisation ID from the organisation table.
+	 *
+	 * @return {Promise<number>} A promise resolving to the highest organisation ID, or 0*/
 	async getHighestOrganisationId() : Promise<number> {
 		return this.organisationEntityRepository
 			.createQueryBuilder('organisation')
@@ -355,11 +366,18 @@ export class OrganisationService {
 			.then(result => result?.maxId || 0);
 	}
 
+	/**
+	 * Erases the publication information of the given organisation entity.
+	 *
+	 * @param {OrganisationEntity} organisation - The organisation entity whose publication details need to be erased.
+	 * @return {Promise<void>} A promise that resolves when the organisation entity is successfully updated.
+	 */
 	async erasePublicationInformation(organisation: OrganisationEntity) {
 		organisation.published = false;
 		organisation.version = 0;
-		organisation.virtualBlockchainId = undefined;
-		organisation.publishedAt = undefined;
+		organisation.virtualBlockchainId = null;
+		organisation.publishedAt = null;
+		organisation.isDraft = true;
 		await this.organisationEntityRepository.save(organisation);
 	}
 }

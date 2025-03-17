@@ -6,14 +6,15 @@ import { PropsWithChildren, useEffect } from 'react';
 
 import { useFetchOrganisation } from '@/components/api.hook';
 import { useParams } from 'next/navigation';
-import { Spinner } from '@material-tailwind/react';
-import { OrganisationStoreContextProvider, useOrganisationStoreContext } from '@/contexts/organisation-store.context';
+import { OrganisationStoreContextProvider } from '@/contexts/organisation-store.context';
 import { OrganisationMutationContextProvider } from '@/contexts/organisation-mutation.context';
 import NavbarSidebarLayout from '@/components/navbar-sidebar-layout.component';
 import NotFoundPage from '@/app/home/organisation/[organisationId]/not-found';
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import { useToast } from '@/app/layout';
+import { useAtom, useSetAtom } from 'jotai';
+import { organisationAtom } from '@/app/home/organisation/atom';
 
 
 function HomeOrganisationPage(
@@ -36,13 +37,13 @@ function OrganisationDataAccess({ children }: PropsWithChildren) {
 	const params = useParams();
 	const organisationId = parseInt(params.organisationId as string);
 	const { data, isLoading, error, mutate } = useFetchOrganisation(organisationId);
-	const organisationStoreContext = useOrganisationStoreContext();
+	const [organisation, setOrganisation] = useAtom(organisationAtom);
 	const navigation = useApplicationNavigationContext();
 	const notify = useToast();
 
 	// synchronise the organisation state
 	useEffect(() => {
-		organisationStoreContext.setOrganisation(data);
+		setOrganisation(data);
 	}, [data]);
 
 	// if not loading but data not available, redirect to the list of organisation
@@ -53,13 +54,12 @@ function OrganisationDataAccess({ children }: PropsWithChildren) {
 	}
 
 	// display the loading page when checking if the organisation exists
-	if (!data || isLoading || !organisationStoreContext.organisation) {
+	if (!data || isLoading || !organisation) {
 		return <FullPageLoadingComponent label={'Loading organisation'} />
 	}
 
 
 	// if not found, redirect to the not found page
-	console.log("--->", data, isLoading, error)
 	if (error !== undefined) {
 		return <NotFoundPage/>
 	}
@@ -71,14 +71,11 @@ function OrganisationDataAccess({ children }: PropsWithChildren) {
 }
 
 export default function RootLayout({ children }: PropsWithChildren) {
-
 	return <>
-		<OrganisationStoreContextProvider>
-			<OrganisationDataAccess>
-				<HomeOrganisationPage>
-					{children}
-				</HomeOrganisationPage>
-			</OrganisationDataAccess>
-		</OrganisationStoreContextProvider>
+		<OrganisationDataAccess>
+			<HomeOrganisationPage>
+				{children}
+			</HomeOrganisationPage>
+		</OrganisationDataAccess>
 	</>;
 }

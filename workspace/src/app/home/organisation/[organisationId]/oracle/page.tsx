@@ -12,11 +12,12 @@ import { useOrganisationContext } from '@/contexts/organisation-store.context';
 import CardTableComponent from '@/components/card-table.component';
 import { OracleSummary } from '@/entities/oracle.entity';
 import { Container } from '@mui/material';
+import { useCustomRouter } from '@/contexts/application-navigation.context';
 
 
 export default function OraclePage() {
 
-	const router = useRouter();
+	const router = useCustomRouter();
 	const organisation = useOrganisationContext();
 	const organisationId = organisation.id;
 	const notify = useToast();
@@ -82,7 +83,7 @@ export default function OraclePage() {
 function OracleSummaryTable(
 	{ data }: { data: OracleSummary[] },
 ) {
-	const router = useRouter();
+	const router = useCustomRouter();
 
 	function visiteOracle(oracleId: number) {
 		router.push(`oracle/${oracleId}`);

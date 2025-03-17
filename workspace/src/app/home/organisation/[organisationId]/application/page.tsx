@@ -18,6 +18,7 @@ import { ApplicationSummary } from '@/entities/application.entity';
 import CardTableComponent from '@/components/card-table.component';
 import { Container } from '@mui/material';
 import { useConfirmationModal } from '@/contexts/popup-modal.component';
+import { useApplicationNavigationContext, useCustomRouter } from '@/contexts/application-navigation.context';
 
 
 /**
@@ -28,9 +29,11 @@ function ListOfApplicationsComponent({ organisationId, data, deleteApplication }
 	data: ApplicationSummary[];
 	deleteApplication: (applicationId: number) => void;
 }) {
+	const navigation = useApplicationNavigationContext();
 
-	const router = useRouter();
+	const router = useCustomRouter();
 	function visitApplication(appId: number) {
+		navigation.navigateToApplication(organisationId, appId)
 		router.push(`/home/organisation/${organisationId}/application/${appId}`)
 	}
 
@@ -41,7 +44,7 @@ function ListOfApplicationsComponent({ organisationId, data, deleteApplication }
 		onRowClicked={(app) => visitApplication(app.id)}
 		extractor={(v, i) => [
 			{head: 'Name', value: <Typography>{v.name}</Typography>},
-			{head: 'Tag', value: <Typography>{v.tag}</Typography>},
+			//{head: 'Tag', value: <Typography>{v.tag}</Typography>},
 			{head: 'Draft', value: v.isDraft && <Chip value={'Draft'} className={'bg-primary-light w-min'} />},
 			{head: 'Published', value: v.published && <Chip value={'Published'} className={'bg-primary-light w-min'} />},
 			{head: 'Published at', value: v.publishedAt && <Typography>{new Date(v.publishedAt).toLocaleString()}</Typography>},
@@ -64,7 +67,7 @@ export default function ListOfApplicationsPage() {
 	const organisation = useOrganisationContext();
 	const organisationId = organisation.id;
 	const notify = useToast();
-	const router = useRouter();
+	const router = useCustomRouter();
 	const fileInputRef = useRef(null);
 
 	const { data, isLoading, mutate } = useFetchOrganisationApplications(organisationId);
@@ -94,6 +97,12 @@ export default function ListOfApplicationsPage() {
 	}
 
 
+	/**
+	 * Handles the import of a file by reading its content and processing it for application import.
+	 *
+	 * @param {BaseSyntheticEvent} event - The event triggered by the file input change, containing the selected file.
+	 * @return {void} - Does not return any value.
+	 */
 	function handleImportFile(event: BaseSyntheticEvent) {
 		const file = event.target.files[0];
 		if (!file) return;
@@ -123,9 +132,7 @@ export default function ListOfApplicationsPage() {
 		createApplication(organisationId, name, {
 			onSuccessData: (data) => {
 				notify.info(`Application ${data.name} created`);
-				router.push(
-					`/home/organisation/${organisationId}/application/${data.id}`
-				)
+				router.push(`/home/organisation/${organisationId}/application/${data.id}`)
 			},
 			onError: notify.error
 		});

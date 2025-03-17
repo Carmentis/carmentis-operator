@@ -32,6 +32,7 @@ import ErrorsPanel from '@/app/home/organisation/[organisationId]/application/[a
 import { useConfirmationModal } from '@/contexts/popup-modal.component';
 import EntityStatusHeader from '@/components/application-oracle-header';
 import Skeleton from 'react-loading-skeleton';
+import { useCustomRouter } from '@/contexts/application-navigation.context';
 
 
 export default function OraclePage() {
@@ -122,7 +123,7 @@ function OracleNavbar(
 	{refreshOracle}: {refreshOracle: () => void}
 ) {
 	const callOracleUpdate = useOracleUpdate();
-	const router = useRouter();
+	const router = useCustomRouter();
 	const notify = useToast();
 	const oracle = useAtomValue(oracleAtom)
 	const organisation = useOrganisationContext();
