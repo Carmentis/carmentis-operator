@@ -59,10 +59,9 @@ export class ApplicationService {
             );
         }
 
-        const tag = Array.from({ length: 30 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
         const application: ApplicationEntity = plainToInstance(ApplicationEntity, {
             name: applicationName,
-            tag
+            tag: this.generateTag()
         })
         application.organisation = organisationEntity;
         application.data = {
@@ -120,6 +119,7 @@ export class ApplicationService {
         const organisation = await this.organisationService.findOne(organisationId)
         const application = plainToInstance(ApplicationEntity, importApplication);
         application.organisation = organisation;
+        application.tag = this.generateTag();
         const item = this.applicationRepository.create(application);
         return this.applicationRepository.save(item);
 
@@ -186,6 +186,11 @@ export class ApplicationService {
 
     private async getOrganisationByApplicationId(applicationId: number) {
         return this.organisationService.getOrganisationByApplicationId(applicationId)
+    }
+
+    private generateTag(): string {
+        return Array.from({ length: 30 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+
     }
 
 

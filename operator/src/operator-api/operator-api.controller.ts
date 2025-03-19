@@ -17,6 +17,7 @@ import { EnvService } from '../shared/services/env.service';
 import { base64 } from '@cmts-dev/carmentis-sdk/server';
 import { OrganisationEntity } from '../shared/entities/organisation.entity';
 import { ApplicationService } from '../shared/services/application.service';
+import PackageConfigService from '../package.service';
 
 
 @Controller()
@@ -28,11 +29,17 @@ export class OperatorApiController{
 	constructor(
 		private readonly envService: EnvService,
 		private readonly organisationService: OrganisationService,
-		private readonly applicationService: ApplicationService
+		private readonly applicationService: ApplicationService,
+		private readonly packageService: PackageConfigService,
 	) {
 		this.nodeUrl = envService.nodeUrl;
 	}
 
+	@Public()
+	@Get()
+	index(): string {
+		return 'Carmentis Operator v' + this.packageService.operatorVersion
+	}
 
 	@Public()
 	@Get('/config/application')
@@ -51,15 +58,23 @@ export class OperatorApiController{
 	async handleRequest(
 		@Body() data: PrepareUserApprovalDto
 	) {
+		this.logger.debug("Handling prepareUserApproval")
 		// search the organisation by its identifier
-		const organisation = await this.organisationService.findOrganisationFromApplicationVirtualBlockchainId(data.applicationId);
+		//console.log("data:", data)
 
-		this.logger.log("Handling event approval:")
+		let organisation;
+		try {
+			organisation = await this.organisationService.findOrganisationFromApplicationVirtualBlockchainId(data.applicationId);
+		} catch (e) {
+			this.logger.debug(`Cannot find the organisation related to the application having ID ${data.applicationId} (${e})`)
+			throw new NotFoundException(e);
+		}
+
 		const nodeUrl = this.envService.nodeUrl;
 		const organisationId = organisation.virtualBlockchainId;
 		const organisationPrivateKey = organisation.privateSignatureKey;
 
-		if (!organisationId) throw new UnprocessableEntityException("The organisation is not published yet");
+		if (!organisationId) throw new BadRequestException("The organisation is not published yet");
 
 		const core = new sdk.operatorCore(
 			nodeUrl,
@@ -73,11 +88,12 @@ export class OperatorApiController{
 		});
 		const dataId = result.data.dataId;
 		if (typeof dataId !== 'string') {
-			this.logger.error(`Invalid data id: Expected string, got ${dataId}`)
-			this.logger.error("Obtained result:", result)
+			const error = result.error;
+			this.logger.debug(`Invalid data id: Expected string, got ${dataId}`)
+			this.logger.error("/prepareUserApproval: Error:", error)
+			throw new BadRequestException(error);
 		}
-		if (typeof dataId !== 'string') throw new InternalServerErrorException();
-		this.logger.log(`data id ${dataId} -> virtual blockchain id ${organisationId}`)
+		this.logger.debug(`data id ${dataId} -> virtual blockchain id ${organisationId}`)
 		this.organisationIdByDataId.set(dataId, organisationId);
 		return result;
 	}
