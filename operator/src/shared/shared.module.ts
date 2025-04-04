@@ -1,11 +1,10 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { UserEntity } from './entities/user.entity';
 import { OrganisationEntity } from './entities/organisation.entity';
 import { OrganisationAccessRightEntity } from './entities/organisation-access-right.entity';
 import { ApplicationEntity } from './entities/application.entity';
-import { OracleEntity } from './entities/oracle.entity';
 import { AuditLogEntity } from './entities/audit-log.entity';
 import { AdministrationService } from './services/administration.service';
 import { OrganisationService } from './services/organisation.service';
@@ -13,25 +12,26 @@ import { UserService } from './services/user.service';
 import { ApplicationService } from './services/application.service';
 import { AccessRightService } from './services/access-right.service';
 import { AuditService } from './services/audit.service';
-import { OracleService } from './services/oracle.service';
 import ChainService from './services/chain.service';
 import { ChallengeService } from './services/challenge.service';
 import { ChallengeEntity } from './entities/challenge.entity';
 import { JwtModule } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 import { EnvService } from './services/env.service';
-import { SandboxService } from './services/sandbox.service';
+import { ApiKeyEntity } from './entities/api-key.entity';
+import { ApiKeyService } from './services/api-key.service';
+import { ApiKeyUsageEntity } from './entities/api-key-usage.entity';
+import { ApiKeyUsageMiddleware } from './middlewares/api-key-usage.middleware';
 
 
 const WORKSPACE_PROVIDERS = [
-	SandboxService,
+	ApiKeyService,
 	AdministrationService,
 	OrganisationService,
 	UserService,
 	ApplicationService,
 	AccessRightService,
 	AuditService,
-	OracleService,
 	ChainService,
 	ChallengeService,
 	EnvService,
@@ -47,9 +47,10 @@ export const DEFAULT_JWT_TOKEN_VALIDITY = "8h"
 			OrganisationEntity,
 			OrganisationAccessRightEntity,
 			ApplicationEntity,
-			OracleEntity,
 			AuditLogEntity,
-			ChallengeEntity
+			ChallengeEntity,
+			ApiKeyEntity,
+			ApiKeyUsageEntity
 		]),
 		JwtModule.register({
 			global: true,
@@ -61,5 +62,10 @@ export const DEFAULT_JWT_TOKEN_VALIDITY = "8h"
 	providers: WORKSPACE_PROVIDERS,
 	exports: WORKSPACE_PROVIDERS
 })
-export class SharedModule {
+export class SharedModule  implements  NestModule {
+	configure(consumer: MiddlewareConsumer) {
+		consumer
+			.apply(ApiKeyUsageMiddleware)
+			.forRoutes("/api");
+	}
 }

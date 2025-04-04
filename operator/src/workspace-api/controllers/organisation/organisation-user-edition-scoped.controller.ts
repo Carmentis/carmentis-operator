@@ -1,22 +1,23 @@
 import {
 	Body,
 	Controller,
-	Delete, ForbiddenException,
+	Delete,
+	ForbiddenException,
 	HttpException,
 	HttpStatus,
 	Logger,
 	Param,
 	Post,
-	Put, Req,
+	Put,
+	Req,
 	UseGuards,
 } from '@nestjs/common';
 import { UserInOrganisationGuard } from '../../guards/user-in-organisation.guard';
-import { CanEditOracles, CanEditUsers } from '../../guards/user-has-valid-access-right.guard';
+import { CanEditUsers } from '../../guards/user-has-valid-access-right.guard';
 import { OrganisationService } from '../../../shared/services/organisation.service';
 import { UserService } from '../../../shared/services/user.service';
 import { ApplicationService } from '../../../shared/services/application.service';
 import { AuditService } from '../../../shared/services/audit.service';
-import { OracleService } from '../../../shared/services/oracle.service';
 import { UpdateAccessRightDto } from '../../dto/update-access-rights.dto';
 import { OrganisationAccessRightEntity } from '../../../shared/entities/organisation-access-right.entity';
 import { AuditOperation, EntityType } from '../../../shared/entities/audit-log.entity';
@@ -30,7 +31,6 @@ export class OrganisationUserEditionScopedController {
 		private readonly userService: UserService,
 		private readonly applicationService: ApplicationService,
 		private readonly auditService: AuditService,
-		private readonly oracleService: OracleService,
 	) {
 	}
 

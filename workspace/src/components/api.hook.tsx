@@ -2,7 +2,6 @@ import User, { AccessRight, UserSummary, UserSummaryList } from '@/entities/user
 import useSWR, { SWRResponse } from 'swr';
 import { Organisation, OrganisationSummary, OrganisationSummaryList } from '@/entities/organisation.entity';
 import { Application, ApplicationSummary } from '@/entities/application.entity';
-import { Oracle, OracleSummary } from '@/entities/oracle.entity';
 import { AccountTransactionHistoryEntry } from '@/entities/transaction-history-entry.entity';
 
 
@@ -39,13 +38,11 @@ export type OperatorInitialisationStatus = {
  *
  * @typedef {Object} GlobalSearchResponse
  * @property {UserSummary[]} users - The list of users returned by the search.
- * @property {OracleSummary[]} oracles - The list of oracles returned by the search.
  * @property {ApplicationSummary[]} applications - The list of applications returned by the search.
  * @property {OrganisationSummary[]} organisations - The list of organisations returned by the search.
  */
 export type GlobalSearchResponse = {
 	users: UserSummary[];
-	oracles: OracleSummary[];
 	applications: ApplicationSummary[];
 	organisations: OrganisationSummary[];
 }
@@ -141,7 +138,7 @@ export interface APICallbacks<T> {
 
 
 export const TOKEN_STORAGE_ITEM = "carmentis-token";
-const getAuthToken = () => localStorage.getItem(TOKEN_STORAGE_ITEM);
+export const getAuthToken = () => localStorage.getItem(TOKEN_STORAGE_ITEM);
 
 export async function CallApi<T>(
 	url: string,
@@ -264,10 +261,6 @@ export const useFetchAuthenticatedUser = () => {
 
 
 
-export function useFetchUserInOrganisation(organisationId: number, userPublicKey: string)  {
-	return useWorkspaceApi<User>(`/organisation/${organisationId}/user/${userPublicKey}`);
-}
-
 export function useFetchOrganisationApplications( organisationId: number )  {
 	return useWorkspaceApi<ApplicationSummary[]>(`/organisation/${organisationId}/application`);
 }
@@ -276,13 +269,6 @@ export function useFetchOrganisationApplications( organisationId: number )  {
 export function useFetchOrganisationStats( organisationId: number )  {
 	return useWorkspaceApi<OrganisationStats>(`/organisation/${organisationId}/stats`);
 }
-
-
-export function useFetchOrganisationLogs( organisationId: number )  {
-	return useWorkspaceApi<OrganisationLog[]>(`/organisation/${organisationId}/logs`);
-}
-
-
 
 
 
@@ -294,12 +280,6 @@ export function useApplicationDeletionApi() {
 	};
 }
 
-
-export function useAdminListOfOrganisationsApi(query: string) {
-	return useWorkspaceApi<OrganisationSummary[]>(
-		`/admin/organisation?query=${query}`
-	);
-}
 
 export function useConfirmOrganisationPublicationOnChain(organisation: Organisation) {
 	return useWorkspaceApi<{published: boolean}>(
@@ -328,13 +308,6 @@ export function useErasePublicationInformation() {
 	};
 }
 
-export function useSandboxCreationApi() {
-	return async (cb: APICallbacks<IdentifiedEntity> | undefined) => {
-		return CallApi(`/sandbox`, cb, {
-			method: "POST",
-		});
-	};
-}
 
 
 
@@ -437,25 +410,6 @@ export function useApplicationCreation() {
 
 
 
-export function useApplicationImport() {
-	return async (organisationId: number, application: string, cb: APICallbacks<ApplicationSummary> | undefined) => {
-		return CallApi(`/organisation/${organisationId}/application/import`, cb, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body:  application,
-		});
-	};
-}
-
-export function useUpdateAccessRight() {
-	return async (organisationId : number, userPublicKey: string, accessRight: AccessRight, cb: APICallbacks<AccessRight> | undefined) => {
-		return CallApi(`/organisation/${organisationId}/user/${userPublicKey}/rights`, cb, {
-			method: "PUT",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(accessRight),
-		});
-	};
-}
 
 
 
@@ -491,57 +445,6 @@ export function useUserOrganisationRemoval() {
 }
 
 
-export function useOracleCreation() {
-	return async (organisationId: number, name: string, cb: APICallbacks<IdentifiedEntity> | undefined) => {
-		return CallApi(`/organisation/${organisationId}/oracle`, cb, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ name }),
-		});
-	};
-}
-
-export function useOracleDeletion() {
-	return async (organisationId: number, oracleId: number, cb: APICallbacks<void> | undefined) => {
-		return CallApi(`/organisation/${organisationId}/oracle/${oracleId}`, cb, {
-			method: "DELETE",
-		});
-	};
-}
-
-
-export function useCallGlobalSearchApi() {
-	return async (organisationId : number, query: string, cb: APICallbacks<GlobalSearchResponse> | undefined) => {
-		return CallApi(`/organisation/${organisationId}/search?query=${query}`, cb, {
-			method: 'GET'
-		});
-	};
-}
-
-
-
-
-export function useFetchOraclesSummaryInOrganisation(organisationId: number ) {
-	return useWorkspaceApi<OracleSummary[]>(`/organisation/${organisationId}/oracle`);
-}
-
-
-
-export function useFetchOracleInOrganisation(organisationId: number, oracleId: number ) {
-	return useWorkspaceApi<Oracle>(`/organisation/${organisationId}/oracle/${oracleId}`);
-}
-
-export function useOracleUpdate() {
-	return async (organisationId: number, oracle: Oracle, cb: APICallbacks<void> | undefined) => {
-		return CallApi(`/organisation/${organisationId}/oracle/${oracle.id}`, cb, {
-			method: "PUT",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(oracle),
-		});
-	};
-}
-
-
 
 export function useAdminListOfUsersApi() {
 	return useWorkspaceApi<UserSummary[]>(
@@ -549,28 +452,10 @@ export function useAdminListOfUsersApi() {
 	);
 }
 
-export type OnChainOracle = { oracleName: string, hash: string, serviceName: string, version: number }
-export function useFetchOraclesOnChain() {
-	return useWorkspaceApi<OnChainOracle[]>(
-		`/chain/oracles`
-	);
-}
 
-
-export function useOraclePublication() {
-	return async (organisationId: number, oracleId: number, cb: APICallbacks<void> | undefined) => {
-		return CallApi(`/organisation/${organisationId}/oracle/${oracleId}/publish`, cb, {
-			method: "POST",
-		});
-	};
-}
 
 export function useObtainChallenge()  {
 	return useWorkspaceApi<{challenge: string}>(`/login/challenge`);
-}
-
-export function useOracleTranslationErrors( organisationId: number, oracleId: number )  {
-	return useWorkspaceApi<string[]>(`/organisation/${organisationId}/oracle/${oracleId}/translation/status`, {});
 }
 
 
@@ -603,22 +488,10 @@ export function useSearchUser() {
 }
 
 
-export function useAuthUserAccessRightInOrganisation(organisationId: number) {
-	return useWorkspaceApi<AccessRight>(`/organisation/${organisationId}/accessRights`);
-}
-
 export function useUserAccessRightInOrganisation(publicKey: string, organisationId: number) {
 	return useWorkspaceApi<AccessRight>(`/organisation/${organisationId}/accessRights/${publicKey}`);
 }
 
-export function useCountUserInOrganisation(organisationId: number) {
-	return useWorkspaceApi<{count: number}>(`/organisation/${organisationId}/countUsers`);
-}
-
-
-export function useFetchCurrentUserIsAdministrator() {
-	return useWorkspaceApi<{isAdmin: boolean}>(`/user/isAdmin`);
-}
 
 
 
@@ -635,6 +508,89 @@ export function useFetchOrganisationTransactions(organisationId: number, fromHis
 	return useWorkspaceApi<AccountTransactionHistoryEntry[]>(`/organisation/${organisationId}/transactionsHistory?${historyHashParam}&limit=${limit}`);
 }
 
+
+export type ApiKey = {
+	id: number;
+	name: string;
+	createdAt: Date;
+	key?: string,
+	partialKey?: string,
+	activeUntil?: string,
+	isActive: boolean,
+	application?: {
+		name: string,
+	}
+}
+
+export type ApiKeyUsage = {
+	id: number;
+	ip: string;
+	requestMethod: string;
+	requestUrl: string;
+	responseStatus: number;
+	usedAt: string
+}
+export function useApiKeysInApplication(organisationId: number, applicationId: number) {
+	return useWorkspaceApi<ApiKey[]>(
+		`/application/${applicationId}/apiKeys/`
+	);
+}
+
+export function useApiKeysInOrganisation(organisationId: number) {
+	return useWorkspaceApi<ApiKey[]>(
+		`/organisation/${organisationId}/apiKeys/`
+	);
+}
+
+
+export function useKeyCreationApi() {
+	return async (applicationId: number, name: string, activeUntil: string, cb: APICallbacks<ApiKey> | undefined) => {
+		return CallApi(`/application/${applicationId}/apiKeys`, cb, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				name,
+				activeUntil: activeUntil
+			})
+		});
+	};
+}
+
+export function useKeyDeletionApi() {
+	return async (applicationId: number, keyId: number, cb: APICallbacks<ApiKey> | undefined) => {
+		return CallApi(`/apiKeys/${keyId}`, cb, {
+			method: "DELETE",
+		});
+	};
+}
+
+
+export function useKeyApi(apiKeyId: number) {
+	return useWorkspaceApi<ApiKey>(
+		`/apiKeys/${apiKeyId}`
+	);
+}
+
+
+export function useKeyUsagesApi(apiKeyId: number, offset: number, limit: number, filterByUnauthorized: boolean) {
+	return useWorkspaceApi<{count:number, results: ApiKeyUsage[]}>(
+		`/apiKeys/${apiKeyId}/usage?offset=${offset}&limit=${limit}&filterByUnauthorized=${filterByUnauthorized}`
+	);
+}
+
+
+export function useKeyUpdateApi() {
+	return async (keyId: number, name: string, isActive: boolean, cb: APICallbacks<void> | undefined) => {
+		return CallApi(`/apiKeys/${keyId}`, cb, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				name,
+				isActive
+			})
+		});
+	};
+}
 
 
 

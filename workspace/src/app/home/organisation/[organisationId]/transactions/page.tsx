@@ -3,30 +3,30 @@
 import * as sdk from '@cmts-dev/carmentis-sdk/client';
 import OrganisationAccountBalance from '@/components/organisation-account-balance.component';
 import { useOrganisationContext } from '@/contexts/organisation-store.context';
-import { Container } from '@mui/material';
+import { Button, TextField, Typography } from '@mui/material';
 import { useFetchOrganisationTransactions, useFetchTokenAccountExistence } from '@/components/api.hook';
 import FullSpaceSpinner from '@/components/full-page-spinner.component';
-import { Button, Card, CardBody, Input, Typography } from '@material-tailwind/react';
-import FlexCenter from '@/components/flex-center.component';
-import { ReactNode, useState } from 'react';
-import { tree } from 'next/dist/build/templates/app-page';
+import { useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
-import CardTableComponent from '@/components/card-table.component';
+import GenericTableComponent from '@/components/generic-table.component';
 
 export default function TransactionsHistoryPage() {
-	return <Container>
-		<TransactionsHistoryContent/>
-	</Container>
-}
-
-function TransactionsHistoryContent() {
 		const organisation = useOrganisationContext();
 		const {data, isLoading} = useFetchTokenAccountExistence(organisation.id);
 		if (isLoading||!data) return <FullSpaceSpinner/>
-		if (!data.hasTokenAccount) return <NoAccountFound/>
+
+		let content;
+		if (data.hasTokenAccount) {
+			content = <>
+				<OrganisationBalance/>
+				<TransactionHistoryTable/>
+			</>
+		} else {
+			content = <NoAccountFound/>
+		}
 		return <div className={"space-y-4"}>
-			<OrganisationBalance/>
-			<TransactionHistoryTable/>
+			<Typography variant={"h6"} fontWeight={"bold"}>Transactions</Typography>
+			{content}
 		</div>
 }
 
@@ -34,7 +34,6 @@ function NoAccountFound() {
 	const organisation = useOrganisationContext();
 	return <div className={"space-y-4"}>
 		<>
-			<Typography variant={"h4"}>No token account found</Typography>
 			<Typography>
 				We have not found token account associated with your organisation.
 				Go to the Carmentis exchange page to create your token account and add tokens.
@@ -44,8 +43,8 @@ function NoAccountFound() {
 		</>
 
 		<div>
-			<Typography>Public key of your organisation</Typography>
-			<Input value={organisation.publicSignatureKey} disabled={true}/>
+			<Typography fontWeight={"bold"}>Public key of your organisation</Typography>
+			<TextField size={"small"} fullWidth value={organisation.publicSignatureKey} disabled={true}/>
 		</div>
 	</div>
 }
@@ -53,14 +52,12 @@ function NoAccountFound() {
 
 function OrganisationBalance() {
 	const organisation = useOrganisationContext();
-	return <Card className={"w-1/4"}>
-		<CardBody className={"p-4"}>
-			<Typography variant={"h6"}>Balance</Typography>
-			<Typography>
-				<OrganisationAccountBalance organisation={organisation}/>
-			</Typography>
-		</CardBody>
-	</Card>
+	return <>
+		<Typography variant={"h6"}>Balance</Typography>
+		<Typography>
+			<OrganisationAccountBalance organisation={organisation}/>
+		</Typography>
+	</>
 }
 
 
@@ -71,7 +68,7 @@ function TransactionHistoryTable() {
 	if (transactions.error) return <Typography>An error has occurred.</Typography>
 	if (transactions.isLoading || !transactions.data) return <Skeleton count={10}/>
 	return <>
-		<CardTableComponent
+		<GenericTableComponent
 			key={transactions.data.length}
 			data={transactions.data}
 			extractor={(v, i) => [

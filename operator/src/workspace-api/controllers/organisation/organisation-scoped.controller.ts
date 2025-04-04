@@ -1,47 +1,35 @@
 import {
 	BadRequestException,
-	Body,
+	Body, ClassSerializerInterceptor,
 	Controller,
 	Delete,
 	Get,
 	HttpException,
-	HttpStatus, InternalServerErrorException,
-	Logger, NotFoundException,
+	Logger,
+	NotFoundException,
 	Param,
 	Post,
-	Put, Query,
-	Req, UseGuards,
+	Put,
+	Query,
+	Req,
+	UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { OrganisationService } from '../../../shared/services/organisation.service';
 import { UserService } from '../../../shared/services/user.service';
 import { ApplicationService } from '../../../shared/services/application.service';
 import { AuditService } from '../../../shared/services/audit.service';
-import { OracleService } from '../../../shared/services/oracle.service';
-import { AccessRightService } from '../../../shared/services/access-right.service';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { UserEntity } from '../../../shared/entities/user.entity';
-import { ImportApplicationDto } from '../../dto/import-application.dto';
-import { ApplicationEntity } from '../../../shared/entities/application.entity';
 import { AuditOperation, EntityType } from '../../../shared/entities/audit-log.entity';
 import { UpdateOrganisationDto } from '../../dto/organisation-update.dto';
 import { OrganisationEntity } from '../../../shared/entities/organisation.entity';
-import { ApplicationDto } from '../../dto/application.dto';
-import { UpdateOracleDto } from '../../dto/update-oracle.dto';
-import { OracleEntity } from '../../../shared/entities/oracle.entity';
-import { OrganisationAccessRightEntity } from '../../../shared/entities/organisation-access-right.entity';
-import { UpdateAccessRightDto } from '../../dto/update-access-rights.dto';
 import { UserInOrganisationGuard } from '../../guards/user-in-organisation.guard';
-import {
-	CanEditApplications,
-	CanEditUsers,
-	IsAdminInOrganisation,
-} from '../../guards/user-has-valid-access-right.guard';
+import { IsAdminInOrganisation } from '../../guards/user-has-valid-access-right.guard';
 import ChainService from '../../../shared/services/chain.service';
-import { Public } from '../../decorators/public.decorator';
-import { CarmentisTranslator } from '../../../utils/translator';
+import { ApiKeyService } from '../../../shared/services/api-key.service';
 
 
-
+@UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(UserInOrganisationGuard)
 @Controller('/workspace/api/organisation')
 export class OrganisationScopedController {
@@ -53,9 +41,14 @@ export class OrganisationScopedController {
 		private readonly userService: UserService,
 		private readonly applicationService: ApplicationService,
 		private readonly auditService: AuditService,
-		private readonly oracleService: OracleService,
 		private readonly chainService: ChainService,
+		private readonly apiKeyService: ApiKeyService,
 	) {}
+
+	@Get(":organisationId/apiKeys")
+	async getAllApiKeys(@Param('organisationId') organisationId: string) {
+		return this.apiKeyService.findAllKeysByOrganisation(parseInt(organisationId));
+	}
 
 	/**
 	 * Returns the list of organisation in which the current user is involved
@@ -143,9 +136,7 @@ export class OrganisationScopedController {
 	async getStatistics(@Param('organisationId') organisationId: number) {
 		const applicationsNumber =  await this.organisationService.getNumberOfApplicationsInOrganisation(organisationId);
 		const usersNumber = await this.organisationService.getNumberOfUsersInOrganisation(organisationId);
-		const oraclesNumber = await this.oracleService.getNumberOfOraclesInOrganisation(organisationId);
 		return {
-			oraclesNumber,
 			applicationsNumber,
 			usersNumber,
 		}
@@ -168,41 +159,6 @@ export class OrganisationScopedController {
 
 
 
-
-	/**
-	 * Retrieve all Oracles associated with a specific organisation
-	 * @param organisationId ID of the organisation
-	 * @returns List of Oracle entities
-	 */
-	@Get(':organisationId/oracle')
-	async getAllOraclesInOrganisation(@Param('organisationId') organisationId: number): Promise<OracleEntity[]> {
-		return this.oracleService.getAllOraclesInOrganisation(organisationId);
-	}
-
-	/**
-	 * Retrieve a specific Oracle by its ID
-	 * @param organisationId ID of the organisation
-	 * @param oracleId ID of the Oracle
-	 * @returns The requested Oracle entity
-	 */
-	@Get(':organisationId/oracle/:oracleId')
-	async getOracle(@Param('organisationId') organisationId: number, @Param('oracleId') oracleId: number): Promise<OracleEntity> {
-		const oracle = await this.oracleService.getOracleById(oracleId);
-		if (!oracle) throw new NotFoundException('Oracle not found');
-		return oracle;
-	}
-
-	@Get(':organisationId/oracle/:oracleId/translation/status')
-	async getOracleTranslationStatus(@Param('organisationId') organisationId: number, @Param('oracleId') oracleId: number): Promise<string[]> {
-		const oracle = await this.oracleService.getOracleById(oracleId);
-		const builder = CarmentisTranslator.buildOracleToTranslator();
-		try {
-			builder.translate(oracle.data)
-			return []
-		} catch (error) {
-			return builder.getErrors();
-		}
-	}
 
 
 
@@ -230,15 +186,12 @@ export class OrganisationScopedController {
 		// search users by name
 		const foundUsers = await this.userService.search(query);
 
-		// search oracles by name
-		const foundOracles = await this.oracleService.search(organisationId, query);
 
 		// search applications by name
 		const foundApplications = await this.applicationService.search(organisationId, query);
 
 		return {
 			'users': foundUsers,
-			'oracles': foundOracles,
 			'applications': foundApplications,
 		}
 	}

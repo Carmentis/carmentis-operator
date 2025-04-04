@@ -1,11 +1,10 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Query, Put, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Post, Query, Req } from '@nestjs/common';
 import { OrganisationService } from '../../shared/services/organisation.service';
 import { UserService } from '../../shared/services/user.service';
 import CreateUserDto from '../dto/create-user.dto';
 import { CreateOrganisationDto } from '../dto/create-organisation.dto';
 import { OrganisationEntity } from '../../shared/entities/organisation.entity';
 import { UserEntity } from '../../shared/entities/user.entity';
-import { getPublicKeyFromRequest } from '../../utils/request-public-key-access.hook';
 
 @Controller('/workspace/api/admin')
 export class AdminController {

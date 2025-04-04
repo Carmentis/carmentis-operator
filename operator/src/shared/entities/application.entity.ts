@@ -1,6 +1,7 @@
-import {Column, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
-import {OrganisationEntity} from "./organisation.entity";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { OrganisationEntity } from './organisation.entity';
 import { ApplicationDataType } from '../../workspace-api/types/application-data.type';
+import { ApiKeyEntity } from './api-key.entity';
 
 
 @Entity("application")
@@ -53,6 +54,8 @@ export class ApplicationEntity {
     @Column({ default: true })
     isDraft: boolean;
 
-    @Column({ type: 'json'})
-    data: ApplicationDataType;
+    @OneToMany(() => ApiKeyEntity, (key) => key.application, { cascade: true })
+    apiKeys: ApiKeyEntity[];
+
+
 }

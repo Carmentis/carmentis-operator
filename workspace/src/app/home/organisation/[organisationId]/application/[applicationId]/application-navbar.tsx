@@ -18,7 +18,9 @@ import {
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { useConfirmationModal } from '@/contexts/popup-modal.component';
 import Skeleton from 'react-loading-skeleton';
-import EntityStatusHeader from '@/components/application-oracle-header';
+import { Box, Button, Chip, Typography } from '@mui/material';
+import { ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/16/solid';
+import Spinner from '@/components/spinner';
 
 
 export type ApplicationDetailsNavbarProps = {
@@ -56,24 +58,7 @@ export default function ApplicationDetailsNavbar(
 		});
 	};
 
-	const downloadApplicationAsJson = () => {
-		const encodedApplication = JSON.stringify(application);
-		const jsonBlob = new Blob([encodedApplication], { type: 'application/json' });
-		const link = createDownloadLink(
-			jsonBlob,
-			`application-${application.name}.json`,
-		);
-		link.click();
-		URL.revokeObjectURL(link.href);
-		notify.info('Application downloaded');
-	};
 
-	const createDownloadLink = (blob: Blob, filename: string): HTMLAnchorElement => {
-		const link = document.createElement('a');
-		link.href = URL.createObjectURL(blob);
-		link.download = filename;
-		return link;
-	};
 
 	const deleteApplication = () => {
 		confirmModal(
@@ -125,9 +110,79 @@ export default function ApplicationDetailsNavbar(
 		isSaving={isApplicationSaving}
 		isModified={isModified}
 		delete={deleteApplication}
-		download={downloadApplicationAsJson}
 		publish={publishApplication}
 	/>
 
 
+}
+
+
+type EntityStatusHeaderProps = {
+	name: string,
+	version: number,
+	logoUrl?: string,
+	published: boolean,
+	isDraft: boolean,
+	isModified: boolean,
+	isSaving: boolean,
+	save: () => void
+	delete: () => void
+	publish: () => void
+}
+
+/*
+<img
+						src={input.logoUrl}
+						alt=""
+						className="mr-4 px-0"
+						width={15}
+						hidden={!input.logoUrl || showLogo}
+						onError={() => setShowLogo(false)}
+						onLoad={() => setShowLogo(true)}
+					/>
+ */
+function EntityStatusHeader(
+	input: EntityStatusHeaderProps
+) {
+
+	const BORDER_CLASSES = 'border-r-2 border-gray-200';
+	const ICON_ROTATION_CLASSES = 'h-5 w-5 transition-transform group-hover:rotate-45';
+	return (
+		<>
+			<Box display={"flex"} flexDirection={"row"} justifyContent={"space-between"}>
+				<Box display={"flex"} flexDirection={"row"} gap={2}>
+					<Typography
+						fontWeight={'bold'}
+						variant="h5"
+					>
+						{input.name}
+					</Typography>
+					<Box display={"flex"} flexDirection={"row"} gap={1}>
+						<Chip label={`Version ${input.version}`}/>
+						{input.published &&
+							<Chip variant="filled" className={"bg-primary-light"} label="Published" />}
+						{input.isDraft &&
+							<Chip variant="filled" className={"border-primary-light text-primary-light"}
+								  label="Draft" />}
+					</Box>
+				</Box>
+				<Box display={"flex"} flexDirection={"row"} gap={1}>
+					<div className={`space-x-2 ${BORDER_CLASSES} pr-2 flex flex-row`}>
+						{input.isModified && <Button variant={"contained"} onClick={input.save}>
+							{input.isSaving ? <Spinner /> : <i className="bi bi-floppy-fill"></i>}
+							<span>save</span>
+						</Button>}
+						{input.isDraft &&
+							<Button variant={"contained"} onClick={input.publish}>
+								<ArrowUpOnSquareIcon className={ICON_ROTATION_CLASSES} />
+								<span>Publish</span>
+							</Button>}
+					</div>
+					<Button variant={"contained"} onClick={input.delete}>
+						<TrashIcon className={ICON_ROTATION_CLASSES} />
+					</Button>
+				</Box>
+			</Box>
+		</>
+	);
 }

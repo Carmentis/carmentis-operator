@@ -1,5 +1,5 @@
 import { Body, Controller, ForbiddenException, Get, Logger, NotFoundException, Param, Post, Req } from '@nestjs/common';
-import {UserService} from "../../shared/services/user.service";
+import { UserService } from '../../shared/services/user.service';
 import CreateUserDto from '../dto/create-user.dto';
 import { OrganisationService } from '../../shared/services/organisation.service';
 import { Public } from '../decorators/public.decorator';

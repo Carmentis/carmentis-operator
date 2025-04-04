@@ -1,32 +1,29 @@
 import {
 	BadRequestException,
-	Body,
+	Body, ClassSerializerInterceptor,
 	Controller,
 	Delete,
-	ForbiddenException,
-	Get,
+	ForbiddenException, Get,
 	HttpException,
 	HttpStatus,
-	InternalServerErrorException,
 	Logger,
 	Param,
 	Post,
 	Put,
-	UseGuards,
+	UseGuards, UseInterceptors,
 } from '@nestjs/common';
 import { UserInOrganisationGuard } from '../../guards/user-in-organisation.guard';
 import { CanEditApplications, IsAdminInOrganisation } from '../../guards/user-has-valid-access-right.guard';
 import { OrganisationService } from '../../../shared/services/organisation.service';
 import { ApplicationService } from '../../../shared/services/application.service';
 import { AuditService } from '../../../shared/services/audit.service';
-import { ImportApplicationDto } from '../../dto/import-application.dto';
 import { ApplicationEntity } from '../../../shared/entities/application.entity';
 import { AuditOperation, EntityType } from '../../../shared/entities/audit-log.entity';
 import { ApplicationDto } from '../../dto/application.dto';
 import { plainToInstance } from 'class-transformer';
-import { Public } from '../../decorators/public.decorator';
-import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { EnvService } from '../../../shared/services/env.service';
+import { ApiKeyCreationDto } from '../../dto/api-key-creation.dto';
+import { ApiKeyService } from '../../../shared/services/api-key.service';
 
 @UseGuards(UserInOrganisationGuard, CanEditApplications)
 @Controller('/workspace/api/organisation')
@@ -38,8 +35,32 @@ export class OrganisationApplicationEditionScopedController {
 		private readonly organisationService: OrganisationService,
 		private readonly applicationService: ApplicationService,
 		private readonly auditService: AuditService,
-		private readonly envService: EnvService,
+		private readonly apiKeyService: ApiKeyService,
 	) {}
+
+
+	@UseInterceptors(ClassSerializerInterceptor)
+	@Get('/apiKeys')
+	async getAllKeys(@Param("applicationId") applicationId: number) {
+		const application = await this.applicationService.findApplication(applicationId);
+		return this.apiKeyService.findAllKeysByApplication(application)
+	}
+
+
+	@Post('/apiKeys')
+	async createKey(
+		@Body() body: ApiKeyCreationDto,
+		@Param("applicationId") applicationId: number,
+	) {
+		const application = await this.applicationService.findApplication(applicationId);
+		const activeUntil = new Date(body.activeUntil);
+		const key = await this.apiKeyService.createKey(application, {
+			name: body.name,
+			activeUntil,
+		})
+		this.logger.log(`API Key '${body.name}' created`)
+		return key;
+	}
 
 	@UseGuards(IsAdminInOrganisation)
 	@Post(":organisationId/application/:applicationId/publish")
@@ -58,33 +79,6 @@ export class OrganisationApplicationEditionScopedController {
 		}
 	}
 
-
-
-	@Post(':organisationId/application/import')
-	async importApplication(
-		@Param('organisationId') organisationId: number,
-		@Body() importApplication: ImportApplicationDto
-	): Promise<ApplicationEntity> {
-		// create the application
-		const result = await this.applicationService.importApplicationInOrganisation(
-			organisationId,
-			importApplication
-		);
-
-		// log the application creation
-		if ( result ) {
-			this.auditService.log(
-				EntityType.APPLICATION,
-				organisationId,
-				AuditOperation.APPLICATION_CREATION,
-				{ name: importApplication.name }
-			)
-		}
-
-		// return the created application
-		return result
-	}
-
 	/**
 	 * Update an application
 	 *
@@ -98,7 +92,6 @@ export class OrganisationApplicationEditionScopedController {
 		// create an application entity from the input DTO
 		const application: ApplicationEntity = plainToInstance(ApplicationEntity, applicationDto);
 		application.isDraft = true;
-		console.log("update of application:", application)
 		const success = await this.applicationService.update(application);
 		if ( success ) {
 			this.auditService.log(

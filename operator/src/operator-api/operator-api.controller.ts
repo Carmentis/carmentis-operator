@@ -7,7 +7,7 @@ import {
 	NotFoundException, Param,
 	Post, Query,
 	Req,
-	UnprocessableEntityException,
+	UnprocessableEntityException, UseGuards,
 } from '@nestjs/common';
 import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { Public } from '../workspace-api/decorators/public.decorator';
@@ -18,9 +18,11 @@ import { base64 } from '@cmts-dev/carmentis-sdk/server';
 import { OrganisationEntity } from '../shared/entities/organisation.entity';
 import { ApplicationService } from '../shared/services/application.service';
 import PackageConfigService from '../package.service';
+import { ApiKeyService } from '../shared/services/api-key.service';
+import { ApiKeyGuard } from '../shared/guards/api-key-guard';
 
 
-@Controller()
+@Controller('/api')
 export class OperatorApiController{
 
 	private organisationIdByDataId : Map<string, string> = new Map();
@@ -31,6 +33,7 @@ export class OperatorApiController{
 		private readonly organisationService: OrganisationService,
 		private readonly applicationService: ApplicationService,
 		private readonly packageService: PackageConfigService,
+		private readonly apiKeyService: ApiKeyService,
 	) {
 		this.nodeUrl = envService.nodeUrl;
 	}
@@ -40,6 +43,14 @@ export class OperatorApiController{
 	index(): string {
 		return 'Carmentis Operator v' + this.packageService.operatorVersion
 	}
+
+	@UseGuards(ApiKeyGuard)
+	@Public()
+	@Get('/hello')
+	async hello() {
+		return { message: 'Hello' };
+	}
+
 
 	@Public()
 	@Get('/config/application')

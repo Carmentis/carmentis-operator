@@ -1,14 +1,7 @@
-import {
-	Injectable,
-	InternalServerErrorException,
-	Logger, NotFoundException,
-	OnModuleInit, UnprocessableEntityException,
-} from '@nestjs/common';
-import * as sdk from "@cmts-dev/carmentis-sdk/server";
+import { Injectable, Logger, NotFoundException, OnModuleInit, UnprocessableEntityException } from '@nestjs/common';
+import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { ApplicationEntity } from '../entities/application.entity';
 import { OrganisationEntity } from '../entities/organisation.entity';
-import { OracleEntity } from '../entities/oracle.entity';
-import { CarmentisTranslator } from '../../utils/translator';
 
 
 /**
@@ -42,6 +35,17 @@ export default class ChainService implements OnModuleInit{
 	async publishOrganisation(
 		organisation: OrganisationEntity
 	) : Promise<MicroBlock> {
+
+		// reject if the country code or city are undefined
+		const countryCode = organisation.countryCode;
+		const city = organisation.city;
+		if (typeof countryCode !== 'string' || countryCode.trim().length === 0) {
+			throw "Empty country code."
+		}
+		if (typeof city !== 'string' || city.trim().length === 0) {
+			throw "Empty city.";
+		}
+
 		// initialise the blockchain sdk
 		sdk.blockchain.blockchainCore.setUser(
 			sdk.blockchain.ROLES.OPERATOR,
@@ -53,10 +57,10 @@ export default class ChainService implements OnModuleInit{
 
 		// if the organisation has already been published, load the existing block
 		if ( organisation.virtualBlockchainId ) {
-			console.log("Loading existing organisation block", organisation);
+			this.logger.log("Loading existing organisation block", organisation);
 			await organisationVb.load();
 		} else {
-			console.log("Creating new organisation block");
+			this.logger.log("Creating new organisation block");
 			// set the organisation public signature key
 			await organisationVb.addPublicKey({
 				publicKey: organisation.publicSignatureKey
@@ -119,12 +123,8 @@ export default class ChainService implements OnModuleInit{
 			description: application.description
 		})
 
-		// merge the default empty application with the provided one
-		const translator = CarmentisTranslator.buildApplicationTranslator();
-		const data = translator.translate(application.data);
 		await vc.addDefinition({
 			version: application.version + 1, // we increment the version number
-			definition: data,
 		});
 
 		vc.setGasPrice(
@@ -135,53 +135,6 @@ export default class ChainService implements OnModuleInit{
 		await vc.sign();
 		return vc.publish()
 	}
-
-
-	async publishOracle(organisation: OrganisationEntity, oracle: OracleEntity) {
-		// initialise the blockchain sdk
-		sdk.blockchain.blockchainCore.setUser(
-			sdk.blockchain.ROLES.OPERATOR,
-			organisation.privateSignatureKey
-		);
-
-		const vc = new sdk.blockchain.oracleVb(oracle.virtualBlockchainId);
-		if ( !oracle.virtualBlockchainId ) {
-			await vc.addDeclaration({
-				organizationId: organisation.virtualBlockchainId,
-			});
-		} else {
-			await vc.load();
-		}
-
-
-		console.log("Adding description")
-		const description =  {
-			name: oracle.name,
-			logoUrl: oracle.logoUrl || '',
-			rootDomain: oracle.domain || '',
-		}
-		console.log("oracle description:", description)
-		await vc.addDescription(description)
-
-
-		const builder = CarmentisTranslator.buildOracleToTranslator();
-		const data = builder.translate(oracle.data);
-		console.log("source oracle data:", oracle.data);
-		console.log("Translated oracle data:", data)
-		await vc.addDefinition({
-			version: oracle.version + 1,
-			definition: data
-		});
-
-
-		vc.setGasPrice(
-			sdk.constants.ECO.TOKEN
-		);
-
-		await vc.sign();
-		return await vc.publish()
-	}
-
 
 	async checkAccountExistence(publicSignatureKey: string) {
 		try {

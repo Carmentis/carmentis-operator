@@ -9,12 +9,10 @@ import { UserEntity } from '../shared/entities/user.entity';
 import { OrganisationEntity } from '../shared/entities/organisation.entity';
 import { OrganisationAccessRightEntity } from '../shared/entities/organisation-access-right.entity';
 import { ApplicationEntity } from '../shared/entities/application.entity';
-import { OracleEntity } from '../shared/entities/oracle.entity';
 import { AuditLogEntity } from '../shared/entities/audit-log.entity';
 
 import PackageConfigService from '../package.service';
 import { AdminController } from './controllers/admin.controller';
-import { SandboxController } from './controllers/sandbox.controller';
 import { LoginController } from './controllers/login.controller';
 import { ChallengeEntity } from '../shared/entities/challenge.entity';
 import { JwtModule } from '@nestjs/jwt';
@@ -32,16 +30,15 @@ import {
 	IsAdminInOrganisation,
 } from './guards/user-has-valid-access-right.guard';
 import {
-	OrganisationOracleEditionScopedController,
-} from './controllers/organisation/organisation-oracle-edition-scoped.controller';
-import {
 	OrganisationApplicationEditionScopedController,
 } from './controllers/organisation/organisation-application-edition-scoped.controller';
 import {
 	OrganisationUserEditionScopedController,
 } from './controllers/organisation/organisation-user-edition-scoped.controller';
 import { SharedModule } from '../shared/shared.module';
-import { ChainController } from './controllers/chain.controller';
+import { ApiKeyController } from './controllers/api-key.controller';
+import { ApplicationController } from './controllers/organisation/application.controller';
+import { ApiKeyGuard } from '../shared/guards/api-key-guard';
 
 // Extracted imports, controllers, and providers into constants
 export const DEFAULT_JWT_TOKEN_VALIDITY = "8h"
@@ -52,7 +49,6 @@ const WORKSPACE_IMPORTS = [
 		OrganisationEntity,
 		OrganisationAccessRightEntity,
 		ApplicationEntity,
-		OracleEntity,
 		AuditLogEntity,
 		ChallengeEntity
 	]),
@@ -64,17 +60,16 @@ const WORKSPACE_IMPORTS = [
 ];
 
 const WORKSPACE_CONTROLLERS = [
-	ChainController,
+	ApplicationController,
+	ApiKeyController,
 	WorkspaceApiController,
 	AdminController,
 	OrganisationController,
 	OrganisationScopedController,
-	OrganisationOracleEditionScopedController,
 	OrganisationApplicationEditionScopedController,
 	OrganisationUserEditionScopedController,
 	SearchController,
 	UserController,
-	SandboxController,
 	SetupController,
 	LoginController,
 ];
@@ -91,6 +86,10 @@ const WORKSPACE_PROVIDERS = [
 		provide: APP_GUARD,
 		useClass: AuthGuard,
 	},
+	{
+		provide: APP_GUARD,
+		useClass: ApiKeyGuard,
+	}
 ];
 
 @Module({

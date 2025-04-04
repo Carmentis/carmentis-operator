@@ -1,17 +1,6 @@
-import {
-	Column,
-	Entity,
-	JoinColumn,
-	ManyToMany,
-	ManyToOne,
-	OneToMany,
-	PrimaryGeneratedColumn,
-	UpdateDateColumn,
-} from 'typeorm';
-import { UserEntity } from './user.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { OrganisationAccessRightEntity } from './organisation-access-right.entity';
-import {ApplicationEntity} from "./application.entity";
-import { OracleEntity } from './oracle.entity';
+import { ApplicationEntity } from './application.entity';
 import { Exclude } from 'class-transformer';
 
 @Entity('organisation')
@@ -54,9 +43,6 @@ export class OrganisationEntity {
 
 	@OneToMany(() => ApplicationEntity, (app) => app.organisation, { cascade: true })
 	applications: ApplicationEntity[];
-
-	@OneToMany(() => OracleEntity, (app) => app.organisation, { cascade: true })
-	oracles: OracleEntity[];
 
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
 	createdAt: Date;

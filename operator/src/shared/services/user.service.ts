@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Like, Or, Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { UserEntity } from '../entities/user.entity';
 import CreateUserDto from '../../workspace-api/dto/create-user.dto';
 import { getPublicKeyFromRequest } from '../../utils/request-public-key-access.hook';
@@ -41,10 +41,6 @@ export class UserService {
 		return user;
 	}
 
-	// Find all items
-	async findAll(): Promise<UserEntity[]> {
-		return this.userEntityRepository.find();
-	}
 
 
 	/**

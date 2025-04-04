@@ -1,22 +1,21 @@
 import {
-    BadRequestException,
-    HttpException,
-    HttpStatus,
-    Injectable,
-    InternalServerErrorException, Logger,
-    NotImplementedException,
-    UnauthorizedException,
+	BadRequestException,
+	HttpException,
+	HttpStatus,
+	Injectable,
+	InternalServerErrorException,
+	Logger,
+	NotImplementedException,
+	UnauthorizedException,
 } from '@nestjs/common';
 import { OrganisationEntity } from '../entities/organisation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {ApplicationEntity} from "../entities/application.entity";
-import {plainToInstance} from "class-transformer";
-import { ImportApplicationDto } from '../../workspace-api/dto/import-application.dto';
+import { ApplicationEntity } from '../entities/application.entity';
+import { plainToInstance } from 'class-transformer';
 import ChainService from './chain.service';
 import { OrganisationService } from './organisation.service';
 import { EnvService } from './env.service';
-
 
 
 @Injectable()
@@ -64,14 +63,6 @@ export class ApplicationService {
             tag: this.generateTag()
         })
         application.organisation = organisationEntity;
-        application.data = {
-            fields: [],
-            structures: [],
-            enumerations: [],
-            masks: [],
-            messages: [],
-        };
-
         const item = this.applicationRepository.create(
             application
         );
@@ -84,12 +75,11 @@ export class ApplicationService {
      * @param organisationId
      */
     async findAllApplicationsInOrganisationByOrganisationId(organisationId: number) {
-        return this.applicationRepository
-            .createQueryBuilder('a')
-            .innerJoin('a.organisation', 'organisation')
-            .where('organisation.id = :organisationId', { organisationId })
-            .select(['a.id', 'a.name', 'a.version', 'a.published', 'a.publishedAt', 'a.isDraft', 'a.version', 'a.tag'])
-            .getMany();
+        return this.applicationRepository.find({
+            where: { organisation: { id: organisationId } },
+            select: ['id', 'name', 'published', 'isDraft'],
+        })
+     
     }
 
     /**
@@ -108,22 +98,6 @@ export class ApplicationService {
         return this.applicationRepository.save(application)
     }
 
-
-    /**
-     * Import an application.
-     *
-     * @param organisationId
-     * @param importApplication
-     */
-    async importApplicationInOrganisation(organisationId: number, importApplication: ImportApplicationDto): Promise<ApplicationEntity> {
-        const organisation = await this.organisationService.findOne(organisationId)
-        const application = plainToInstance(ApplicationEntity, importApplication);
-        application.organisation = organisation;
-        application.tag = this.generateTag();
-        const item = this.applicationRepository.create(application);
-        return this.applicationRepository.save(item);
-
-    }
 
     /**
      * Deletes an application based on its identifier.
@@ -176,6 +150,7 @@ export class ApplicationService {
             return await this.applicationRepository.save(application);
         } catch (e) {
             this.logger.error(e)
+            console.log(e.stack)
             if (e.code === 'ECONNREFUSED') {
                 throw new InternalServerErrorException("Cannot connect to the node.");
             } else {

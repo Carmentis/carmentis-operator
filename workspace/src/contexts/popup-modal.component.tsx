@@ -1,8 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, ReactElement } from 'react';
-import { Modal, Box, DialogTitle, DialogContent, TextField, DialogActions } from '@mui/material';
-import { Button, Dialog, Typography } from '@material-tailwind/react';
+import { Box, DialogTitle, DialogContent, TextField, DialogActions, Button } from '@mui/material';
+import { Dialog } from '@material-tailwind/react';
 
 interface ModalContextType {
 	openModal: (options: {content: ReactElement}) => void;
@@ -47,6 +47,9 @@ export const useModal = (): ModalContextType => {
 	return context;
 };
 
+
+
+
 export const useConfirmationModal = () => {
 	const modal = useModal();
 	return (title: string, message: string, yes: string, no: string, onYes: () => void) => {
@@ -56,7 +59,6 @@ export const useConfirmationModal = () => {
 			onYes();
 		}
 
-		console.log(title, message)
 		modal.openModal({
 			content: <>
 				<DialogTitle>{title}</DialogTitle>

@@ -3,6 +3,7 @@ import { ReactNode, useState } from 'react';
 import Spinner from '@/components/spinner';
 import { Input } from '@material-tailwind/react';
 import { useSearchUser } from '@/components/api.hook';
+import { Box, TextField } from '@mui/material';
 
 export function SearchUserInputComponent(
 	input: {
@@ -61,9 +62,8 @@ export function SearchUserInputComponent(
 	}
 
 
-	return <>
-		<Input label="Search user" value={searchInput} onChange={e => handleSearch(e.target.value)}
-			   icon={<i className="bi bi-search" />} />
+	return <Box minHeight={"300px"} maxHeight={"300px"} overflow="scroll">
+		<TextField size={"small"} fullWidth={true} label="Search user" value={searchInput} onChange={e => handleSearch(e.target.value)} />
 		{searchResultsContent}
-	</>;
+	</Box>;
 }

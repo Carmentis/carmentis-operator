@@ -1,4 +1,10 @@
-import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+	Injectable,
+	InternalServerErrorException,
+	NotFoundException,
+	UnauthorizedException,
+	UnprocessableEntityException,
+} from '@nestjs/common';
 import { OrganisationEntity } from '../entities/organisation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,10 +16,6 @@ import ChainService from './chain.service';
 import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { AccessRightService } from './access-right.service';
 import { EnvService } from './env.service';
-import { ApplicationService } from './application.service';
-import { OracleService } from './oracle.service';
-import { OracleEntity } from '../entities/oracle.entity';
-
 
 
 @Injectable()
@@ -28,8 +30,6 @@ export class OrganisationService {
 		private readonly accessRightService: AccessRightService,
 		@InjectRepository(ApplicationEntity)
 		private readonly applicationRepository: Repository<ApplicationEntity>,
-		@InjectRepository(OracleEntity)
-		private readonly oracleRepository: Repository<OracleEntity>,
 		private readonly chainService: ChainService,
 		private readonly envService: EnvService,
 	) {
@@ -189,7 +189,7 @@ export class OrganisationService {
 
 	async findOrganisationsByUser(publicKey: string) {
 		return this.organisationEntityRepository.createQueryBuilder('org')
-			.select(['org.id', 'org.name'])
+			.select(['org.id', 'org.name', "org.publicSignatureKey"])
 			.innerJoin('org.accessRights', 'ar')
 			.where('ar.user.publicKey = :publicKey', { publicKey })
 			.getMany();
@@ -215,7 +215,7 @@ export class OrganisationService {
 			if (e.code === 'ECONNREFUSED') {
 				throw new InternalServerErrorException("Cannot connect to the node.");
 			} else {
-				throw new InternalServerErrorException(e)
+				throw new UnprocessableEntityException(e)
 			}
 		}
 
@@ -333,14 +333,6 @@ export class OrganisationService {
 			.getOne();
 	}
 
-	async getOrganisationByOracleId(oracleId: number) {
-		const organisation = await this.organisationEntityRepository.createQueryBuilder('organisation')
-			.innerJoin('organisation.oracles', 'oracle')
-			.where('oracle.id = :oracleId', { oracleId })
-			.getOne();
-		if (!organisation) throw new NotFoundException(`Organisation associated with the oracle is not found: oracle id ${oracleId}`)
-		return organisation
-	}
 
 
 	/**
@@ -394,16 +386,6 @@ export class OrganisationService {
 		for (const application of applications) {
 			await this.eraseApplicationPublicationStatus(application)
 		}
-
-		// erase publication status of oracles
-		const oracles = await this.oracleRepository.createQueryBuilder('oracle')
-			.innerJoin('oracle.organisation', 'organisation')
-			.where('organisation.id = :organisationId', { organisationId: organisation.id })
-			.getMany();
-
-		for (const oracle of oracles) {
-			await this.eraseOraclePublicationStatus(oracle);
-		}
 	}
 
 	async eraseApplicationPublicationStatus(application: ApplicationEntity) {
@@ -415,12 +397,4 @@ export class OrganisationService {
 		await this.applicationRepository.save(application);
 	}
 
-	async eraseOraclePublicationStatus(oracle: OracleEntity) {
-		oracle.virtualBlockchainId = null;
-		oracle.isDraft = true;
-		oracle.publishedAt = null;
-		oracle.version = 0;
-		oracle.published = false;
-		await this.oracleRepository.save(oracle);
-	}
 }

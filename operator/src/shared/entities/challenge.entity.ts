@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, CreateDateColumn } from 'typeorm';
+import { CreateDateColumn, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('challenges')
 export class ChallengeEntity {

@@ -1,9 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ApplicationEntity } from '../entities/application.entity';
-import { Column, CreateDateColumn, ManyToOne, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { AuditLogEntity, AuditOperation, EntityType } from '../entities/audit-log.entity';
-import { UserEntity } from '../entities/user.entity';
 
 @Injectable()
 export class AuditService {

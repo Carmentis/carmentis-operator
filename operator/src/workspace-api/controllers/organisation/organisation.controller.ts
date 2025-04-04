@@ -1,12 +1,9 @@
-import { Body, Controller, Get, Logger, Post, Req } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Get, Logger, Post, Req, UseInterceptors } from '@nestjs/common';
 import { OrganisationService } from '../../../shared/services/organisation.service';
 import { UserService } from '../../../shared/services/user.service';
 import { OrganisationEntity } from '../../../shared/entities/organisation.entity';
-import { ApplicationService } from '../../../shared/services/application.service';
 import { AuditService } from '../../../shared/services/audit.service';
 import { AuditOperation, EntityType } from '../../../shared/entities/audit-log.entity';
-import { OracleService } from '../../../shared/services/oracle.service';
-import { AccessRightService } from '../../../shared/services/access-right.service';
 
 
 /**
@@ -14,6 +11,7 @@ import { AccessRightService } from '../../../shared/services/access-right.servic
  * It provides functionalities to create a new organisation and retrieve
  * organisation details.
  */
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('/workspace/api/organisation')
 export class OrganisationController {
 
@@ -54,12 +52,13 @@ export class OrganisationController {
 
 
 
+
     /**
      * Retrieves a list of all organisations.
      *
      * @return {Promise<Array<{ id: number, name: string, logoUrl: string }>>} A promise that resolves to*/
     @Get()
-    async getAllOrganisations(): Promise<{ id: number, name: string, logoUrl: string }[]> {
+    async getAllOrganisations(): Promise<{ id: number, name: string, logoUrl: string, publicSignatureKey: string }[]> {
         return await this.organisationService.findAll();
     }
 

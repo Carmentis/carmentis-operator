@@ -27,8 +27,4 @@ export class ApplicationDto {
     @IsString()
     @IsOptional()
     website: string;
-
-
-    @IsDefined()
-    data: any;
 }

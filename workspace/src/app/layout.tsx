@@ -9,7 +9,7 @@ import { ApplicationNavigationContextProvider } from '@/contexts/application-nav
 import { ApplicationInterfaceContextProvider } from '@/contexts/interface.context';
 import { MaterialTailwindThemeContextProvider } from '@/contexts/material-taildwind-theme.context';
 import { InitialisationStatusContext } from '@/contexts/initialisation-status.context';
-import { EnvScript } from 'next-runtime-env';
+import { ModalProvider as ReactModalHookProvider } from "react-modal-hook";
 import { EnvVarsContext } from '@/contexts/env-vars.context';
 import { ModalProvider } from '@/contexts/popup-modal.component';
 
@@ -28,9 +28,14 @@ type handledErrorTypes =  string | string[];
 export const useToast = () => {
 
 	function handleError(message: handledErrorTypes) {
+		console.log(message)
 		if (typeof message == 'string') toast.error(message)
-		if (Array.isArray(message) && message.every(item => typeof item === "string")) {
+		else if (Array.isArray(message) && message.every(item => typeof item === "string")) {
 			message.forEach(item => toast.error(item))
+		} else if ('message' in message && typeof message.message === 'string') {
+			toast.error(message.message);
+		} else {
+			toast.error('An error occurred.');
 		}
 	}
 
@@ -65,7 +70,9 @@ export default function RootLayout({ children }: PropsWithChildren) {
 				<ApplicationInterfaceContextProvider>
 					<MaterialTailwindThemeContextProvider>
 						<ModalProvider>
-							{children}
+							<ReactModalHookProvider>
+								{children}
+							</ReactModalHookProvider>
 						</ModalProvider>
 						{/* Centralized ToastContainer with extracted configurations */}
 						<ToastifyContainer {...toastConfig} />
