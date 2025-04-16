@@ -1,4 +1,4 @@
-import { HttpCode, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { ApiKeyEntity } from '../entities/api-key.entity';
 import { Repository } from 'typeorm';
@@ -6,11 +6,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ApplicationEntity } from '../entities/application.entity';
 import { randomBytes } from 'crypto';
 import { ApiKeyUsageEntity } from '../entities/api-key-usage.entity';
-import { Request, Response, NextFunction } from 'express';
-import { ApiKeyUpdateDto } from '../../workspace-api/dto/api-key-update.dto';
+import { Request, Response } from 'express';
 
 @Injectable()
 export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
+	private logger = new Logger(ApiKeyService.name);
 	constructor(
 		@InjectRepository(ApiKeyEntity) repo: Repository<ApiKeyEntity>,
 		@InjectRepository(ApiKeyUsageEntity) private usageRepo: Repository<ApiKeyUsageEntity>
@@ -25,32 +25,35 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 	}
 
 	async createKey( application: ApplicationEntity, body: Partial<ApiKeyEntity> ) {
-		const key = this.repo.create(body)
+		const { uid, key: secret, formattedKey } = this.generateRandomKey();
+		const key = this.repo.create(body);
 		key.application = application;
-		key.key = this.generateRandomKey();
+		key.key = secret;
+		key.uid = uid;
 		key.isActive = true;
-		return this.repo.save(key);
+		const keyEntity = await this.repo.save(key);
+		return { keyEntity, formattedKey };
 	}
 
 	private generateRandomKey() {
-		const buffer = randomBytes(64);
-		const formattedKey = buffer.toString('hex');
-		return `cmts_${formattedKey}`
+		const uid = randomBytes(32).toString('hex');
+		const key = randomBytes(32).toString('hex');
+		const formattedKey = `cmts-${uid}-${key}`
+		return {uid, key, formattedKey}
 	}
 
-	async deleteKey(apiKey: string) {
-		return this.repo.delete(apiKey)
-	}
 
-	async exists(key: string) {
-		return this.repo.exists({
-			where: { key },
+	async findOneByKey(key: string) {
+		const {uid} = this.parseKey(key);
+		return this.repo.findOne({
+			where: { uid },
 		})
 	}
 
-	async findOneByKey(key: string) {
+	async findOneById(id: number) {
 		return this.repo.findOne({
-			where: { key },
+			relations: ["application"],
+			where: { id },
 		})
 	}
 
@@ -88,9 +91,7 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 	async findKeyUsagesByKeyId(keyId: number, offset: number, limit: number, filterByUnauthorized: boolean) {
 		return this.usageRepo.find({
 			where: {
-				apiKey: {
-					id: keyId,
-				},
+				apiKey: { id: keyId, },
 				responseStatus: typeof filterByUnauthorized == 'boolean' && filterByUnauthorized ? HttpStatus.FORBIDDEN : undefined
 			},
 			order: { 'usedAt': 'DESC' },
@@ -99,19 +100,58 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 		})
 	}
 
-	async updateKey(apiKey: number, updateKey: Partial<ApiKeyEntity>) {
-		const key = await this.findOne({where: { id: apiKey }});
+	async updateKey(id: number, updateKey: Partial<ApiKeyEntity>) {
+		const key = await this.findOne({where: { id: id }});
 		const updatedKey = {...key, ...updateKey};
 		return this.repo.save(updatedKey)
 	}
 
-	async isActiveKey(key: string) {
 
+	async exists(apiKey: string) {
+		// search the key
+		const {uid, key} = this.parseKey(apiKey);
 		const existingKey = await this.repo.findOne({
-			where: { key },
-			select: ['isActive', 'activeUntil'],
+			where: { uid },
 		});
 
-		return !!existingKey && existingKey.isActive && existingKey.activeUntil > new Date();
+		// check conditions on the validity of the key
+		return !!existingKey && // the key should exist
+			existingKey.key === key // the keys should match
+	}
+
+	async isActiveKey(apiKey: string) {
+		// search the key
+		const {uid, key} = this.parseKey(apiKey);
+		const existingKey = await this.repo.findOne({
+			where: { uid },
+		});
+
+
+		// check conditions on the validity of the key
+		return !!existingKey && // the key should exist
+			existingKey.isActive && // the key should be active
+			existingKey.activeUntil > new Date() && // the key should still be active
+			existingKey.key === key // the keys should match
+	}
+
+	async deleteKeyById(id: number) {
+		return this.repo.delete({
+			id
+		})
+	}
+
+
+	/**
+	 * Parse the key to recover the key and the id.
+	 * @param apiKey
+	 * @private
+	 */
+	private parseKey( apiKey: string ) {
+		try {
+			const [header, uid, key] = apiKey.split('-');
+			return {uid,key}
+		} catch (e) {
+			throw new Error("Provided key has an invalid format")
+		}
 	}
 }

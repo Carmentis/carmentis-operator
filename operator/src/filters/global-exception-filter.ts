@@ -6,11 +6,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 	private readonly logger = new Logger(GlobalExceptionFilter.name);
 
 	catch(exception: unknown, host: ArgumentsHost) {
+		/*
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse();
 		const request = ctx.getRequest();
-
-
 
 		// Vérifier si c'est une exception HTTP
 		if (exception instanceof HttpException) {
@@ -26,5 +25,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 			);
 			response.status(500).json({ statusCode: 500, message: 'Internal server error' });
 		}
+
+		 */
 	}
 }

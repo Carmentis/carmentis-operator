@@ -1,25 +1,15 @@
 'use client';
 
-import { useFetchOperatorInitialisationStatus } from '@/components/api.hook';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
-import { PropsWithChildren,  useState } from 'react';
+import { PropsWithChildren } from 'react';
 import { usePathname } from 'next/navigation';
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
 
 export function InitialisationStatusContext({children}: PropsWithChildren) {
 	const node = process.env.NEXT_PUBLIC_OPERATOR_URL;
+	const {data, loading: isLoading, error} = useIsInitialisedQuery();
 
-	const {data, isLoading, error} = useFetchOperatorInitialisationStatus();
-	/*{
-		onSuccessData: data => {
-			setInitialised(data.initialised)
-		},
-		onError: error => {
-			setErrorEncountered(true)
-		}
-	});
-	 */
-
+	//const {data, isLoading, error} = useFetchOperatorInitialisationStatus();
 	const navigation = useApplicationNavigationContext();
 	const pathname = usePathname();
 
@@ -27,12 +17,12 @@ export function InitialisationStatusContext({children}: PropsWithChildren) {
 	if (error) return <OperatorErrorAlert
 		message={`It seems that the operator located at ${node} is down. (${error.message})`}
 	/>
-	if ( !data || typeof data.initialised !== 'boolean')return <OperatorErrorAlert
+	if ( !data || typeof data.isInitialised !== 'boolean') return <OperatorErrorAlert
 		message={`It seems that the server has responded with invalid data. Are you sure to have correctly set the operator url? Current url set to ${node}.`}
 	/>
 
 
-	const initialised = data.initialised;
+	const initialised = data.isInitialised;
 	if (!initialised && pathname !== '/setup')
 		navigation.navigateToSetup();
 
@@ -45,6 +35,7 @@ export function InitialisationStatusContext({children}: PropsWithChildren) {
 
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
+import { useIsInitialisedQuery } from '@/generated/graphql';
 
 type ErrorMessageProps = {
 	message: string;

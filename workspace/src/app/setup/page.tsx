@@ -1,39 +1,82 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
-import Spinner from '@/components/spinner';
+import { z } from 'zod';
+import { useSetupFirstAdministratorMutation } from '@/generated/graphql';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Box, Button, TextField } from '@mui/material';
+import { useToast } from '@/app/layout';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
-import { useSetupApi } from '@/components/api.hook';
+
+const setupSchema = z.object({
+    publicKey: z.string().nonempty('Public key cannot be empty'),
+    firstname: z.string().nonempty('Firstname cannot be empty'),
+    lastname: z.string().nonempty('Lastname cannot be empty'),
+    token: z.string().nonempty('Token cannot be empty'),
+});
+
+type SetupType = z.infer<typeof setupSchema>;
 
 export default function SetupPage() {
+    const notify = useToast();
     const navigation = useApplicationNavigationContext();
-    const callSetup = useSetupApi();
-    const [publicKey, setPublicKey] = useState('');
-    const [firstname, setFirstname] = useState('');
-    const [lastname, setLastname] = useState('');
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [setupFirstAdmin, {loading: isLoading}] = useSetupFirstAdministratorMutation();
 
-    function setupPublicKey( event: FormEvent ) {
-        event.preventDefault();
-        setIsLoading(true);
-        callSetup(publicKey, firstname, lastname, {
-            onSuccess: onSetupResponse,
-            onError: onSetupFailure,
+
+    // create the form state to create the API Key
+    const { register, handleSubmit, formState: { errors }, } = useForm<SetupType>({
+        resolver: zodResolver(setupSchema),
+    });
+
+    // create the submit handler
+    const onSubmit = (data: SetupType) => {
+        console.log(data)
+        setupFirstAdmin({
+            variables: {
+                setupFirstAdmin: data
+            }
         })
-    }
+            .then(result => {
+                const {data, errors} = result;
+                console.log(result, data, errors)
+                if (errors) {
+                    notify.error(errors);
+                } else {
+                    navigation.navigateToLogin()
+                }
+            })
+            .catch(e => notify.error(e));
+    };
+    const handler = handleSubmit(onSubmit);
 
-    function onSetupResponse(response:any) {
-        setIsLoading(false);
-        if ( response.ok ) {
-            navigation.navigateToLogin();
-        } else {
-            // TODO display the error
+    // define the form
+    const forms = [
+        {
+            label: 'Public Key',
+            error: errors.publicKey ? true : false,
+            helperText: errors.publicKey && errors.publicKey.message,
+            props: register('publicKey'),
+        },
+        {
+            label: 'Firstname',
+            error: errors.firstname ? true : false,
+            helperText: errors.firstname && errors.firstname.message,
+            props: register('firstname'),
+        },
+        {
+            label: 'Lastname',
+            error: errors.lastname ? true : false,
+            helperText: errors.lastname && errors.lastname.message,
+            props: register('lastname'),
+        },
+        {
+            label: 'Token',
+            error: errors.token ? true : false,
+            helperText: errors.token && errors.token.message || 'The token is visible in the logs of the operator.',
+            props: register('token'),
         }
-    }
+    ]
 
-    function onSetupFailure(response:any) {
-        setIsLoading(false);
-    }
 
     return <section className="bg-gray-50 dark:bg-gray-900">
         <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
@@ -43,7 +86,7 @@ export default function SetupPage() {
             </a>
             <div
                 className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-                <div className="p-8 w-100 space-y-2">
+                <div className="p-8 w-full space-y-2">
                     <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                         Operator setup
                     </h1>
@@ -56,48 +99,32 @@ export default function SetupPage() {
                     </p>
                     <div className={"flex flex-col justify-content-center items-center"}>
                     </div>
-                    { isLoading && <Spinner></Spinner> }
-                    { !isLoading &&
-                        <form onSubmit={setupPublicKey} className={"space-y-2"}>
-                            <div>
-                                <label htmlFor="publicKey"
-                                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Public key
-                                </label>
-                                <input type="text" name="publicKey" id="publicKey" placeholder=""
-                                       className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5"
-                                       required={true}
-                                       onChange={(e) => setPublicKey(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="firstname"
-                                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Firstname
-                                </label>
-                                <input type="text" name="firstname" id="firstname" placeholder="Firstname"
-                                       className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5"
-                                       required={true}
-                                       onChange={(e) => setFirstname(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="lastname"
-                                       className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Lastname
-                                </label>
-                                <input type="text" name="lastname" id="lastname" placeholder="Lastname"
-                                       className="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg block w-full p-2.5"
-                                       required={true}
-                                       onChange={(e) => setLastname(e.target.value)}
-                                />
-                            </div>
-                            <button
-                                className=" mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded-lg w-full">
-                                Submit
-                            </button>
-                        </form>
-                    }
+                    <Box
+                        component={"form"}
+                        display={"flex"}
+                        flexDirection={"column"}
+                        onSubmit={handler}
+                        gap={2}>
+
+                        {
+                            forms.map(
+                                (f,i) =>
+                                    <TextField
+                                        key={i}
+                                        disabled={isLoading}
+                                        size={"small"}
+                                        error={f.error}
+                                        helperText={f.helperText}
+                                        {...f.props}
+                                        label={f.label}
+                                    />
+                            )
+                        }
+
+
+                        <Button variant={"contained"} type="submit" disabled={isLoading}>Setup</Button>
+
+                    </Box>
                     <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                         Do not know how to get your public key?
 

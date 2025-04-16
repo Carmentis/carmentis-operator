@@ -5,15 +5,16 @@ import {
 	applicationIsModifiedAtom,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { useAtomValue, useSetAtom } from 'jotai';
+import { ApplicationTypeFragment } from '@/generated/graphql';
 
 type Action =
-	| { type: 'UPDATE_APPLICATION'; payload: { application: Application } };
+	| { type: 'UPDATE_APPLICATION'; payload: { application: ApplicationTypeFragment } };
 
 
 
 
 
-const applicationReducer = (application: Application | undefined, action: Action): Application | undefined => {
+const applicationReducer = (application: ApplicationTypeFragment | undefined, action: Action): ApplicationTypeFragment | undefined => {
 	if (!application) return application;
 
 
@@ -35,7 +36,7 @@ const applicationWithReducerAtom = atom(
 
 export const useUpdateApplication = () => {
 	const dispatch = useSetAtom(applicationWithReducerAtom);
-	return (application : Application) => {
+	return (application : ApplicationTypeFragment) => {
 		console.log(application)
 		dispatch({ type: 'UPDATE_APPLICATION', payload: { application } });
 	};

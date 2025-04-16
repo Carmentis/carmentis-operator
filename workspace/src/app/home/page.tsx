@@ -1,27 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { useFetchOrganisationsOfUser, useOrganisationCreation } from '@/components/api.hook';
 
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import { useToast } from '@/app/layout';
-import { OrganisationSummary } from '@/entities/organisation.entity';
-import { useAuthenticationContext } from '@/contexts/user-authentication.context';
 import AvatarOrganisation from '@/components/avatar-organisation';
 import { Box, Button, DialogActions, DialogContent, DialogTitle, TextField, Typography } from '@mui/material';
 import { SearchInputForm } from '@/components/form/search-input.form';
 import Skeleton from 'react-loading-skeleton';
 import { Dialog } from '@material-tailwind/react';
 import { useModal } from 'react-modal-hook';
-import { useAsyncFn } from 'react-use';
+import { useCreateOrganisationMutation, useGetOrganisationsQuery } from '@/generated/graphql';
 
 
 export default function HomePage() {
 	const [search, setSearch] = useState("");
 	const [name, setName] = useState("");
-	const callOrganisationCreation = useOrganisationCreation();
+	const [createOrganisationMutation, {loading: isCreatingOrganisation}] = useCreateOrganisationMutation();
 	const navigation = useApplicationNavigationContext();
 	const notify = useToast();
+	/*
 	const [organisationCreationState,createOrganisation] = useAsyncFn(async (organisationName: string) => {
 		callOrganisationCreation(organisationName, {
 			onSuccessData: (data: {id: number}) => {
@@ -30,6 +28,14 @@ export default function HomePage() {
 			onError: notify.error,
 		})
 	});
+	 */
+
+	function createOrganisation(name: string) {
+		createOrganisationMutation({ variables: { name } })
+			.then(({data}) => {
+				if (data && data.createOrganisation) navigation.navigateToOrganisation(data.createOrganisation.id)
+			}).catch(notify.error)
+	}
 
 	const [showModal, hideModal] = useModal(() => (
 		<Dialog open={true}>
@@ -50,7 +56,7 @@ export default function HomePage() {
 			<Typography variant={"h5"} fontWeight={"bold"}>Organisations</Typography>
 			<Box display={"flex"} flexDirection={"row"} gap={2}>
 				<SearchInputForm searchFilter={search} setSearchFilter={setSearch}/>
-				<Button variant={"contained"} onClick={showModal} disabled={organisationCreationState.loading}>
+				<Button variant={"contained"} onClick={showModal} disabled={isCreatingOrganisation}>
 					create organisation
 				</Button>
 			</Box>
@@ -60,16 +66,14 @@ export default function HomePage() {
 }
 
 function ListOfOrganisations( props: {search: string} ) {
-	const authenticationContext = useAuthenticationContext();
-	const authenticatedUser = authenticationContext.getAuthenticatedUser();
-	const { data, isLoading } = useFetchOrganisationsOfUser(authenticatedUser.publicKey);
+	const {data, loading} = useGetOrganisationsQuery();
 	const navigation = useApplicationNavigationContext();
 
 	function onClick(organisationId: number) {
 		navigation.navigateToOrganisation(organisationId);
 	}
 
-	function renderOrganisation(organisation: OrganisationSummary) {
+	function renderOrganisation(organisation: { id: number; name: string; publicSignatureKey: string }) {
 		return <Box display={"flex"} justifyContent={"start"}  alignItems={"center"} px={4} py={2} gap={2} className={"hover:cursor-pointer hover:bg-gray-50"} onClick={() => onClick(organisation.id)}>
 			<AvatarOrganisation organisationId={organisation.id} width={40} height={40} />
 			<Box>
@@ -84,11 +88,12 @@ function ListOfOrganisations( props: {search: string} ) {
 	}
 
 	let content;
-	if (isLoading || !data) {
+	if (loading || !data) {
 		content = renderLoadingState()
 	} else {
+		const organisations = data.organisations;
 		const searchLowercase = props.search.toLowerCase();
-		content = data
+		content = organisations
 			.filter(org => searchLowercase === '' || org.name.toLowerCase().includes(searchLowercase))
 			.map(org => renderOrganisation(org));
 	}

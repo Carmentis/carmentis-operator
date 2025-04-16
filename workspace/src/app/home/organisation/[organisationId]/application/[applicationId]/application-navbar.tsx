@@ -1,13 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-	useApplicationDeletionApi,
-	useApplicationPublicationApi,
-	useApplicationUpdateApi,
-} from '@/components/api.hook';
 import { useToast } from '@/app/layout';
-import { useOrganisationContext } from '@/contexts/organisation-store.context';
+import { useOrganisation } from '@/contexts/organisation-store.context';
 import {
 	useApplicationEditionStatus,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
@@ -21,6 +16,11 @@ import Skeleton from 'react-loading-skeleton';
 import { Box, Button, Chip, Typography } from '@mui/material';
 import { ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/16/solid';
 import Spinner from '@/components/spinner';
+import {
+	useDeleteApplicationMutation, usePublishApplicationMutation,
+	usePublishOrganisationMutation,
+	useUpdateApplicationMutation,
+} from '@/generated/graphql';
 
 
 export type ApplicationDetailsNavbarProps = {
@@ -29,72 +29,96 @@ export type ApplicationDetailsNavbarProps = {
 export default function ApplicationDetailsNavbar(
 	{refreshApplication}: ApplicationDetailsNavbarProps
 ) {
-	const organisation = useOrganisationContext();
+	const organisation = useOrganisation();
 	const organisationId = organisation.id;
 	const application = useAtomValue(applicationAtom);
 	const setReferenceApplication = useSetAtom(referenceApplicationAtom);
 	const isModified = useApplicationEditionStatus();
-	const callApplicationUpdate = useApplicationUpdateApi();
-	const callApplicationDeletion = useApplicationDeletionApi();
-	const callApplicationPublish = useApplicationPublicationApi();
+
+
+	const [updateApplication, {loading: isUpdating}] = useUpdateApplicationMutation();
+	const [deleteApplication, {loading: isDeleting}] = useDeleteApplicationMutation();
+	const [publishApplication, {loading: isPublishing}] = usePublishApplicationMutation();
+
 	const router = useRouter();
 	const notify = useToast();
 	const [isApplicationSaving, setApplicationSaving] = useState(false);
 	const confirmModal = useConfirmationModal();
 
+	useEffect(() => {
+		setApplicationSaving(isUpdating);
+	}, [isUpdating]);
+
 	const saveApplication = () => {
-		setApplicationSaving(true);
-		callApplicationUpdate(organisationId, application, {
-			onSuccess: () => {
+		if (!application) return
+		updateApplication({
+			variables: {
+				applicationId: application.id,
+				application: {
+					name: application.name,
+					logoUrl: application.logoUrl,
+					website: application.website,
+					description: application.description,
+				}
+			}
+		}).then(result => {
+			const {data, errors} = result;
+			if (data) {
 				refreshApplication()
 				setApplicationSaving(false);
 				setReferenceApplication(application);
 				notify.info('Application saved');
-			},
-			onError: (error) => {
-				notify.error(error);
-				setApplicationSaving(false);
-			},
-		});
+			} else if (errors) {
+				notify.error(errors)
+			}
+		})
 	};
 
 
 
-	const deleteApplication = () => {
+	const confirmApplicationDeletion = () => {
 		confirmModal(
 			'Delete Application',
 			'This action cannot be undone.',
 			'Delete',
 			'Cancel',
 			() => {
-				callApplicationDeletion(organisationId, application.id, {
-					onSuccess: () => {
+				if (isDeleting) return
+				if (!application) return
+				deleteApplication({
+					variables: { applicationId: application.id }
+				}).then(result => {
+					const {data, errors} = result;
+					if (data) {
 						notify.info('Application deleted');
 						router.replace(`/home/organisation/${organisationId}/application`);
-					},
-					onError: (error) => {
-						notify.error(error);
-					},
-				});
+					} else if (errors)  {
+						notify.error(errors)
+					}
+				})
 			}
 		)
 	};
 
-	function publishApplication() {
+	function confirmApplicationPublication() {
 		confirmModal(
 			'Publish Application',
             'This action cannot be undone.',
             'Publish',
             'Cancel',
             () => {
-				callApplicationPublish(organisationId, application, {
-					onSuccess: () => {
+				if (isPublishing) return
+				if (!application) return
+				publishApplication({
+					variables: { applicationId: application.id }
+				}).then(result => {
+					const {data, errors} = result;
+					if ( data ) {
 						refreshApplication()
 						notify.info('Application published');
-					},
-					onError: (error) => {
-						notify.error(error);
-					},
+					} else if (errors) {
+						notify.error(errors)
+					}
 				})
 			}
 		)
@@ -109,8 +133,8 @@ export default function ApplicationDetailsNavbar(
 		save={saveApplication}
 		isSaving={isApplicationSaving}
 		isModified={isModified}
-		delete={deleteApplication}
-		publish={publishApplication}
+		delete={confirmApplicationDeletion}
+		publish={confirmApplicationPublication}
 	/>
 
 
@@ -130,17 +154,6 @@ type EntityStatusHeaderProps = {
 	publish: () => void
 }
 
-/*
-<img
-						src={input.logoUrl}
-						alt=""
-						className="mr-4 px-0"
-						width={15}
-						hidden={!input.logoUrl || showLogo}
-						onError={() => setShowLogo(false)}
-						onLoad={() => setShowLogo(true)}
-					/>
- */
 function EntityStatusHeader(
 	input: EntityStatusHeaderProps
 ) {

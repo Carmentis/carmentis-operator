@@ -1,5 +1,4 @@
 import { atom } from 'jotai';
-import { Organisation } from '@/entities/organisation.entity';
-
-export const organisationAtom = atom<Organisation>();
+import { GetOrganisationQuery } from '@/generated/graphql';
+export const organisationAtom = atom<GetOrganisationQuery>();
 export const isRoutingAtom = atom<boolean>(false);

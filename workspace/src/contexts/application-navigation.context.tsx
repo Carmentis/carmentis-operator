@@ -56,7 +56,7 @@ export function ApplicationNavigationContextProvider({ children }: PropsWithChil
 	const navigate = (url: string) => {
 		// Wrap the navigation in React's startTransition to improve transitions
 		startTransition(() => {
-			router.push(url);
+			router.replace(url);
 		});
 	};
 

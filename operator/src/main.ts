@@ -11,11 +11,13 @@ async function bootstrap() {
 	const logger = new Logger();
 	const port: number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 	const app = await NestFactory.create(AppModule);
+
+	// we disable cors
     app.enableCors({
 		origin: '*',
 		methods: 'GET,POST,PUT,DELETE,OPTIONS',
 	});
-	app.useGlobalFilters(new GlobalExceptionFilter());
+	//app.useGlobalFilters(new GlobalExceptionFilter());
 	app.useGlobalPipes(new ValidationPipe({whitelist: true}));
 
 	const config = new DocumentBuilder()

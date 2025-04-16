@@ -2,7 +2,6 @@
 
 import { PropsWithChildren, useEffect } from 'react';
 
-import { useFetchOrganisation } from '@/components/api.hook';
 import { useParams } from 'next/navigation';
 import { OrganisationMutationContextProvider } from '@/contexts/organisation-mutation.context';
 import NotFoundPage from '@/app/home/organisation/[organisationId]/not-found';
@@ -11,41 +10,38 @@ import { useApplicationNavigationContext } from '@/contexts/application-navigati
 import { useToast } from '@/app/layout';
 import { useAtom } from 'jotai';
 import { organisationAtom } from '@/app/home/organisation/atom';
+import { useGetOrganisationQuery } from '@/generated/graphql';
 
-
-function HomeOrganisationPage(
-	{
-		children,
-	}: Readonly<{ children: React.ReactNode; }>,
-) {
-
-	return children
-}
 
 
 function OrganisationDataAccess({ children }: PropsWithChildren) {
 	// search the organisation by id and redirect to not found if do not exist
 	const params = useParams();
 	const organisationId = parseInt(params.organisationId as string);
-	const { data, isLoading, error, mutate } = useFetchOrganisation(organisationId);
+	const { data, loading, error, refetch } = useGetOrganisationQuery({
+		variables: { id: organisationId }
+	});
 	const [organisation, setOrganisation] = useAtom(organisationAtom);
 	const navigation = useApplicationNavigationContext();
 	const notify = useToast();
 
 	// synchronise the organisation state
 	useEffect(() => {
-		setOrganisation(data);
+		if (data && data.organisation) {
+			setOrganisation(data);
+		}
 	}, [data]);
 
 	// if not loading but data not available, redirect to the list of organisation
-	if (!data && !isLoading || error) {
-		notify.info("Cannot load organisation")
+	if (!data && !loading || error) {
+		console.error(error)
+		notify.info(`Cannot load organisation: ${error?.message ?? ''}`);
 		navigation.navigateToHome();
 		return <NotFoundPage/>
 	}
 
 	// display the loading page when checking if the organisation exists
-	if (!data || isLoading || !organisation) {
+	if (!data || !data.organisation || loading || !organisation) {
 		return <FullPageLoadingComponent label={'Loading organisation'} />
 	}
 
@@ -56,7 +52,7 @@ function OrganisationDataAccess({ children }: PropsWithChildren) {
 	}
 
 	// create the organisation reader context and organisation mutation context
-	return <OrganisationMutationContextProvider mutate={mutate}>
+	return <OrganisationMutationContextProvider mutate={() => refetch()}>
 		{children}
 	</OrganisationMutationContextProvider>;
 }
@@ -64,9 +60,7 @@ function OrganisationDataAccess({ children }: PropsWithChildren) {
 export default function RootLayout({ children }: PropsWithChildren) {
 	return <>
 		<OrganisationDataAccess>
-			<HomeOrganisationPage>
-				{children}
-			</HomeOrganisationPage>
+			{children}
 		</OrganisationDataAccess>
 	</>;
 }

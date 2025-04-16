@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { OrganisationEntity } from '../entities/organisation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { ApplicationEntity } from '../entities/application.entity';
 import { plainToInstance } from 'class-transformer';
 import ChainService from './chain.service';
@@ -31,15 +31,6 @@ export class ApplicationService {
     }
 
 
-    async findApplicationByTag(tag: string): Promise<ApplicationEntity> {
-        const application = await this.applicationRepository.findOneBy({ tag });
-
-        if (!application) {
-            throw new HttpException(`Application with tag "${tag}" not found`, HttpStatus.NOT_FOUND);
-        }
-
-        return application;
-    }
     /**
      * Creates an application from an application name in the specified organisation.
      * @param organisationEntity
@@ -50,17 +41,8 @@ export class ApplicationService {
         applicationName: string
     ): Promise<ApplicationEntity> {
 
-        // raise an exception if the number of applications in the organisation is reached.
-        const applicationCount = await this.organisationService.getNumberOfApplicationsInOrganisation(organisationEntity.id);
-        if (applicationCount >= this.envService.maxApplicationsInOrganisation) {
-            throw new UnauthorizedException(
-                `Organisation has reached the limit of applications.`
-            );
-        }
-
         const application: ApplicationEntity = plainToInstance(ApplicationEntity, {
             name: applicationName,
-            tag: this.generateTag()
         })
         application.organisation = organisationEntity;
         const item = this.applicationRepository.create(
@@ -77,9 +59,7 @@ export class ApplicationService {
     async findAllApplicationsInOrganisationByOrganisationId(organisationId: number) {
         return this.applicationRepository.find({
             where: { organisation: { id: organisationId } },
-            select: ['id', 'name', 'published', 'isDraft'],
         })
-     
     }
 
     /**
@@ -90,12 +70,10 @@ export class ApplicationService {
         return this.applicationRepository.findOneBy({ id: applicationId });
     }
 
-    /**
-     * Updates an application.
-     * @param application
-     */
-    async update(application: ApplicationEntity) {
-        return this.applicationRepository.save(application)
+
+    async update(application: ApplicationEntity, update: Partial<ApplicationEntity>) {
+        const updatedApplication = this.applicationRepository.merge(application, update);
+        return this.applicationRepository.save(updatedApplication)
     }
 
 
@@ -118,6 +96,14 @@ export class ApplicationService {
     }
 
 	async search(organisationId: number, query: string) {
+        return this.applicationRepository.find({
+            where: [
+                { organisation: { id: organisationId } },
+                { name: Like(`%${query}%`) }
+            ],
+            select: ['id', 'name']
+        })
+        /*
         return this.applicationRepository.createQueryBuilder('app')
             .select(['app.id', 'app.name'])
             .innerJoin('app.organisation', 'org')
@@ -125,6 +111,8 @@ export class ApplicationService {
             .andWhere('org.id = :organisationId', { organisationId })
             .limit(10)
             .getMany();
+
+         */
 	}
 
 	async getPublicationCost(applicationId: number) {
@@ -150,7 +138,6 @@ export class ApplicationService {
             return await this.applicationRepository.save(application);
         } catch (e) {
             this.logger.error(e)
-            console.log(e.stack)
             if (e.code === 'ECONNREFUSED') {
                 throw new InternalServerErrorException("Cannot connect to the node.");
             } else {

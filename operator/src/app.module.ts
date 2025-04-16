@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { WorkspaceApiModule } from './workspace-api/workspace-api.module';
+import { WorkspaceApiModule } from './workspace/workspace-api.module';
 import PackageConfigService from './package.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getPostgresConfig } from './database/database.config';
 import { DatabaseInitService } from './database/database-init.service';
-import { OperatorApiModule } from './operator-api/operator-api.module';
-import { EnvService } from './shared/services/env.service';
+import { OperatorApiModule } from './operator/operator-api.module';
 import { SharedModule } from './shared/shared.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { join } from 'path';
 
 @Module({
 	imports: [
@@ -23,8 +24,11 @@ import { SharedModule } from './shared/shared.module';
 			inject: [ConfigService],
 			useFactory: (configService: ConfigService) => getPostgresConfig(configService),
 		}),
+		GraphQLModule.forRoot<ApolloDriverConfig>({
+			driver: ApolloDriver,
+			autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+		}),
 	],
-	controllers: [AppController],
 	providers: [PackageConfigService,DatabaseInitService],
 	exports: [PackageConfigService],
 })

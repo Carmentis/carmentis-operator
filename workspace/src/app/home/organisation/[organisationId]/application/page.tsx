@@ -1,21 +1,20 @@
 'use client';
 
 import { Box, Button, Chip, IconButton, Typography } from '@mui/material';
-import { useState } from 'react';
-import {
-	useApplicationCreation,
-	useApplicationDeletionApi,
-	useFetchOrganisationApplications,
-} from '@/components/api.hook';
+import { useEffect, useState } from 'react';
 import { useToast } from '@/app/layout';
-import { useOrganisationContext } from '@/contexts/organisation-store.context';
+import { useOrganisation, useOrganisationContext } from '@/contexts/organisation-store.context';
 import Skeleton from 'react-loading-skeleton';
-import { ApplicationSummary } from '@/entities/application.entity';
 import GenericTableComponent from '@/components/generic-table.component';
 import { useApplicationNavigationContext, useCustomRouter } from '@/contexts/application-navigation.context';
 import { SearchInputForm } from '@/components/form/search-input.form';
 import useTextFieldFormModal from '@/components/modals/text-form-moda';
 import useConfirmationModal from '@/components/modals/confirmation-modal';
+import {
+	ApplicationSummaryTypeFragment, useCreateApplicationMutation,
+	useDeleteApplicationMutation,
+	useGetAllApplicationsInOrganisationQuery,
+} from '@/generated/graphql';
 
 
 /**
@@ -23,25 +22,25 @@ import useConfirmationModal from '@/components/modals/confirmation-modal';
  */
 export default function ListOfApplicationsPage() {
 	const [search, setSearch] = useState('');
-	const createApplication = useApplicationCreation();
-	const organisation = useOrganisationContext();
+	const organisation = useOrganisation();
 	const organisationId = organisation.id;
 	const notify = useToast();
 	const router = useCustomRouter();
-	const deleteApplicationApi = useApplicationDeletionApi();
+	const [createApplication, { loading: isCreating }] = useCreateApplicationMutation();
+	const [deleteApplication, { loading: isDeleting }] = useDeleteApplicationMutation();
 	const [showDeletionConfirmationModal,setDeletionModalState] = useConfirmationModal<number>({
 		title: "Delete application",
 		message: "This action cannot be undone",
 		yes: 'Delete',
 		no: 'Cancel',
 		onYes: applicationId => {
-			deleteApplicationApi(organisation.id, applicationId, {
-				onSuccess: () => {
-					notify.info('Application deleted');
-					mutate()
-				},
-				onError: notify.error
-			})
+			if (isDeleting) return
+			deleteApplication({
+				variables: { applicationId }
+			}).then(() => {
+				notify.info('Application deleted');
+				mutate()
+			}).catch(notify.error)
 		}
 	})
 
@@ -49,25 +48,23 @@ export default function ListOfApplicationsPage() {
 	const showApplicationCreationModal = useTextFieldFormModal({
 		title: "Creation application",
 		placeholder: "Name",
-		onSubmit: submitApplicationNameCreation
+		onSubmit: applicationName => {
+			if (isCreating) return
+			createApplication({
+				variables: { organisationId, applicationName },
+			}).then(application => {
+				const {data} = application;
+				notify.info(`Application ${applicationName} created`);
+				router.push(`/home/organisation/${organisationId}/application/${data?.createApplicationInOrganisation.id}`)
+			}).catch(notify.error)
+		}
 	})
 
-	const { data, isLoading, mutate } = useFetchOrganisationApplications(organisationId);
-
-	/**
-	 * Handles application creation submission.
-	 * @param name - The name of the new application.
-	 */
-	function submitApplicationNameCreation(name: string) {
-		createApplication(organisationId, name, {
-			onSuccessData: (data) => {
-				notify.info(`Application ${data.name} created`);
-				router.push(`/home/organisation/${organisationId}/application/${data.id}`)
-			},
-			onError: notify.error
-		});
-	}
-
+	const {data, loading: isLoading, refetch: mutate} = useGetAllApplicationsInOrganisationQuery({
+		variables: {
+			organisationId: organisation.id,
+		},
+	})
 
 
 	// render while its loading
@@ -86,7 +83,7 @@ export default function ListOfApplicationsPage() {
 		</Box>
 
 		<ListOfApplicationsComponent
-			data={data.filter(app => search === '' || app.name.toLowerCase().includes(search.toLowerCase()))}
+			data={data.getAllApplicationsInOrganisation.filter(app => search === '' || app.name.toLowerCase().includes(search.toLowerCase()))}
 			organisationId={organisationId}
 			deleteApplication={applicationId => {
 				setDeletionModalState(applicationId);
@@ -102,7 +99,7 @@ export default function ListOfApplicationsPage() {
  */
 function ListOfApplicationsComponent({ organisationId, data, deleteApplication }: {
 	organisationId: number;
-	data: ApplicationSummary[];
+	data: ApplicationSummaryTypeFragment[];
 	deleteApplication: (applicationId: number) => void;
 }) {
 	const navigation = useApplicationNavigationContext();
@@ -121,7 +118,6 @@ function ListOfApplicationsComponent({ organisationId, data, deleteApplication }
 		extractor={(v, i) => [
 			{head: 'Id', value: <Typography>{v.id}</Typography>},
 			{head: 'Name', value: <Typography>{v.name}</Typography>},
-			//{head: 'Tag', value: <Typography>{v.tag}</Typography>},
 			{head: 'Draft', value: v.isDraft && <Chip label={'Draft'} className={'bg-primary-light w-min'} />},
 			{head: 'Published', value: v.published && <Chip label={'Published'} className={'bg-primary-light w-min'} />},
 			{head: 'Published at', value: v.publishedAt && <Typography>{new Date(v.publishedAt).toLocaleString()}</Typography>},

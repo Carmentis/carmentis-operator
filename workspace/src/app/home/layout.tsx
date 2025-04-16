@@ -22,7 +22,7 @@ export default function RootLayout({ children }: PropsWithChildren<LayoutProps>)
 	return (
 		<>
 			<UserAuthenticationContextProvider>
-				<NavbarSidebarLayout sidebar={sidebar} navbar={<></>}>
+				<NavbarSidebarLayout sidebar={sidebar}>
 					{children}
 				</NavbarSidebarLayout>
 			</UserAuthenticationContextProvider>

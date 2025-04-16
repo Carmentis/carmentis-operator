@@ -1,32 +1,23 @@
 import React, { useState } from 'react';
-import {
-	Box,
-	Button,
-	Chip, DialogActions, DialogContent,
-	DialogTitle,
-	IconButton,
-	Paper,
-	Stack,
-	TextField,
-	Tooltip,
-	Typography,
-} from '@mui/material';
-import { ApiKey, useApiKeysInApplication, useKeyCreationApi, useKeyDeletionApi } from '@/components/api.hook';
+import { Box, Button, IconButton, Paper, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import GenericTableComponent from '@/components/generic-table.component';
 import { useParams } from 'next/navigation';
-import { useAsyncFn, useBoolean } from 'react-use';
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useBoolean } from 'react-use';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCircleIcon } from '@heroicons/react/16/solid';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useModal } from 'react-modal-hook';
-import { Dialog } from '@material-tailwind/react';
 import useConfirmationModal from '@/components/modals/confirmation-modal';
 import getApiKeyStatus from '@/hooks/api-key-status.hook';
+import {
+	CreatedApiKeyFragment,
+	useCreateApiKeyInApplicationMutation,
+	useDeleteApiKeyMutation,
+	useGetAllApiKeysInApplicationQuery,
+} from '@/generated/graphql';
+import { useToast } from '@/app/layout';
 
-
-// Schéma Zod avec un seul champ
 const formSchema = z.object({
 	name: z.string().min(1, "The name is required"),
 	activeUntil: z.string().date("The date is required.")
@@ -35,31 +26,40 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export default function ApiKeysPage() {
-	const callKeyCreation = useKeyCreationApi()
-	const callKeyDeletion = useKeyDeletionApi();
-	const {organisationId, applicationId} = useParams<{ organisationId: number, applicationId: number }>();
-	const {data: apiKeys, isLoading, error, mutate} = useApiKeysInApplication(organisationId, applicationId);
-	const [wantToCreateKey, setWantToCreateKey] = useBoolean(false);
-	const [createdKey, setCreatedKey] = useState<ApiKey|undefined>();
-	const [keyCreationState, createKey] = useAsyncFn(async (data: FormData) => {
-		callKeyCreation(applicationId, data.name, data.activeUntil, {
-			onSuccessData: (key: ApiKey) => {
-				setCreatedKey(key);
-				setWantToCreateKey(false)
-			}
-		})
+	const notify = useToast();
+	const params = useParams<{ organisationId: string, applicationId: string }>();
+	const applicationId = parseInt(params.applicationId);
+	const [createKey, {loading: isCreating}] = useCreateApiKeyInApplicationMutation();
+	const [deleteKey, {loading: isDeleting}] = useDeleteApiKeyMutation();
+	const {data: apiKeys, loading: isLoading, error, refetch: mutate} = useGetAllApiKeysInApplicationQuery({
+		variables: { applicationId }
 	})
+
+
+	const [wantToCreateKey, setWantToCreateKey] = useBoolean(false);
+	const [createdKey, setCreatedKey] = useState<CreatedApiKeyFragment|undefined>();
 
 	// confirm the api key deletion
 	const [showModal, setState] = useConfirmationModal<number>({
 		title: "Confirm Deletion",
         message: "Are you sure you want to delete this API key?",
-        onYes: (data:number) => callKeyDeletion(applicationId, data, {
-			onSuccess: () => mutate()
-		}),
 		yes: "Delete",
 		no: "Cancel",
+		onYes: (data: number) => {
+			if (isDeleting) return
+			deleteKey({variables: { keyId: data }})
+				.then(result => {
+					const {errors} = result;
+					if (!errors) {
+						notify.info('Api Key deleted');
+						mutate()
+					} else {
+						notify.error(errors)
+					}
+				});
+		}
 	});
+
 	function confirmApiKeyDeletion(apiKeyId: number) {
 		setState(apiKeyId)
 		showModal()
@@ -71,7 +71,18 @@ export default function ApiKeysPage() {
 	});
 
 	const onSubmit = (data: FormData) => {
-		createKey(data);
+		createKey({
+			variables: { applicationId, name: data.name, activeUntil: data.activeUntil },
+		}).then(result => {
+			const {data, errors} = result;
+			if (data) {
+				setCreatedKey(data.createApiKey);
+				setWantToCreateKey(false)
+				notify.info("API Key created")
+			} else if (errors) {
+				notify.error(errors)
+			}
+		}).catch(notify.error)
 	};
 
 	// compute the content for created key
@@ -92,13 +103,13 @@ export default function ApiKeysPage() {
 
 				<Box display={"flex"} gap={2}>
 					<Button variant={"outlined"} onClick={() => setWantToCreateKey(false)}>Cancel</Button>
-					<Button variant={"contained"} type="submit" disabled={keyCreationState.loading}>Create</Button>
+					<Button variant={"contained"} type="submit" disabled={isCreating}>Create</Button>
 				</Box>
 			</Box>
 		</>
 	} else {
 		content = <GenericTableComponent
-			data={apiKeys}
+			data={apiKeys?.getAllApiKeysOfApplication}
 			isLoading={isLoading}
 			error={error}
 			extractor={row => {
@@ -140,7 +151,7 @@ export default function ApiKeysPage() {
 }
 
 type Props = {
-	apiKey: ApiKey;
+	apiKey: CreatedApiKeyFragment;
 };
 
 function ApiKeyDisplay({ apiKey }: Props) {
@@ -207,36 +218,3 @@ function ApiKeyDisplay({ apiKey }: Props) {
 		</Paper>
 	);
 }
-
-/*
-
-			<TableContainer component={Paper}>
-				<Table>
-					<TableHead>
-						<TableRow>
-							<TableCell><strong>Name</strong></TableCell>
-							<TableCell><strong>API Key</strong></TableCell>
-							<TableCell><strong>Created</strong></TableCell>
-							<TableCell align="right"><strong>Actions</strong></TableCell>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{apiKeys.map((row, index) => (
-							<TableRow key={index}>
-								<TableCell>{row.name}</TableCell>
-								<TableCell>{`${row.key} ••••`}</TableCell>
-								<TableCell>{row.created}</TableCell>
-								<TableCell align="right">
-									<IconButton size="small" aria-label="edit">
-										<EditIcon />
-									</IconButton>
-									<IconButton size="small" aria-label="delete">
-										<DeleteIcon />
-									</IconButton>
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</TableContainer>
- */

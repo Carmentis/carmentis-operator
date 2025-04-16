@@ -1,17 +1,14 @@
-import { Organisation } from '@/entities/organisation.entity';
-import { createContext, Dispatch, PropsWithChildren, SetStateAction, useContext, useState } from 'react';
 import { organisationAtom } from '@/app/home/organisation/atom';
 import { useAtomValue } from 'jotai';
 
-
-export function OrganisationStoreContextProvider({children}: PropsWithChildren) {
-
-	return ({children});
+export function useOrganisationContext() {
+	const organisation = useAtomValue(organisationAtom);
+	if (!organisation || !organisation.organisation) throw new Error("Organisation is undefined!")
+	return organisation;
 }
 
-
-export function useOrganisationContext(): Organisation {
+export function useOrganisation() {
 	const organisation = useAtomValue(organisationAtom);
-	if (!organisation) throw new Error("Organisation is undefined!")
-	return organisation;
+	if (!organisation || !organisation.organisation) throw new Error("Organisation is undefined!")
+	return organisation.organisation;
 }

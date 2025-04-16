@@ -2,9 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { UserEntity } from '../entities/user.entity';
-import CreateUserDto from '../../workspace-api/dto/create-user.dto';
+import CreateUserDto from '../../workspace/dto/create-user.dto';
 import { getPublicKeyFromRequest } from '../../utils/request-public-key-access.hook';
-import CreateNotWhitelistedUserDto from '../../workspace-api/dto/create-user-public.dto';
+import CreateNotWhitelistedUserDto from '../../workspace/dto/create-user-public.dto';
 
 @Injectable()
 export class UserService {
@@ -95,7 +95,6 @@ export class UserService {
 
 	async search(query: string): Promise<UserEntity[]> {
 		return this.userEntityRepository.createQueryBuilder('user')
-			.select(["user.publicKey", "user.firstname", "user.lastname"])
 			.where('user.firstname LIKE :query', { query: `%${query}%` })
 			.orWhere('user.lastname LIKE :query', { query: `%${query}%` })
 			.orWhere('user.publicKey LIKE :query', { query: `%${query}%` })
@@ -112,5 +111,11 @@ export class UserService {
 			.where('organisation.id = :organisationId', { organisationId })
 			.andWhere('user.publicKey = :userPublicKey', { userPublicKey })
 			.getOne();
+	}
+
+	async countAdministrators() {
+		return this.userEntityRepository.count({
+			where: { isAdmin: true }
+		})
 	}
 }

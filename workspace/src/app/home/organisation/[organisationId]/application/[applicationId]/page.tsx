@@ -3,7 +3,6 @@
 
 import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { useFetchApplicationInOrganisation } from '@/components/api.hook';
 import ApplicationDetailsNavbar
 	from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-navbar';
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
@@ -15,31 +14,38 @@ import {
 import ApiKeysPage from '@/app/home/organisation/[organisationId]/application/[applicationId]/api-keys';
 import ApplicationOverview
 	from '@/app/home/organisation/[organisationId]/application/[applicationId]/general-information';
+import { useGetApplicationInOrganisationQuery } from '@/generated/graphql';
 
 
 export default function ApplicationPage() {
 	const [application, setApplication] = useAtom(applicationAtom);
-	const setReferenceApplication = useSetAtom(referenceApplicationAtom);
+	const [referenceApplication, setReferenceApplication] = useAtom(referenceApplicationAtom);
 	const params = useParams<{ organisationId: string, applicationId: string }>();
-	const organisationId = parseInt(params.organisationId);
 	const applicationId = parseInt(params.applicationId);
-	const { data, isLoading, error, mutate } = useFetchApplicationInOrganisation(organisationId, applicationId);
-
+	const {data, loading: isLoading, error, refetch: mutate} = useGetApplicationInOrganisationQuery({
+		variables: { applicationId }
+	})
 
 	// init
 	useEffect(() => {
-		setApplication(data);
-		setReferenceApplication(data);
-	}, [data]);
+		if (data && data.getApplicationInOrganisation) {
+			setReferenceApplication(data.getApplicationInOrganisation);
+		}
+	}, [data, setReferenceApplication]);
+
+	useEffect(() => {
+		setApplication(referenceApplication)
+	}, [referenceApplication, setApplication]);
 
 
-	if (isLoading) {
+	if (!data || isLoading) {
 		return <FullPageLoadingComponent />;
 	}
 	if (!application || !data || error) return <>An error occurred</>;
 
 
 	return <ApplicationEditionView
+		key={applicationId}
 		refreshApplication={() => mutate()}
 	/>;
 }

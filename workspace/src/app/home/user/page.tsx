@@ -1,7 +1,6 @@
 'use client';
 import React, { useState } from 'react';
 import { UserSummary } from '@/entities/user.entity';
-import { useAdminListOfUsersApi, useUserCreation, useUserDeletion } from '@/components/api.hook';
 import Skeleton from 'react-loading-skeleton';
 import { useToast } from '@/app/layout';
 import {
@@ -19,37 +18,41 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useModal } from 'react-modal-hook';
 import { Dialog } from '@material-tailwind/react';
 import GenericTableComponent from '@/components/generic-table.component';
+import { useCreateUserMutation, useDeleteUserMutation, useGetAllUsersQuery } from '@/generated/graphql';
 
 export default function UserPage() {
 
-	const { data, isLoading, mutate } = useAdminListOfUsersApi();
-	const callUserInsertion = useUserCreation();
-	const callUserDeletion = useUserDeletion();
 	const notify = useToast();
 	const [publicKey, setPublicKey] = useState('');
 	const [firstname, setFirstname] = useState('');
 	const [lastname, setLastname] = useState('');
 
+	const {data, loading} = useGetAllUsersQuery();
+	const [callUserCreation] = useCreateUserMutation({
+		refetchQueries: ['getAllUsers'],
+	});
+	const [callUserDeletion] = useDeleteUserMutation({
+		refetchQueries: ['getAllUsers'],
+	});
+
+
 	function addUser() {
-		callUserInsertion(publicKey, firstname, lastname, false, {
-			onSuccess: () => {
-				notify.success('User created');
-				mutate();
-			},
-			onError: (error) => notify.error(error),
-		});
+		callUserCreation({
+			variables: {
+				publicKey,
+				firstname,
+				lastname,
+				isAdmin: false
+			}
+		}).catch(e => notify.error(e));
 	}
 
 
 
 	function removeUser(publicKey: string) {
-		callUserDeletion(publicKey, {
-			onSuccess: () => {
-				notify.success('User deleted');
-				mutate();
-			},
-			onError: (error) => notify.error(error),
-		});
+		callUserDeletion({
+			variables: { publicKey }
+		}).catch(e => notify.error(e));
 	}
 
 
@@ -75,7 +78,7 @@ export default function UserPage() {
 				<Typography variant={"h5"} fontWeight={"bolder"}>Users</Typography>
 				<Button variant={"contained"} onClick={showModal}>create user</Button>
 			</Box>
-			{isLoading || !data ? <Skeleton /> : <TableOfUsers users={data} onDelete={removeUser}  />}
+			{loading || !data ? <Skeleton /> : <TableOfUsers users={data.getAllUsers} onDelete={removeUser}  />}
 
 		</div>
 	);

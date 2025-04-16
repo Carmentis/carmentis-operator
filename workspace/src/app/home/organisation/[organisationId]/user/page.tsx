@@ -1,10 +1,5 @@
 'use client';
 
-import {
-	useFetchUsersInOrganisation,
-	useUserOrganisationInsertion,
-	useUserOrganisationRemoval,
-} from '@/components/api.hook';
 import { useState } from 'react';
 import { UserSearchResult, UserSummary } from '@/entities/user.entity';
 import Skeleton from 'react-loading-skeleton';
@@ -13,9 +8,15 @@ import { Box, Button, DialogActions, DialogContent, Typography } from '@mui/mate
 import { SearchInputForm } from '@/components/form/search-input.form';
 import { SearchUserInputComponent } from '@/components/form/search-user-form';
 import { useToast } from '@/app/layout';
-import { useOrganisationContext } from '@/contexts/organisation-store.context';
+import { useOrganisation, useOrganisationContext } from '@/contexts/organisation-store.context';
 import { useModal } from 'react-modal-hook';
 import TableOfUsers from '@/components/table/table-of-users';
+import {
+	useAddExistingUserInOrganisationMutation,
+	useGetUsersInOrganisationQuery,
+	useRemoveUserInOrganisationMutation,
+	UserEntityFragment,
+} from '@/generated/graphql';
 
 function InsertExistingUserPanel(
 	input: { onClick: (user: UserSearchResult) => void },
@@ -39,11 +40,14 @@ function InsertExistingUserPanel(
 
 export default function UserPage() {
 
-	const organisation = useOrganisationContext();
+	const [removeUserFromOrganisation, {loading: isRemoving}] = useRemoveUserInOrganisationMutation();
+	const [insertUserInOrganisation, {loading: isInserting}] = useAddExistingUserInOrganisationMutation();
+	const organisation = useOrganisation();
 	const organisationId = organisation.id;
-	const insertExistingUserInOrganisation = useUserOrganisationInsertion();
-	const removeUserHook = useUserOrganisationRemoval();
-	const usersInOrganisationResponse = useFetchUsersInOrganisation(organisationId);
+	const {data, loading: isLoading, error, refetch: mutate} = useGetUsersInOrganisationQuery({
+		variables: { id: organisationId },
+	})
+
 	const [search, setSearch] = useState('');
 	const notify = useToast();
 
@@ -51,10 +55,7 @@ export default function UserPage() {
 	const [showAddExistingUserModal, hideAddExistingUserModal] = useModal(() => {
 		return <Dialog open={true}>
 			<DialogContent>
-				<InsertExistingUserPanel onClick={user => {
-					insertExistingUser(user);
-					hideAddExistingUserModal()
-				}} />
+				<InsertExistingUserPanel onClick={insertExistingUser} />
 			</DialogContent>
 			<DialogActions>
 				<Button onClick={hideAddExistingUserModal}>Cancel</Button>
@@ -67,36 +68,27 @@ export default function UserPage() {
 	 * @param user
 	 */
 	function insertExistingUser(user: UserSearchResult) {
-		insertExistingUserInOrganisation(organisationId, user.publicKey, {
-			onSuccessData: (user) => {
-				notify.info(`User "${user.firstname} ${user.lastname}" added successfully.`);
-				usersInOrganisationResponse.mutate()
-			},
-			onError: (error) => {
-				notify.error(error)
-			},
-			onEnd: () => {
-				setSearch('')
+		if (isInserting) return
+		insertUserInOrganisation({
+			variables: { organisationId, userPublicKey: user.publicKey }
+		}).then(result => {
+			const {data, errors} = result;
+			if (data) {
+				notify.info("User added in organisation");
+				mutate();
+				hideAddExistingUserModal()
+			} else if (errors) {
+				notify.error(errors)
 			}
-		});
+		}).catch(notify.error);
 	}
 
 
-	function removeUserFromOrganisation(userPublicKey: string) {
-		removeUserHook(organisationId, userPublicKey, {
-			onSuccess: () => {
-				usersInOrganisationResponse.mutate();
-				notify.info(`User ${userPublicKey} removed from organisation`)
-			},
-			onError: notify.error
-		})
-	}
-
-	if (!usersInOrganisationResponse.data || usersInOrganisationResponse.isLoading) {
+	if (!data) {
 		return <Skeleton count={3} />;
 	}
 
-	function match(user: UserSummary, search: string) {
+	function match(user: UserEntityFragment, search: string) {
 		return search === '' ||
 			user.publicKey.includes(search) ||
 			user.firstname.includes(search) ||
@@ -104,13 +96,25 @@ export default function UserPage() {
  	}
 
 	let content = <Skeleton count={10}/>
-	if (usersInOrganisationResponse.data) {
-		const users = usersInOrganisationResponse.data;
+	if (data) {
+		const users = data.organisation.users;
 		const shownUsers = users.filter(u => match(u, search));
 		content = <TableOfUsers
 			users={shownUsers}
 			onClick={user => console.log(user)}
-			onDelete={pk => removeUserFromOrganisation(pk)}
+			onDelete={pk => {
+				removeUserFromOrganisation({
+					variables: { organisationId, userPublicKey: pk }
+				}).then(result => {
+					const {errors} = result
+					if (errors) {
+						notify.error(errors)
+					} else {
+						notify.info("User successfully removed")
+						mutate()
+					}
+				}).catch(notify.error)
+			}}
 		/>
 	}
 

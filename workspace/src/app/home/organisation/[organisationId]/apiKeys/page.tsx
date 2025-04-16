@@ -1,12 +1,11 @@
 'use client';
 
 import { Typography } from '@mui/material';
-import { ApiKey, useApiKeysInOrganisation } from '@/components/api.hook';
-import { useOrganisationContext } from '@/contexts/organisation-store.context';
+import { useOrganisation, useOrganisationContext } from '@/contexts/organisation-store.context';
 import GenericTableComponent from '@/components/generic-table.component';
 import { useCustomRouter } from '@/contexts/application-navigation.context';
-import { Application } from '@/entities/application.entity';
 import getApiKeyStatus from '@/hooks/api-key-status.hook';
+import { ApiKeyDescriptionFragment, useGetApiKeysQuery } from '@/generated/graphql';
 
 export default function Page() {
 
@@ -16,30 +15,34 @@ export default function Page() {
 	</>
 }
 
-function renderLinkToApplication(application: Application) {
-	const organisation = useOrganisationContext();
+function renderLinkToApplication(application: {id: number, name: string}) {
+	const organisation = useOrganisation();
 	const router = useCustomRouter();
 	return <div onClick={() => router.navigateToApplication(organisation.id, application.id)}>{application.name}</div>;
 }
 
-function extractDataFromKey(row: ApiKey) {
-
-	const applicationValue = row.application ? renderLinkToApplication(row.application) : '--';
-	const status = getApiKeyStatus(row);
-	return [
-		{ head: 'ID', value: row.id },
-		{ head: 'Name', value: row.name },
-		{ head: 'Key', value: row.partialKey },
-		{ head: 'Status', value: status },
-		{ head: 'Created at', value: new Date(row.createdAt).toLocaleString() },
-		{ head: 'Application', value:  applicationValue },
-	]
-}
 function TableOfKeys() {
-	const organisation = useOrganisationContext();
+	const organisation = useOrganisation();
 	const router = useCustomRouter();
-	const {data: keys, isLoading, error} = useApiKeysInOrganisation(organisation.id);
+	//const {data: keys, isLoading, error} = useApiKeysInOrganisation(organisation.id);
+	const {data: keys, loading: isLoading, error} = useGetApiKeysQuery({
+		variables: { id: organisation.id }
+	})
+
+	function extractDataFromKey(row: ApiKeyDescriptionFragment) {
+		const applicationValue = row.application ? renderLinkToApplication(row.application) : '--';
+		const status = getApiKeyStatus(row);
+		return [
+			{ head: 'ID', value: row.id },
+			{ head: 'Name', value: row.name },
+			{ head: 'Key', value: row.partialKey },
+			{ head: 'Status', value: status },
+			{ head: 'Created at', value: new Date(row.createdAt).toLocaleString() },
+			{ head: 'Application', value:  applicationValue },
+		]
+
+	}
 
 
-	return <GenericTableComponent data={keys} extractor={extractDataFromKey} onRowClicked={key => router.push(`apiKeys/${key.id}/usage`)}/>
+	return <GenericTableComponent data={keys?.getAllApiKeysOfOrganisation} extractor={extractDataFromKey} onRowClicked={key => router.push(`apiKeys/${key.id}/usage`)}/>
 }

@@ -2,39 +2,50 @@ import { useUpdateApplication } from '@/app/home/organisation/[organisationId]/a
 import { useEffect, useState } from 'react';
 import { TextField, Typography } from '@mui/material';
 import { useApplication } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
+import { useToast } from '@/app/layout';
+import {
+	applicationAtom,
+	referenceApplicationAtom,
+} from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
+import { useAtomValue } from 'jotai';
+import { ApplicationTypeFragment } from '@/generated/graphql';
 
 export default function ApplicationOverview() {
-	const application = useApplication();
+	const application = useAtomValue(applicationAtom) as ApplicationTypeFragment;
+	const referenceApplication = useAtomValue(referenceApplicationAtom) as ApplicationTypeFragment;
 	const updateApplication = useUpdateApplication();
-	const [name, setName] = useState<string>(application.name);
-	const [logoUrl, setLogoUrl] = useState<string>(application.logoUrl);
-	const [domainUrl, setDomainUrl] = useState<string>(application.domain);
-	const [tag, setTag] = useState<string | undefined>(application.tag);
-	const [description, setDescription] = useState<string>(application.description);
+	const [name, setName] = useState(application.name);
+	const [logoUrl, setLogoUrl] = useState(application.logoUrl);
+	const [domainUrl, setDomainUrl] = useState(application.domain);
+	const [description, setDescription] = useState(application.description);
 
+	useEffect(() => {
+		setName(referenceApplication.name);
+		setLogoUrl(referenceApplication.logoUrl);
+		setDomainUrl(referenceApplication.domain);
+		setDescription(referenceApplication.description);
+	}, [referenceApplication]);
 
 	useEffect(() => {
 		updateApplication({
 			...application,
 			name,
-			logoUrl,
-			domain: domainUrl,
-			description,
-			tag,
-		});
-	}, [name, logoUrl, domainUrl, tag, description]);
+			logoUrl: logoUrl || '',
+			domain: domainUrl || '',
+			description: description || '',
+		})
+	}, [name, logoUrl, domainUrl, description]);
 
 	const INPUTS = [
 		{ label: 'Application name', value: name, onChange: setName },
 		{ label: 'Logo URL', value: logoUrl, onChange: setLogoUrl },
 		{ label: 'Website', value: domainUrl, onChange: setDomainUrl },
 		{ label: 'Description', value: description, className: 'w-full', onChange: setDescription },
-		{ label: 'Tag', value: tag, onChange: setTag, disabled: true },
 	];
 
 	const overviewContent = INPUTS.map((i, index) => <div key={index} className={`flex flex-col flex-1`}>
 		<TextField size={'small'} label={i.label} value={i.value}
-				   onChange={(e) => i.onChange && i.onChange(e.target.value)} className={i.className} disabled={i.disabled} />
+				   onChange={(e) => i.onChange && i.onChange(e.target.value)} className={i.className} />
 	</div>);
 
 
@@ -49,42 +60,4 @@ export default function ApplicationOverview() {
 		</div>
 	</>;
 }
-
-type ApplicationIdAndVersionProps = { id: string | undefined, version: number }
-
-function ApplicationIdAndVersion(props: ApplicationIdAndVersionProps) {
-	let content;
-	if (props.id) {
-		content = <>
-			<div>
-				<Typography variant={'paragraph'}>
-					Below are listed the application id and version. These information are useful to use this
-					application
-					declaration.
-				</Typography>
-			</div>
-			<div className="flex flex-col gap-4">
-				<div>
-					<Typography variant={'paragraph'}>Application Id</Typography>
-					<Typography
-						className={'w-full bg-gray-300 p-2 rounded'}>{props.id || ''}</Typography>
-				</div>
-				<div>
-					<Typography variant={'paragraph'}>Application Version</Typography>
-					<Typography
-						className={'w-full bg-gray-300 p-2 rounded'}>{props.version}</Typography>
-				</div>
-			</div>
-		</>;
-	} else {
-		content = <Typography className={'w-full bg-gray-300 p-2 rounded'}>
-			You application is currently not published.
-		</Typography>;
-	}
-	return <div >
-		<Typography variant={'h6'}>Publication Information</Typography>
-		{content}
-	</div>;
-}
-
 

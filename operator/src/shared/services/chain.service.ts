@@ -26,15 +26,9 @@ export default class ChainService implements OnModuleInit{
 		sdk.blockchain.blockchainCore.setNode(process.env.NODE_URL);
 	}
 
-	/**
-	 * Publishes an organisation to the blockchain by creating or updating a micro-block with the organisation's details.
-	 *
-	 * @param {OrganisationEntity} organisation - The organisation entity containing details such as name, location, website, and keys.
-	 * @return {Promise<MicroBlock>} A promise that resolves to the published micro-block of the organisation.
-	 */
 	async publishOrganisation(
 		organisation: OrganisationEntity
-	) : Promise<MicroBlock> {
+	)  {
 
 		// reject if the country code or city are undefined
 		const countryCode = organisation.countryCode;
@@ -57,10 +51,10 @@ export default class ChainService implements OnModuleInit{
 
 		// if the organisation has already been published, load the existing block
 		if ( organisation.virtualBlockchainId ) {
-			this.logger.log("Loading existing organisation block", organisation);
+			this.logger.debug("Loading existing organisation block", organisation);
 			await organisationVb.load();
 		} else {
-			this.logger.log("Creating new organisation block");
+			this.logger.debug("Creating new organisation block");
 			// set the organisation public signature key
 			await organisationVb.addPublicKey({
 				publicKey: organisation.publicSignatureKey

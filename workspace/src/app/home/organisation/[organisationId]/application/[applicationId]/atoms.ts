@@ -1,9 +1,10 @@
 import { atom } from 'jotai';
 import { Application } from '@/entities/application.entity';
+import { ApplicationTypeFragment } from '@/generated/graphql';
 
 // Application Atom
-export const applicationAtom = atom<Application | undefined>();
-export const referenceApplicationAtom = atom<Application | undefined>();
+export const applicationAtom = atom<ApplicationTypeFragment | undefined>();
+export const referenceApplicationAtom = atom<ApplicationTypeFragment | undefined>();
 export const applicationIsModifiedAtom = atom<boolean>((get) => {
 	const application = get(applicationAtom);
 	const referenceApplication = get(referenceApplicationAtom);

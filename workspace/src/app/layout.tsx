@@ -9,9 +9,11 @@ import { ApplicationNavigationContextProvider } from '@/contexts/application-nav
 import { ApplicationInterfaceContextProvider } from '@/contexts/interface.context';
 import { MaterialTailwindThemeContextProvider } from '@/contexts/material-taildwind-theme.context';
 import { InitialisationStatusContext } from '@/contexts/initialisation-status.context';
-import { ModalProvider as ReactModalHookProvider } from "react-modal-hook";
-import { EnvVarsContext } from '@/contexts/env-vars.context';
+import { ModalProvider as ReactModalHookProvider } from 'react-modal-hook';
 import { ModalProvider } from '@/contexts/popup-modal.component';
+import { ApolloProvider } from '@apollo/client';
+import { apolloClient } from '@/app/apollo-client';
+import { GraphQLFormattedError } from 'graphql/error';
 
 // Constants for reusability and manage ToastContainer configuration
 const toastConfig: ToastContainerProps = {
@@ -24,14 +26,14 @@ const toastConfig: ToastContainerProps = {
 };
 
 // toast hooks into a single utility for consistent usage
-type handledErrorTypes =  string | string[];
+type handledErrorTypes = string | string[] | readonly GraphQLFormattedError[];
 export const useToast = () => {
 
 	function handleError(message: handledErrorTypes) {
-		console.log(message)
-		if (typeof message == 'string') toast.error(message)
-		else if (Array.isArray(message) && message.every(item => typeof item === "string")) {
-			message.forEach(item => toast.error(item))
+		console.log(message);
+		if (typeof message == 'string') toast.error(message);
+		else if (Array.isArray(message) && message.every(item => typeof item === 'string')) {
+			message.forEach(item => toast.error(item));
 		} else if ('message' in message && typeof message.message === 'string') {
 			toast.error(message.message);
 		} else {
@@ -41,7 +43,7 @@ export const useToast = () => {
 
 	return {
 		success: (message: string) => toast.success(message),
-		error: (message:handledErrorTypes) => handleError(message),
+		error: (message: handledErrorTypes) => handleError(message),
 		info: (message: string) => toast.info(message),
 		warning: (message: string) => toast.warn(message),
 		notify: (message: string) => toast(message),
@@ -64,23 +66,23 @@ export default function RootLayout({ children }: PropsWithChildren) {
 	return (
 		<html lang="en">
 		<body>
-		<EnvVarsContext>
-		<ApplicationNavigationContextProvider>
-			<InitialisationStatusContext>
-				<ApplicationInterfaceContextProvider>
-					<MaterialTailwindThemeContextProvider>
-						<ModalProvider>
-							<ReactModalHookProvider>
-								{children}
-							</ReactModalHookProvider>
-						</ModalProvider>
-						{/* Centralized ToastContainer with extracted configurations */}
-						<ToastifyContainer {...toastConfig} />
-					</MaterialTailwindThemeContextProvider>
-				</ApplicationInterfaceContextProvider>
-			</InitialisationStatusContext>
-		</ApplicationNavigationContextProvider>
-		</EnvVarsContext>
+			<ApolloProvider client={apolloClient}>
+				<ApplicationNavigationContextProvider>
+					<InitialisationStatusContext>
+						<ApplicationInterfaceContextProvider>
+							<MaterialTailwindThemeContextProvider>
+								<ModalProvider>
+									<ReactModalHookProvider>
+										{children}
+									</ReactModalHookProvider>
+								</ModalProvider>
+								{/* Centralized ToastContainer with extracted configurations */}
+								<ToastifyContainer {...toastConfig} />
+							</MaterialTailwindThemeContextProvider>
+						</ApplicationInterfaceContextProvider>
+					</InitialisationStatusContext>
+				</ApplicationNavigationContextProvider>
+			</ApolloProvider>
 		</body>
 		</html>
 	)

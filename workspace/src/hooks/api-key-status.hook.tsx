@@ -1,8 +1,8 @@
-import { ApiKey } from '@/components/api.hook';
 import { Chip } from '@mui/material';
 import React from 'react';
+import { ApiKeyDescriptionFragment } from '@/generated/graphql';
 
-export default function getApiKeyStatus(apiKey: ApiKey) {
+export default function getApiKeyStatus(apiKey: ApiKeyDescriptionFragment) {
 	let status;
 	if (apiKey.isActive) {
 		if ( typeof apiKey.activeUntil == 'string' ) {
