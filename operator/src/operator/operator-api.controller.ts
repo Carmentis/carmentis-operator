@@ -20,6 +20,8 @@ import { ApplicationService } from '../shared/services/application.service';
 import PackageConfigService from '../package.service';
 import { ApiKeyService } from '../shared/services/api-key.service';
 import { ApiKeyGuard } from '../shared/guards/api-key-guard';
+import { AnchorDto, AnchorWithWalletInitiationDto } from './dto/anchor.dto';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 
 @Controller('/api')
@@ -44,7 +46,6 @@ export class OperatorApiController{
 		return 'Carmentis Operator v' + this.packageService.operatorVersion
 	}
 
-	//@UseGuards(ApiKeyGuard)
 	@Public()
 	@Get('/hello')
 	async hello() {
@@ -52,12 +53,80 @@ export class OperatorApiController{
 	}
 
 
+	@Public()
+	@Post('/anchor')
+	async anchor(@Body() anchorDto: AnchorDto) {
+		this.logger.debug("Handling anchor request")
+	}
 
+
+
+	@ApiOperation({
+		summary: 'Initiate anchoring with wallet.',
+		description: 'This endpoint is used by the server to initiate an anchoring that should be accepted by a wallet.'
+	})
+	@ApiResponse({
+		status: 201,
+		description: 'The anchor initiation request was successfully processed.',
+	})
+	@ApiResponse({
+		status: 400,
+		description: 'Bad request. Missing or invalid data.',
+	})
+	@Public()
+	@Post('/anchor/initiate')
+	async anchorWithWallet(@Body() anchorWithWalletDto: AnchorWithWalletInitiationDto) {
+		this.logger.debug("Handling anchor with wallet request")
+
+		/*
+		if (data === undefined) {
+			this.logger.error('/operatorMessage: no data received:', req)
+			throw new InternalServerErrorException("No data received")
+		}
+		this.logger.log('Operator API: /operatorMessage: ', data)
+		let binaryResponse = await this.processOperatorMessage(base64.decodeBinary(data, base64.BASE64));
+		return {
+			response: base64.encodeBinary(binaryResponse, base64.BASE64, undefined)
+		};
+		 */
+	}
+
+	@ApiOperation({
+		summary: 'Confirm the anchoring with the wallet',
+		description: 'This endpoint is used by the wallet to confirm the anchoring'
+	})
+	@Public()
+	@Post("/anchor/wallet")
+	async walletMessage(
+		@Req() req: Request,
+		@Body("data") data : any
+	) {
+		/*
+		if (data === undefined) {
+			this.logger.error('/operatorMessage: no data received:', req)
+			throw new InternalServerErrorException("No data received")
+		}
+		this.logger.log('Operator API: /walletMessage: ', data)
+		let binaryResponse = await this.processWalletMessage( base64.decodeBinary(data, base64.BASE64));
+		if (!binaryResponse) {
+			this.logger.error('No binary response received')
+			throw new BadRequestException()
+		}
+		return {
+			response: base64.encodeBinary(binaryResponse, base64.BASE64, undefined)
+		};
+
+		 */
+	}
+
+
+	/*
 	@Public()
 	@Post("/prepareUserApproval")
 	async handleRequest(
 		@Body() data: PrepareUserApprovalDto
 	) {
+
 		this.logger.debug("Handling prepareUserApproval")
 
 		let organisation;
@@ -96,43 +165,21 @@ export class OperatorApiController{
 		return result;
 	}
 
+	 */
+
+	/*
 	@Public()
 	@Post("/operatorMessage")
 	async operatorMessage(
 		@Req() req: Request,
 		@Body("data") data : any
 	) {
-		if (data === undefined) {
-			this.logger.error('/operatorMessage: no data received:', req)
-			throw new InternalServerErrorException("No data received")
-		}
-		this.logger.log('Operator API: /operatorMessage: ', data)
-		let binaryResponse = await this.processOperatorMessage(base64.decodeBinary(data, base64.BASE64));
-		return {
-			response: base64.encodeBinary(binaryResponse, base64.BASE64, undefined)
-		};
+
 	}
 
-	@Public()
-	@Post("/walletMessage")
-	async walletMessage(
-		@Req() req: Request,
-		@Body("data") data : any
-	) {
-		if (data === undefined) {
-			this.logger.error('/operatorMessage: no data received:', req)
-			throw new InternalServerErrorException("No data received")
-		}
-		this.logger.log('Operator API: /walletMessage: ', data)
-		let binaryResponse = await this.processWalletMessage( base64.decodeBinary(data, base64.BASE64));
-		if (!binaryResponse) {
-			this.logger.error('No binary response received')
-			throw new BadRequestException()
-		}
-		return {
-			response: base64.encodeBinary(binaryResponse, base64.BASE64, undefined)
-		};
-	}
+	 */
+
+
 
 	/**
 	 * Loads an organisation using the provided data request.

@@ -26,8 +26,20 @@ async function bootstrap() {
 		.setVersion('1.0')
 		.build();
 
+	// no try
+	const swaggerCustomOptions = {
+		swaggerOptions: {
+			tryItOutEnabled: false,
+		},
+	};
+
 	const documentFactory = () => SwaggerModule.createDocument(app, config);
-	SwaggerModule.setup('swagger', app, documentFactory);
+	SwaggerModule.setup(
+		'swagger',
+		app,
+		documentFactory,
+		swaggerCustomOptions
+	);
 
 	logger.log(`Operator back server listening at port ${port}...`)
 	await app.listen(port);

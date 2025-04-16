@@ -67,13 +67,23 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 	}
 
 	async logApiKeyUsage( apiKey: ApiKeyEntity,  request: Request, response: Response) {
-		const apiKeyUsage = new ApiKeyUsageEntity();
-        apiKeyUsage.apiKey = apiKey;
-		apiKeyUsage.ip = request.ip;
-        apiKeyUsage.requestUrl = request.url;
-        apiKeyUsage.requestMethod = request.method;
-        apiKeyUsage.responseStatus = response.statusCode;
-        return this.usageRepo.save(apiKeyUsage);
+		if (
+			request && response && (
+				request.ip &&
+				request.url &&
+				request.method &&
+				response.statusCode
+			)
+		) {
+			const apiKeyUsage = new ApiKeyUsageEntity();
+			apiKeyUsage.apiKey = apiKey;
+			apiKeyUsage.ip = request.ip;
+			apiKeyUsage.requestUrl = request.url;
+			apiKeyUsage.requestMethod = request.method;
+			apiKeyUsage.responseStatus = response.statusCode;
+			return this.usageRepo.save(apiKeyUsage);
+		}
+
 	}
 
 
