@@ -10,7 +10,7 @@ import { ApiKeyDescriptionFragment, useGetApiKeysQuery } from '@/generated/graph
 export default function Page() {
 
 	return <>
-		<Typography variant={"h5"} fontWeight={"bolder"}>API Keys</Typography>
+		<Typography variant={"h5"} fontWeight={"bolder"} mb={4}>API Keys</Typography>
 		<TableOfKeys/>
 	</>
 }

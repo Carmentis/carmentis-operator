@@ -74,7 +74,7 @@ export default function ListOfApplicationsPage() {
 
 
 	return <>
-		<Box display={"flex"} flexDirection={"row"} justifyContent={"space-between"}>
+		<Box display={"flex"} flexDirection={"row"} justifyContent={"space-between"} mb={4}>
 			<Typography variant={"h5"} fontWeight={"bold"}>Applications</Typography>
 			<Box display={"flex"} gap={2}>
 				<SearchInputForm searchFilter={search} setSearchFilter={setSearch} />

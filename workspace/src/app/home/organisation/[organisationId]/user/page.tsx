@@ -121,7 +121,7 @@ export default function UserPage() {
 
 	return (
 		<>
-			<Box display="flex" justifyContent="space-between">
+			<Box display="flex" justifyContent="space-between" mb={4}>
 				<Typography variant={"h5"} fontWeight="bold">Members</Typography>
 				<Box display={"flex"} flexDirection={"row"} gap={2}>
 					<SearchInputForm searchFilter={search} setSearchFilter={setSearch}/>
