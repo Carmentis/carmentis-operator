@@ -6,7 +6,8 @@ import { EnvService } from './env.service';
 @Injectable()
 export class CryptoService implements OnModuleInit{
 	private logger = new Logger(CryptoService.name);
-	private _adminCreationToken : string;
+	private static initialized = false;
+	private static _adminCreationToken : string;
 
 	constructor(
 		private readonly envService: EnvService
@@ -15,15 +16,18 @@ export class CryptoService implements OnModuleInit{
 	}
 
 	get adminCreationToken(): string {
-		return this._adminCreationToken;
+		return CryptoService._adminCreationToken;
 	}
 
 	async onModuleInit() {
-		Promise.all([
-			this.setupOperatorKeyPair(),
-			this.setupAdminCreationToken(),
-			this.setupNode()
+		if (!CryptoService.initialized) {
+			CryptoService.initialized = true;
+			Promise.all([
+				this.setupOperatorKeyPair(),
+				this.setupAdminCreationToken(),
+				this.setupNode()
 			])
+		}
 	}
 
 
@@ -76,7 +80,10 @@ export class CryptoService implements OnModuleInit{
 		this.logger.log("Setting up administrator creation token");
 
 		let filePath = this.envService.adminTokenFile;
-		let token = sdk.utils.encoding.toHexa(sdk.crypto.getRandomBytes(32));
+		let token = CryptoService._adminCreationToken;
+		if (!token) {
+			token = sdk.utils.encoding.toHexa(sdk.crypto.getRandomBytes(32));
+		}
 
 
 		try {
@@ -89,7 +96,7 @@ export class CryptoService implements OnModuleInit{
 			this.logger.log(`Generated token is saved to file ${this.envService.adminTokenFile}`);
 		}
 
-		this._adminCreationToken = token;
+		CryptoService._adminCreationToken = token;
 		this.logger.log([
 			'Below is shown the administrator creation token:',
 			'-------------------------------------------------------------',
