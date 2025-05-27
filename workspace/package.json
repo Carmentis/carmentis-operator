@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build --no-lint --experimental-app-only --experimental-build-mode compile",
-    "start": "next start --port ${PORT-3000}",
+    "start": "next start",
     "lint": "next lint",
     "check": "__NEXT_TEST_MODE=true npm run build"
   },
