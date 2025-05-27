@@ -10,12 +10,12 @@ export class DatabaseInitService implements OnModuleInit {
 
 	async onModuleInit() {
 		const host = this.configService.getOrThrow<string>(
-			'OPERATOR_DATABASE_URL',
+			'OPERATOR_POSTGRES_URL',
 		);
-		const port = this.configService.getOrThrow<number>('OPERATOR_DATABASE_PORT');
-		const username = this.configService.getOrThrow<string>('OPERATOR_DATABASE_USERNAME');
-		const password = this.configService.getOrThrow<string>('OPERATOR_DATABASE_PASSWORD');
-		const database = this.configService.getOrThrow<string>('OPERATOR_DATABASE_NAME');
+		const port = this.configService.getOrThrow<number>('OPERATOR_POSTGRES_PORT');
+		const username = this.configService.getOrThrow<string>('OPERATOR_POSTGRES_USER');
+		const password = this.configService.getOrThrow<string>('OPERATOR_POSTGRES_PASSWORD');
+		const database = this.configService.getOrThrow<string>('OPERATOR_POSTGRES_DB');
 
 
 		this.logger.log(`Creating database '${database}'`);
