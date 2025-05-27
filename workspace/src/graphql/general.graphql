@@ -1,0 +1,7 @@
+query getInitialisationStatus {
+    isInitialised
+}
+
+mutation setupFirstAdministrator($setupFirstAdmin: SetupFirstAdminDto!) {
+    setupFirstAdministrator(setupFirstAdmin: $setupFirstAdmin)
+}

@@ -1,0 +1,169 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type OrganisationEntity {
+  id: Int!
+  name: String!
+  logoUrl: String
+  published: Boolean!
+  publishedAt: DateTime
+  isDraft: Boolean!
+  city: String!
+  countryCode: String!
+  website: String!
+  publicSignatureKey: String!
+  createdAt: DateTime!
+  lastUpdateAt: DateTime!
+  version: Int!
+  virtualBlockchainId: String
+  balance: Float!
+  users: [UserEntity!]!
+  hasTokenAccount: Boolean!
+  isAnchoredOnChain: Boolean!
+  transactions(limit: Int!, fromHistoryHash: String): [TransactionType!]!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type UserEntity {
+  publicKey: String!
+  firstname: String!
+  lastname: String!
+  isAdmin: Boolean!
+}
+
+type ChallengeEntity {
+  challenge: String!
+}
+
+type OrganisationStatsDto {
+  numberOfApplications: Int!
+  numberOfUsers: Int!
+}
+
+type ApplicationType {
+  id: Int!
+  name: String!
+  version: Int!
+  logoUrl: String
+  description: String
+  domain: String
+  website: String
+  virtualBlockchainId: String
+  lastUpdateAt: DateTime!
+  createdAt: DateTime!
+  published: Boolean!
+  publishedAt: DateTime
+  isDraft: Boolean!
+}
+
+type ApiKeyType {
+  id: Int!
+  name: String!
+  createdAt: DateTime!
+  activeUntil: DateTime!
+  isActive: Boolean!
+  partialKey: String!
+  application: ApplicationType!
+  countUsages(filterByUnauthorised: Boolean!): Int!
+  usages(limit: Int, offset: Int, filterByUnauthorized: Boolean): [ApiKeyUsageType!]!
+}
+
+type ApiKeyUsageType {
+  id: Float!
+  ip: String!
+  usedAt: DateTime!
+  requestUrl: String!
+  requestMethod: String!
+  responseStatus: String!
+}
+
+type RevealedApiKeyType {
+  id: Int!
+  name: String!
+  createdAt: DateTime!
+  activeUntil: DateTime!
+  isActive: Boolean!
+  partialKey: String!
+  application: ApplicationType!
+  countUsages(filterByUnauthorised: Boolean!): Int!
+  usages(limit: Int, offset: Int, filterByUnauthorized: Boolean): [ApiKeyUsageType!]!
+  key: String!
+}
+
+type ChainReferenceType {
+  mbHash: String!
+  sectionIndex: Int!
+}
+
+type TransactionType {
+  height: Int!
+  previousHistoryHash: String!
+  type: Int!
+  name: String!
+  timestamp: DateTime!
+  linkedAccount: String!
+  amount: Float!
+  chainReference: ChainReferenceType!
+}
+
+type ChallengeVerificationResponse {
+  token: String!
+}
+
+type Query {
+  organisations: [OrganisationEntity!]!
+  organisation(id: Int!): OrganisationEntity!
+  getChallenge: ChallengeEntity!
+  getCurrentUser: UserEntity!
+  searchUser(search: String!): [UserEntity!]!
+  getAllUsers: [UserEntity!]!
+  getUserByPublicKey(publicKey: String!): UserEntity!
+  getOrganisationStatistics(id: Int!): OrganisationStatsDto!
+  getAllApiKeysOfOrganisation(organisationId: Int!): [ApiKeyType!]!
+  getAllApiKeysOfApplication(applicationId: Int!): [ApiKeyType!]!
+  getApiKey(id: Int!): ApiKeyType!
+  isInitialised: Boolean!
+  getAllApplicationsInOrganisation(organisationId: Int!): [ApplicationType!]!
+  getApplicationInOrganisation(applicationId: Int!): ApplicationType!
+}
+
+type Mutation {
+  createOrganisation(name: String!): OrganisationEntity!
+  updateOrganisation(id: Int!, name: String!, countryCode: String!, website: String!, city: String!): OrganisationEntity!
+  publishOrganisation(id: Int!): Boolean!
+  deleteOrganisation(id: Int!): OrganisationEntity!
+  addUserInOrganisation(organisationId: Int!, userPublicKey: String!): Boolean!
+  removeUserFromOrganisation(organisationId: Int!, userPublicKey: String!): Boolean!
+  changeOrganisationKeyPair(organisationId: Int!, privateKey: String!): Boolean!
+  verifyChallenge(challenge: String!, publicKey: String!, signature: String!): ChallengeVerificationResponse!
+  createUser(publicKey: String!, firstname: String!, lastname: String!, isAdmin: Boolean!): UserEntity!
+  deleteUser(publicKey: String!): UserEntity!
+  createApiKey(applicationId: Int!, name: String!, activeUntil: String!): RevealedApiKeyType!
+  updateApiKey(id: Int!, name: String!, isActive: Boolean!): Boolean!
+  deleteApiKey(id: Int!): Boolean!
+  setupFirstAdministrator(setupFirstAdmin: SetupFirstAdminDto!): Boolean!
+  createApplicationInOrganisation(organisationId: Int!, applicationName: String!): ApplicationType!
+  publishApplication(applicationId: Int!): Boolean!
+  deleteApplicationInOrganisation(applicationId: Int!): Boolean!
+  updateApplicationInOrganisation(applicationId: Int!, applicationUpdate: ApplicationUpdateDto!): ApplicationType!
+}
+
+input SetupFirstAdminDto {
+  publicKey: String!
+  firstname: String!
+  lastname: String!
+  token: String!
+}
+
+input ApplicationUpdateDto {
+  name: String!
+  logoUrl: String
+  description: String
+  domain: String
+  website: String
+}

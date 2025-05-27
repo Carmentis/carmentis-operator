@@ -1,13 +1,16 @@
 'use client';
 
-import { AuthenticatedUserDetailsResponse, TOKEN_STORAGE_ITEM, useFetchAuthenticatedUser } from '@/components/api.hook';
+
+export const TOKEN_STORAGE_ITEM = "carmentis-token";
+
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
+import { useGetCurrentUserQuery, UserFragment } from '@/generated/graphql';
 
 export type UserAuthentication = {
-	authenticatedUser: AuthenticatedUserDetailsResponse | undefined,
-	getAuthenticatedUser: () => AuthenticatedUserDetailsResponse,
+	authenticatedUser: UserFragment | undefined,
+	getAuthenticatedUser: () => UserFragment,
 	isAuthenticated: () => boolean,
 	connect: (publicKey: string) => void,
 	disconnect: () => void
@@ -16,12 +19,17 @@ const UserAuthenticationContext = createContext<UserAuthentication | undefined>(
 
 
 export function UserAuthenticationContextProvider({children}: PropsWithChildren) {
-	const [currentUser, setCurrentUser] = useState<AuthenticatedUserDetailsResponse | undefined>(undefined);
-	const {data, isLoading, error} = useFetchAuthenticatedUser();
+	const [currentUser, setCurrentUser] = useState<UserFragment | undefined>(undefined);
+	const {data, loading: isLoading, error} = useGetCurrentUserQuery();
+	//const {data, isLoading, error} = useFetchAuthenticatedUser();
 	const navigation = useApplicationNavigationContext();
 
 	useEffect(() => {
-		setCurrentUser(data);
+		if (data && data.getCurrentUser) {
+			setCurrentUser(data.getCurrentUser);
+		} else {
+			setCurrentUser(undefined);
+		}
 	}, [data]);
 
 	// if not loading but data not available, redirect to the list of organisation
@@ -29,8 +37,11 @@ export function UserAuthenticationContextProvider({children}: PropsWithChildren)
 		return navigation.navigateToIndex();
 	}
 
-	if (!data || isLoading)
+	if (isLoading)
 		return <FullPageLoadingComponent/>
+
+	if (!data || error)
+		return <>An error occurred</>
 
 	if (error || localStorage.getItem(TOKEN_STORAGE_ITEM) === undefined)
 		navigation.navigateToLogin();

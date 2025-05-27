@@ -36,23 +36,6 @@ html, body {
 
 @layer components {
 
-    .visible-sidebar-item#sidebar-toggle {
-        @apply mb-12
-    }
-    .visible-sidebar-item {
-        @apply p-2 mx-4 my-0 mt-2 rounded justify-start space-x-2 border-none;
-    }
-
-    .hidden-sidebar-item {
-        @apply p-2 justify-center items-center align-middle text-center;
-    }
-
-    .hidden-sidebar-item.separator {
-        @apply border-b-2 border-gray-200;
-    }
-    .visible-sidebar-item.separator {
-        @apply border-b-2 border-gray-200 mb-4;
-    }
 
     .modal {
         background-color: rgba(10, 10, 10, 0.3);

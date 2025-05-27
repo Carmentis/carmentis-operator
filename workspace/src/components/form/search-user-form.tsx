@@ -1,8 +1,9 @@
 import { UserSearchResult } from '@/entities/user.entity';
 import { ReactNode, useState } from 'react';
 import Spinner from '@/components/spinner';
-import { Input } from '@material-tailwind/react';
-import { useSearchUser } from '@/components/api.hook';
+import { Box, TextField } from '@mui/material';
+import { useSearchUserQuery } from '@/generated/graphql';
+import { useToast } from '@/app/layout';
 
 export function SearchUserInputComponent(
 	input: {
@@ -10,32 +11,13 @@ export function SearchUserInputComponent(
 		onSelectedUser: (user: UserSearchResult) => void
 	}
 ) {
-
+	const notify = useToast();
 	const [searchInput, setSearchInput] = useState('');
-	const [isLoading, setIsLoading] = useState<boolean>(false);
-	const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
-	const searchUser = useSearchUser();
-
-	// the function used to search users
-	function handleSearch(searchInput: string) {
-		setSearchInput(searchInput);
-
-		// if empty search input, clear the results
-		if ( searchInput == "" ) {
-			setSearchResults([])
-			return
-		}
-
-		setIsLoading(true);
-		searchUser(searchInput, {
-			onSuccessData: data => setSearchResults(data),
-			onEnd: () => setIsLoading(false)
-		})
-
-	}
+	const {data: users, loading: isLoading, error} = useSearchUserQuery({
+		variables: { search: searchInput },
+	})
 
 	function selectUser(user: UserSearchResult) {
-		setSearchResults([]);
 		input.onSelectedUser(user)
 	}
 
@@ -46,11 +28,14 @@ export function SearchUserInputComponent(
 			<Spinner></Spinner>
 		</div>
 	}
-	if ( !isLoading && searchResults.length !== 0 ) {
+	if (error) {
+		notify.error(error)
+	}
+	if ( !isLoading && users && users.searchUser.length !== 0 ) {
 		searchResultsContent = <div>
 			<ul className="max-h-44 h-44 overflow-y-auto">
 				{
-					searchResults.map((user, index) => {
+					users.searchUser.map((user, index) => {
 						return <div key={index} onClick={() => selectUser(user)}>
 							{input.formatUserSearchResult(user)}
 						</div>
@@ -61,9 +46,8 @@ export function SearchUserInputComponent(
 	}
 
 
-	return <>
-		<Input label="Search user" value={searchInput} onChange={e => handleSearch(e.target.value)}
-			   icon={<i className="bi bi-search" />} />
+	return <Box minHeight={"300px"} maxHeight={"300px"} overflow="scroll">
+		<TextField size={"small"} fullWidth={true} label="Search user" value={searchInput} onChange={e => setSearchInput(e.target.value)}/>
 		{searchResultsContent}
-	</>;
+	</Box>;
 }

@@ -1,51 +1,68 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-
-export const DEFAULT_PUBLIC_ACCOUNT_CREATION_ENABLED = false;
+import * as path from 'path';
+import * as process from 'node:process';
 
 @Injectable()
 export class EnvService implements OnModuleInit {
-	operatorKeyPairFile?: string;
-	nodeUrl : string
-	publicAccountCreationEnabled: boolean
-	maxOraclesInOrganisation = 30
-	maxApplicationsInOrganisation = 30
-	maxOrganisationsInWhichUserIsAdmin = 10
-
-	logger = new Logger(EnvService.name);
+	private _adminTokenFile: string;
+	private _operatorKeyPairFile: string;
+	private _nodeUrl : string
+	private logger = new Logger(EnvService.name);
+	private _dbEncryptionKey;
 
 	constructor(
 		private readonly configService: ConfigService
 	) {
-		this.nodeUrl = this.configService.getOrThrow<string>('NODE_URL');
-		this.operatorKeyPairFile = this.configService.get<string>('OPERATOR_KEYPAIR_FILE')
-		this.publicAccountCreationEnabled = this.configService.get<boolean>('ENABLE_PUBLIC_ACCOUNT_CREATION') || DEFAULT_PUBLIC_ACCOUNT_CREATION_ENABLED;
+		this._nodeUrl = this.configService.getOrThrow<string>('NODE_URL');
 
-		// search for limits
-		const maxOraclesInOrganisation = this.configService.get<number>('MAX_ORACLES_IN_ORGANISATION')
-		if (maxOraclesInOrganisation) this.maxApplicationsInOrganisation = maxOraclesInOrganisation;
-		const maxApplicationsInOrganisation = this.configService.get<number>('MAX_APPLICATIONS_IN_ORGANISATION')
-        if (maxApplicationsInOrganisation) this.maxApplicationsInOrganisation = maxApplicationsInOrganisation;
-        const maxOrganisationsInWhichUserIsAdmin = this.configService.get<number>('MAX_ORGANISATIONS_IN_WHICH_USER_IS_ADMIN')
-        if (maxOrganisationsInWhichUserIsAdmin) this.maxOrganisationsInWhichUserIsAdmin = maxOrganisationsInWhichUserIsAdmin;
-
-
-		// log the public account creation enabled
-		if (this.publicAccountCreationEnabled) {
-			this.logger.warn("Public account creation enabled !")
-		} else {
-			this.logger.log("Public account creation disabled.")
-		}
+		// check database encryption key
+		this._dbEncryptionKey = Buffer.from(
+			this.configService.getOrThrow<string>('OPERATOR_DB_ENCRYPTION_KEY'),
+			'hex'
+		);
 
 		// log the operator keypair file
-		if (this.operatorKeyPairFile) {
-			this.logger.log(`No operator keypair file provided (${this.operatorKeyPairFile}).`)
-		} else {
-			this.logger.log(`Operator keypair file provided: ${this.operatorKeyPairFile}`)
+		try {
+			this._operatorKeyPairFile = this.configService.getOrThrow<string>('OPERATOR_KEYPAIR_FILE')
+			this.logger.log(`Operator keypair file provided: ${this._operatorKeyPairFile}`)
+		} catch {
+			this._operatorKeyPairFile = path.join(process.cwd(), './operator-keypair.json');
+			this.logger.log(`No operator keypair file provided (default: ${this._operatorKeyPairFile}).`)
 		}
+
+		// log the file containing the administration creation token
+		try {
+            this._adminTokenFile = this.configService.getOrThrow<string>('OPERATOR_ADMIN_TOKEN_FILE');
+            this.logger.log(`Admin token file provided: ${this._adminTokenFile}`);
+        } catch {
+            this._adminTokenFile = path.join(process.cwd(), './admin-token.txt');
+            this.logger.log(`No admin token file provided (default: ${this._adminTokenFile}).`);
+        }
+
+
+
 	}
 
+
 	onModuleInit(): any {
+	}
+
+
+	get dbEncryptionKey() {
+		return this._dbEncryptionKey;
+	}
+
+	get nodeUrl(): string {
+		return this._nodeUrl
+	}
+
+	get operatorKeyPairFile(): string {
+		return this._operatorKeyPairFile
+	}
+
+	get adminTokenFile(): string {
+		return this._adminTokenFile
 	}
 
 }

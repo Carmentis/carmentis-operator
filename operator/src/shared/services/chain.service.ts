@@ -1,13 +1,7 @@
-import {
-	Injectable,
-	InternalServerErrorException,
-	Logger, NotFoundException,
-	OnModuleInit, UnprocessableEntityException,
-} from '@nestjs/common';
-import * as sdk from "@cmts-dev/carmentis-sdk/server";
+import { Injectable, Logger, NotFoundException, OnModuleInit, UnprocessableEntityException } from '@nestjs/common';
+import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { ApplicationEntity } from '../entities/application.entity';
 import { OrganisationEntity } from '../entities/organisation.entity';
-import { OracleEntity } from '../entities/oracle.entity';
 
 
 /**
@@ -32,15 +26,20 @@ export default class ChainService implements OnModuleInit{
 		sdk.blockchain.blockchainCore.setNode(process.env.NODE_URL);
 	}
 
-	/**
-	 * Publishes an organisation to the blockchain by creating or updating a micro-block with the organisation's details.
-	 *
-	 * @param {OrganisationEntity} organisation - The organisation entity containing details such as name, location, website, and keys.
-	 * @return {Promise<MicroBlock>} A promise that resolves to the published micro-block of the organisation.
-	 */
 	async publishOrganisation(
 		organisation: OrganisationEntity
-	) : Promise<MicroBlock> {
+	)  {
+
+		// reject if the country code or city are undefined
+		const countryCode = organisation.countryCode;
+		const city = organisation.city;
+		if (typeof countryCode !== 'string' || countryCode.trim().length === 0) {
+			throw "Empty country code."
+		}
+		if (typeof city !== 'string' || city.trim().length === 0) {
+			throw "Empty city.";
+		}
+
 		// initialise the blockchain sdk
 		sdk.blockchain.blockchainCore.setUser(
 			sdk.blockchain.ROLES.OPERATOR,
@@ -52,10 +51,10 @@ export default class ChainService implements OnModuleInit{
 
 		// if the organisation has already been published, load the existing block
 		if ( organisation.virtualBlockchainId ) {
-			console.log("Loading existing organisation block", organisation);
+			this.logger.debug("Loading existing organisation block", organisation);
 			await organisationVb.load();
 		} else {
-			console.log("Creating new organisation block");
+			this.logger.debug("Creating new organisation block");
 			// set the organisation public signature key
 			await organisationVb.addPublicKey({
 				publicKey: organisation.publicSignatureKey
@@ -79,12 +78,8 @@ export default class ChainService implements OnModuleInit{
 		await organisationVb.sign()
 
 		// publish the micro-block
-		try {
-			return await organisationVb.publish();
-		} catch (e) {
-			console.error(e);
-			throw new InternalServerErrorException("Failed to publish the organisation");
-		}
+		return await organisationVb.publish();
+
 
 	}
 
@@ -106,13 +101,11 @@ export default class ChainService implements OnModuleInit{
 
 		const vc = new sdk.blockchain.applicationVb(application.virtualBlockchainId);
 		if ( !application.virtualBlockchainId ) {
-			console.log("Creating new application", application, organisation);
 			await vc.addDeclaration({
 				organizationId: organisation.virtualBlockchainId,
 			});
 
 		} else {
-			console.log("Loading existing application", application);
 			await vc.load();
 		}
 
@@ -124,17 +117,8 @@ export default class ChainService implements OnModuleInit{
 			description: application.description
 		})
 
-		// merge the default empty application with the provided one
 		await vc.addDefinition({
 			version: application.version + 1, // we increment the version number
-			definition: {
-				fields: [],
-				structures: [],
-				masks: [],
-				enumerations: [],
-				messages: [],
-				...application.data // replace default empty data with the application data if any
-			}
 		});
 
 		vc.setGasPrice(
@@ -143,55 +127,8 @@ export default class ChainService implements OnModuleInit{
 
 
 		await vc.sign();
-
 		return vc.publish()
 	}
-
-
-	async publishOracle(organisation: OrganisationEntity, oracle: OracleEntity) {
-		// TODO remove the hardcoded node
-		// initialise the blockchain sdk
-		sdk.blockchain.blockchainCore.setUser(
-			sdk.blockchain.ROLES.OPERATOR,
-			organisation.privateSignatureKey
-		);
-
-		console.log('oracle publication:', organisation)
-		const vc = new sdk.blockchain.oracleVb(oracle.virtualBlockchainId);
-		if ( !oracle.virtualBlockchainId ) {
-			await vc.addDeclaration({
-				organizationId: organisation.virtualBlockchainId,
-			});
-		} else {
-			await vc.load();
-		}
-
-		await vc.addDescription( {
-			name: oracle.name,
-			logoUrl: oracle.logoUrl || '',
-			rootDomain: oracle.domain || '',
-		})
-
-		// merge the default empty application with the provided one
-		await vc.addDefinition({
-			version: oracle.version + 1, // we increment the version number
-			definition: {
-				services: [],
-				structures: [],
-				masks: [],
-				enumerations: [],
-				...oracle.data // replace default empty data with the application data if any
-			}
-		});
-
-		vc.setGasPrice(
-			sdk.constants.ECO.TOKEN
-		);
-
-		await vc.sign();
-		return vc.publish()
-	}
-
 
 	async checkAccountExistence(publicSignatureKey: string) {
 		try {

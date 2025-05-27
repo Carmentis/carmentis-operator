@@ -12,15 +12,6 @@ export class AccessRightService {
 	) {
 	}
 
-
-	// Insert a new item
-	async createAccessRight(
-		accessRight: OrganisationAccessRightEntity,
-	): Promise<OrganisationAccessRightEntity> {
-		const item = this.accessRightRepository.create(accessRight);
-		return this.accessRightRepository.save(item);
-	}
-
 	async numberOfOrganisationsInWhichUserIsAdmin(user: UserEntity) {
 		return await this.accessRightRepository
 			.createQueryBuilder('accessRight')

@@ -1,7 +1,7 @@
 # Operator
 
 The **Operator** is a crucial middleware that allows seamless communication with a wallet. Beyond this, it provides a
-user-friendly interface for publishing oracles and applications, simplifying complex blockchain interactions and
+user-friendly interface for organisations and applications, simplifying complex blockchain interactions and
 facilitating accessible blockchain-related services.
 
 This repository contains everything you need to deploy and launch the Operator using `docker-compose`. Below, you'll
@@ -48,6 +48,7 @@ To launch the Operator, follow these steps:
         - OPERATOR_DATABASE_PASSWORD=admin            
         - OPERATOR_DATABASE_HOST=db                   
         - OPERATOR_DATABASE_PORT=5432
+        - DB_ENCRYPTION_KEY=toto
         - NODE_URL=<node_url>
         - PORT=4002
        container_name: back-operator-carmentis

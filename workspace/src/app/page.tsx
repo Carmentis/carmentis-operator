@@ -5,26 +5,21 @@ import { Typography } from '@material-tailwind/react';
 import FlexCenter from '@/components/flex-center.component';
 import { useEffect, useRef, useState } from 'react';
 import FullSpaceSpinner from '@/components/full-page-spinner.component';
-import {
-    APICallbacks,
-    ChallengeSuccessResponse,
-    TOKEN_STORAGE_ITEM,
-    useChallengeVerification,
-    useNotWhitelistedUserCreation,
-    useObtainChallenge,
-} from '@/components/api.hook';
 import { useToast } from '@/app/layout';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import VersionDisplay from '@/components/version-number';
-import { Dialog, DialogHeader, DialogBody, DialogFooter, Input, Button } from '@material-tailwind/react';
-import { toast } from 'react-toastify';
+import { useGetChallengeQuery, useVerifyChallengeMutation } from '@/generated/graphql';
+import { TOKEN_STORAGE_ITEM } from '@/contexts/user-authentication.context';
+
 
 
 export default function Login() {
-    const {data, isLoading} = useObtainChallenge();
+    const {data, loading, error} = useGetChallengeQuery({
+        variables: {}
+    })
 
-    if (isLoading || !data) return <FullSpaceSpinner label={"Obtaining challenge..."}/>
-    return <ChallengeLogin challenge={data.challenge}/>
+    if (loading || !data) return <FullSpaceSpinner label={"Obtaining challenge..."}/>
+    return <ChallengeLogin challenge={data.getChallenge.challenge}/>
 }
 
 type ChallengeResponse = {
@@ -34,53 +29,34 @@ type ChallengeResponse = {
 }
 function ChallengeLogin({challenge}: {challenge: string}) {
     const toast = useToast();
-    const verifyChallenge = useChallengeVerification();
+    const [verifyChallenge] = useVerifyChallengeMutation()
     const navigation = useApplicationNavigationContext();
-
-    // Define states for the account creation modal
-    const [showAccountCreationModal, setShowAccountCreationModal] = useState(false);
-    const [knownPublicKey, setKnownPublicKey] = useState('');
-    const challengeResponseRef = useRef<ChallengeResponse|undefined>();
 
     function storeToken(token: string) {
         localStorage.setItem(TOKEN_STORAGE_ITEM, token)
     }
 
-    function onSuccessAuthentication(response: ChallengeSuccessResponse) {
-        storeToken(response.token);
+    function onSuccessAuthentication(token: string) {
+        storeToken(token);
         toast.success("You are connected")
         navigation.navigateToHome();
     }
 
-    function onNotWhitelistedUserCreated() {
-        if (!challengeResponseRef.current) {
-            throw "Challenge response ref not supposed to be undefined here"
-        }
-        attemptToAuthenticate(challengeResponseRef.current, {
-            onSuccessData: onSuccessAuthentication,
-            onError: (e) => {
-                toast.error(`Connection failure: ${e}`)
-            }
-        })
-    }
 
     function onChallengeResponse(answer: ChallengeResponse) {
-        challengeResponseRef.current = answer;
-        attemptToAuthenticate(answer, {
-            onSuccessData: onSuccessAuthentication,
-            onError: (e, r) => {
-                if (r.status === 404) {
-                    setKnownPublicKey(answer.publicKey)
-                    setShowAccountCreationModal(true);
-                } else {
-                    toast.error(`Connection failure: ${e}`)
-                }
+        verifyChallenge({
+            variables: {
+                challenge: answer.challenge,
+                publicKey: answer.publicKey,
+                signature: answer.signature
+            }
+        }).then(response => {
+            if (response.data) {
+                onSuccessAuthentication(response.data.verifyChallenge.token)
+            } else {
+                // TODO do this case
             }
         })
-    }
-
-    function attemptToAuthenticate( challengeResponse: ChallengeResponse, cb: APICallbacks<ChallengeSuccessResponse>  ) {
-        verifyChallenge(challengeResponse.challenge, challengeResponse.signature, challengeResponse.publicKey, cb)
     }
 
     useEffect(() => {
@@ -119,12 +95,6 @@ function ChallengeLogin({challenge}: {challenge: string}) {
             </div>
         </div>
         <BottomRightVersionNumber/>
-        <CustomModal
-            onNotWhitelistedUserCreated={onNotWhitelistedUserCreated}
-            publicKey={knownPublicKey}
-            isOpen={showAccountCreationModal}
-            onClose={() => setShowAccountCreationModal(false)}
-        />
     </section>
 }
 
@@ -132,77 +102,5 @@ function BottomRightVersionNumber() {
     return <div className={"absolute right-5 bottom-5"}>
         <VersionDisplay/>
     </div>
-}
-
-
-function CustomModal({ isOpen, onClose, publicKey, onNotWhitelistedUserCreated }: { isOpen: boolean, onClose: () => void, publicKey?: string, onNotWhitelistedUserCreated: () => void }) {
-    const callUserCreationApi = useNotWhitelistedUserCreation()
-    const [formData, setFormData] = useState({
-        publicKey: publicKey || '',
-        firstName: '',
-        lastName: '',
-    });
-
-    useEffect(() => {
-        setFormData(data => {return {...data, publicKey: publicKey || ''}})
-    }, [publicKey]);
-
-    function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-        const { name, value } = event.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    }
-
-    function handleSubmit(event: React.FormEvent) {
-        event.preventDefault();
-        const {publicKey, firstName, lastName} = formData;
-        callUserCreationApi(publicKey, firstName, lastName, {
-            onSuccess: onNotWhitelistedUserCreated,
-            onError: console.error
-        })
-    }
-
-    const inputs = [
-        { label: "Public Key", name: "publicKey", disabled: true, value: formData.publicKey },
-        { label: "Firstname", name: "firstName", value: formData.firstName, onChange: handleChange },
-        { label: "Lastname", name: "lastName", value: formData.lastName }
-    ]
-
-    const inputsContent = inputs.map((i,index) =>  <Input
-        key={index}
-        label={i.label}
-        name={i.name}
-        value={i.value}
-        disabled={i.disabled}
-        onChange={handleChange}
-        required
-    />);
-
-    return (
-        <Dialog open={isOpen} handler={onClose}>
-            <DialogHeader>Account creation</DialogHeader>
-            <form onSubmit={handleSubmit}>
-                <DialogBody className={"space-y-12"}>
-                    <Typography>
-                        You are currently not registered in the workspace. Please, enter the following information
-                        to create an account and enter the workspace.
-                    </Typography>
-                    <div className="flex flex-col gap-4">
-                        {inputsContent}
-                    </div>
-                </DialogBody>
-                <DialogFooter>
-                    <Button variant="text" color="white" onClick={onClose} className="mr-2">
-                        Cancel
-                    </Button>
-                    <Button variant="gradient" color="blue" type="submit">
-                        Submit
-                    </Button>
-                </DialogFooter>
-            </form>
-        </Dialog>
-    );
 }
 

@@ -1,0 +1,94 @@
+
+import {
+	CanActivate,
+	ExecutionContext,
+	Injectable, Logger,
+	UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { GqlExecutionContext } from '@nestjs/graphql';
+import { UserEntity } from '../../shared/entities/user.entity';
+import { UserService } from '../../shared/services/user.service';
+
+@Injectable()
+export abstract class AuthGuard implements CanActivate {
+	private logger = new Logger(AuthGuard.name);
+	constructor(private jwtService: JwtService,private reflector: Reflector, private userService: UserService) {}
+
+	abstract getJwtToken(context: ExecutionContext): string | undefined;
+	abstract attachUserToRequest(context: ExecutionContext, user: UserEntity);
+
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		// do not protect if marked as public
+		const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+			context.getHandler(),
+			context.getClass(),
+		]);
+		if (isPublic) {
+			this.logger.debug("Ignoring authentication: public request");
+			return true;
+		}
+
+
+		// reject the request either if no token is provided
+		const token = this.getJwtToken(context);
+		if (token === undefined) return false;
+
+
+		// reject the request if the token is not verified or if the token is malformed
+		try {
+			const payload: {publicKey?: string} = this.jwtService.verify(token);
+			if (payload.publicKey) {
+				const user = await this.userService.findOneByPublicKey(payload.publicKey);
+				if (user) {
+					this.logger.debug(`Accepting request: found user ${user.publicKey}`)
+					this.attachUserToRequest(context, user);
+					return true;
+				}
+			}
+			return false;
+		} catch {
+			this.logger.debug("Reject request");
+			return false;
+		}
+	}
+
+}
+
+
+@Injectable()
+export class GraphQLJwtAuthGuard extends AuthGuard {
+	private myLogger = new Logger(GraphQLJwtAuthGuard.name);
+
+	getJwtToken(context: ExecutionContext): string | undefined {
+		// manage GraphQL queries
+		const ctx = GqlExecutionContext.create(context).getContext();
+		const graphqlRequest = ctx.req;
+		if (
+			graphqlRequest &&
+			"headers" in graphqlRequest &&
+			"authorization" in graphqlRequest.headers
+		) {
+			const header = graphqlRequest.headers.authorization;
+			if (typeof header === 'string') {
+				const tokens = header.split(' ');
+				if (tokens.length === 2) {
+					const [type, token] = tokens;
+					if (type === 'Bearer' && token !== '') {
+						return token
+					}
+				}
+			}
+
+		}
+		return undefined
+	}
+
+	attachUserToRequest(context: ExecutionContext, user: UserEntity) {
+		const ctx = GqlExecutionContext.create(context).getContext();
+		ctx.user = user;
+	}
+}

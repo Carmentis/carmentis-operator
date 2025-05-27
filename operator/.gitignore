@@ -5,6 +5,7 @@
 package-lock.json
 
 # keys
+admin-token.txt
 operator-keypair.json
 
 # Logs

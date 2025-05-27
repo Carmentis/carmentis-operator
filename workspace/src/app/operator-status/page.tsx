@@ -1,47 +1,34 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { GrayBackground } from '@/components/background.component';
 import FlexCenter from '@/components/flex-center.component';
-import { Card, CardBody, Typography } from '@material-tailwind/react';
-import { useFetchOperatorInitialisationStatus } from '@/components/api.hook';
+import { useGetInitialisationStatusQuery } from '@/generated/graphql';
+import { Card, CardContent, Typography } from '@mui/material';
 
 export default function TestPage() {
-
-
-    return <GrayBackground>
+    return <div className={"bg-gray-100"}>
         <FlexCenter>
             <OperatorConnectionCard/>
         </FlexCenter>
-    </GrayBackground>
+    </div>
 }
 
 function OperatorConnectionCard() {
     return <Card>
-        <CardBody className={"space-y-4"}>
+        <CardContent className={"space-y-4"}>
             <Typography variant={"h4"}>Connectivity Status</Typography>
             <Typography>
                 Below is presented the connection status with the operator API.
             </Typography>
             <Typography> <OperatorConnectionStatus/></Typography>
-        </CardBody>
+        </CardContent>
     </Card>
 }
 
 function OperatorConnectionStatus() {
-    const [online, setOnline] = useState<boolean|undefined>(undefined);
-    const [errorMessage, setErrorMessage] = useState('');
+    const {data, error, loading: isLoading} = useGetInitialisationStatusQuery();
 
-    useFetchOperatorInitialisationStatus({
-        onSuccess: () => setOnline(true),
-        onError: (error) => {
-            setErrorMessage(error)
-            setOnline(false)
-        }
-    })
-
-    if (online === undefined)  return 'Contacting...'
-    if (online) return 'Connected'
-    if (!online) return 'Connection failure'
+    if (isLoading)  return 'Contacting...'
+    if (!data || error) return 'Connection failure'
+    return `Connected (${data.isInitialised ? 'Initialised' : 'Not initialised'})`
 }
 

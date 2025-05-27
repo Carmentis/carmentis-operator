@@ -8,11 +8,10 @@ export default class PackageConfigService {
     private readonly _operatorVersion: string;
 
     constructor() {
+
+        const packageJsonPath = join(process.cwd(), 'package.json');
         const packageJson = JSON.parse(
-            readFileSync(
-                join(__dirname, '../package.json'),
-                'utf8'
-            ),
+            readFileSync(packageJsonPath, 'utf8'),
         );
 
         this._operatorVersion = packageJson.version;
