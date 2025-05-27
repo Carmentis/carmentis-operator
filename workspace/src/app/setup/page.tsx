@@ -1,12 +1,15 @@
 'use client';
 
 import { z } from 'zod';
-import { useSetupFirstAdministratorMutation } from '@/generated/graphql';
+import { useIsInitialisedQuery, useSetupFirstAdministratorMutation } from '@/generated/graphql';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Button, TextField } from '@mui/material';
 import { useToast } from '@/app/layout';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
+import { useEffect } from 'react';
+import { useNavigation } from '@refinedev/core';
+import Link from 'next/link';
 
 const setupSchema = z.object({
     publicKey: z.string().nonempty('Public key cannot be empty'),
@@ -19,14 +22,20 @@ type SetupType = z.infer<typeof setupSchema>;
 
 export default function SetupPage() {
     const notify = useToast();
-    const navigation = useApplicationNavigationContext();
     const [setupFirstAdmin, {loading: isLoading}] = useSetupFirstAdministratorMutation();
+    const {data, refetch: refetchInitializationStatus} = useIsInitialisedQuery();
 
 
     // create the form state to create the API Key
     const { register, handleSubmit, formState: { errors }, } = useForm<SetupType>({
         resolver: zodResolver(setupSchema),
     });
+
+    // function executed when setup is done
+    function onSetup() {
+        console.log("Refetch initialisation status:")
+        refetchInitializationStatus()
+    }
 
     // create the submit handler
     const onSubmit = (data: SetupType) => {
@@ -38,14 +47,15 @@ export default function SetupPage() {
         })
             .then(result => {
                 const {data, errors} = result;
-                console.log(result, data, errors)
                 if (errors) {
                     notify.error(errors);
                 } else {
-                    navigation.navigateToLogin()
+                    onSetup()
                 }
             })
-            .catch(e => notify.error(e));
+            .catch(e => {
+                notify.error(e)
+            });
     };
     const handler = handleSubmit(onSubmit);
 
@@ -76,6 +86,12 @@ export default function SetupPage() {
             props: register('token'),
         }
     ]
+
+
+
+    if (data && data.isInitialised) {
+        return <AlreadyInitialised/>
+    }
 
 
     return <section className="bg-gray-50 dark:bg-gray-900">
@@ -134,6 +150,35 @@ export default function SetupPage() {
                             Click here
                         </a>
                     </p>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+function AlreadyInitialised() {
+
+    return <section className="bg-gray-50 dark:bg-gray-900">
+        <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+            <a href="#" className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+                <img className="w-40 h-20 mr-2" src="/logo-full.svg"
+                     alt="logo"/>
+            </a>
+            <div
+                className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
+                <div className="p-8 w-full space-y-2">
+                    <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
+                        Operator ready
+                    </h1>
+                    <p>
+                        Your operator is initialized.
+                    </p>
+                    <Link href={'/'} target={'_blank'}>
+                        <Button variant={"contained"}>
+                            Back to login
+                        </Button>
+                    </Link>
+
                 </div>
             </div>
         </div>
