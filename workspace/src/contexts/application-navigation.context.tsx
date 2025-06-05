@@ -53,6 +53,12 @@ export function ApplicationNavigationContextProvider({ children }: PropsWithChil
 	const router = useRouter();
 	const [isPending, startTransition] = useTransition();
 
+	/**
+	 * Navigates to a specified URL using React's startTransition for smoother transitions.
+	 * Falls back to direct navigation if the transition fails.
+	 * 
+	 * @param url - The URL to navigate to
+	 */
 	const navigate = (url: string) => {
 		// Wrap the navigation in React's startTransition to improve transitions
 		try {
@@ -60,10 +66,9 @@ export function ApplicationNavigationContextProvider({ children }: PropsWithChil
 				router.replace(url);
 			});
 		} catch (e) {
-			console.error(e)
-			router.replace(url)
+			console.error(e);
+			router.replace(url);
 		}
-
 	};
 
 	const navigation: NavigationInterface = {

@@ -7,10 +7,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Button, TextField } from '@mui/material';
 import { useToast } from '@/app/layout';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
-import { useEffect } from 'react';
-import { useNavigation } from '@refinedev/core';
 import Link from 'next/link';
 
+/**
+ * Zod schema for validating the setup form data
+ */
 const setupSchema = z.object({
     publicKey: z.string().nonempty('Public key cannot be empty'),
     firstname: z.string().nonempty('Firstname cannot be empty'),
@@ -18,31 +19,45 @@ const setupSchema = z.object({
     token: z.string().nonempty('Token cannot be empty'),
 });
 
+/**
+ * Type definition for the setup form data
+ */
 type SetupType = z.infer<typeof setupSchema>;
 
+/**
+ * Setup page component for initializing the operator with the first administrator.
+ * Collects the administrator's public key, name, and token to set up the operator.
+ * 
+ * @returns React component
+ */
 export default function SetupPage() {
     const notify = useToast();
     const [setupFirstAdmin, {loading: isLoading}] = useSetupFirstAdministratorMutation();
     const {data, refetch: refetchInitializationStatus} = useIsInitialisedQuery();
 
-
-    // create the form state to create the API Key
+    // Initialize the form with validation
     const { register, handleSubmit, formState: { errors }, } = useForm<SetupType>({
         resolver: zodResolver(setupSchema),
     });
 
-    // function executed when setup is done
+    /**
+     * Function executed when setup is successfully completed
+     * Refreshes the initialization status to update the UI
+     */
     function onSetup() {
-        console.log("Refetch initialisation status:")
-        refetchInitializationStatus()
+        refetchInitializationStatus();
     }
 
-    // create the submit handler
-    const onSubmit = (data: SetupType) => {
-        console.log(data)
+    /**
+     * Form submission handler
+     * Sends the administrator data to the server
+     * 
+     * @param formData - The validated form data
+     */
+    const onSubmit = (formData: SetupType) => {
         setupFirstAdmin({
             variables: {
-                setupFirstAdmin: data
+                setupFirstAdmin: formData
             }
         })
             .then(result => {
@@ -50,16 +65,16 @@ export default function SetupPage() {
                 if (errors) {
                     notify.error(errors);
                 } else {
-                    onSetup()
+                    onSetup();
                 }
             })
             .catch(e => {
-                notify.error(e)
+                notify.error(e);
             });
     };
     const handler = handleSubmit(onSubmit);
 
-    // define the form
+    // Form field definitions
     const forms = [
         {
             label: 'Public Key',
@@ -85,15 +100,14 @@ export default function SetupPage() {
             helperText: errors.token && errors.token.message || 'The token is visible in the logs of the operator.',
             props: register('token'),
         }
-    ]
+    ];
 
-
-
+    // If operator is already initialized, show the "already initialized" view
     if (data && data.isInitialised) {
-        return <AlreadyInitialised/>
+        return <AlreadyInitialised/>;
     }
 
-
+    // Render the setup form
     return <section className="bg-gray-50 dark:bg-gray-900">
         <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
             <a href="#" className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
@@ -137,7 +151,6 @@ export default function SetupPage() {
                             )
                         }
 
-
                         <Button variant={"contained"} type="submit" disabled={isLoading}>Setup</Button>
 
                     </Box>
@@ -153,11 +166,16 @@ export default function SetupPage() {
                 </div>
             </div>
         </div>
-    </section>
+    </section>;
 }
 
+/**
+ * Component shown when the operator is already initialized.
+ * Provides a link to return to the login page.
+ * 
+ * @returns React component
+ */
 function AlreadyInitialised() {
-
     return <section className="bg-gray-50 dark:bg-gray-900">
         <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
             <a href="#" className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
@@ -178,9 +196,8 @@ function AlreadyInitialised() {
                             Back to login
                         </Button>
                     </Link>
-
                 </div>
             </div>
         </div>
-    </section>
+    </section>;
 }
