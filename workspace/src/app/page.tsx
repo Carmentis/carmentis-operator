@@ -1,7 +1,7 @@
 'use client';
 
 import * as sdk from '@cmts-dev/carmentis-sdk/client';
-import { Typography } from '@material-tailwind/react';
+import { Typography } from '@mui/material';
 import FlexCenter from '@/components/flex-center.component';
 import { useEffect, useRef, useState } from 'react';
 import FullSpaceSpinner from '@/components/full-page-spinner.component';
@@ -103,4 +103,3 @@ function BottomRightVersionNumber() {
         <VersionDisplay/>
     </div>
 }
-

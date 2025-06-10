@@ -1,8 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, ReactElement } from 'react';
-import { Box, DialogTitle, DialogContent, TextField, DialogActions, Button } from '@mui/material';
-import { Dialog } from '@material-tailwind/react';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 
 interface ModalContextType {
 	openModal: (options: {content: ReactElement}) => void;

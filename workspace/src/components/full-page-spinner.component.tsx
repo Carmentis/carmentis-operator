@@ -1,6 +1,6 @@
 'use client';
 
-import { Spinner } from '@material-tailwind/react';
+import { CircularProgress } from '@mui/material';
 
 type FullSpaceSpinnerProps = {
 	label?: string
@@ -8,7 +8,7 @@ type FullSpaceSpinnerProps = {
 
 export default function FullSpaceSpinner({label}: FullSpaceSpinnerProps) {
 	return <div className={"w-full h-full flex flex-col justify-center items-center"}>
-		<Spinner className={"mb-2"}/>
+		<CircularProgress className={"mb-2"}/>
 		{label}
 	</div>
 }

@@ -1,4 +1,4 @@
-import { Button, Input } from '@material-tailwind/react';
+import { Button, TextField } from '@mui/material';
 import { useState } from 'react';
 
 export default function InputButtonForm(
@@ -18,12 +18,12 @@ export default function InputButtonForm(
 
 	return <div className={'flex flex-row p-1 gap-2 mt-4 mb-4'}>
 		<div className="w-64">
-			<Input label={input.inputLabel}
+			<TextField label={input.inputLabel}
 				   value={value}
 				   onChange={e => setValue(e.target.value)}
-				   className={'w-14'} />
+				   className={'w-14'} size="small" />
 		</div>
-		<Button size={'md'} onClick={onClick}>
+		<Button size={'medium'} variant="contained" onClick={onClick}>
 			{input.buttonLabel}
 		</Button>
 	</div>

@@ -1,6 +1,5 @@
 import { useModal } from 'react-modal-hook';
-import { Dialog } from '@material-tailwind/react';
-import { Button, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import { useState } from 'react';
 
 export type TextFieldFormModalProps = {

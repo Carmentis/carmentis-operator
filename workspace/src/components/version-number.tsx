@@ -1,4 +1,4 @@
-import { Typography } from '@material-tailwind/react';
+import { Typography } from '@mui/material';
 
 function VersionDisplay() {
 	return <Typography>Version {process.env.APP_VERSION}</Typography>;

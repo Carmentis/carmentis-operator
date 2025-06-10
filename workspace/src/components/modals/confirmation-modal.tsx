@@ -1,7 +1,6 @@
-import { Box, Button, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import React, { Dispatch, SetStateAction, useRef, useState } from 'react';
 import { useModal } from 'react-modal-hook';
-import { Dialog } from '@material-tailwind/react';
 
 export type ConfirmationModalProps<T> = {
 	title: string,

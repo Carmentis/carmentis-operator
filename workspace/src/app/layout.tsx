@@ -7,7 +7,7 @@ import { toast, ToastContainer as ToastifyContainer, ToastContainerProps } from 
 import { PropsWithChildren } from 'react';
 import { ApplicationNavigationContextProvider } from '@/contexts/application-navigation.context';
 import { ApplicationInterfaceContextProvider } from '@/contexts/interface.context';
-import { MaterialTailwindThemeContextProvider } from '@/contexts/material-taildwind-theme.context';
+import { MuiThemeContextProvider } from '@/contexts/mui-theme.context';
 import { InitialisationStatusContext } from '@/contexts/initialisation-status.context';
 import { ModalProvider as ReactModalHookProvider } from 'react-modal-hook';
 import { ModalProvider } from '@/contexts/popup-modal.component';
@@ -70,7 +70,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
 				<ApplicationNavigationContextProvider>
 					<InitialisationStatusContext>
 						<ApplicationInterfaceContextProvider>
-							<MaterialTailwindThemeContextProvider>
+							<MuiThemeContextProvider>
 								<ModalProvider>
 									<ReactModalHookProvider>
 										{children}
@@ -78,7 +78,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
 								</ModalProvider>
 								{/* Centralized ToastContainer with extracted configurations */}
 								<ToastifyContainer {...toastConfig} />
-							</MaterialTailwindThemeContextProvider>
+							</MuiThemeContextProvider>
 						</ApplicationInterfaceContextProvider>
 					</InitialisationStatusContext>
 				</ApplicationNavigationContextProvider>

@@ -1,4 +1,4 @@
-import { Card, CardBody, IconButton, Typography } from '@material-tailwind/react';
+import { Box, Card, CardContent, Paper, Typography, useTheme } from '@mui/material';
 import { ReactNode } from 'react';
 
 export type WelcomeCardsProps = {
@@ -21,43 +21,74 @@ function WelcomeCard(
 		value: string|ReactNode,
 	},
 ) {
-	return <Card className={'w-full'}>
-		<CardBody className={'flex flex-row justify-between p-4 items-center text-center'}>
-			<IconButton className={'flex bg-primary-light'}>
-				<i className={`bi ${input.icon} text-white font-bold text-lg`}></i>
-			</IconButton>
+	const theme = useTheme();
 
-			<div className="flex flex-col justify-end items-end">
-				<Typography className={'font-bold text-primary-dark'}>{input.title}</Typography>
-				<Typography >{input.value}</Typography>
-			</div>
-		</CardBody>
-	</Card>;
+	return (
+		<Paper 
+			elevation={0} 
+			sx={{ 
+				height: '100%',
+				borderRadius: 2,
+				border: '1px solid #eaeaea',
+				overflow: 'hidden',
+				transition: 'all 0.2s ease-in-out',
+				'&:hover': {
+					transform: 'translateY(-4px)',
+					boxShadow: '0 6px 20px rgba(0, 0, 0, 0.05)',
+				}
+			}}
+		>
+			<Box 
+				sx={{ 
+					p: 2, 
+					bgcolor: theme.palette.primary.main,
+					color: 'white',
+					display: 'flex',
+					alignItems: 'center',
+					gap: 1
+				}}
+			>
+				<i className={`bi ${input.icon} text-white font-bold text-lg`}></i>
+				<Typography variant="subtitle1" fontWeight="500">
+					{input.title}
+				</Typography>
+			</Box>
+			<Box sx={{ p: 3, textAlign: 'center' }}>
+				<Typography variant="h5" fontWeight="bold">
+					{input.value}
+				</Typography>
+			</Box>
+		</Paper>
+	);
 }
 
 export default function WelcomeCards(
 	input: WelcomeCardsProps
 ) {
-	/**
-	 * Renders a welcome card component wrapped within a container div element.
-	 *
-	 * @param {string} icon - The icon to be displayed on the welcome card.
-	 * @param {string} title - The title to be displayed on the welcome card.
-	 * @param {string|ReactNode} value - The value or content of the welcome card.
-	 * @param {number} key - A unique key for the rendered parent div element.
-	 * @returns {JSX.Element} A JSX element containing the WelcomeCard component inside a wrapper div.
-	 */
-	const renderWelcomeCard = (icon: string, title: string, value: string|ReactNode, key: number) => (
-		<div key={key} className="flex-1 min-w-48">
-			<WelcomeCard icon={icon} title={title} value={value}></WelcomeCard>
-		</div>
-	);
-
 	return (
-		<div id="welcome" className={`flex flex-wrap gap-4 ${input.className}`}>
-			{input.items.map((card, index) =>
-				renderWelcomeCard(card.icon, card.title, card.value, index),
-			)}
-		</div>
+		<Box 
+			id="welcome" 
+			sx={{ 
+				display: 'grid',
+				gridTemplateColumns: {
+					xs: '1fr',
+					sm: 'repeat(2, 1fr)',
+					md: 'repeat(3, 1fr)'
+				},
+				gap: 3,
+				width: '100%'
+			}}
+			className={input.className}
+		>
+			{input.items.map((card, index) => (
+				<Box key={index}>
+					<WelcomeCard 
+						icon={card.icon} 
+						title={card.title} 
+						value={card.value} 
+					/>
+				</Box>
+			))}
+		</Box>
 	);
 }

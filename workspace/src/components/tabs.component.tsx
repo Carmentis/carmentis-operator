@@ -1,4 +1,7 @@
-import { Tab, TabPanel, Tabs, TabsBody, TabsHeader } from '@material-tailwind/react';
+import { Box, Tab, Tabs } from '@mui/material';
+import TabContext from '@mui/lab/TabContext';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
 import { ReactNode, useState } from 'react';
 
 interface TabsComponentMap {
@@ -17,7 +20,7 @@ const INDICATOR_PROPS = {
 // Helper function to render tabs.
 function renderTabs(panels: TabsComponentMap) {
 	return Object.entries(panels).map(([key]) => (
-		<Tab key={key} value={key}>{key}</Tab>
+		<Tab key={key} label={key} value={key} />
 	));
 }
 
@@ -49,13 +52,15 @@ export default function TabsComponent(
 ) {
 	const [tab, setTab] = useState<string>(defaultTabValue);
 	return (
-		<Tabs  value={tab} className={"z-10"}>
-			<TabsHeader >
-				{renderTabs(panels)}
-			</TabsHeader>
-			<TabsBody>
+		<Box sx={{ width: '100%' }} className="z-10">
+			<TabContext value={tab}>
+				<Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+					<TabList onChange={(e, newValue) => setTab(newValue)}>
+						{renderTabs(panels)}
+					</TabList>
+				</Box>
 				{renderTabPanels(panels)}
-			</TabsBody>
-		</Tabs>
+			</TabContext>
+		</Box>
 	);
 }
