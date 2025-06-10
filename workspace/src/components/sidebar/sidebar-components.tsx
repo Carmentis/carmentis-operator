@@ -5,7 +5,7 @@ import { useAuthenticationContext } from '@/contexts/user-authentication.context
 import Skeleton from 'react-loading-skeleton';
 import Avatar from 'boring-avatars';
 import Image from 'next/image';
-import { Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { useCustom } from '@refinedev/core';
 import { useCustomRouter } from '@/contexts/application-navigation.context';
 
@@ -59,17 +59,47 @@ export function AuthenticatedUserSidebarItem() {
 	const user = authenticatedUserContext.getAuthenticatedUser();
 
 
-	return <div className={"flex flex-row visible-sidebar-item p-2 hover:bg-white hover:cursor-pointer rounded"}>
+	return <div className={"flex flex-row visible-sidebar-item p-2 hover:bg-white hover:cursor-pointer rounded mb-4"} style={{ backgroundColor: '#ffffff', boxShadow: '0 2px 5px rgba(0,0,0,0.08)' }}>
 		{ interfaceContext.sidebarHidden &&
 			<>
-				<Avatar className={"w-full h-full"}  variant={"beam"} name={user.publicKey}/>
+				<Avatar 
+					className={"w-full h-full"} 
+					variant={"beam"} 
+					name={user.publicKey}
+					size={40}
+					square={false}
+					colors={['#159A9C', '#9C8714', '#1E293B', '#0F172A', '#0D9488']}
+				/>
 			</>
 		}
 
 		{ !interfaceContext.sidebarHidden &&
 			<>
-				<Avatar width={20} variant={"beam"} name={user.publicKey}/>
-				<Typography className={"pl-2"}>{user.firstname} {user.lastname}</Typography>
+				<Box 
+					sx={{ 
+						display: 'flex',
+						alignItems: 'center',
+						gap: 1.5,
+						width: '100%'
+					}}
+				>
+					<Avatar 
+						width={32} 
+						height={32}
+						variant={"beam"} 
+						name={user.publicKey}
+						colors={['#159A9C', '#9C8714', '#1E293B', '#0F172A', '#0D9488']}
+					/>
+					<Typography 
+						sx={{ 
+							fontWeight: 600,
+							color: '#1E293B',
+							fontSize: '0.95rem'
+						}}
+					>
+						{user.firstname} {user.lastname}
+					</Typography>
+				</Box>
 			</>
 		}
 	</div>

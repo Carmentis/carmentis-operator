@@ -1,0 +1,39 @@
+http://localhost:3005/api/public/hello
+
+###
+GET http://localhost:3005/api/hello
+Authorization: Bearer cmts-967ef835a9c2aecf263e3520300538957ae91793f3bb6dcb58f8485b59ff2a8f-6b1044e57dcf5f7addbfd84ebedbcb834811b6217d35ca50fbe45d92cc530b6e
+
+###
+POST http://localhost:3005/api/anchor/wallet/initiate
+Authorization: Bearer cmts-967ef835a9c2aecf263e3520300538957ae91793f3bb6dcb58f8485b59ff2a8f-6b1044e57dcf5f7addbfd84ebedbcb834811b6217d35ca50fbe45d92cc530b6e
+Content-Type: application/json
+
+{
+  "virtualBlockchainId": "string",
+  "channels": [
+    {
+      "name": "string",
+      "public": true
+    }
+  ],
+  "actors": [
+    {
+      "name": "string",
+      "publicKey": "string"
+    }
+  ],
+  "data": {},
+  "fieldAssignation": [
+    {
+      "channelName": "string",
+      "fieldPath": "string"
+    }
+  ],
+  "actorAssignation": [
+    {
+      "channelName": "string",
+      "actorName": "string"
+    }
+  ]
+}

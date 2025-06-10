@@ -22,6 +22,8 @@ import { ApiKeyService } from '../shared/services/api-key.service';
 import { ApiKeyGuard } from '../shared/guards/api-key-guard';
 import { AnchorDto, AnchorWithWalletInitiationDto } from './dto/anchor.dto';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiKey } from '../workspace/decorators/api-key.decorator';
+import { ApiKeyEntity } from '../shared/entities/api-key.entity';
 
 
 @Controller('/api')
@@ -46,18 +48,72 @@ export class OperatorApiController{
 		return 'Carmentis Operator v' + this.packageService.operatorVersion
 	}
 
-	@Public()
 	@Get('/hello')
 	async hello() {
 		return { message: 'Hello' };
 	}
 
-
 	@Public()
-	@Post('/anchor')
-	async anchor(@Body() anchorDto: AnchorDto) {
-		this.logger.debug("Handling anchor request")
+	@Get('/public/hello')
+	async publicHello() {
+		return { message: 'Hello Anonymous' };
 	}
+
+
+
+	@ApiOperation({
+		summary: 'Initiate an anchor request',
+		description: 'This endpoint is used by the server to initiate an anchoring request that should be accepted by a wallet.'
+	})
+	@Post('/anchor/wallet/initiate')
+	async anchor(
+		@Body() anchorDto: AnchorDto,
+		@ApiKey() key: ApiKeyEntity,
+	) {
+		this.logger.debug("Handling anchor request")
+
+		// find the application associated with the api key
+		const application = await this.apiKeyService.findApplicationByApiKey(key);
+		const organisation = await this.applicationService.getOrganisationByApplicationId(application.id);
+		const organisationPrivateKey = organisation.privateSignatureKey;
+
+		// check that the organisation is published
+		const organisationId = organisation.virtualBlockchainId;
+		if (!organisationId) throw new BadRequestException("Organisation not published: Please publish the organisation first.");
+
+
+		// set the node URL
+		const nodeUrl = this.envService.nodeUrl;
+		const core = new sdk.operatorCore(
+			nodeUrl,
+			organisationId,
+			organisationPrivateKey
+		);
+
+		/*
+		const result = await core.prepareUserApproval({
+			...data.data,
+			appLedgerId: data.appLedgerVirtualBlockchainId
+		});
+		const dataId = result.data.dataId;
+		if (typeof dataId !== 'string') {
+			const error = result.error;
+			this.logger.debug(`Invalid data id: Expected string, got ${dataId}`)
+			this.logger.error("/prepareUserApproval: Error:", error)
+			throw new BadRequestException(error);
+		}
+		this.logger.debug(`data id ${dataId} -> virtual blockchain id ${organisationId}`)
+		this.organisationIdByDataId.set(dataId, organisationId);
+		return result;
+
+		 */
+
+	}
+
+
+
+	/*
+
 
 
 
@@ -73,35 +129,12 @@ export class OperatorApiController{
 		status: 400,
 		description: 'Bad request. Missing or invalid data.',
 	})
-	@Public()
 	@Post('/anchor/initiate')
-	async anchorWithWallet(@Body() anchorWithWalletDto: AnchorWithWalletInitiationDto) {
-		this.logger.debug("Handling anchor with wallet request")
-
-		/*
-		if (data === undefined) {
-			this.logger.error('/operatorMessage: no data received:', req)
-			throw new InternalServerErrorException("No data received")
-		}
-		this.logger.log('Operator API: /operatorMessage: ', data)
-		let binaryResponse = await this.processOperatorMessage(base64.decodeBinary(data, base64.BASE64));
-		return {
-			response: base64.encodeBinary(binaryResponse, base64.BASE64, undefined)
-		};
-		 */
-	}
-
-	@ApiOperation({
-		summary: 'Confirm the anchoring with the wallet',
-		description: 'This endpoint is used by the wallet to confirm the anchoring'
-	})
-	@Public()
-	@Post("/anchor/wallet")
 	async walletMessage(
 		@Req() req: Request,
 		@Body("data") data : any
 	) {
-		/*
+
 		if (data === undefined) {
 			this.logger.error('/operatorMessage: no data received:', req)
 			throw new InternalServerErrorException("No data received")
@@ -115,13 +148,58 @@ export class OperatorApiController{
 		return {
 			response: base64.encodeBinary(binaryResponse, base64.BASE64, undefined)
 		};
-
-		 */
 	}
 
+	 */
+	//async anchorWithWallet(@Body() anchorWithWalletDto: AnchorWithWalletInitiationDto) {
+
+		/*
+		this.logger.debug("Handling anchor with wallet request")
+
+
+		if (data === undefined) {
+			this.logger.error('/operatorMessage: no data received:', req)
+			throw new InternalServerErrorException("No data received")
+		}
+		this.logger.log('Operator API: /operatorMessage: ', data)
+		let binaryResponse = await this.processOperatorMessage(base64.decodeBinary(data, base64.BASE64));
+		return {
+			response: base64.encodeBinary(binaryResponse, base64.BASE64, undefined)
+		};
+
+	}
+
+		 */
 
 	/*
-	@Public()
+	@ApiOperation({
+		summary: 'Confirm the anchoring with the wallet',
+		description: 'This endpoint is used by the wallet to confirm the anchoring'
+	})
+	@Post("/anchor/wallet")
+	async walletMessage(
+		@Req() req: Request,
+		@Body("data") data : any
+	) {
+
+		if (data === undefined) {
+			this.logger.error('/operatorMessage: no data received:', req)
+			throw new InternalServerErrorException("No data received")
+		}
+		this.logger.log('Operator API: /walletMessage: ', data)
+		let binaryResponse = await this.processWalletMessage( base64.decodeBinary(data, base64.BASE64));
+		if (!binaryResponse) {
+			this.logger.error('No binary response received')
+			throw new BadRequestException()
+		}
+		return {
+			response: base64.encodeBinary(binaryResponse, base64.BASE64, undefined)
+		};
+	}
+
+	 */
+
+
 	@Post("/prepareUserApproval")
 	async handleRequest(
 		@Body() data: PrepareUserApprovalDto
@@ -165,19 +243,23 @@ export class OperatorApiController{
 		return result;
 	}
 
-	 */
 
-	/*
 	@Public()
 	@Post("/operatorMessage")
 	async operatorMessage(
 		@Req() req: Request,
 		@Body("data") data : any
 	) {
-
+		let binaryResponse = await this.processWalletMessage( base64.decodeBinary(data, base64.BASE64));
+		if (!binaryResponse) {
+			this.logger.error('No binary response received')
+			throw new BadRequestException()
+		}
+		return {
+			response: base64.encodeBinary(binaryResponse, base64.BASE64, undefined)
+		};
 	}
 
-	 */
 
 
 

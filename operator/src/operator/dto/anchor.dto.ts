@@ -1,4 +1,4 @@
-import { IsBoolean, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsDefined, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -62,8 +62,8 @@ export class AnchorDto {
 	actors: ActorDto[];
 
 	@ApiProperty({ description: 'The data object to be processed', type: Object })
-	@IsObject()
-	data: Record<string, any>;
+	@IsDefined()
+	data: Object;
 
 	@ApiProperty({ type: [FieldAssignationDto], description: 'List of field assignations' })
 	@ValidateNested({ each: true })

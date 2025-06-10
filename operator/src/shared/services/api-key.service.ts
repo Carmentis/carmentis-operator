@@ -13,7 +13,8 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 	private logger = new Logger(ApiKeyService.name);
 	constructor(
 		@InjectRepository(ApiKeyEntity) repo: Repository<ApiKeyEntity>,
-		@InjectRepository(ApiKeyUsageEntity) private usageRepo: Repository<ApiKeyUsageEntity>
+		@InjectRepository(ApiKeyUsageEntity) private usageRepo: Repository<ApiKeyUsageEntity>,
+		@InjectRepository(ApplicationEntity) private applicationRepository: Repository<ApplicationEntity>
 	) {
 		super(repo);
 	}
@@ -64,6 +65,21 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 				application: { organisation: { id: organisationId } }
 			}
 		})
+	}
+
+	async findApplicationByApiKey(apiKey: ApiKeyEntity) {
+		return this.applicationRepository.findOneOrFail({
+			relations: ["apiKeys"],
+			where: { apiKeys: { id: apiKey.id } },
+		})
+		/*
+		return this.repo.findOneOrFail({
+			relations: ["application"],
+			where: { uid: apiKey.uid },
+			select: ["application"]
+		})
+
+		 */
 	}
 
 	async logApiKeyUsage( apiKey: ApiKeyEntity,  request: Request, response: Response) {

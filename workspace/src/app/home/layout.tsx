@@ -96,9 +96,9 @@ export default function RootLayout({ children }: PropsWithChildren) {
             width: { sm: `calc(100% - ${drawerWidth}px)` },
             //ml: { sm: `${drawerWidth}px` },
             bgcolor: 'white',
-            borderRadius: '12px',
-            boxShadow: '0 0 20px rgba(0,0,0,0.03)',
-            m: 2,
+            //borderRadius: '12px',
+            //boxShadow: '0 0 20px rgba(0,0,0,0.03)',
+            //m: 2,
             overflow: 'auto',
             transition: theme.transitions.create(['margin', 'width'], {
               easing: theme.transitions.easing.sharp,

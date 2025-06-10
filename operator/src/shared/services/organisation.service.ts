@@ -191,11 +191,21 @@ export class OrganisationService {
 	}
 
 	async getOrganisationByApplicationId(applicationId: number) {
-
+		return this.organisationEntityRepository.findOneOrFail({
+			relations: ['applications'],
+			where: {
+				applications: {
+					id: applicationId
+				}
+			}
+		})
+		/*
 		return this.organisationEntityRepository.createQueryBuilder('organisation')
 			.innerJoin('organisation.applications', 'application')
 			.where('application.id = :applicationId', { applicationId })
-			.getOne();
+			.getOneOrFail();
+
+		 */
 	}
 
 

@@ -146,7 +146,7 @@ export class ApplicationService {
         }
     }
 
-    private async getOrganisationByApplicationId(applicationId: number) {
+    async getOrganisationByApplicationId(applicationId: number) {
         return this.organisationService.getOrganisationByApplicationId(applicationId)
     }
 

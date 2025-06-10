@@ -25,6 +25,7 @@ import React, { useEffect, useState } from 'react';
 import { useToast } from '@/app/layout';
 import { useOrganisation } from '@/contexts/organisation-store.context';
 import { useOrganisationMutationContext } from '@/contexts/organisation-mutation.context';
+import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import WelcomeCards from '@/components/welcome-cards.component';
 import OrganisationAccountBalance from '@/components/organisation-account-balance.component';
 import AvatarOrganisation from '@/components/avatar-organisation';
@@ -45,6 +46,9 @@ import PublishIcon from '@mui/icons-material/Publish';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import PeopleIcon from '@mui/icons-material/People';
+import AppsIcon from '@mui/icons-material/Apps';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 
 /**
  * Component to display organisation status chips
@@ -70,6 +74,96 @@ function OrganisationStatus({ organisation }) {
           icon={<PublishIcon />}
         />
       )}
+    </Box>
+  );
+}
+
+/**
+ * QuickAccessCards component provides quick navigation to important organisation pages
+ * such as Applications, API Keys, Team Members, and Transactions.
+ */
+function QuickAccessCards() {
+  const organisation = useOrganisation();
+  const navigation = useApplicationNavigationContext();
+  const baseLink = `/home/organisation/${organisation.id}`;
+
+  const quickAccessItems = [
+    {
+      title: "Applications",
+      icon: <AppsIcon />,
+      description: "Manage your applications",
+      onClick: () => navigation.push(`${baseLink}/application`)
+    },
+    {
+      title: "API Keys",
+      icon: <VpnKeyIcon />,
+      description: "Manage your API keys",
+      onClick: () => navigation.push(`${baseLink}/apiKeys`)
+    },
+    {
+      title: "Team Members",
+      icon: <PeopleIcon />,
+      description: "Manage your team",
+      onClick: () => navigation.push(`${baseLink}/user`)
+    },
+    {
+      title: "Transactions",
+      icon: <ReceiptLongIcon />,
+      description: "View your transactions",
+      onClick: () => navigation.push(`${baseLink}/transactions`)
+    }
+  ];
+
+  return (
+    <Box mb={4}>
+      <Typography variant="h5" fontWeight="500" mb={3}>
+        Quick Access
+      </Typography>
+      <Grid container spacing={3}>
+        {quickAccessItems.map((item, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 3,
+                height: '100%',
+                borderRadius: 2,
+                border: '1px solid #eaeaea',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.05)',
+                }
+              }}
+              onClick={item.onClick}
+            >
+              <Box display="flex" flexDirection="column" alignItems="center" textAlign="center" gap={2}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    p: 1.5,
+                    borderRadius: '50%',
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    mb: 1
+                  }}
+                >
+                  {item.icon}
+                </Box>
+                <Typography variant="h6" fontWeight="500">
+                  {item.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {item.description}
+                </Typography>
+              </Box>
+            </Paper>
+          </Grid>
+        ))}
+      </Grid>
     </Box>
   );
 }
@@ -309,6 +403,9 @@ export default function Home() {
 
       {/* Statistics Cards */}
       <OverviewOrganisationWelcomeCards />
+
+      {/* Quick Access Cards */}
+      <QuickAccessCards />
 
       {/* Organisation Details */}
       <OrganisationEdition />
