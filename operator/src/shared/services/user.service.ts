@@ -118,4 +118,8 @@ export class UserService {
 			where: { isAdmin: true }
 		})
 	}
+
+	async markAsAdmin(publicKey: string, isAdmin: boolean) {
+		return this.userEntityRepository.update(publicKey, { isAdmin });
+	}
 }

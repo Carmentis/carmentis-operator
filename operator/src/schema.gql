@@ -142,6 +142,7 @@ type Mutation {
   changeOrganisationKeyPair(organisationId: Int!, privateKey: String!): Boolean!
   verifyChallenge(challenge: String!, publicKey: String!, signature: String!): ChallengeVerificationResponse!
   createUser(publicKey: String!, firstname: String!, lastname: String!, isAdmin: Boolean!): UserEntity!
+  updateUserAdminStatus(publicKey: String!, isAdmin: Boolean!): UserEntity!
   deleteUser(publicKey: String!): UserEntity!
   createApiKey(applicationId: Int!, name: String!, activeUntil: String!): RevealedApiKeyType!
   updateApiKey(id: Int!, name: String!, isActive: Boolean!): Boolean!

@@ -107,6 +107,7 @@ export type Mutation = {
   updateApiKey: Scalars['Boolean']['output'];
   updateApplicationInOrganisation: ApplicationType;
   updateOrganisation: OrganisationEntity;
+  updateUserAdminStatus: UserEntity;
   verifyChallenge: ChallengeVerificationResponse;
 };
 
@@ -209,6 +210,12 @@ export type MutationUpdateOrganisationArgs = {
   id: Scalars['Int']['input'];
   name: Scalars['String']['input'];
   website: Scalars['String']['input'];
+};
+
+
+export type MutationUpdateUserAdminStatusArgs = {
+  isAdmin: Scalars['Boolean']['input'];
+  publicKey: Scalars['String']['input'];
 };
 
 
@@ -641,6 +648,14 @@ export type DeleteUserMutationVariables = Exact<{
 
 
 export type DeleteUserMutation = { deleteUser: { publicKey: string } };
+
+export type UpdateUserAdminMutationVariables = Exact<{
+  publicKey: Scalars['String']['input'];
+  isAdmin: Scalars['Boolean']['input'];
+}>;
+
+
+export type UpdateUserAdminMutation = { updateUserAdminStatus: { publicKey: string, firstname: string, lastname: string, isAdmin: boolean } };
 
 export const UserEntityFragmentDoc = gql`
     fragment UserEntity on UserEntity {
@@ -2100,3 +2115,37 @@ export function useDeleteUserMutation(baseOptions?: Apollo.MutationHookOptions<D
 export type DeleteUserMutationHookResult = ReturnType<typeof useDeleteUserMutation>;
 export type DeleteUserMutationResult = Apollo.MutationResult<DeleteUserMutation>;
 export type DeleteUserMutationOptions = Apollo.BaseMutationOptions<DeleteUserMutation, DeleteUserMutationVariables>;
+export const UpdateUserAdminDocument = gql`
+    mutation updateUserAdmin($publicKey: String!, $isAdmin: Boolean!) {
+  updateUserAdminStatus(publicKey: $publicKey, isAdmin: $isAdmin) {
+    ...User
+  }
+}
+    ${UserFragmentDoc}`;
+export type UpdateUserAdminMutationFn = Apollo.MutationFunction<UpdateUserAdminMutation, UpdateUserAdminMutationVariables>;
+
+/**
+ * __useUpdateUserAdminMutation__
+ *
+ * To run a mutation, you first call `useUpdateUserAdminMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateUserAdminMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateUserAdminMutation, { data, loading, error }] = useUpdateUserAdminMutation({
+ *   variables: {
+ *      publicKey: // value for 'publicKey'
+ *      isAdmin: // value for 'isAdmin'
+ *   },
+ * });
+ */
+export function useUpdateUserAdminMutation(baseOptions?: Apollo.MutationHookOptions<UpdateUserAdminMutation, UpdateUserAdminMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateUserAdminMutation, UpdateUserAdminMutationVariables>(UpdateUserAdminDocument, options);
+      }
+export type UpdateUserAdminMutationHookResult = ReturnType<typeof useUpdateUserAdminMutation>;
+export type UpdateUserAdminMutationResult = Apollo.MutationResult<UpdateUserAdminMutation>;
+export type UpdateUserAdminMutationOptions = Apollo.BaseMutationOptions<UpdateUserAdminMutation, UpdateUserAdminMutationVariables>;

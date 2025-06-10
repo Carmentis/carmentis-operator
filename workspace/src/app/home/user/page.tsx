@@ -15,6 +15,7 @@ import {
   Divider,
   IconButton,
   Paper,
+  Switch,
   TextField,
   Tooltip,
   Typography,
@@ -23,7 +24,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { useModal } from 'react-modal-hook';
 import GenericTableComponent from '@/components/generic-table.component';
-import { useCreateUserMutation, useDeleteUserMutation, useGetAllUsersQuery } from '@/generated/graphql';
+import { useCreateUserMutation, useDeleteUserMutation, useGetAllUsersQuery, useUpdateUserAdminMutation } from '@/generated/graphql';
+import { useAuthenticationContext } from '@/contexts/user-authentication.context';
 import { useConfirmationModal } from '@/contexts/popup-modal.component';
 
 export default function UserPage() {
@@ -42,6 +44,10 @@ export default function UserPage() {
     refetchQueries: ['getAllUsers'],
   });
   const [callUserDeletion, { loading: isDeleting }] = useDeleteUserMutation({
+    refetchQueries: ['getAllUsers'],
+  });
+
+  const [updateUserAdmin, { loading: isUpdatingAdmin }] = useUpdateUserAdminMutation({
     refetchQueries: ['getAllUsers'],
   });
 
@@ -115,6 +121,16 @@ export default function UserPage() {
     })
     .then(() => {
       notify.success("User deleted successfully");
+    })
+    .catch(e => notify.error(e));
+  }
+
+  function toggleUserAdmin(publicKey: string, isAdmin: boolean, name: string) {
+    updateUserAdmin({
+      variables: { publicKey, isAdmin }
+    })
+    .then(() => {
+      notify.success(`${name} is ${isAdmin ? 'now' : 'no longer'} an admin`);
     })
     .catch(e => notify.error(e));
   }
@@ -234,7 +250,11 @@ export default function UserPage() {
           </Box>
         ) : (
           <Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden', border: '1px solid #eaeaea' }}>
-            <TableOfUsers users={data.getAllUsers} onDelete={confirmRemoveUser} />
+            <TableOfUsers 
+              users={data.getAllUsers} 
+              onDelete={confirmRemoveUser} 
+              onToggleAdmin={toggleUserAdmin}
+            />
           </Paper>
         )
       )}
@@ -242,7 +262,15 @@ export default function UserPage() {
   );
 }
 
-function TableOfUsers({ users, onDelete }: { users: UserSummary[], onDelete: (pk: string, name: string) => void }) {
+function TableOfUsers({ users, onDelete, onToggleAdmin }: { 
+  users: UserSummary[], 
+  onDelete: (pk: string, name: string) => void,
+  onToggleAdmin?: (pk: string, isAdmin: boolean, name: string) => void 
+}) {
+  const auth = useAuthenticationContext();
+  const currentUser = auth.getAuthenticatedUser();
+  const isCurrentUserAdmin = currentUser.isAdmin;
+
   return GenericTableComponent({
     data: users,
     extractor(row: UserSummary, index: number): { head: string; value: React.ReactNode }[] {
@@ -265,13 +293,30 @@ function TableOfUsers({ users, onDelete }: { users: UserSummary[], onDelete: (pk
             {`${row.firstname} ${row.lastname}`}
           </Typography>
         )},
-        { head: "Role", value: row.isAdmin && (
-          <Chip 
-            label="Admin" 
-            size="small" 
-            color="primary" 
-            sx={{ borderRadius: 1 }}
-          />
+        { head: "Role", value: (
+          <Box display="flex" alignItems="center" gap={1}>
+            {row.isAdmin && (
+              <Chip 
+                label="Admin" 
+                size="small" 
+                color="primary" 
+                sx={{ borderRadius: 1 }}
+              />
+            )}
+            {isCurrentUserAdmin && onToggleAdmin && (
+              <Tooltip title={row.isAdmin ? "Remove admin privileges" : "Make admin"}>
+                <Switch
+                  size="small"
+                  checked={row.isAdmin}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    onToggleAdmin(row.publicKey, e.target.checked, `${row.firstname} ${row.lastname}`);
+                  }}
+                  disabled={row.publicKey === currentUser.publicKey} // Can't change own admin status
+                />
+              </Tooltip>
+            )}
+          </Box>
         )},
         {
           head: '',
@@ -284,6 +329,7 @@ function TableOfUsers({ users, onDelete }: { users: UserSummary[], onDelete: (pk
                 }}
                 size="small"
                 color="error"
+                disabled={row.publicKey === currentUser.publicKey} // Can't delete yourself
                 sx={{ 
                   '&:hover': { 
                     backgroundColor: 'rgba(211, 47, 47, 0.04)' 

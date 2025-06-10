@@ -33,3 +33,9 @@ mutation deleteUser($publicKey: String!) {
         publicKey
     }
 }
+
+mutation updateUserAdmin($publicKey: String!, $isAdmin: Boolean!) {
+    updateUserAdminStatus(publicKey: $publicKey, isAdmin: $isAdmin) {
+        ...User
+    }
+}

@@ -58,6 +58,22 @@ export class UserResolver {
 		});
 	}
 
+	@Mutation(() => UserEntity, { name: 'updateUserAdminStatus' })
+	async updateUserAdminStatus(
+		@CurrentUser() currentUser: UserEntity,
+		@Args('publicKey', { type: () => String }) publicKey: string,
+		@Args('isAdmin', { type: () => Boolean }) isAdmin: boolean,
+	): Promise<UserEntity> {
+		// only administrator can edit administrator status
+		if (!currentUser.isAdmin && isAdmin) {
+			throw new UnauthorizedException('Only administrators can edit administrator status.');
+		}
+
+		// find the user
+		await this.userService.markAsAdmin(publicKey, isAdmin);
+		return  await this.userService.findOneByPublicKey(publicKey);
+	}
+
 
 	@Mutation(() => UserEntity, { name: 'deleteUser' })
 	async deleteUser(
