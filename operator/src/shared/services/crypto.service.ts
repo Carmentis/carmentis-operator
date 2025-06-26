@@ -1,7 +1,13 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import * as sdk from '@cmts-dev/carmentis-sdk/server';
 import { promises as fs } from 'fs';
 import { EnvService } from './env.service';
+import {
+	BytesToHexEncoder,
+	PrivateSignatureKey, PublicSignatureKey,
+	Secp256k1PrivateSignatureKey,
+	StringSignatureEncoder,
+} from '@cmts-dev/carmentis-sdk/server';
+import { randomBytes } from 'crypto';
 
 /**
  * Service responsible for cryptographic operations in the operator.
@@ -54,34 +60,25 @@ export class CryptoService implements OnModuleInit{
 		this.logger.log("Setting up the operator key pair");
 
 		const keyPairFilePath = this.envService.operatorKeyPairFile;
-		let operatorPrivateKey = sdk.crypto.generateKey256();
-		let operatorPublicKey = sdk.crypto.secp256k1.publicKeyFromPrivateKey(operatorPrivateKey);
+		let operatorPrivateKey: PrivateSignatureKey = Secp256k1PrivateSignatureKey.gen();
+		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
 		try {
 			// Check if the key pair file exists
-			const keyPairFile = await fs.readFile(keyPairFilePath, 'utf8');
-			const { privateKey, publicKey } = JSON.parse(keyPairFile);
+			const stringPrivateKey = await fs.readFile(keyPairFilePath, 'utf8');
 
-			if (privateKey && publicKey) {
+			if (stringPrivateKey) {
 				this.logger.log('Loaded existing key pair from file');
-				operatorPrivateKey = privateKey;
-				operatorPublicKey = publicKey;
+				operatorPrivateKey = signatureEncoder.decodePrivateKey(stringPrivateKey);
 			} else {
 				throw new Error('Invalid key pair file, generating a new pair...');
 			}
 		} catch (err) {
 			// If file is not found or invalid, generate a new key pair
 			this.logger.warn('Key pair file not found or invalid, generating a new pair...');
+			this.logger.warn(`Reason: ${err}`)
 
-			const keyPair = JSON.stringify(
-				{
-					privateKey: operatorPrivateKey,
-					publicKey: operatorPublicKey,
-				},
-				null,
-				2,
-			);
 
-			await fs.writeFile(keyPairFilePath, keyPair);
+			await fs.writeFile(keyPairFilePath, signatureEncoder.encodePrivateKey(operatorPrivateKey));
 			this.logger.log(`New key pair generated and saved to file ${keyPairFilePath}`);
 		}
 	}
@@ -108,7 +105,8 @@ export class CryptoService implements OnModuleInit{
 		let filePath = this.envService.adminTokenFile;
 		let token = CryptoService._adminCreationToken;
 		if (!token) {
-			token = sdk.utils.encoding.toHexa(sdk.crypto.getRandomBytes(32));
+			const encoder = new BytesToHexEncoder();
+			token = encoder.encode(randomBytes(32));
 		}
 
 		try {
@@ -135,29 +133,10 @@ export class CryptoService implements OnModuleInit{
 	 * Generates a random cryptographic key pair.
 	 * @returns An object containing the private key (sk) and public key (pk)
 	 */
-	randomKeyPair() {
-		const sk = sdk.crypto.secp256k1.randomPrivateKey();
-		const pk = sdk.crypto.secp256k1.publicKeyFromPrivateKey(sk);
+	randomKeyPair() : { sk: PrivateSignatureKey, pk: PublicSignatureKey } {
+		const sk = Secp256k1PrivateSignatureKey.gen();
+		const pk = sk.getPublicKey();
 		return { sk, pk };
 	}
 
-	/**
-	 * Validates if a string is a valid private key.
-	 * @param privateKey - The private key to validate
-	 * @returns A boolean indicating if the private key is valid
-	 * @todo Implement actual validation logic
-	 */
-	async isValidPrivateKey(privateKey: string) {
-		// TODO: Implement proper validation logic
-		return true;
-	}
-
-	/**
-	 * Derives a public key from a private key.
-	 * @param privateKey - The private key to derive from
-	 * @returns The corresponding public key
-	 */
-	async publicKeyFromPrivateKey(privateKey: string) {
-		return sdk.crypto.secp256k1.publicKeyFromPrivateKey(privateKey);
-	}
 }

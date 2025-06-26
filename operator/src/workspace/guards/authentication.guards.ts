@@ -12,6 +12,7 @@ import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { UserEntity } from '../../shared/entities/user.entity';
 import { UserService } from '../../shared/services/user.service';
+import { EncoderFactory, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
 
 @Injectable()
 export abstract class AuthGuard implements CanActivate {
@@ -35,23 +36,33 @@ export abstract class AuthGuard implements CanActivate {
 
 		// reject the request either if no token is provided
 		const token = this.getJwtToken(context);
-		if (token === undefined) return false;
+		if (token === undefined) {
+			this.logger.debug(`Token ${token} not found`)
+			return false;
+		}
 
 
 		// reject the request if the token is not verified or if the token is malformed
 		try {
 			const payload: {publicKey?: string} = this.jwtService.verify(token);
 			if (payload.publicKey) {
-				const user = await this.userService.findOneByPublicKey(payload.publicKey);
+				const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+				const pk = signatureEncoder.decodePublicKey(payload.publicKey);
+				const encoder = EncoderFactory.defaultBytesToStringEncoder();
+				const user = await this.userService.findOneByPublicKey(encoder.encode(pk.getPublicKeyAsBytes()));
 				if (user) {
 					this.logger.debug(`Accepting request: found user ${user.publicKey}`)
 					this.attachUserToRequest(context, user);
 					return true;
+				} else {
+					this.logger.debug(`Authentication request requested for token ${token}: no user associated with public key ${payload.publicKey}`);
 				}
+			} else {
+				this.logger.debug(`Authentication request requested for token ${token}: no public key found`);
 			}
 			return false;
 		} catch {
-			this.logger.debug("Reject request");
+			this.logger.debug(`Authentication request requested for token ${token}: not found`);
 			return false;
 		}
 	}

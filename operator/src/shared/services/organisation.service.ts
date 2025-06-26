@@ -1,7 +1,7 @@
 import {
 	BadRequestException,
 	Injectable,
-	InternalServerErrorException,
+	InternalServerErrorException, Logger,
 	NotFoundException,
 	UnprocessableEntityException,
 } from '@nestjs/common';
@@ -13,10 +13,12 @@ import { OrganisationAccessRightEntity } from '../entities/organisation-access-r
 import { ApplicationEntity } from '../entities/application.entity';
 import ChainService from './chain.service';
 import { CryptoService } from './crypto.service';
+import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
 
 
 @Injectable()
 export class OrganisationService {
+	private logger = new Logger(OrganisationService.name);
 	constructor(
 		@InjectRepository(OrganisationEntity)
 		private readonly organisationEntityRepository: Repository<OrganisationEntity>,
@@ -72,9 +74,10 @@ export class OrganisationService {
 		});
 
 		// generate the signature key pair for the organisation
+		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
 		const {sk, pk} = this.cryptoService.randomKeyPair();
-		item.privateSignatureKey = sk;
-		item.publicSignatureKey = pk;
+		item.privateSignatureKey = signatureEncoder.encodePrivateKey(sk);
+		item.publicSignatureKey = signatureEncoder.encodePublicKey(pk);
 		const organisation = await this.organisationEntityRepository.save(item);
 
 		// we create an initial access right with the provided public key
@@ -120,22 +123,26 @@ export class OrganisationService {
 	}
 
 	async publishOrganisation(organisationId: number) {
+		this.logger.debug(`Publishing organisation with id ${organisationId}`)
 		const organisation: OrganisationEntity = await this.organisationEntityRepository.findOneBy({ id: organisationId });
 		try {
-			const mb : MicroBlock = await this.chainService.publishOrganisation(organisation);
+			// attempt to publish the organisation
+			const microBlockHash = await this.chainService.publishOrganisation(organisation);
+			this.logger.debug(`Micro-block hash: ${microBlockHash.encode()}`)
 
 			// init the organisation chain status if first micro-block
-			if ( mb.header.height === 1 ) {
-				organisation.virtualBlockchainId = mb.hash;
+			if ( !organisation.virtualBlockchainId ) {
+				organisation.virtualBlockchainId = microBlockHash.encode();
 			}
 
 			// update the organisation
-			organisation.version = mb.header.height;
 			organisation.published = true;
 			organisation.isDraft = false;
 			organisation.publishedAt = new Date();
 			return await this.updateOrganisation(organisation, organisation);
 		} catch (e) {
+			this.logger.debug(`Publication error: ${e}`, e.stack);
+			return await this.updateOrganisation(organisation, organisation);
 			if (e.code === 'ECONNREFUSED') {
 				throw new InternalServerErrorException("Cannot connect to the node.");
 			} else {
@@ -301,14 +308,5 @@ export class OrganisationService {
 		return this.organisationEntityRepository.findOne({
 			where: { applications: { id: application.id } }
 		})
-	}
-
-	async updatePrivateKey(organisation: OrganisationEntity, privateKey: string) {
-		const publicKey = await this.cryptoService.publicKeyFromPrivateKey(privateKey);
-		const updateOrganisation = this.organisationEntityRepository.merge(
-			organisation,
-			{ privateSignatureKey: privateKey, publicSignatureKey: publicKey }
-		)
-		return this.organisationEntityRepository.save(updateOrganisation)
 	}
 }

@@ -9,6 +9,7 @@ import { EnvService } from '../../services/env.service';
 import { Public } from '../../../workspace/decorators/public.decorator';
 import { ChallengeVerificationResponse } from '../dto/challenge/challenge-verification-response.dto';
 import { ChallengeEntity } from '../../entities/challenge.entity';
+import { EncoderFactory, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
 
 
 @Resolver()
@@ -37,12 +38,24 @@ export class LoginResolver {
 	): Promise<ChallengeVerificationResponse> {
 		await this.challengeService.deleteOutdatedChallenges();
 
-		const isVerified = await this.challengeService.verifyChallenge(challenge, publicKey, signature);
+		// parse the public key
+		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+		const parsedPublicKey =  signatureEncoder.decodePublicKey(publicKey);
+		const parsedSignature = signatureEncoder.decodeSignature(signature);
+
+
+		// check the signature
+		const isVerified = await this.challengeService.verifyChallenge(challenge, parsedPublicKey, parsedSignature);
 		if (!isVerified) {
 			throw new BadRequestException('Challenge not verified');
 		}
 
-		const user = await this.userService.findOneByPublicKey(publicKey);
+
+		// extract the plain public key from the tagged public key
+		const encoder = EncoderFactory.defaultBytesToStringEncoder();
+		const plainPublicKey = encoder.encode(parsedPublicKey.getPublicKeyAsBytes());
+
+		const user = await this.userService.findOneByPublicKey(plainPublicKey);
 		if (!user) {
 			throw new ForbiddenException('User not found.');
 		}
@@ -51,6 +64,8 @@ export class LoginResolver {
 
 		const payload = { publicKey };
 		const token = this.jwtService.sign(payload);
+
+		this.logger.debug(`Challenge verified: Connection accepted with token: ${token}`)
 
 		return { token };
 	}

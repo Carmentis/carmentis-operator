@@ -1,4 +1,4 @@
-import { IsBoolean, IsDefined, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsDefined, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -13,16 +13,17 @@ export class ChannelDto {
 }
 
 export class ActorDto {
-	@ApiProperty({ description: 'Name of the actor' })
+	@ApiProperty({ description: 'Name of the actor.' })
 	@IsString()
 	name: string;
 
-	@ApiProperty({ description: 'Public key of the actor' })
+	@ApiProperty({ description: 'Public key of the actor (optional).' })
 	@IsString()
+	@IsOptional()
 	publicKey: string;
 }
 
-export class FieldAssignationDto {
+export class ChannelAssignationDto {
 	@ApiProperty({ description: 'The name of the channel to assign the fields.' })
 	@IsString()
 	channelName: string;
@@ -43,41 +44,96 @@ export class ActorAssignationDto {
 }
 
 
+export class HashableFieldDto {
+	@ApiProperty({ description: 'States that data indicated by this field is hashable.' })
+	@IsString()
+	fieldPath: string;
+}
+
+
+
+export class MaskableFieldPartDto {
+	@ApiProperty({ description: 'Position of the masked part in the field.' })
+	@IsNumber()
+	position: number;
+
+	@ApiProperty({ description: 'Length of the masked part in the field.' })
+	@IsNumber()
+	length: number;
+
+	@ApiProperty({ description: 'Replacement field' })
+	@IsString()
+	replacementString: string;
+}
+
+
+export class MaskableFieldDto {
+	@ApiProperty({ description: 'States that data indicated by this field is maskable.' })
+	@IsString()
+	fieldPath: string;
+
+	@ApiProperty({ type: [MaskableFieldPartDto], description: 'List of masks.' })
+	@ValidateNested({ each: true })
+	@Type(() => MaskableFieldPartDto)
+	maskedParts: MaskableFieldPartDto[];
+}
+
 export class AnchorDto {
 	@ApiProperty({
 		description: 'Identifier of the virtual blockchain in which the data will be anchored. When omitted, a new virtual blockchain is created.'
 	})
 	@IsString()
 	@IsOptional()
-	virtualBlockchainId?: string;
+	applicationId?: string;
 
-	@ApiProperty({ type: [ChannelDto], description: 'List of channels' })
+	@ApiProperty({ type: [ChannelDto], description: 'List of created channels.' })
 	@ValidateNested({ each: true })
 	@Type(() => ChannelDto)
 	channels: ChannelDto[];
 
-	@ApiProperty({ type: [ActorDto], description: 'List of actors' })
+	@ApiProperty({ type: [ActorDto], description: 'List of created actors.' })
 	@ValidateNested({ each: true })
 	@Type(() => ActorDto)
 	actors: ActorDto[];
 
-	@ApiProperty({ description: 'The data object to be processed', type: Object })
+	@ApiProperty({ description: 'Data being anchored on chain.', type: Object })
 	@IsDefined()
 	data: Object;
 
-	@ApiProperty({ type: [FieldAssignationDto], description: 'List of field assignations' })
+	@ApiProperty({ type: [ChannelAssignationDto], description: 'List of channel assignations.' })
 	@ValidateNested({ each: true })
-	@Type(() => FieldAssignationDto)
-	fieldAssignation: FieldAssignationDto[];
+	@Type(() => ChannelAssignationDto)
+	channelAssignations: ChannelAssignationDto[];
 
 	@ApiProperty({ type: [ActorAssignationDto], description: 'List of actor assignations' })
 	@ValidateNested({ each: true })
 	@Type(() => ActorAssignationDto)
-	actorAssignation: ActorAssignationDto[];
+	actorAssignations: ActorAssignationDto[];
+
+	@ApiProperty({ type: [HashableFieldDto], description: 'List of hashable fields.' })
+	@ValidateNested({ each: true })
+	@Type(() => HashableFieldDto)
+	@IsOptional()
+	hashableFields: HashableFieldDto[];
+
+	@ApiProperty({ type: [MaskableFieldDto], description: 'List of maskable fields.' })
+	@ValidateNested({ each: true })
+	@Type(() => MaskableFieldDto)
+	@IsOptional()
+	maskableFields: MaskableFieldDto[];
+
+	@ApiProperty({ description: 'Author' })
+	@IsString()
+	author: string
 }
 
-export class AnchorWithWalletInitiationDto extends AnchorDto {
+export class AnchorWithWalletDto extends AnchorDto {
+	@ApiProperty({ description: 'Endorser' })
+	@IsString()
+	endorser: string;
+
 	@ApiProperty({ description: 'Message displayed on the wallet.' })
 	@IsString()
 	message: string;
+
 }

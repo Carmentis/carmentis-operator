@@ -95,20 +95,14 @@ type RevealedApiKeyType {
   key: String!
 }
 
-type ChainReferenceType {
-  mbHash: String!
-  sectionIndex: Int!
-}
-
 type TransactionType {
   height: Int!
   previousHistoryHash: String!
   type: Int!
-  name: String!
-  timestamp: DateTime!
+  timestamp: Float!
   linkedAccount: String!
   amount: Float!
-  chainReference: ChainReferenceType!
+  chainReference: String!
 }
 
 type ChallengeVerificationResponse {

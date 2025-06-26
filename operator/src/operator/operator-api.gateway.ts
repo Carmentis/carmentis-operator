@@ -5,10 +5,8 @@ import {
 	OnGatewayDisconnect,
 	OnGatewayInit
 } from '@nestjs/websockets';
-import { SubscribeMessage, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { HttpCode, HttpException, HttpStatus, Logger } from '@nestjs/common';
-import * as sdk from '@cmts-dev/carmentis-sdk/server';
+import { wiServer } from '@cmts-dev/carmentis-sdk/server';
 
 @WebSocketGateway({
 	namespace: '/',
@@ -26,6 +24,6 @@ export class OperatorApiGateway implements OnGatewayInit {
 	constructor() {}
 
 	afterInit(server: Server): any {
-		this.wi = new sdk.wiServer(server);
+		this.wi = new wiServer(server);
 	}
 }

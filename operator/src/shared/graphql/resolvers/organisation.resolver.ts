@@ -22,6 +22,7 @@ import { ApplicationType } from '../object-types/application.type';
 import { mapper } from '../mapper';
 import { TransactionType } from '../object-types/transaction.type';
 import { CryptoService } from '../../services/crypto.service';
+import { EncoderFactory, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
 
 @UseGuards(GraphQLJwtAuthGuard)
 @Resolver(of => OrganisationEntity)
@@ -29,8 +30,6 @@ export class OrganisationResolver {
 	constructor(
 		private readonly organisationService: OrganisationService,
 		private readonly chainService: ChainService,
-		private readonly userService: UserService,
-		private readonly cryptoService: CryptoService
 	) {}
 
 	@Query(returns => [OrganisationEntity])
@@ -96,7 +95,10 @@ export class OrganisationResolver {
 	@ResolveField(() => Number, { name: 'balance' })
 	async getBalance(@Parent() organisation: OrganisationEntity): Promise<number> {
 		try {
-			return await this.chainService.getBalanceOfAccount(organisation.publicSignatureKey)
+			const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+			return await this.chainService.getBalanceOfAccount(
+				signatureEncoder.decodePublicKey(organisation.publicSignatureKey)
+			);
 		} catch (error) {
 			return 0
 		}
@@ -112,7 +114,10 @@ export class OrganisationResolver {
 		@Parent() organisation: OrganisationEntity,
 	) {
 		const {publicSignatureKey} = await this.organisationService.findPublicKeyById(organisation.id);
-		return this.chainService.checkAccountExistence(publicSignatureKey)
+		const publicKeySignatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+		return this.chainService.checkAccountExistence(
+			publicKeySignatureEncoder.decodePublicKey(publicSignatureKey)
+		)
 	}
 
 	@ResolveField(() => Boolean, { name: 'isAnchoredOnChain' })
@@ -132,7 +137,23 @@ export class OrganisationResolver {
 	): Promise<TransactionType[]> {
 		try {
 			const {publicSignatureKey} = await this.organisationService.findPublicKeyById(organisation.id);
-			return await this.chainService.getTransactionsHistory(publicSignatureKey, fromHistoryHash, parseInt(limit))
+			const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+			const accountHistory = await this.chainService.getTransactionsHistory(
+				signatureEncoder.decodePublicKey(publicSignatureKey),
+				fromHistoryHash,
+				parseInt(limit)
+			);
+
+			// format the output
+			const hexEncoder = EncoderFactory.bytesToHexEncoder();
+			return accountHistory.list.map(entry => {
+				return {
+					...entry,
+					previousHistoryHash: hexEncoder.encode(entry.previousHistoryHash),
+					linkedAccount: hexEncoder.encode(entry.linkedAccount),
+					chainReference: hexEncoder.encode(entry.chainReference),
+				}
+			});
 		} catch (e) {
 			return []
 		}
@@ -161,13 +182,7 @@ export class OrganisationResolver {
 		@Args('organisationId', { type: () => Int }, OrganisationByIdPipe) organisation: OrganisationEntity,
 		@Args('privateKey') privateKey: string,
 	) {
-		// check that the key is correctly formed
-		const isCorrectlyFormed = await this.cryptoService.isValidPrivateKey(privateKey)
-		if (!isCorrectlyFormed) throw new BadRequestException('Bad private key');
-
-		// update the private key of the organisation
-		await this.organisationService.updatePrivateKey(organisation, privateKey)
-		return true;
+		return false;
 	}
 }
 

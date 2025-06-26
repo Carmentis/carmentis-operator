@@ -1,6 +1,6 @@
 'use client';
 
-import * as sdk from '@cmts-dev/carmentis-sdk/client';
+import { wiClient } from '@cmts-dev/carmentis-sdk/client';
 import { Typography } from '@mui/material';
 import FlexCenter from '@/components/flex-center.component';
 import { useEffect, useRef, useState } from 'react';
@@ -60,11 +60,11 @@ function ChallengeLogin({challenge}: {challenge: string}) {
     }
 
     useEffect(() => {
-        const wiClient = new sdk.wiClient;
-        wiClient.attachQrCodeContainer("qr-code");
-        wiClient.setServerUrl(process.env.NEXT_PUBLIC_OPERATOR_URL);
-        wiClient.attachExtensionButton("extension-button")
-        wiClient.authenticationByPublicKey(challenge)
+        const client = new wiClient;
+        client.attachQrCodeContainer("qr-code");
+        client.setServerUrl(process.env.NEXT_PUBLIC_OPERATOR_URL);
+        client.attachExtensionButton("extension-button")
+        client.authenticationByPublicKey(challenge)
             .then(onChallengeResponse)
             .catch(console.error);
     }, []);

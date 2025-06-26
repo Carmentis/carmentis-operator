@@ -1,15 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import { ChallengeEntity } from '../entities/challenge.entity';
-import * as sdk from '@cmts-dev/carmentis-sdk/server';
+import { bytesToHex } from '@noble/ciphers/utils';
 import { Encoder } from '../../utils/encoder';
+import { randomBytes } from 'crypto';
+import { StringSignatureEncoder, EncoderFactory, PublicSignatureKey } from '@cmts-dev/carmentis-sdk/server';
 
 const CHALLENGE_VALIDITY_INTERVAL_IN_MINUTES = 3;
 const CHALLENGE_VALIDITY_INTERVAL_IN_MILLISECONDS = CHALLENGE_VALIDITY_INTERVAL_IN_MINUTES * 60 * 1000;
 
 @Injectable()
 export class ChallengeService {
+	private logger = new Logger('ChallengeService');
 	constructor(
 		@InjectRepository(ChallengeEntity)
 		private readonly challengeRepository: Repository<ChallengeEntity>,
@@ -20,12 +23,11 @@ export class ChallengeService {
 	 * Creates a new challenge by generating a key, storing it in the database, and returning it.
 	 */
 	async createChallenge(): Promise<ChallengeEntity> {
-		const generatedKey = sdk.crypto.generateKey256(); // Generate a 256-bit key
 		const validUntil =  new Date(
 			new Date().getTime() + CHALLENGE_VALIDITY_INTERVAL_IN_MILLISECONDS
 		);
 		const challenge = this.challengeRepository.create({
-			challenge: generatedKey,
+			challenge: bytesToHex(randomBytes(32)),
 			validUntil
 		});
 		return await this.challengeRepository.save(challenge); // Persist to the database and return the saved entity
@@ -39,14 +41,8 @@ export class ChallengeService {
 	}
 
 
-	/**
-	 * Verifies a challenge using the provided public key and signature.
-	 * A challenge is valid if:
-	 * 1. The challenge exists in the database.
-	 * 2. The `validUntil` field  is higher or equal than the current time.
-	 * 3. The signature with the provided public key authenticates the challenge.
-	 */
-	async verifyChallenge(challenge: string, publicKey: string, signature: string): Promise<boolean> {
+
+	async verifyChallenge(challenge: string, publicKey: PublicSignatureKey, signature: Uint8Array): Promise<boolean> {
 		const challengeEntity = await this.findChallengeById(challenge);
 
 		// Check if the challenge exists in the database
@@ -60,13 +56,16 @@ export class ChallengeService {
 		}
 
 		// Verify the signature authenticity using the public key
-		const isVerified = sdk.crypto.secp256k1.verify(
-			publicKey,
-			Encoder.FromHexa(challenge),
+		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+		const pk = publicKey;
+		this.logger.debug(`Received publicKey: ${publicKey} (${pk.getSignatureAlgorithmId()})` );
+		const encoder = EncoderFactory.defaultBytesToStringEncoder();
+		this.logger.debug("Authenticating with tagged public key", signatureEncoder.encodePublicKey(pk))
+		this.logger.debug("Authenticating with plain public key", encoder.encode(pk.getPublicKeyAsBytes()))
+		return pk.verify(
+			signatureEncoder.decodeMessage(challenge),
 			signature,
-		);
-
-		return isVerified;
+		)
 	}
 
 

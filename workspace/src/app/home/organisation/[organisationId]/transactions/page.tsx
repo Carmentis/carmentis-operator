@@ -1,6 +1,6 @@
 'use client';
 
-import * as sdk from '@cmts-dev/carmentis-sdk/client';
+import { TOKEN } from '@cmts-dev/carmentis-sdk/client';
 import OrganisationAccountBalance from '@/components/organisation-account-balance.component';
 import { useOrganisation, useOrganisationContext } from '@/contexts/organisation-store.context';
 import { 
@@ -138,7 +138,7 @@ function TransactionsContent({ transactions, limit, setLimit }) {
                     color: v.amount >= 0 ? 'success.main' : 'error.main'
                   }}
                 >
-                  {`${v.amount / sdk.constants.ECO.TOKEN} CMTS`}
+                  {`${v.amount / TOKEN} CMTS`}
                 </Typography>
               )
             }

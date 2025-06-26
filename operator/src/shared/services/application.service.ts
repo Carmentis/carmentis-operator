@@ -125,16 +125,17 @@ export class ApplicationService {
                 id: applicationId,
             });
             const organisation = await this.getOrganisationByApplicationId(applicationId);
-            const mb : MicroBlock = await this.chainService.publishApplication(organisation, application);
+            const microBlockHash = await this.chainService.publishApplication(organisation, application);
 
             application.isDraft = false;
             application.published = true;
             application.publishedAt = new Date();
             application.version += 1;
-            if ( mb.header.height === 1 ) {
-                application.virtualBlockchainId = mb.hash;
+            if ( !application.virtualBlockchainId ) {
+                application.virtualBlockchainId = microBlockHash.encode();
             }
 
+            this.logger.debug(`Application published: located at ${microBlockHash.encode()}`)
             return await this.applicationRepository.save(application);
         } catch (e) {
             this.logger.error(e)

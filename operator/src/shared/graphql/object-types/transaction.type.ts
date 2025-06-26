@@ -21,11 +21,11 @@ export class TransactionType {
 	@Field(() => Int)
 	type: number;
 
-	@Field()
-	name: string;
+	//@Field()
+	//name: string;
 
 	@Field()
-	timestamp: Date;
+	timestamp: number;
 
 	@Field()
 	linkedAccount: string;
@@ -33,7 +33,7 @@ export class TransactionType {
 	@Field(() => Float)
 	amount: number;
 
-	@Field(() => ChainReferenceType)
-	chainReference: ChainReferenceType;
+	@Field()
+	chainReference: string;
 }
 

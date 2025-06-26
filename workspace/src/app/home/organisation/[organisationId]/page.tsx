@@ -40,7 +40,7 @@ import { useModal } from 'react-modal-hook';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as sdk from '@cmts-dev/carmentis-sdk/client';
+import { EncoderFactory, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/client';
 import SaveIcon from '@mui/icons-material/Save';
 import PublishIcon from '@mui/icons-material/Publish';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -233,115 +233,9 @@ function OverviewOrganisationWelcomeCards() {
   );
 }
 
-function PrivateKeyModal(props: { close: () => void }) {
-  const organisation = useOrganisation();
-  const [publicKey, setPublicKey] = useState<string>('');
-  const notify = useToast();
-  const [changePrivateKey, { loading: isChanging }] = useChangeOrganisationKeyMutation({
-    refetchQueries: [
-      { query: GetOrganisationQuery }
-    ]
-  });
-
-  const privateKeySchema = z.object({
-    privateKey: z
-      .string()
-      .min(64, { message: 'Private key must be at least 64 characters long' })
-      .max(64, { message: 'Private key must be 64 characters long' })
-      .regex(/^[a-fA-F0-9]+$/, { message: 'Private key must be in hexadecimal format' }),
-  });
-  type FormData = z.infer<typeof privateKeySchema>;
-
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<FormData>({
-    resolver: zodResolver(privateKeySchema),
-    disabled: isChanging
-  });
-
-  function handleSubmission(data: FormData) {
-    changePrivateKey({
-      variables: { organisationId: organisation.id, privateKey: data.privateKey },
-    }).then(result => {
-      const { errors } = result;
-      if (errors) {
-        notify.error(errors);
-      } else {
-        notify.success("Key pair changed successfully");
-        props.close();
-      }
-    }).catch(notify.error);
-  }
-
-  // Update the public key when the private key is modified
-  const privateKey = watch("privateKey");
-  useEffect(() => {
-    try {
-      const sk = privateKey;
-      const pk = sdk.crypto.secp256k1.publicKeyFromPrivateKey(sk);
-      setPublicKey(pk);
-    } catch {
-      setPublicKey('');
-    }
-  }, [privateKey]);
-
-  return (
-    <Dialog open={true} onClose={() => props.close()} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        <Box display="flex" alignItems="center" gap={1}>
-          <VpnKeyIcon color="primary" />
-          <Typography variant="h6">Change Key Pair</Typography>
-        </Box>
-      </DialogTitle>
-      <DialogContent>
-        <Box component="form" display="flex" flexDirection="column" gap={3} mt={2} onSubmit={handleSubmit(handleSubmission)}>
-          <Typography variant="body2" color="text.secondary">
-            Provide the private signature key (in hex format) of your choice.
-          </Typography>
-          <TextField 
-            size="small" 
-            label="Private key" 
-            type="password" 
-            error={!!errors.privateKey} 
-            helperText={errors.privateKey?.message} 
-            {...register('privateKey')} 
-          />
-          <TextField 
-            size="small" 
-            label="Public key" 
-            disabled={true} 
-            value={publicKey} 
-          />
-        </Box>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button 
-          onClick={() => props.close()} 
-          variant="outlined"
-          color="inherit"
-        >
-          Cancel
-        </Button>
-        <Button 
-          onClick={handleSubmit(handleSubmission)} 
-          variant="contained" 
-          disabled={isChanging}
-          startIcon={<SaveIcon />}
-        >
-          Save Changes
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-}
-
 export default function Home() {
   const organisation = useOrganisation();
-  const [showPrivateKeyModal, hidePrivateKeyModal] = useModal(
-    () => <PrivateKeyModal close={hidePrivateKeyModal} />
-  );
 
-  function changePrivateKey() {
-    showPrivateKeyModal();
-  }
 
   if (!organisation) {
     return (
@@ -375,7 +269,7 @@ export default function Home() {
         </Box>
         <Box display="flex" alignItems="center" gap={2}>
           <OrganisationStatus organisation={organisation} />
-          <OrganisationMenu changePrivateKey={changePrivateKey} />
+          <OrganisationMenu  />
         </Box>
       </Box>
 
@@ -413,11 +307,8 @@ export default function Home() {
   );
 }
 
-type OrganisationMenuProps = {
-  changePrivateKey: () => void
-}
 
-function OrganisationMenu(props: OrganisationMenuProps) {
+function OrganisationMenu() {
   const organisation = useOrganisation();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -430,10 +321,6 @@ function OrganisationMenu(props: OrganisationMenuProps) {
     setAnchorEl(null);
   };
 
-  function changeKey() {
-    handleClose();
-    props.changePrivateKey();
-  }
 
   return (
     <div>
@@ -462,12 +349,6 @@ function OrganisationMenu(props: OrganisationMenuProps) {
           <Box display="flex" alignItems="center" gap={1}>
             <OpenInNewIcon fontSize="small" />
             <Typography>Visit website</Typography>
-          </Box>
-        </MenuItem>
-        <MenuItem onClick={changeKey}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <VpnKeyIcon fontSize="small" />
-            <Typography>Change key</Typography>
           </Box>
         </MenuItem>
       </Menu>
