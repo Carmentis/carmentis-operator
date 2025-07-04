@@ -4,8 +4,6 @@ import { useApplicationNavigationContext } from '@/contexts/application-navigati
 import { PropsWithChildren } from 'react';
 import { usePathname } from 'next/navigation';
 import FullPageLoadingComponent from '@/components/full-page-loading.component';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
 import { useIsInitialisedQuery } from '@/generated/graphql';
 
 /**
@@ -57,6 +55,7 @@ type ErrorMessageProps = {
 
 /**
  * Component to display error alerts related to operator issues.
+ * Renders a full-page, responsive, modern interface with a light, glass, cyan design.
  * 
  * @param props - Component props
  * @param props.message - Error message to display
@@ -64,9 +63,21 @@ type ErrorMessageProps = {
  */
 export function OperatorErrorAlert({ message }: ErrorMessageProps) {
 	return (
-		<Alert severity="error">
-			<AlertTitle>Error</AlertTitle>
-			{message}
-		</Alert>
+		<div className="fixed inset-0 w-full h-full flex items-center justify-center p-4">
+			<div className="w-full max-w-2xl p-8 rounded-xl bg-white bg-opacity-30 backdrop-blur-md shadow-lg border border-cyan-200">
+				<div className="flex flex-col items-center text-center">
+					<div className="text-cyan-600 mb-4">
+						<svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+						</svg>
+					</div>
+					<h1 className="text-2xl font-bold text-cyan-800 mb-2">Connection Error</h1>
+					<p className="text-cyan-700 mb-6">{message}</p>
+					<div className="text-sm text-cyan-600">
+						Please check your connection and try again later.
+					</div>
+				</div>
+			</div>
+		</div>
 	);
 }
