@@ -47,9 +47,7 @@ export abstract class AuthGuard implements CanActivate {
 			const payload: {publicKey?: string} = this.jwtService.verify(token);
 			if (payload.publicKey) {
 				const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-				const pk = signatureEncoder.decodePublicKey(payload.publicKey);
-				const encoder = EncoderFactory.defaultBytesToStringEncoder();
-				const user = await this.userService.findOneByPublicKey(encoder.encode(pk.getPublicKeyAsBytes()));
+				const user = await this.userService.findOneByPublicKey(payload.publicKey);
 				if (user) {
 					this.logger.debug(`Accepting request: found user ${user.publicKey}`)
 					this.attachUserToRequest(context, user);

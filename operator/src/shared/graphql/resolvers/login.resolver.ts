@@ -42,25 +42,25 @@ export class LoginResolver {
 		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
 		const parsedPublicKey =  signatureEncoder.decodePublicKey(publicKey);
 		const parsedSignature = signatureEncoder.decodeSignature(signature);
+		this.logger.debug(`Performing authentication for public key ${parsedPublicKey.getPublicKeyAsString()}`);
+
+		// check that at a user should corresponds
+		const user = await this.userService.findOneByPublicKey(publicKey);
+		if (!user) {
+			this.logger.debug("Login failed: User not found");
+			throw new ForbiddenException('User not found.');
+		}
 
 
 		// check the signature
 		const isVerified = await this.challengeService.verifyChallenge(challenge, parsedPublicKey, parsedSignature);
 		if (!isVerified) {
-			throw new BadRequestException('Challenge not verified');
+			this.logger.debug("Login failed: Challenge verification failed");
+			throw new ForbiddenException('Challenge not verified');
 		}
 
-
-		// extract the plain public key from the tagged public key
-		const encoder = EncoderFactory.defaultBytesToStringEncoder();
-		const plainPublicKey = encoder.encode(parsedPublicKey.getPublicKeyAsBytes());
-
-		const user = await this.userService.findOneByPublicKey(plainPublicKey);
-		if (!user) {
-			throw new ForbiddenException('User not found.');
-		}
-
-		await this.challengeService.deleteChallenge(challenge);
+		// TODO: we receive request twice, so we are required to disable this line for the presentation.
+		//await this.challengeService.deleteChallenge(challenge);
 
 		const payload = { publicKey };
 		const token = this.jwtService.sign(payload);
