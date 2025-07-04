@@ -7,7 +7,7 @@ export class AnchorRequestEntity {
 	id: number;
 
 	@Column()
-	status: 'pending' | 'success' | 'failed' = 'pending';
+	status: 'pending' | 'completed' | 'failed' = 'pending';
 
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
 	createdAt: Date;
@@ -18,7 +18,17 @@ export class AnchorRequestEntity {
 	@Column()
 	organisationId: number;
 
+	/**
+	 * This application id refers to the local id of the application, not the hash of the application on the chain.
+	 */
+	@Column()
+	applicationId: number;
+
 
 	@Column({ type: 'json' })
 	request: AnchorWithWalletDto;
+
+	isPending(): boolean {
+		return this.status === 'pending';
+	}
 }

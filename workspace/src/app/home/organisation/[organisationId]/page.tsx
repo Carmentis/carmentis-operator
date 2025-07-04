@@ -30,17 +30,10 @@ import WelcomeCards from '@/components/welcome-cards.component';
 import OrganisationAccountBalance from '@/components/organisation-account-balance.component';
 import AvatarOrganisation from '@/components/avatar-organisation';
 import {
-  useChangeOrganisationKeyMutation, 
-  GetOrganisationQuery,
   useGetOrganisationStatisticsQuery,
   usePublishOrganisationMutation,
   useUpdateOrganisationMutation,
 } from '@/generated/graphql';
-import { useModal } from 'react-modal-hook';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { EncoderFactory, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/client';
 import SaveIcon from '@mui/icons-material/Save';
 import PublishIcon from '@mui/icons-material/Publish';
 import MoreVertIcon from '@mui/icons-material/MoreVert';

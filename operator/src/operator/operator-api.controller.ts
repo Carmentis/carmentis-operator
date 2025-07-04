@@ -30,6 +30,7 @@ import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ApiKey } from '../workspace/decorators/api-key.decorator';
 import { ApiKeyEntity } from '../shared/entities/api-key.entity';
 import { OperatorService } from './operator.service';
+import { randomBytes } from 'crypto';
 
 
 @Controller('/api')
@@ -93,34 +94,42 @@ export class OperatorApiController{
 		const application = await this.apiKeyService.findApplicationByApiKey(key);
 		const organisation = await this.applicationService.getOrganisationByApplicationId(application.id);
 
-		return this.operatorService.createAnchorWithWalletSession(organisation, anchorDto);
+		return this.operatorService.createAnchorWithWalletSession(organisation, application, anchorDto);
 	}
 
 	@Public()
 	@Post("/walletMessage")
-	async operatorMessage(
+	async handleWalletMessage(
 		@Req() req: Request,
-		@Body("data") data : any
+		@Body("data") data : string
 	) {
 
+		// we generate a unique session identifier to help debugging
+		const sessionId = randomBytes(8).toString("hex");
+
+		// parse the request
+		this.logger.debug(`[${sessionId}] Parsing request`)
+		const encoder = EncoderFactory.defaultBytesToStringEncoder();
 		const serializer = new MessageUnserializer(WALLET_OP_MESSAGES);
-		let {type, object} = serializer.unserialize(data);
-		this.logger.log("processWalletMessage:", type, object)
+		let {type, object} = serializer.unserialize(encoder.decode(data));
 
 
-
-
-		let answer;
+		// handle the request
+		this.logger.debug(`[${sessionId}] Handling request type ${type}`)
+		let answer: Uint8Array;
 		switch(type) {
 			case MSG_APPROVAL_HANDSHAKE: {
+				this.logger.debug(`[${sessionId}] Entering approval handshake`)
 				answer = await this.operatorService.approvalHandshake(object);
-				break;
+				break
 			}
 			case MSG_ACTOR_KEY: {
+				this.logger.debug(`[${sessionId}] Entering approval actor key`)
 				answer = await this.operatorService.approvalActorKey(object);
 				break;
 			}
 			case MSG_APPROVAL_SIGNATURE:
+				this.logger.debug(`[${sessionId}] Entering approval signature`)
 				answer = await this.operatorService.approvalSignature(object, TOKEN);
 				break;
 			default:
@@ -129,9 +138,11 @@ export class OperatorApiController{
 				throw new BadRequestException(errorMessage);
 		}
 
+
+		this.logger.debug(`[${sessionId}] Request handled: answer: ${object}`)
 		return {
 			success: true,
-			data: answer
+			data: encoder.encode(answer)
 		}
 	}
 

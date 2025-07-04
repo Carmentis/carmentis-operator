@@ -12,6 +12,7 @@ export class ApiKeyUsageMiddleware implements NestMiddleware {
 		const key = this.extractApiKeyFromHeader(req);
 
 		res.on('finish', async () => {
+			if (key === undefined) return
 			this.logger.debug(`Check that ${key} exists before to log usage`)
 			if ( typeof key === 'string' && await this.apikeyService.exists(key) ) {
 				this.logger.debug("Logging API Key usage")

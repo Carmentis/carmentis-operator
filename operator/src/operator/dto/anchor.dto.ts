@@ -1,6 +1,7 @@
 import { IsBoolean, IsDefined, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { OperatorAnchorRequest } from "@cmts-dev/carmentis-sdk/server";
 
 export class ChannelDto {
 	@ApiProperty({ description: 'Name of the channel' })
@@ -78,13 +79,13 @@ export class MaskableFieldDto {
 	maskedParts: MaskableFieldPartDto[];
 }
 
-export class AnchorDto {
+export class AnchorDto  {
 	@ApiProperty({
 		description: 'Identifier of the virtual blockchain in which the data will be anchored. When omitted, a new virtual blockchain is created.'
 	})
 	@IsString()
 	@IsOptional()
-	applicationId?: string;
+	virtualBlockchainId?: string;
 
 	@ApiProperty({ type: [ChannelDto], description: 'List of created channels.' })
 	@ValidateNested({ each: true })
@@ -127,13 +128,13 @@ export class AnchorDto {
 	author: string
 }
 
-export class AnchorWithWalletDto extends AnchorDto {
+export class AnchorWithWalletDto extends AnchorDto implements OperatorAnchorRequest {
 	@ApiProperty({ description: 'Endorser' })
 	@IsString()
 	endorser: string;
 
 	@ApiProperty({ description: 'Message displayed on the wallet.' })
 	@IsString()
-	message: string;
+	approvalMessage: string;
 
 }

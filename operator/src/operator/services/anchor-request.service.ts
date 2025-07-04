@@ -15,13 +15,14 @@ export class AnchorRequestService {
 		private readonly anchorRequestRepository: Repository<AnchorRequestEntity>,
 	) {}
 
-	async storeAnchorRequest(organisation: OrganisationEntity, request: AnchorWithWalletDto): Promise<AnchorRequestEntity> {
+	async storeAnchorRequest(organisation: OrganisationEntity, application: ApplicationEntity, request: AnchorWithWalletDto): Promise<AnchorRequestEntity> {
 		const dataId = this.generateRandomDataId();
 		return this.anchorRequestRepository.save({
 			dataId,
 			status: 'pending',
 			request,
 			organisationId: organisation.id,
+			applicationId: application.id,
 		})
 	}
 
@@ -32,8 +33,15 @@ export class AnchorRequestService {
 	}
 
 	private generateRandomDataId() {
-		const hexEncoder = EncoderFactory.bytesToHexEncoder();
+		const hexEncoder = EncoderFactory.defaultBytesToStringEncoder();
 		return hexEncoder.encode(randomBytes(32))
 	}
 
+	async markAnchorRequestAsCompleted(storedRequest: AnchorRequestEntity) {
+		this.anchorRequestRepository.update({
+			id: storedRequest.id,
+		}, {
+			status: 'completed',
+		})
+	}
 }
