@@ -8,10 +8,12 @@ import {
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
+import { env } from 'next-runtime-env';
 
-console.log("API:", process.env.NEXT_PUBLIC_OPERATOR_URL)
+const api = env('NEXT_PUBLIC_OPERATOR_URL')
+console.log("API:", api);
 const httpLink = new HttpLink({
-	uri: `${process.env.NEXT_PUBLIC_OPERATOR_URL }/graphql`//'/api/graphql',
+	uri: `${api}/graphql`//'/api/graphql',
 });
 
 const authLink = setContext((_, { headers }) => {
