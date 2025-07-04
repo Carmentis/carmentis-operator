@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 
+import {makeEnvPublic} from "next-runtime-env";
+
+makeEnvPublic("OPERATOR_URL")
+
 const nextConfig: NextConfig = {
 	env: {
 		NEXT_PUBLIC_OPERATOR_URL: process.env.OPERATOR_URL,

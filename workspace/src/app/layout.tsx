@@ -14,6 +14,8 @@ import { ModalProvider } from '@/contexts/popup-modal.component';
 import { ApolloProvider } from '@apollo/client';
 import { apolloClient } from '@/app/apollo-client';
 import { GraphQLFormattedError } from 'graphql/error';
+import {PublicEnvScript} from "next-runtime-env";
+
 
 // Constants for reusability and manage ToastContainer configuration
 const toastConfig: ToastContainerProps = {
@@ -66,6 +68,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
 	return (
 		<html lang="en">
 		<body>
+			<PublicEnvScript/>
 			<ApolloProvider client={apolloClient}>
 				<ApplicationNavigationContextProvider>
 					<InitialisationStatusContext>
