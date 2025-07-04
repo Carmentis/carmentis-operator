@@ -10,6 +10,7 @@ import { useApplicationNavigationContext } from '@/contexts/application-navigati
 import VersionDisplay from '@/components/version-number';
 import { useGetChallengeQuery, useVerifyChallengeMutation } from '@/generated/graphql';
 import { TOKEN_STORAGE_ITEM } from '@/contexts/user-authentication.context';
+import { env } from 'next-runtime-env';
 
 
 
@@ -59,10 +60,11 @@ function ChallengeLogin({challenge}: {challenge: string}) {
         })
     }
 
+    const operatorUrl = env('NEXT_PUBLIC_OPERATOR_URL');
     useEffect(() => {
         const client = new wiClient;
         client.attachQrCodeContainer("qr-code");
-        client.setServerUrl(process.env.NEXT_PUBLIC_OPERATOR_URL);
+        client.setServerUrl(operatorUrl);
         client.attachExtensionButton("extension-button")
         client.authenticationByPublicKey(challenge)
             .then(onChallengeResponse)
