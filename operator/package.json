@@ -23,7 +23,7 @@
     "@apollo/server": "^4.11.3",
     "@automapper/classes": "^8.8.1",
     "@automapper/core": "^8.8.1",
-    "@cmts-dev/carmentis-sdk": "^1.5.0",
+    "@cmts-dev/carmentis-sdk": "^1.6",
     "@nestjs/apollo": "^13.0.4",
     "@nestjs/common": "^11.0.13",
     "@nestjs/config": "^4.0.2",
