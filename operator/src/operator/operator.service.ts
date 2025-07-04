@@ -177,7 +177,7 @@ export class OperatorService {
 			);
 		}
 		catch(e) {
-			console.error(e);
+			throw e
 		}
 	}
 
@@ -232,10 +232,14 @@ export class OperatorService {
 	}
 
 	private async loadApplicationAndOrganisationFromAnchorRequest(storedRequest: AnchorRequestEntity) {
+		const applicationId = storedRequest.applicationId;
+		const organisationId = storedRequest.organisationId;
+		this.logger.debug(`Loading application with (local) id ${applicationId} and organisation with (local) id ${organisationId}`);
 		const [application, organisation] = await Promise.all([
-			this.applicationService.findApplication(storedRequest.applicationId),
-			this.organisationService.findOne(storedRequest.organisationId)
+			this.applicationService.findApplication(applicationId),
+			this.organisationService.findOne(organisationId)
 		])
+		this.logger.debug(`Application with (blockchain) id ${application.virtualBlockchainId} and organisation with (blockchain) id ${organisation.virtualBlockchainId}`);
 		return {application, organisation};
 	}
 

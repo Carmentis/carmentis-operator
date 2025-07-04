@@ -41,7 +41,7 @@ export default class ChainService {
 	async publishOrganisation(
 		organisationEntity: OrganisationEntity
 	)  {
-
+		this.logger.log(`Publishing organisation ${organisationEntity.name}`)
 		// reject if the country code or city are undefined
 		const countryCode = organisationEntity.countryCode;
 		const city = organisationEntity.city;
@@ -57,8 +57,10 @@ export default class ChainService {
 		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
 		const organisationPrivateKey = signatureEncoder.decodePrivateKey(organisationEntity.privateSignatureKey);
 
+		// load the blockchain and provider
 		const provider = ProviderFactory.createKeyedProviderExternalProvider(organisationPrivateKey, this.nodeUrl);
 		const blockchain = Blockchain.createFromProvider(provider);
+
 		const organisationId = organisationEntity.virtualBlockchainId;
 		const organisation = organisationId ?
 			await blockchain.loadOrganization(Hash.from(organisationId)) :

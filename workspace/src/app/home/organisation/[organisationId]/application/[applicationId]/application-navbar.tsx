@@ -126,6 +126,7 @@ export default function ApplicationDetailsNavbar(
 
 	if (!application) return <Skeleton/>
 	return <EntityStatusHeader
+		virtualBlockchainId={application.virtualBlockchainId || ''}
 		name={application.name}
 		version={application.version}
 		published={application.published}
@@ -142,6 +143,7 @@ export default function ApplicationDetailsNavbar(
 
 
 type EntityStatusHeaderProps = {
+	virtualBlockchainId: string,
 	name: string,
 	version: number,
 	logoUrl?: string,
@@ -171,9 +173,8 @@ function EntityStatusHeader(
 						{input.name}
 					</Typography>
 					<Box display={"flex"} flexDirection={"row"} gap={1}>
-						<Chip label={`Version ${input.version}`}/>
 						{input.published &&
-							<Chip variant="filled" className={"bg-primary-light"} label="Published" />}
+							<Chip variant="filled" className={"bg-primary-light"} label={`Published - ${input.virtualBlockchainId}`} />}
 						{input.isDraft &&
 							<Chip variant="filled" className={"border-primary-light text-primary-light"}
 								  label="Draft" />}

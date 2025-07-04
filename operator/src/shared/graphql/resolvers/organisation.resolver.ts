@@ -22,7 +22,7 @@ import { ApplicationType } from '../object-types/application.type';
 import { mapper } from '../mapper';
 import { TransactionType } from '../object-types/transaction.type';
 import { CryptoService } from '../../services/crypto.service';
-import { EncoderFactory, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
+import { EncoderFactory, StringSignatureEncoder, TOKEN } from '@cmts-dev/carmentis-sdk/server';
 
 @UseGuards(GraphQLJwtAuthGuard)
 @Resolver(of => OrganisationEntity)
@@ -96,9 +96,10 @@ export class OrganisationResolver {
 	async getBalance(@Parent() organisation: OrganisationEntity): Promise<number> {
 		try {
 			const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-			return await this.chainService.getBalanceOfAccount(
+			const balance = await this.chainService.getBalanceOfAccount(
 				signatureEncoder.decodePublicKey(organisation.publicSignatureKey)
 			);
+			return balance / TOKEN;
 		} catch (error) {
 			return 0
 		}
