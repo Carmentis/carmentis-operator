@@ -31,8 +31,9 @@ import OrganisationAccountBalance from '@/components/organisation-account-balanc
 import AvatarOrganisation from '@/components/avatar-organisation';
 import {
   useGetOrganisationStatisticsQuery,
+  useGetOrganisationBalanceQuery,
   usePublishOrganisationMutation,
-  useUpdateOrganisationMutation,
+  useUpdateOrganisationMutation, useHasPublishedAccountOnChainQuery,
 } from '@/generated/graphql';
 import SaveIcon from '@mui/icons-material/Save';
 import PublishIcon from '@mui/icons-material/Publish';
@@ -42,6 +43,7 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import PeopleIcon from '@mui/icons-material/People';
 import AppsIcon from '@mui/icons-material/Apps';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/client';
 
 /**
  * Component to display organisation status chips
@@ -218,9 +220,7 @@ function OverviewOrganisationWelcomeCards() {
 
   return (
     <Box mb={4}>
-      <Typography variant="h5" fontWeight="500" mb={3}>
-        Organisation Overview
-      </Typography>
+
       <WelcomeCards items={welcomeCardData} />
     </Box>
   );
@@ -228,6 +228,7 @@ function OverviewOrganisationWelcomeCards() {
 
 export default function Home() {
   const organisation = useOrganisation();
+
 
 
   if (!organisation) {
@@ -246,6 +247,8 @@ export default function Home() {
     );
   }
 
+  const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+  const publicKey = signatureEncoder.decodePublicKey(organisation.publicSignatureKey);
   return (
     <Container maxWidth={false} disableGutters>
       {/* Organisation Header with Status on the right */}
@@ -266,10 +269,17 @@ export default function Home() {
         </Box>
       </Box>
 
+      <Typography variant="h5" fontWeight="500" mb={3}>
+        Organisation Overview
+      </Typography>
+
+      {/* Statistics Cards */}
+      <OverviewOrganisationWelcomeCards />
+
       {/* Public Key Display */}
       <Box mb={4} px={2}>
         <Typography variant="body2" color="text.secondary" gutterBottom>
-          Organisation Identity on Chain
+          Organisation public key
         </Typography>
         <Typography 
           variant="body1" 
@@ -282,14 +292,31 @@ export default function Home() {
             whiteSpace: 'nowrap'
           }}
         >
-          {organisation.publicSignatureKey}
+          {publicKey.getPublicKeyAsString()}
         </Typography>
       </Box>
 
-      <Divider sx={{ mb: 4 }} />
+      {/* Public Key Display */}
+      <Box mb={4} px={2}>
+        <Typography variant="body2" color="text.secondary" gutterBottom>
+          Organisation tagged public key
+        </Typography>
+        <Typography
+            variant="body1"
+            fontFamily="monospace"
+            sx={{
+              p: 2,
+              bgcolor: 'rgba(0, 0, 0, 0.03)',
+              borderRadius: 1,
+              overflowX: 'auto',
+              whiteSpace: 'nowrap'
+            }}
+        >
+          {signatureEncoder.encodePublicKey(publicKey)}
+        </Typography>
+      </Box>
 
-      {/* Statistics Cards */}
-      <OverviewOrganisationWelcomeCards />
+
 
       {/* Quick Access Cards */}
       <QuickAccessCards />
@@ -299,6 +326,7 @@ export default function Home() {
     </Container>
   );
 }
+
 
 
 function OrganisationMenu() {
@@ -359,6 +387,10 @@ function OrganisationEdition() {
   const refreshOrganisation = useOrganisationMutationContext();
   const notify = useToast();
 
+  const { data: hasTokenAccount, loading: isLoadingAccountExistenceCheck } = useHasPublishedAccountOnChainQuery({
+    variables: { organisationId: organisation.id }
+  });
+
   const [callOrganisationUpdate, { loading: isUpdating }] = useUpdateOrganisationMutation({
     refetchQueries: ['organisation'],
   });
@@ -402,7 +434,7 @@ function OrganisationEdition() {
       .catch(notify.error);
   }
 
-  if (!organisation) return <Skeleton count={1} height={200} />;
+  if (!organisation || isLoadingAccountExistenceCheck) return <Skeleton count={1} height={200} />;
 
   return (
     <Paper elevation={0} sx={{ p: 3, borderRadius: 2, border: '1px solid #eaeaea' }}>
@@ -423,15 +455,19 @@ function OrganisationEdition() {
             </Button>
           )}
           {!isModified && organisation.isDraft && (
-            <Button
-              variant="contained"
-              onClick={publish}
-              disabled={isPublishing}
-              startIcon={<PublishIcon />}
-              sx={{ borderRadius: 2, textTransform: 'none' }}
-            >
-              Publish
-            </Button>
+            <Tooltip title={!hasTokenAccount ? "You need to create a token account first to publish your organization" : ""}>
+              <span>
+                <Button
+                  variant="contained"
+                  onClick={publish}
+                  disabled={isPublishing || !hasTokenAccount}
+                  startIcon={<PublishIcon />}
+                  sx={{ borderRadius: 2, textTransform: 'none' }}
+                >
+                  Publish
+                </Button>
+              </span>
+            </Tooltip>
           )}
         </Box>
       </Box>

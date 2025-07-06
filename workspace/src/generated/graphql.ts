@@ -76,11 +76,6 @@ export type ApplicationUpdateDto = {
   website?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type ChainReferenceType = {
-  mbHash: Scalars['String']['output'];
-  sectionIndex: Scalars['Int']['output'];
-};
-
 export type ChallengeEntity = {
   challenge: Scalars['String']['output'];
 };
@@ -354,12 +349,11 @@ export type SetupFirstAdminDto = {
 
 export type TransactionType = {
   amount: Scalars['Float']['output'];
-  chainReference: ChainReferenceType;
+  chainReference: Scalars['String']['output'];
   height: Scalars['Int']['output'];
   linkedAccount: Scalars['String']['output'];
-  name: Scalars['String']['output'];
   previousHistoryHash: Scalars['String']['output'];
-  timestamp: Scalars['DateTime']['output'];
+  timestamp: Scalars['Float']['output'];
   type: Scalars['Int']['output'];
 };
 
@@ -602,7 +596,7 @@ export type DeleteApiKeyMutationVariables = Exact<{
 
 export type DeleteApiKeyMutation = { deleteApiKey: boolean };
 
-export type TransactionFragment = { amount: number, linkedAccount: string, name: string, previousHistoryHash: string, timestamp: any, chainReference: { mbHash: string } };
+export type TransactionFragment = { amount: number, linkedAccount: string, chainReference: string, previousHistoryHash: string, timestamp: number };
 
 export type GetTransactionsOfOrganisationQueryVariables = Exact<{
   organisationId: Scalars['Int']['input'];
@@ -611,7 +605,14 @@ export type GetTransactionsOfOrganisationQueryVariables = Exact<{
 }>;
 
 
-export type GetTransactionsOfOrganisationQuery = { organisation: { hasTokenAccount: boolean, transactions: Array<{ amount: number, linkedAccount: string, name: string, previousHistoryHash: string, timestamp: any, chainReference: { mbHash: string } }> } };
+export type GetTransactionsOfOrganisationQuery = { organisation: { hasTokenAccount: boolean, transactions: Array<{ amount: number, linkedAccount: string, chainReference: string, previousHistoryHash: string, timestamp: number }> } };
+
+export type HasPublishedAccountOnChainQueryVariables = Exact<{
+  organisationId: Scalars['Int']['input'];
+}>;
+
+
+export type HasPublishedAccountOnChainQuery = { organisation: { hasTokenAccount: boolean } };
 
 export type UserFragment = { publicKey: string, firstname: string, lastname: string, isAdmin: boolean };
 
@@ -721,10 +722,7 @@ export const TransactionFragmentDoc = gql`
     fragment Transaction on TransactionType {
   amount
   linkedAccount
-  name
-  chainReference {
-    mbHash
-  }
+  chainReference
   previousHistoryHash
   timestamp
 }
@@ -1923,6 +1921,46 @@ export type GetTransactionsOfOrganisationQueryHookResult = ReturnType<typeof use
 export type GetTransactionsOfOrganisationLazyQueryHookResult = ReturnType<typeof useGetTransactionsOfOrganisationLazyQuery>;
 export type GetTransactionsOfOrganisationSuspenseQueryHookResult = ReturnType<typeof useGetTransactionsOfOrganisationSuspenseQuery>;
 export type GetTransactionsOfOrganisationQueryResult = Apollo.QueryResult<GetTransactionsOfOrganisationQuery, GetTransactionsOfOrganisationQueryVariables>;
+export const HasPublishedAccountOnChainDocument = gql`
+    query hasPublishedAccountOnChain($organisationId: Int!) {
+  organisation(id: $organisationId) {
+    hasTokenAccount
+  }
+}
+    `;
+
+/**
+ * __useHasPublishedAccountOnChainQuery__
+ *
+ * To run a query within a React component, call `useHasPublishedAccountOnChainQuery` and pass it any options that fit your needs.
+ * When your component renders, `useHasPublishedAccountOnChainQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useHasPublishedAccountOnChainQuery({
+ *   variables: {
+ *      organisationId: // value for 'organisationId'
+ *   },
+ * });
+ */
+export function useHasPublishedAccountOnChainQuery(baseOptions: Apollo.QueryHookOptions<HasPublishedAccountOnChainQuery, HasPublishedAccountOnChainQueryVariables> & ({ variables: HasPublishedAccountOnChainQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<HasPublishedAccountOnChainQuery, HasPublishedAccountOnChainQueryVariables>(HasPublishedAccountOnChainDocument, options);
+      }
+export function useHasPublishedAccountOnChainLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<HasPublishedAccountOnChainQuery, HasPublishedAccountOnChainQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<HasPublishedAccountOnChainQuery, HasPublishedAccountOnChainQueryVariables>(HasPublishedAccountOnChainDocument, options);
+        }
+export function useHasPublishedAccountOnChainSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<HasPublishedAccountOnChainQuery, HasPublishedAccountOnChainQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<HasPublishedAccountOnChainQuery, HasPublishedAccountOnChainQueryVariables>(HasPublishedAccountOnChainDocument, options);
+        }
+export type HasPublishedAccountOnChainQueryHookResult = ReturnType<typeof useHasPublishedAccountOnChainQuery>;
+export type HasPublishedAccountOnChainLazyQueryHookResult = ReturnType<typeof useHasPublishedAccountOnChainLazyQuery>;
+export type HasPublishedAccountOnChainSuspenseQueryHookResult = ReturnType<typeof useHasPublishedAccountOnChainSuspenseQuery>;
+export type HasPublishedAccountOnChainQueryResult = Apollo.QueryResult<HasPublishedAccountOnChainQuery, HasPublishedAccountOnChainQueryVariables>;
 export const GetCurrentUserDocument = gql`
     query getCurrentUser {
   getCurrentUser {

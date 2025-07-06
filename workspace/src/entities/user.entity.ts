@@ -16,7 +16,6 @@ export default interface User {
 }
 
 export type UserSummary = Omit<User, 'accessRights'>;
-export type UserSummaryList = UserSummary[];
 
 export interface UserSearchResult {
 	publicKey: string;

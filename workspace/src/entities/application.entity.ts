@@ -13,6 +13,3 @@ export type Application = {
 	isDraft: boolean;
 	publishedAt: Date;
 }
-
-export type ApplicationSummary = Pick<Application, 'id' | 'name' | 'tag' | 'logoUrl' | 'published' | 'publishedAt' | 'isDraft' | 'version'>
-export type ApplicationSummaryList = ApplicationSummary[];

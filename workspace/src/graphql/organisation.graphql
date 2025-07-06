@@ -37,6 +37,7 @@ query GetOrganisationBalance($id: Int!) {
   organisation(id: $id) {
     id
     balance
+    hasTokenAccount
   }
 }
 
@@ -223,10 +224,7 @@ mutation deleteApiKey($keyId: Int!) {
 fragment Transaction on TransactionType {
   amount
   linkedAccount
-  name
-  chainReference {
-    mbHash
-  }
+  chainReference
   previousHistoryHash
   timestamp
 }
@@ -236,5 +234,12 @@ query getTransactionsOfOrganisation($organisationId: Int!, $limit: Int!, $fromHa
     transactions(limit: $limit, fromHistoryHash: $fromHash) {
       ...Transaction
     }
+  }
+}
+
+
+query hasPublishedAccountOnChain($organisationId: Int!) {
+  organisation(id: $organisationId) {
+    hasTokenAccount
   }
 }

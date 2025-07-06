@@ -3,9 +3,12 @@ import type { NextConfig } from "next";
 import {makeEnvPublic} from "next-runtime-env";
 
 makeEnvPublic("OPERATOR_URL")
+makeEnvPublic("EXCHANGE_URL")
+
 
 const nextConfig: NextConfig = {
 	env: {
+		NEXT_PUBLIC_EXCHANGE_URL: process.env.EXCHANGE_URL,
 		NEXT_PUBLIC_OPERATOR_URL: process.env.OPERATOR_URL,
 		NEXT_PUBLIC_WORKSPACE_API: process.env.OPERATOR_URL + '/workspace/api',
 		APP_VERSION: process.env.npm_package_version
