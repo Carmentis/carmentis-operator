@@ -3,7 +3,7 @@ import { OrganisationEntity } from '../../entities/organisation.entity';
 import { OrganisationService } from '../../services/organisation.service';
 import {
 	BadRequestException,
-	ForbiddenException,
+	ForbiddenException, Logger,
 	NotFoundException,
 	UnauthorizedException,
 	UseGuards,
@@ -27,6 +27,7 @@ import { EncoderFactory, StringSignatureEncoder, TOKEN } from '@cmts-dev/carment
 @UseGuards(GraphQLJwtAuthGuard)
 @Resolver(of => OrganisationEntity)
 export class OrganisationResolver {
+	private logger = new Logger(OrganisationResolver.name);
 	constructor(
 		private readonly organisationService: OrganisationService,
 		private readonly chainService: ChainService,
@@ -175,7 +176,13 @@ export class OrganisationResolver {
 		@Args('organisationId', { type: () => Int }) organisationId: number,
 		@Args('userPublicKey') userPublicKey: string,
 	) {
-		return this.organisationService.removeUserFromOrganisation(organisationId, userPublicKey);
+		try {
+			await this.organisationService.removeUserFromOrganisation(organisationId, userPublicKey);
+			return true;
+		} catch (error) {
+			this.logger.error(error);
+			return false;
+		}
 	}
 
 	@Mutation(() => Boolean, { name: 'changeOrganisationKeyPair' })

@@ -268,6 +268,7 @@ export class OrganisationService {
 	}
 
 	async addUserInOrganisation(organisationId: number, userPublicKey: string) {
+		this.logger.debug(`Adding user with public key ${userPublicKey} into organisation ${organisationId}`);
 		// find organisation and user
 		const [organisation, user, userInOrganisation] = await Promise.all([
 			this.findOne(organisationId),
@@ -292,7 +293,7 @@ export class OrganisationService {
 		const accessRight = new OrganisationAccessRightEntity();
 		accessRight.organisation = organisation;
 		accessRight.user = user;
-		this.organisationEntityRepository.create(accessRight);
+		return this.accessRightRepository.save(accessRight);
 	}
 
 	async checkUserBelongsToOrganisation(user: UserEntity, organisation: OrganisationEntity) {
