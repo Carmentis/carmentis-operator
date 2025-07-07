@@ -219,6 +219,7 @@ export class OrganisationResolver {
 @UseGuards(GraphQLJwtAuthGuard)
 @Resolver(of => ApplicationType)
 export class ApplicationResolver {
+	private logger = new Logger(ApplicationResolver.name);
 	constructor(
 		private readonly organisationService: OrganisationService,
 		private readonly applicationService: ApplicationService
@@ -269,8 +270,11 @@ export class ApplicationResolver {
 		try {
 			await this.applicationService.publishApplication(application.id);
 		} catch (e) {
+			this.logger.error(e)
 			throw new BadRequestException(e);
 		}
+
+		return true;
 	}
 
 

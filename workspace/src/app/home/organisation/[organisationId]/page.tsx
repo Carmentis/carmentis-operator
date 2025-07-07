@@ -414,11 +414,18 @@ function OrganisationChainStatus() {
 						}}
 					>
 						{isPublishedOnChain ?
-							<PublishIcon sx={{ color: 'success.contrastText' }} /> :
+							<CheckIcon sx={{ color: 'success.contrastText' }} /> :
 							<PendingIcon sx={{ color: 'warning.contrastText' }} />
 						}
 					</Box>
-					<Box>
+					<Box
+						sx={{
+							display: 'flex',
+							alignItems: 'center',
+							justifyContent: 'start',
+							flexDirection: 'column',
+						}}
+					>
 						<Typography variant="subtitle1">Published Status</Typography>
 						<Typography variant="body2" color="text.secondary">
 							{isPublishedOnChain ?
