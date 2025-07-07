@@ -203,17 +203,22 @@ export default class ChainService {
 	}
 
 	async checkPublishedOnChain(organisation: OrganisationEntity) {
+		// if the organisation do not have virtual blockchain id, it has not been published
+		if (!organisation.virtualBlockchainId) return false;
 
+		// otherwise, check if the organisation is published on the blockchain
 		try {
-			const explorer = Explorer.createFromProvider(
+			const blockchain = Blockchain.createFromProvider(
 				ProviderFactory.createInMemoryProviderWithExternalProvider(this.nodeUrl)
 			);
-			const response = await explorer.getVirtualBlockchainState(
+			await blockchain.loadOrganization(
 				Hash.from(organisation.virtualBlockchainId)
 			);
-			return response !== undefined
+			return true;
 		} catch (e) {
 			return false;
 		}
 	}
+
+
 }

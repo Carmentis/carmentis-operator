@@ -220,8 +220,14 @@ export type MutationVerifyChallengeArgs = {
   signature: Scalars['String']['input'];
 };
 
+export type OrganisationChainStatusType = {
+  hasTokenAccount: Scalars['Boolean']['output'];
+  isPublishedOnChain: Scalars['Boolean']['output'];
+};
+
 export type OrganisationEntity = {
   balance: Scalars['Float']['output'];
+  chainStatus: OrganisationChainStatusType;
   city: Scalars['String']['output'];
   countryCode: Scalars['String']['output'];
   createdAt: Scalars['DateTime']['output'];
@@ -414,7 +420,7 @@ export type GetOrganisationBalanceQueryVariables = Exact<{
 }>;
 
 
-export type GetOrganisationBalanceQuery = { organisation: { id: number, balance: number } };
+export type GetOrganisationBalanceQuery = { organisation: { id: number, balance: number, hasTokenAccount: boolean } };
 
 export type GetOrganisationStatisticsQueryVariables = Exact<{
   id: Scalars['Int']['input'];
@@ -613,6 +619,13 @@ export type HasPublishedAccountOnChainQueryVariables = Exact<{
 
 
 export type HasPublishedAccountOnChainQuery = { organisation: { hasTokenAccount: boolean } };
+
+export type GetOrganisationChainStatusQueryVariables = Exact<{
+  organisationId: Scalars['Int']['input'];
+}>;
+
+
+export type GetOrganisationChainStatusQuery = { organisation: { chainStatus: { hasTokenAccount: boolean, isPublishedOnChain: boolean } } };
 
 export type UserFragment = { publicKey: string, firstname: string, lastname: string, isAdmin: boolean };
 
@@ -1017,6 +1030,7 @@ export const GetOrganisationBalanceDocument = gql`
   organisation(id: $id) {
     id
     balance
+    hasTokenAccount
   }
 }
     `;
@@ -1961,6 +1975,49 @@ export type HasPublishedAccountOnChainQueryHookResult = ReturnType<typeof useHas
 export type HasPublishedAccountOnChainLazyQueryHookResult = ReturnType<typeof useHasPublishedAccountOnChainLazyQuery>;
 export type HasPublishedAccountOnChainSuspenseQueryHookResult = ReturnType<typeof useHasPublishedAccountOnChainSuspenseQuery>;
 export type HasPublishedAccountOnChainQueryResult = Apollo.QueryResult<HasPublishedAccountOnChainQuery, HasPublishedAccountOnChainQueryVariables>;
+export const GetOrganisationChainStatusDocument = gql`
+    query getOrganisationChainStatus($organisationId: Int!) {
+  organisation(id: $organisationId) {
+    chainStatus {
+      hasTokenAccount
+      isPublishedOnChain
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetOrganisationChainStatusQuery__
+ *
+ * To run a query within a React component, call `useGetOrganisationChainStatusQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetOrganisationChainStatusQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetOrganisationChainStatusQuery({
+ *   variables: {
+ *      organisationId: // value for 'organisationId'
+ *   },
+ * });
+ */
+export function useGetOrganisationChainStatusQuery(baseOptions: Apollo.QueryHookOptions<GetOrganisationChainStatusQuery, GetOrganisationChainStatusQueryVariables> & ({ variables: GetOrganisationChainStatusQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetOrganisationChainStatusQuery, GetOrganisationChainStatusQueryVariables>(GetOrganisationChainStatusDocument, options);
+      }
+export function useGetOrganisationChainStatusLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetOrganisationChainStatusQuery, GetOrganisationChainStatusQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetOrganisationChainStatusQuery, GetOrganisationChainStatusQueryVariables>(GetOrganisationChainStatusDocument, options);
+        }
+export function useGetOrganisationChainStatusSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetOrganisationChainStatusQuery, GetOrganisationChainStatusQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetOrganisationChainStatusQuery, GetOrganisationChainStatusQueryVariables>(GetOrganisationChainStatusDocument, options);
+        }
+export type GetOrganisationChainStatusQueryHookResult = ReturnType<typeof useGetOrganisationChainStatusQuery>;
+export type GetOrganisationChainStatusLazyQueryHookResult = ReturnType<typeof useGetOrganisationChainStatusLazyQuery>;
+export type GetOrganisationChainStatusSuspenseQueryHookResult = ReturnType<typeof useGetOrganisationChainStatusSuspenseQuery>;
+export type GetOrganisationChainStatusQueryResult = Apollo.QueryResult<GetOrganisationChainStatusQuery, GetOrganisationChainStatusQueryVariables>;
 export const GetCurrentUserDocument = gql`
     query getCurrentUser {
   getCurrentUser {

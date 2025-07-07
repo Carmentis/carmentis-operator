@@ -29,6 +29,7 @@ import {
 	StringSignatureEncoder,
 	TOKEN,
 } from '@cmts-dev/carmentis-sdk/server';
+import { OrganisationChainStatusType } from '../object-types/organisation-chain-status.type';
 
 @UseGuards(GraphQLJwtAuthGuard)
 @Resolver(of => OrganisationEntity)
@@ -137,6 +138,19 @@ export class OrganisationResolver {
 		return { published }
 	}
 
+	@ResolveField(() => OrganisationChainStatusType, { name: 'chainStatus' })
+	async getChainStatus(
+		@Parent() organisation: OrganisationEntity,
+	) {
+		const {publicSignatureKey} = await this.organisationService.findPublicKeyById(organisation.id);
+		const publicKeySignatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+		const hasTokenAccount = await this.chainService.checkAccountExistence(
+			publicKeySignatureEncoder.decodePublicKey(publicSignatureKey)
+		);
+		const isPublishedOnChain = await this.chainService.checkPublishedOnChain(organisation);
+		return { hasTokenAccount, isPublishedOnChain }
+	}
+
 	@ResolveField(() => [TransactionType], { name: 'transactions' })
 	async getTransactionsHistory(
 		@Parent() organisation: OrganisationEntity,
@@ -166,7 +180,6 @@ export class OrganisationResolver {
 			return []
 		}
 	}
-
 
 	@Mutation(() => Boolean, { name: 'addUserInOrganisation' })
 	async addUserInOrganisation(

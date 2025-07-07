@@ -50,7 +50,8 @@ export const apolloClient = new ApolloClient({
 	cache: new InMemoryCache(),
 	defaultOptions: {
 		watchQuery: {
-			fetchPolicy: 'no-cache',
+			fetchPolicy: 'cache-and-network',
+			pollInterval: 3000,
 		},
 		query: {
 			fetchPolicy: 'no-cache',

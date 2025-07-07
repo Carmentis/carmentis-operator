@@ -243,3 +243,13 @@ query hasPublishedAccountOnChain($organisationId: Int!) {
     hasTokenAccount
   }
 }
+
+
+query getOrganisationChainStatus($organisationId: Int!) {
+  organisation(id: $organisationId) {
+    chainStatus {
+      hasTokenAccount,
+      isPublishedOnChain
+    }
+  }
+}

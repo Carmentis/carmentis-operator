@@ -14,7 +14,7 @@ export type WelcomeCardsProps = {
  * @param {string|ReactNode} input.value - The value or content of the welcome card.
  * @returns {JSX.Element} A styled card component displaying a title, value, and icon.
  */
-function WelcomeCard(
+export function WelcomeCard(
 	input: {
 		icon: string,
 		title: string,

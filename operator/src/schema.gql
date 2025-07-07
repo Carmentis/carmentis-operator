@@ -21,6 +21,7 @@ type OrganisationEntity {
   users: [UserEntity!]!
   hasTokenAccount: Boolean!
   isAnchoredOnChain: Boolean!
+  chainStatus: OrganisationChainStatusType!
   transactions(limit: Int!, fromHistoryHash: String): [TransactionType!]!
 }
 
@@ -103,6 +104,11 @@ type TransactionType {
   linkedAccount: String!
   amount: Float!
   chainReference: String!
+}
+
+type OrganisationChainStatusType {
+  hasTokenAccount: Boolean!
+  isPublishedOnChain: Boolean!
 }
 
 type ChallengeVerificationResponse {
