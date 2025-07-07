@@ -297,6 +297,20 @@ export class ApplicationResolver {
 	}
 
 
+	/*
+	@ResolveField(() => ApplicationUsageCheckType, { name: 'usageCheck' })
+	async getChainStatus(
+		@Parent() application: ApplicationEntity,
+	) {
+		// TODO
+	}
+
+	 */
+
+
+
+
+
 }
 
 
