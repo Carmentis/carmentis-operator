@@ -1,18 +1,11 @@
-
-import {
-	CanActivate,
-	ExecutionContext,
-	Injectable, Logger,
-	UnauthorizedException,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { UserEntity } from '../../shared/entities/user.entity';
 import { UserService } from '../../shared/services/user.service';
-import { EncoderFactory, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
+import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
 
 @Injectable()
 export abstract class AuthGuard implements CanActivate {

@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Injectable, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { UserEntity } from '../../entities/user.entity';
 import { UserService } from '../../services/user.service';

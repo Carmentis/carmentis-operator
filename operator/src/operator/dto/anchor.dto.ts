@@ -1,7 +1,7 @@
-import { IsBoolean, IsDefined, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsDefined, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { OperatorAnchorRequest } from "@cmts-dev/carmentis-sdk/server";
+import { OperatorAnchorRequest } from '@cmts-dev/carmentis-sdk/server';
 
 export class ChannelDto {
 	@ApiProperty({ description: 'Name of the channel' })

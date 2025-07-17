@@ -1,9 +1,10 @@
-import { Args, Int, Mutation, Parent, PartialType, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { OrganisationEntity } from '../../entities/organisation.entity';
 import { OrganisationService } from '../../services/organisation.service';
 import {
 	BadRequestException,
-	ForbiddenException, Logger,
+	ForbiddenException,
+	Logger,
 	NotFoundException,
 	UnauthorizedException,
 	UseGuards,
@@ -13,7 +14,6 @@ import { CurrentUser } from '../../../workspace/decorators/current-user.decorato
 import { UserEntity } from '../../entities/user.entity';
 import ChainService from '../../services/chain.service';
 import { OrganisationStatsDto } from '../dto/organisation/organisation-stats.dto';
-import { UserService } from '../../services/user.service';
 import { ApplicationEntity } from '../../entities/application.entity';
 import { ApplicationService } from '../../services/application.service';
 import { ApplicationByIdPipe, OrganisationByIdPipe } from '../../../workspace/decorators/application.decorator';
@@ -21,14 +21,7 @@ import { ApplicationUpdateDto } from '../dto/application/application-creation.dt
 import { ApplicationType } from '../object-types/application.type';
 import { mapper } from '../mapper';
 import { TransactionType } from '../object-types/transaction.type';
-import { CryptoService } from '../../services/crypto.service';
-import {
-	EncoderFactory,
-	Explorer,
-	ProviderFactory,
-	StringSignatureEncoder,
-	TOKEN,
-} from '@cmts-dev/carmentis-sdk/server';
+import { EncoderFactory, StringSignatureEncoder, TOKEN } from '@cmts-dev/carmentis-sdk/server';
 import { OrganisationChainStatusType } from '../object-types/organisation-chain-status.type';
 
 @UseGuards(GraphQLJwtAuthGuard)
@@ -295,21 +288,6 @@ export class ApplicationResolver {
 		const updatedApplication = await this.applicationService.update(application, applicationUpdate);
 		return mapper.map(updatedApplication, ApplicationEntity, ApplicationType)
 	}
-
-
-	/*
-	@ResolveField(() => ApplicationUsageCheckType, { name: 'usageCheck' })
-	async getChainStatus(
-		@Parent() application: ApplicationEntity,
-	) {
-		// TODO
-	}
-
-	 */
-
-
-
-
 
 }
 

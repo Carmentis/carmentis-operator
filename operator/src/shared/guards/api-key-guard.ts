@@ -1,12 +1,5 @@
-
-import {
-	CanActivate,
-	ExecutionContext, ForbiddenException,
-	Injectable, Logger, NotFoundException,
-	UnauthorizedException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { application, Request } from 'express';
+import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
+import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { ApiKeyService } from '../services/api-key.service';
 

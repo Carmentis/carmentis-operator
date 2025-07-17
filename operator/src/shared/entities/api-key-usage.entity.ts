@@ -1,6 +1,4 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Expose } from 'class-transformer';
-import { ApplicationEntity } from './application.entity';
 import { ApiKeyEntity } from './api-key.entity';
 import { AutoMap } from '@automapper/classes';
 

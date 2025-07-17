@@ -6,7 +6,6 @@ import {
 	InternalServerErrorException,
 	Logger,
 	NotImplementedException,
-	UnauthorizedException,
 } from '@nestjs/common';
 import { OrganisationEntity } from '../entities/organisation.entity';
 import { InjectRepository } from '@nestjs/typeorm';

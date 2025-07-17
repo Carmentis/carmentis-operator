@@ -1,9 +1,10 @@
-import { Injectable, Logger, NotFoundException, OnModuleInit, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import {
-	ApplicationVb, Blockchain, BytesSignatureEncoder, Explorer, Hash,
-	OrganizationVb,
-	Provider,
-	ProviderFactory, PublicSignatureKey,
+	Blockchain,
+	Explorer,
+	Hash,
+	ProviderFactory,
+	PublicSignatureKey,
 	StringSignatureEncoder,
 	TOKEN,
 } from '@cmts-dev/carmentis-sdk/server';

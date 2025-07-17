@@ -1,5 +1,4 @@
-import { Field, Int, ObjectType, PickType } from '@nestjs/graphql';
-import { ApplicationType } from './application.type';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { AutoMap } from '@automapper/classes';
 
 @ObjectType()

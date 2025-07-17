@@ -1,7 +1,8 @@
 import {
 	BadRequestException,
 	Injectable,
-	InternalServerErrorException, Logger,
+	InternalServerErrorException,
+	Logger,
 	NotFoundException,
 	UnprocessableEntityException,
 } from '@nestjs/common';

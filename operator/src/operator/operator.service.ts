@@ -1,17 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
 	ApplicationLedger,
-	ApplicationLedgerVb, Blockchain,
-	EncoderFactory, Hash, MessageSerializer,
+	ApplicationLedgerVb,
+	Blockchain,
+	EncoderFactory,
+	MessageSerializer,
 	MSG_ANS_ACTOR_KEY_REQUIRED,
-	MSG_ANS_APPROVAL_DATA, MSG_ANS_APPROVAL_SIGNATURE,
+	MSG_ANS_APPROVAL_DATA,
+	MSG_ANS_APPROVAL_SIGNATURE,
 	ProviderFactory,
-	Secp256k1PrivateSignatureKey, StringSignatureEncoder, WALLET_OP_MESSAGES,
+	StringSignatureEncoder,
+	WALLET_OP_MESSAGES,
 } from '@cmts-dev/carmentis-sdk/server';
 import { AnchorWithWalletDto } from './dto/anchor.dto';
 import { VirtualBlockchainLoadingError } from './errors/anchor-error';
 import { EnvService } from '../shared/services/env.service';
-import { randomBytes } from 'crypto';
 import { AnchorRequestService } from './services/anchor-request.service';
 import { OrganisationEntity } from '../shared/entities/organisation.entity';
 import { OrganisationService } from '../shared/services/organisation.service';

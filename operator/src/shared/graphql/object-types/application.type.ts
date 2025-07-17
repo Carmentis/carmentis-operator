@@ -1,5 +1,4 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { ApiKeyType } from './api-key.type';
 import { AutoMap } from '@automapper/classes';
 
 

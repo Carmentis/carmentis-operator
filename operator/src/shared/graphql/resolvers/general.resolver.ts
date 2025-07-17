@@ -3,7 +3,6 @@ import { ForbiddenException, Injectable, Logger, UseGuards } from '@nestjs/commo
 import { UserService } from '../../services/user.service';
 import { GraphQLJwtAuthGuard } from '../../../workspace/guards/authentication.guards';
 import { Public } from '../../../workspace/decorators/public.decorator';
-import { UserEntity } from '../../entities/user.entity';
 import { CryptoService } from '../../services/crypto.service';
 import { SetupFirstAdminDto } from '../dto/setup-first-admin.dto';
 

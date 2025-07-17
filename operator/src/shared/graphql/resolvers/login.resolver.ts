@@ -1,7 +1,6 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
-import { ChallengeVerificationDto } from '../dto/challenge/challenge-verification.dto';
-import { BadRequestException, ForbiddenException, Logger, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Logger } from '@nestjs/common';
 
 import { ChallengeService } from '../../services/challenge.service';
 import { UserService } from '../../services/user.service';
@@ -9,7 +8,7 @@ import { EnvService } from '../../services/env.service';
 import { Public } from '../../../workspace/decorators/public.decorator';
 import { ChallengeVerificationResponse } from '../dto/challenge/challenge-verification-response.dto';
 import { ChallengeEntity } from '../../entities/challenge.entity';
-import { EncoderFactory, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
+import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
 
 
 @Resolver()

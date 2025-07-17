@@ -3,7 +3,8 @@ import { promises as fs } from 'fs';
 import { EnvService } from './env.service';
 import {
 	BytesToHexEncoder,
-	PrivateSignatureKey, PublicSignatureKey,
+	PrivateSignatureKey,
+	PublicSignatureKey,
 	Secp256k1PrivateSignatureKey,
 	StringSignatureEncoder,
 } from '@cmts-dev/carmentis-sdk/server';

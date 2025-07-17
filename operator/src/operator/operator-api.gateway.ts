@@ -1,14 +1,18 @@
 import {
-	WebSocketGateway,
-	WebSocketServer,
 	OnGatewayConnection,
 	OnGatewayDisconnect,
 	OnGatewayInit,
-    SubscribeMessage,
-    MessageBody
+	SubscribeMessage,
+	WebSocketGateway,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { wiServer, MessageUnserializer, EncoderFactory, SCHEMAS, MessageSerializer } from '@cmts-dev/carmentis-sdk/server';
+import {
+	EncoderFactory,
+	MessageSerializer,
+	MessageUnserializer,
+	SCHEMAS,
+	wiServer,
+} from '@cmts-dev/carmentis-sdk/server';
 import { Logger } from '@nestjs/common';
 
 @WebSocketGateway({

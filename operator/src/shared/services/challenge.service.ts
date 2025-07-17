@@ -3,9 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import { ChallengeEntity } from '../entities/challenge.entity';
 import { bytesToHex } from '@noble/ciphers/utils';
-import { Encoder } from '../../utils/encoder';
 import { randomBytes } from 'crypto';
-import { StringSignatureEncoder, EncoderFactory, PublicSignatureKey } from '@cmts-dev/carmentis-sdk/server';
+import { EncoderFactory, PublicSignatureKey, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
 
 const CHALLENGE_VALIDITY_INTERVAL_IN_MINUTES = 3;
 const CHALLENGE_VALIDITY_INTERVAL_IN_MILLISECONDS = CHALLENGE_VALIDITY_INTERVAL_IN_MINUTES * 60 * 1000;

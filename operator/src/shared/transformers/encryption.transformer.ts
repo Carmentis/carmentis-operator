@@ -1,4 +1,3 @@
-
 import { ValueTransformer } from 'typeorm';
 import { EncryptionService } from '../services/encryption.service';
 

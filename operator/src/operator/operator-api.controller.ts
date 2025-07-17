@@ -1,32 +1,21 @@
-import {
-	BadRequestException,
-	Body,
-	Controller, Get,
-	InternalServerErrorException,
-	Logger,
-	NotFoundException, Param,
-	Post, Query,
-	Req,
-	UnprocessableEntityException, UseGuards,
-} from '@nestjs/common';
-import {} from '@cmts-dev/carmentis-sdk/server';
-import { Public } from '../workspace/decorators/public.decorator';
-import { PrepareUserApprovalDto } from './dto/prepare-user-approval.dto';
-import { OrganisationService } from '../shared/services/organisation.service';
-import { EnvService } from '../shared/services/env.service';
+import { BadRequestException, Body, Controller, Get, Logger, Post, Req } from '@nestjs/common';
 import {
 	EncoderFactory,
-	MessageUnserializer, MSG_ACTOR_KEY, MSG_APPROVAL_HANDSHAKE,
-	MSG_APPROVAL_SIGNATURE, TOKEN,
+	MessageUnserializer,
+	MSG_ACTOR_KEY,
+	MSG_APPROVAL_HANDSHAKE,
+	MSG_APPROVAL_SIGNATURE,
+	TOKEN,
 	WALLET_OP_MESSAGES,
 } from '@cmts-dev/carmentis-sdk/server';
-import { OrganisationEntity } from '../shared/entities/organisation.entity';
+import { Public } from '../workspace/decorators/public.decorator';
+import { OrganisationService } from '../shared/services/organisation.service';
+import { EnvService } from '../shared/services/env.service';
 import { ApplicationService } from '../shared/services/application.service';
 import PackageConfigService from '../package.service';
 import { ApiKeyService } from '../shared/services/api-key.service';
-import { ApiKeyGuard } from '../shared/guards/api-key-guard';
 import { AnchorDto, AnchorWithWalletDto } from './dto/anchor.dto';
-import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation } from '@nestjs/swagger';
 import { ApiKey } from '../workspace/decorators/api-key.decorator';
 import { ApiKeyEntity } from '../shared/entities/api-key.entity';
 import { OperatorService } from './operator.service';

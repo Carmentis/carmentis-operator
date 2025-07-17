@@ -2,7 +2,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } f
 import { OrganisationAccessRightEntity } from './organisation-access-right.entity';
 import { ApplicationEntity } from './application.entity';
 import { Exclude } from 'class-transformer';
-import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EncryptedColumn } from '../decorators/encryption.decorator';
 
 @ObjectType()

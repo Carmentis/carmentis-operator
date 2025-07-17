@@ -1,4 +1,4 @@
-import { IsBoolean, IsInt, IsOptional } from 'class-validator';
+import { IsBoolean, IsInt } from 'class-validator';
 
 export class UpdateAccessRightDto {
 	@IsInt()
