@@ -1,8 +1,51 @@
 http://localhost:3005/api/public/hello
 
 ###
-GET http://localhost:3005/api/hello
-Authorization: Bearer cmts-967ef835a9c2aecf263e3520300538957ae91793f3bb6dcb58f8485b59ff2a8f-6b1044e57dcf5f7addbfd84ebedbcb834811b6217d35ca50fbe45d92cc530b6e
+GET http://localhost:3103/api/hello
+Authorization: Bearer cmts-f83fe298759ff085d66ef7c5836efc09fca793ae2d6aa20493295c280747a288-65632366a0b242ee7639fb31b1bca3e0b9f05c211985ff3e9e301197f597b702
+
+###
+GET http://localhost:3103/api/anchor/status/521ec3b2c9efd3670abf0d09aaf8b094c59d41e98c9837019aa6be060cc58f89
+Authorization: Bearer cmts-f83fe298759ff085d66ef7c5836efc09fca793ae2d6aa20493295c280747a288-65632366a0b242ee7639fb31b1bca3e0b9f05c211985ff3e9e301197f597b702
+
+
+###
+POST http://localhost:3103/api/anchor
+Authorization: Bearer cmts-f83fe298759ff085d66ef7c5836efc09fca793ae2d6aa20493295c280747a288-65632366a0b242ee7639fb31b1bca3e0b9f05c211985ff3e9e301197f597b702
+Content-Type: application/json
+
+{
+  "channels": [
+    {
+      "name": "myChannel",
+      "public": false
+    }
+  ],
+  "actors": [
+    {
+      "name": "application"
+    }
+  ],
+  "data": {
+    "field1": "value1"
+  },
+  "channelAssignations": [
+    {
+      "channelName": "myChannel",
+      "fieldPath": "this.*"
+    }
+  ],
+  "actorAssignations": [
+    {
+      "channelName": "myChannel",
+      "actorName": "application"
+    }
+  ],
+  "hashableFields": [],
+  "maskableFields": [],
+  "author": "application"
+}
+
 
 ###
 POST http://localhost:3005/api/anchor/wallet/initiate

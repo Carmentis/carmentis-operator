@@ -17,7 +17,7 @@ type OrganisationEntity {
   lastUpdateAt: DateTime!
   version: Int!
   virtualBlockchainId: String
-  balance: Float!
+  balance: String!
   users: [UserEntity!]!
   hasTokenAccount: Boolean!
   isAnchoredOnChain: Boolean!
@@ -99,10 +99,10 @@ type RevealedApiKeyType {
 type TransactionType {
   height: Int!
   previousHistoryHash: String!
-  type: Int!
-  timestamp: Float!
+  label: String!
+  transferredAt: String!
   linkedAccount: String!
-  amount: Float!
+  amount: String!
   chainReference: String!
 }
 

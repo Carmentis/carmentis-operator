@@ -18,20 +18,20 @@ export class TransactionType {
 	@Field()
 	previousHistoryHash: string;
 
-	@Field(() => Int)
-	type: number;
+	@Field()
+	label: string;
 
 	//@Field()
 	//name: string;
 
 	@Field()
-	timestamp: number;
+	transferredAt: string;
 
 	@Field()
 	linkedAccount: string;
 
-	@Field(() => Float)
-	amount: number;
+	@Field()
+	amount: string;
 
 	@Field()
 	chainReference: string;

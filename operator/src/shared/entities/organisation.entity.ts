@@ -4,6 +4,7 @@ import { ApplicationEntity } from './application.entity';
 import { Exclude } from 'class-transformer';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EncryptedColumn } from '../decorators/encryption.decorator';
+import { PrivateSignatureKey, PublicSignatureKey, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
 
 @ObjectType()
 @Entity('organisation')
@@ -77,4 +78,17 @@ export class OrganisationEntity {
 	@Column({nullable: true})
 	virtualBlockchainId: string;
 
+	getPrivateSignatureKey(): PrivateSignatureKey {
+		const encoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+		return encoder.decodePrivateKey(this.privateSignatureKey);
+	}
+
+	getPublicSignatureKey(): PublicSignatureKey {
+		const encoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+		return encoder.decodePublicKey(this.publicSignatureKey);
+	}
+
+	getId() {
+		return this.id;
+	}
 }

@@ -7,7 +7,7 @@ import { CryptoService } from '../shared/services/crypto.service';
 import { EnvService } from '../shared/services/env.service';
 import { SharedModule } from '../shared/shared.module';
 import { ApiKeyUsageMiddleware } from './middlewares/api-key-usage.middleware';
-import { OperatorService } from './operator.service';
+import { OperatorService } from './services/operator.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AnchorRequestEntity } from './entities/anchor-request.entity';
 import { AnchorRequestService } from './services/anchor-request.service';

@@ -1,7 +1,7 @@
 import { IsBoolean, IsDefined, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { OperatorAnchorRequest } from '@cmts-dev/carmentis-sdk/server';
+import { Hash, OperatorAnchorRequest, Optional } from '@cmts-dev/carmentis-sdk/server';
 
 export class ChannelDto {
 	@ApiProperty({ description: 'Name of the channel' })
@@ -14,7 +14,7 @@ export class ChannelDto {
 }
 
 export class ActorDto {
-	@ApiProperty({ description: 'Name of the actor.' })
+	@ApiProperty({ description: 'Name of the actor.', example: "Endorser" })
 	@IsString()
 	name: string;
 
@@ -97,7 +97,7 @@ export class AnchorDto  {
 	@Type(() => ActorDto)
 	actors: ActorDto[];
 
-	@ApiProperty({ description: 'Data being anchored on chain.', type: Object })
+	@ApiProperty({ description: 'Data being anchored on chain.', type: Object, example: { "field1": "value1" } })
 	@IsDefined()
 	data: Object;
 
@@ -111,29 +111,41 @@ export class AnchorDto  {
 	@Type(() => ActorAssignationDto)
 	actorAssignations: ActorAssignationDto[];
 
-	@ApiProperty({ type: [HashableFieldDto], description: 'List of hashable fields.' })
+	@ApiProperty({ type: [HashableFieldDto], description: 'List of hashable fields.', default: [], example: [] })
 	@ValidateNested({ each: true })
 	@Type(() => HashableFieldDto)
 	@IsOptional()
 	hashableFields: HashableFieldDto[];
 
-	@ApiProperty({ type: [MaskableFieldDto], description: 'List of maskable fields.' })
+	@ApiProperty({ type: [MaskableFieldDto], description: 'List of maskable fields.', default: [], example: []  })
 	@ValidateNested({ each: true })
 	@Type(() => MaskableFieldDto)
 	@IsOptional()
 	maskableFields: MaskableFieldDto[];
 
-	@ApiProperty({ description: 'Author' })
+	@ApiProperty({ description: 'Author', example: "Author" })
 	@IsString()
 	author: string
+
+	isVirtualBlockchainIdDefined(): boolean {
+		return this.virtualBlockchainId !== undefined;
+	}
+
+	getVirtualBlockchainId(): Optional<Hash> {
+		if (this.isVirtualBlockchainIdDefined()) {
+			return Optional.of(Hash.from(this.virtualBlockchainId));
+		} else {
+			return Optional.none();
+		}
+	}
 }
 
 export class AnchorWithWalletDto extends AnchorDto implements OperatorAnchorRequest {
-	@ApiProperty({ description: 'Endorser' })
+	@ApiProperty({ description: 'Endorser', example: "Endorser" })
 	@IsString()
 	endorser: string;
 
-	@ApiProperty({ description: 'Message displayed on the wallet.' })
+	@ApiProperty({ description: 'Message displayed on the wallet.', example: 'This message is shown on the wallet.' })
 	@IsString()
 	approvalMessage: string;
 

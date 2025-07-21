@@ -1,10 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { AnchorWithWalletDto } from '../dto/anchor.dto';
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { AnchorWithWalletDto } from '../dto/Anchor.dto';
+import { Optional } from '@cmts-dev/carmentis-sdk/server';
 
 @Entity()
 export class AnchorRequestEntity {
-	@PrimaryGeneratedColumn()
-	id: number;
+
+	@PrimaryColumn()
+	anchorRequestId: string;
 
 	@Column()
 	status: 'pending' | 'completed' | 'failed' = 'pending';
@@ -12,11 +14,16 @@ export class AnchorRequestEntity {
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
 	createdAt: Date;
 
-	@Column()
-	dataId: string;
+
 
 	@Column()
 	organisationId: number;
+
+	@Column({nullable: true})
+	virtualBlockchainId?: string;
+
+	@Column({nullable: true})
+	microBlockHash?: string;
 
 	/**
 	 * This application id refers to the local id of the application, not the hash of the application on the chain.
@@ -28,7 +35,35 @@ export class AnchorRequestEntity {
 	@Column({ type: 'json' })
 	request: AnchorWithWalletDto;
 
+	getAnchorRequestId(): string {
+		return this.anchorRequestId;
+	}
+
 	isPending(): boolean {
 		return this.status === 'pending';
+	}
+
+	isCompleted(): boolean {
+		return this.status === 'completed';
+	}
+
+	isPublished(): boolean {
+		return this.virtualBlockchainId !== undefined;
+	}
+
+	getVirtualBlockchainId(): Optional<string> {
+		return Optional.of(this.virtualBlockchainId);
+	}
+
+	getMicroBlockHash(): Optional<string> {
+		return Optional.of(this.microBlockHash);
+	}
+
+	isFailed(): boolean {
+		return this.status === 'failed';
+	}
+
+	getStatus() {
+		return this.status
 	}
 }

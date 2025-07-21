@@ -21,7 +21,7 @@ import { ApplicationUpdateDto } from '../dto/application/application-creation.dt
 import { ApplicationType } from '../object-types/application.type';
 import { mapper } from '../mapper';
 import { TransactionType } from '../object-types/transaction.type';
-import { EncoderFactory, StringSignatureEncoder, TOKEN } from '@cmts-dev/carmentis-sdk/server';
+import { CMTSToken, EncoderFactory, StringSignatureEncoder, TOKEN } from '@cmts-dev/carmentis-sdk/server';
 import { OrganisationChainStatusType } from '../object-types/organisation-chain-status.type';
 
 @UseGuards(GraphQLJwtAuthGuard)
@@ -93,16 +93,15 @@ export class OrganisationResolver {
       await this.organisationService.deleteOrganisationById(id);
     }
 
-	@ResolveField(() => Number, { name: 'balance' })
-	async getBalance(@Parent() organisation: OrganisationEntity): Promise<number> {
+	@ResolveField(() => String, { name: 'balance' })
+	async getBalance(@Parent() organisation: OrganisationEntity): Promise<string> {
 		try {
 			const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-			const balance = await this.chainService.getBalanceOfAccount(
-				signatureEncoder.decodePublicKey(organisation.publicSignatureKey)
-			);
-			return balance / TOKEN;
+			const publicKey = signatureEncoder.decodePublicKey(organisation.publicSignatureKey);
+			const balance = await this.chainService.getBalanceOfAccount(publicKey);
+			return balance.toString();
 		} catch (error) {
-			return 0
+			return CMTSToken.zero().toString();
 		}
 	}
 
@@ -160,13 +159,15 @@ export class OrganisationResolver {
 			);
 
 			// format the output
-			const hexEncoder = EncoderFactory.bytesToHexEncoder();
-			return accountHistory.list.map(entry => {
+			return accountHistory.getAllTransactions().map(entry => {
 				return {
-					...entry,
-					previousHistoryHash: hexEncoder.encode(entry.previousHistoryHash),
-					linkedAccount: hexEncoder.encode(entry.linkedAccount),
-					chainReference: hexEncoder.encode(entry.chainReference),
+					height: entry.getHeight(),
+					label: '',
+					transferredAt: entry.transferredAt().toLocaleDateString(),
+					amount: entry.getAmount().toString(),
+					previousHistoryHash: entry.getPreviousHistoryHash().encode(),
+					linkedAccount: entry.getLinkedAccount().encode(),
+					chainReference: entry.getChainReference().encode(),
 				}
 			});
 		} catch (e) {

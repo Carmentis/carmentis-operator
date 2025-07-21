@@ -1,5 +1,7 @@
-import { BadRequestException, Body, Controller, Get, Logger, Post, Req } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Req } from '@nestjs/common';
 import {
+	CarmentisError,
+	CMTSToken,
 	EncoderFactory,
 	MessageUnserializer,
 	MSG_ACTOR_KEY,
@@ -9,61 +11,88 @@ import {
 	WALLET_OP_MESSAGES,
 } from '@cmts-dev/carmentis-sdk/server';
 import { Public } from '../workspace/decorators/public.decorator';
-import { OrganisationService } from '../shared/services/organisation.service';
 import { EnvService } from '../shared/services/env.service';
 import { ApplicationService } from '../shared/services/application.service';
 import PackageConfigService from '../package.service';
 import { ApiKeyService } from '../shared/services/api-key.service';
-import { AnchorDto, AnchorWithWalletDto } from './dto/anchor.dto';
-import { ApiBody, ApiOperation } from '@nestjs/swagger';
+import { AnchorDto, AnchorWithWalletDto } from './dto/Anchor.dto';
+import {
+	ApiAcceptedResponse,
+	ApiBody,
+	ApiCreatedResponse,
+	ApiExcludeEndpoint,
+	ApiForbiddenResponse,
+	ApiOperation,
+	ApiResponse, ApiSecurity,
+} from '@nestjs/swagger';
 import { ApiKey } from '../workspace/decorators/api-key.decorator';
 import { ApiKeyEntity } from '../shared/entities/api-key.entity';
-import { OperatorService } from './operator.service';
+import { OperatorService } from './services/operator.service';
 import { randomBytes } from 'crypto';
+import { HelloResponseDto } from './dto/HelloResponse.dto';
+import { AnchorRequestResponseDto } from './dto/AnchorRequestResponse.dto';
+import { AnchorRequestStatusResponseDto } from './dto/AnchorRequestStatusResponse.dto';
+import { request } from 'express';
 
 
 @Controller('/api')
 export class OperatorApiController{
 
-	private base64Encoder = EncoderFactory.bytesToBase64Encoder();
-	private organisationIdByDataId : Map<string, string> = new Map();
 	private logger = new Logger(OperatorApiController.name);
-	private readonly nodeUrl: string;
 	constructor(
-		private readonly envService: EnvService,
-		private readonly organisationService: OrganisationService,
 		private readonly applicationService: ApplicationService,
 		private readonly packageService: PackageConfigService,
 		private readonly apiKeyService: ApiKeyService,
 		private readonly operatorService: OperatorService,
-	) {
-		this.nodeUrl = envService.nodeUrl;
-	}
+	) {}
 
 
-	@Public()
-	@Get()
-	index(): string {
-		return 'Carmentis Operator v' + this.packageService.operatorVersion
-	}
 
+
+
+
+	/**
+	 * Handles the '/hello' endpoint request.
+	 * This method serves as a health check to confirm server online status
+	 * and validate the functionality of the provided API key.
+	 *
+	 * @return {Promise<HelloResponseDto>} A promise that resolves to an object containing the hello message.
+	 */
+	@Get('/hello')
 	@ApiOperation({
 		summary: 'Hello request handler.',
-		description: 'This endpoint is used to check the online status of the server and the correct API key functionality.'
+		description: 'This endpoint is used to check the online status of the server and the correct API key functionality.',
 	})
-	@Get('/hello')
-	async hello() {
-		return { message: 'Hello' };
+	@ApiResponse({
+		status: 200,
+		description: 'OK',
+		type: HelloResponseDto
+	})
+	@ApiSecurity('api-key')
+	async hello(): Promise<HelloResponseDto> {
+		return { message: 'Hello world!' };
 	}
 
+
+	/**
+	 *
+	 */
+	@Public()
+	@Get('/public/hello')
 	@ApiOperation({
 		summary: 'Public hello request handler.',
 		description: 'This endpoint is used to check the online status of the server.'
 	})
-	@Public()
-	@Get('/public/hello')
+	@ApiResponse({
+		status: 200,
+		description: 'OK',
+		type: HelloResponseDto
+	})
+	@ApiForbiddenResponse({
+		description: "Invalid API key used.",
+	})
 	async publicHello() {
-		return { message: 'Hello Anonymous' };
+		return { message: 'Hello world!' };
 	}
 
 
@@ -73,23 +102,99 @@ export class OperatorApiController{
 		description: 'This endpoint is used by the server to initiate an anchoring request that should be accepted by a wallet.'
 	})
 	@ApiBody({ type: AnchorWithWalletDto })
+	@ApiCreatedResponse({
+		description: 'Anchoring session created',
+		type: AnchorRequestResponseDto
+	})
+	@ApiSecurity('api-key')
 	@Post('/anchorWithWallet')
 	async anchorWithWallet(
 		@Body() anchorDto: AnchorWithWalletDto,
 		@ApiKey() key: ApiKeyEntity,
-	) {
+	): Promise<AnchorRequestResponseDto> {
+		try {
 
+			// find application and organization associated with the provided api key
+			const application = await this.apiKeyService.findApplicationByApiKey(key);
+			const organisation = await this.applicationService.getOrganisationByApplicationId(application.id);
+
+			return this.operatorService.createAnchorWithWalletSession(organisation, application, anchorDto);
+
+		} catch (e) {
+			if (CarmentisError.isCarmentisError(e)) {
+				throw e
+			} else {
+				this.logger.error("An error occurred while processing anchoring with wallet request: ", e)
+				throw e;
+			}
+		}
+	}
+
+
+
+
+
+
+
+	@ApiOperation({
+		summary: 'Initiate an anchor request',
+		description: 'This endpoint is used by the server to initiate an anchoring request that should be accepted by a wallet.'
+	})
+	@ApiCreatedResponse({
+		description: 'The anchoring request has been accepted.',
+		type: AnchorRequestResponseDto
+	})
+	@ApiSecurity('api-key')
+	@Post('/anchor')
+	async anchor(
+		@Body() anchorDto: AnchorDto,
+		@ApiKey() key: ApiKeyEntity,
+	): Promise<AnchorRequestResponseDto> {
 		// find application and organization associated with the provided api key
 		const application = await this.apiKeyService.findApplicationByApiKey(key);
 		const organisation = await this.applicationService.getOrganisationByApplicationId(application.id);
-
-		return this.operatorService.createAnchorWithWalletSession(organisation, application, anchorDto);
+		const anchorRequest = await this.operatorService.anchor(application, organisation, anchorDto);
+		return {
+			anchorRequestId: anchorRequest.anchorRequestId
+		}
 	}
 
+
+
+	@ApiOperation({
+		summary: 'Returns the status of an anchor request',
+		description: 'This endpoint is used to track the publication status of an anchor request.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'Returns the status of an anchor request.',
+		type: AnchorRequestStatusResponseDto
+	})
+	@ApiSecurity('api-key')
+	@Get('/anchor/status/:anchorRequestId')
+	async getAnchorRequestStatus(
+		@Param('anchorRequestId') anchorRequestId: string,
+		@ApiKey() key: ApiKeyEntity,
+	): Promise<AnchorRequestStatusResponseDto> {
+		const request = await this.operatorService.getAnchorRequestFromAnchorRequestId(anchorRequestId);
+		return {
+			published: request.isCompleted(),
+			status: request.getStatus(),
+			virtualBlockchainId: request.getVirtualBlockchainId().unwrapOr(undefined),
+			microBlockHash: request.getMicroBlockHash().unwrapOr(undefined),
+		}
+	}
+
+
+
+
+
+
+
 	@Public()
+	@ApiExcludeEndpoint()
 	@Post("/walletMessage")
 	async handleWalletMessage(
-		@Req() req: Request,
 		@Body("data") data : string
 	) {
 
@@ -119,7 +224,11 @@ export class OperatorApiController{
 			}
 			case MSG_APPROVAL_SIGNATURE:
 				this.logger.debug(`[${sessionId}] Entering approval signature`)
-				answer = await this.operatorService.approvalSignature(object, TOKEN);
+				const gasPrice = CMTSToken.oneCMTS();
+				answer = await this.operatorService.approvalSignature(
+					object,
+					gasPrice
+				);
 				break;
 			default:
 				const errorMessage = `Unknown request type: ${type}`
@@ -134,25 +243,6 @@ export class OperatorApiController{
 			data: encoder.encode(answer)
 		}
 	}
-
-
-
-
-
-
-	@ApiOperation({
-		summary: 'Initiate an anchor request',
-		description: 'This endpoint is used by the server to initiate an anchoring request that should be accepted by a wallet.'
-	})
-	@Post('/anchor')
-	async anchor(
-		@Body() anchorDto: AnchorDto,
-		@ApiKey() key: ApiKeyEntity,
-	) {
-		// TODO: implement
-	}
-
-
 
 
 }

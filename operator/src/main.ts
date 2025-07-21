@@ -22,6 +22,14 @@ async function bootstrap() {
 		.setTitle('Carmentis Operator API')
 		.setDescription('Documentation for the operator API.')
 		.setVersion('1.0')
+		.addApiKey(
+			{
+				type: 'apiKey',
+				name: 'Authorization',
+				in: 'header',
+			},
+			'api-key'
+		)
 		.build();
 
 	// no try

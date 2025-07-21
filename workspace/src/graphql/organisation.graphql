@@ -226,7 +226,8 @@ fragment Transaction on TransactionType {
   linkedAccount
   chainReference
   previousHistoryHash
-  timestamp
+  transferredAt
+  label
 }
 query getTransactionsOfOrganisation($organisationId: Int!, $limit: Int!, $fromHash: String) {
   organisation(id: $organisationId) {

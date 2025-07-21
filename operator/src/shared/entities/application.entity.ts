@@ -65,4 +65,8 @@ export class ApplicationEntity {
 
     @OneToMany(() => ApiKeyEntity, (key) => key.application, { cascade: true })
     apiKeys: ApiKeyEntity[];
+
+	getId() {
+		return this.id;
+	}
 }
