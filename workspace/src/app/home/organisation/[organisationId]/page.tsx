@@ -367,87 +367,53 @@ function OrganisationChainStatus() {
 		);
 	}
 
-	const { hasTokenAccount, isPublishedOnChain } = data.organisation.chainStatus;
+	const { hasTokenAccount, isPublishedOnChain, hasEditedOrganization } = data.organisation.chainStatus;
 
 	const body = <>
 		<Grid container spacing={3}>
-			<Grid item xs={12} md={6}>
-				<Box display="flex" alignItems="center" gap={1}>
-					<Box
-						sx={{
-							bgcolor: hasTokenAccount ? 'success.light' : 'warning.light',
-							borderRadius: '50%',
-							width: 40,
-							height: 40,
-							display: 'flex',
-							alignItems: 'center',
-							justifyContent: 'center'
-						}}
-					>
-						{hasTokenAccount ?
-							<CheckIcon sx={{ color: 'success.contrastText' }} /> :
-							<PendingIcon sx={{ color: 'warning.contrastText' }} />
-						}
-					</Box>
-					<Box>
-						<Typography variant="subtitle1">Token Account</Typography>
-						<Typography variant="body2" color="text.secondary">
-							{hasTokenAccount ?
-								'Account is active on the blockchain' :
-								'Account not yet created on the blockchain'
-							}
-						</Typography>
-					</Box>
-				</Box>
-			</Grid>
-			<Grid item xs={12} md={6}>
-				<Box display="flex" alignItems="center" gap={1}>
-					<Box
-						sx={{
-							bgcolor: isPublishedOnChain ? 'success.light' : 'warning.light',
-							borderRadius: '50%',
-							width: 40,
-							height: 40,
-							display: 'flex',
-							alignItems: 'center',
-							justifyContent: 'center'
-						}}
-					>
-						{isPublishedOnChain ?
-							<CheckIcon sx={{ color: 'success.contrastText' }} /> :
-							<PendingIcon sx={{ color: 'warning.contrastText' }} />
-						}
-					</Box>
-					<Box
-						sx={{
-							display: 'flex',
-							alignItems: 'center',
-							justifyContent: 'start',
-							flexDirection: 'column',
-						}}
-					>
-						<Typography variant="subtitle1">Published Status</Typography>
-						<Typography variant="body2" color="text.secondary">
-							{isPublishedOnChain ?
-								'Organisation published on the blockchain' :
-								'Organisation not visible on the blockchain'
-							}
-						</Typography>
-					</Box>
-				</Box>
-			</Grid>
+			<CheckComponent condition={hasTokenAccount} title={"Token account"} onChecked={"Organisation has a token account"} onNotChecked={"Organisation does not have a token account"} />
+			<CheckComponent condition={hasEditedOrganization} title={"Organization edited"} onChecked={"Organization is ready to be published"} onNotChecked={"Edit organization before to publish"} />
+			<CheckComponent condition={isPublishedOnChain} title={"Published on the blockchain"} onChecked={"Organisation published on the blockchain"} onNotChecked={"Organisation not visible on the blockchain"}/>
 		</Grid>
 	</>
-	const card = <WelcomeCard
-		icon={"money"}
-		title={"Blockchain status"}
-		value={body}
-	/>
 	return (
-		<>{card}</>
+		<>{body}</>
 	);
 }
 
+
+function CheckComponent(input: { condition: boolean, title: string, onChecked: string, onNotChecked: string }) {
+	const {condition, title, onChecked, onNotChecked} = input;
+	return <Grid item xs={12} md={6}>
+		<Box display="flex" alignItems="center" gap={1}>
+			<Box
+				sx={{
+					bgcolor: condition ? 'success.light' : 'warning.light',
+					borderRadius: '50%',
+					width: 40,
+					height: 40,
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center'
+				}}
+			>
+				{condition ?
+					<CheckIcon sx={{ color: 'success.contrastText' }} /> :
+					<PendingIcon sx={{ color: 'warning.contrastText' }} />
+				}
+			</Box>
+			<Box display={"flex"} flexDirection={"column"} justifyContent={"start"} alignItems={"start"}>
+				<Typography variant="subtitle1">{title}</Typography>
+				<Typography variant="body2" color="text.secondary">
+					{condition ?
+						onChecked :
+						onNotChecked
+					}
+				</Typography>
+			</Box>
+		</Box>
+	</Grid>
+}
 
 function OrganisationMenu() {
 	const organisation = useOrganisation();

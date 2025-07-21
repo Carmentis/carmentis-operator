@@ -8,4 +8,8 @@ export class OrganisationChainStatusType {
 
 	@Field(() => Boolean)
 	isPublishedOnChain: boolean;
+
+
+	@Field(() => Boolean)
+	hasEditedOrganization: boolean;
 }

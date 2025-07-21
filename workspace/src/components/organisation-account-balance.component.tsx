@@ -14,8 +14,8 @@ export default function OrganisationAccountBalance() {
 	});
 	const exchangeUrl = env('NEXT_PUBLIC_EXCHANGE_URL') || '';
 
-	function formatBalance(balance:number) {
-		return `${balance} CMTS`;
+	function formatBalance(balance:string) {
+		return balance;
 	}
 
 	if (error) return <>{'--'}</>;

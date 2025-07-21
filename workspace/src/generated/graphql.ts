@@ -221,12 +221,13 @@ export type MutationVerifyChallengeArgs = {
 };
 
 export type OrganisationChainStatusType = {
+  hasEditedOrganization: Scalars['Boolean']['output'];
   hasTokenAccount: Scalars['Boolean']['output'];
   isPublishedOnChain: Scalars['Boolean']['output'];
 };
 
 export type OrganisationEntity = {
-  balance: Scalars['Float']['output'];
+  balance: Scalars['String']['output'];
   chainStatus: OrganisationChainStatusType;
   city: Scalars['String']['output'];
   countryCode: Scalars['String']['output'];
@@ -354,13 +355,13 @@ export type SetupFirstAdminDto = {
 };
 
 export type TransactionType = {
-  amount: Scalars['Float']['output'];
+  amount: Scalars['String']['output'];
   chainReference: Scalars['String']['output'];
   height: Scalars['Int']['output'];
+  label: Scalars['String']['output'];
   linkedAccount: Scalars['String']['output'];
   previousHistoryHash: Scalars['String']['output'];
-  timestamp: Scalars['Float']['output'];
-  type: Scalars['Int']['output'];
+  transferredAt: Scalars['String']['output'];
 };
 
 export type UserEntity = {
@@ -413,14 +414,14 @@ export type GetOrganisationQueryVariables = Exact<{
 }>;
 
 
-export type GetOrganisationQuery = { organisation: { id: number, name: string, publicSignatureKey: string, createdAt: any, logoUrl?: string | null, published: boolean, balance: number, isDraft: boolean, publishedAt?: any | null, city: string, website: string, countryCode: string, virtualBlockchainId?: string | null, version: number } };
+export type GetOrganisationQuery = { organisation: { id: number, name: string, publicSignatureKey: string, createdAt: any, logoUrl?: string | null, published: boolean, balance: string, isDraft: boolean, publishedAt?: any | null, city: string, website: string, countryCode: string, virtualBlockchainId?: string | null, version: number } };
 
 export type GetOrganisationBalanceQueryVariables = Exact<{
   id: Scalars['Int']['input'];
 }>;
 
 
-export type GetOrganisationBalanceQuery = { organisation: { id: number, balance: number, hasTokenAccount: boolean } };
+export type GetOrganisationBalanceQuery = { organisation: { id: number, balance: string, hasTokenAccount: boolean } };
 
 export type GetOrganisationStatisticsQueryVariables = Exact<{
   id: Scalars['Int']['input'];
@@ -602,7 +603,7 @@ export type DeleteApiKeyMutationVariables = Exact<{
 
 export type DeleteApiKeyMutation = { deleteApiKey: boolean };
 
-export type TransactionFragment = { amount: number, linkedAccount: string, chainReference: string, previousHistoryHash: string, timestamp: number };
+export type TransactionFragment = { amount: string, linkedAccount: string, chainReference: string, previousHistoryHash: string, transferredAt: string, label: string };
 
 export type GetTransactionsOfOrganisationQueryVariables = Exact<{
   organisationId: Scalars['Int']['input'];
@@ -611,7 +612,7 @@ export type GetTransactionsOfOrganisationQueryVariables = Exact<{
 }>;
 
 
-export type GetTransactionsOfOrganisationQuery = { organisation: { hasTokenAccount: boolean, transactions: Array<{ amount: number, linkedAccount: string, chainReference: string, previousHistoryHash: string, timestamp: number }> } };
+export type GetTransactionsOfOrganisationQuery = { organisation: { hasTokenAccount: boolean, transactions: Array<{ amount: string, linkedAccount: string, chainReference: string, previousHistoryHash: string, transferredAt: string, label: string }> } };
 
 export type HasPublishedAccountOnChainQueryVariables = Exact<{
   organisationId: Scalars['Int']['input'];
@@ -625,7 +626,7 @@ export type GetOrganisationChainStatusQueryVariables = Exact<{
 }>;
 
 
-export type GetOrganisationChainStatusQuery = { organisation: { chainStatus: { hasTokenAccount: boolean, isPublishedOnChain: boolean } } };
+export type GetOrganisationChainStatusQuery = { organisation: { chainStatus: { hasTokenAccount: boolean, isPublishedOnChain: boolean, hasEditedOrganization: boolean } } };
 
 export type UserFragment = { publicKey: string, firstname: string, lastname: string, isAdmin: boolean };
 
@@ -737,7 +738,8 @@ export const TransactionFragmentDoc = gql`
   linkedAccount
   chainReference
   previousHistoryHash
-  timestamp
+  transferredAt
+  label
 }
     `;
 export const UserFragmentDoc = gql`
@@ -1981,6 +1983,7 @@ export const GetOrganisationChainStatusDocument = gql`
     chainStatus {
       hasTokenAccount
       isPublishedOnChain
+      hasEditedOrganization
     }
   }
 }

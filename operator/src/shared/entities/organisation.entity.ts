@@ -91,4 +91,8 @@ export class OrganisationEntity {
 	getId() {
 		return this.id;
 	}
+
+	isReadyToBePublished() {
+		return true;
+	}
 }

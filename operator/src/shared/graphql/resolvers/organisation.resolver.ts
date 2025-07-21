@@ -139,8 +139,9 @@ export class OrganisationResolver {
 		const hasTokenAccount = await this.chainService.checkAccountExistence(
 			publicKeySignatureEncoder.decodePublicKey(publicSignatureKey)
 		);
+		const hasEditedOrganization = organisation.isReadyToBePublished();
 		const isPublishedOnChain = await this.chainService.checkPublishedOnChain(organisation);
-		return { hasTokenAccount, isPublishedOnChain }
+		return { hasTokenAccount, isPublishedOnChain, hasEditedOrganization }
 	}
 
 	@ResolveField(() => [TransactionType], { name: 'transactions' })
