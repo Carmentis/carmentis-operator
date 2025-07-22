@@ -17,7 +17,7 @@ import { useState } from 'react';
 import { useToast } from '@/app/layout';
 import { useOrganisation } from '@/contexts/organisation-store.context';
 import Skeleton from 'react-loading-skeleton';
-import GenericTableComponent from '@/components/generic-table.component';
+import GenericTableComponent from '@/components/GenericTableComponent';
 import { useApplicationNavigationContext, useCustomRouter } from '@/contexts/application-navigation.context';
 import useTextFieldFormModal from '@/components/modals/text-form-moda';
 import useConfirmationModal from '@/components/modals/confirmation-modal';

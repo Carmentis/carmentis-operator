@@ -3,8 +3,8 @@
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import { PropsWithChildren } from 'react';
 import { usePathname } from 'next/navigation';
-import FullPageLoadingComponent from '@/components/full-page-loading.component';
 import { useIsInitialisedQuery } from '@/generated/graphql';
+import FullSpaceSpinner from '@/components/FullSpaceSpinner';
 
 /**
  * Context component that checks the initialization status of the operator.
@@ -22,7 +22,7 @@ export function InitialisationStatusContext({children}: PropsWithChildren) {
 	const pathname = usePathname();
 
 	// Show loading component while fetching initialization status
-	if (isLoading) return <FullPageLoadingComponent />;
+	if (isLoading) return <FullSpaceSpinner />;
 
 	// Show error alert if there's a connection error
 	if (error) return <OperatorErrorAlert

@@ -5,12 +5,12 @@ import { PropsWithChildren, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { OrganisationMutationContextProvider } from '@/contexts/organisation-mutation.context';
 import NotFoundPage from '@/app/home/organisation/[organisationId]/not-found';
-import FullPageLoadingComponent from '@/components/full-page-loading.component';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import { useToast } from '@/app/layout';
 import { useAtom } from 'jotai';
 import { organisationAtom } from '@/app/home/organisation/atom';
 import { useGetOrganisationQuery } from '@/generated/graphql';
+import FullSpaceSpinner from '@/components/FullSpaceSpinner';
 
 
 
@@ -42,7 +42,7 @@ function OrganisationDataAccess({ children }: PropsWithChildren) {
 
 	// display the loading page when checking if the organisation exists
 	if (!data || !data.organisation || loading || !organisation) {
-		return <FullPageLoadingComponent label={'Loading organisation'} />
+		return <FullSpaceSpinner label={'Loading organisation'} />
 	}
 
 

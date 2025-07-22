@@ -356,6 +356,7 @@ export type SetupFirstAdminDto = {
 
 export type TransactionType = {
   amount: Scalars['String']['output'];
+  amountInAtomics: Scalars['Float']['output'];
   chainReference: Scalars['String']['output'];
   height: Scalars['Int']['output'];
   label: Scalars['String']['output'];
@@ -603,7 +604,7 @@ export type DeleteApiKeyMutationVariables = Exact<{
 
 export type DeleteApiKeyMutation = { deleteApiKey: boolean };
 
-export type TransactionFragment = { amount: string, linkedAccount: string, chainReference: string, previousHistoryHash: string, transferredAt: string, label: string };
+export type TransactionFragment = { amount: string, linkedAccount: string, chainReference: string, previousHistoryHash: string, transferredAt: string, label: string, amountInAtomics: number, height: number };
 
 export type GetTransactionsOfOrganisationQueryVariables = Exact<{
   organisationId: Scalars['Int']['input'];
@@ -612,7 +613,7 @@ export type GetTransactionsOfOrganisationQueryVariables = Exact<{
 }>;
 
 
-export type GetTransactionsOfOrganisationQuery = { organisation: { hasTokenAccount: boolean, transactions: Array<{ amount: string, linkedAccount: string, chainReference: string, previousHistoryHash: string, transferredAt: string, label: string }> } };
+export type GetTransactionsOfOrganisationQuery = { organisation: { hasTokenAccount: boolean, transactions: Array<{ amount: string, linkedAccount: string, chainReference: string, previousHistoryHash: string, transferredAt: string, label: string, amountInAtomics: number, height: number }> } };
 
 export type HasPublishedAccountOnChainQueryVariables = Exact<{
   organisationId: Scalars['Int']['input'];
@@ -740,6 +741,8 @@ export const TransactionFragmentDoc = gql`
   previousHistoryHash
   transferredAt
   label
+  amountInAtomics
+  height
 }
     `;
 export const UserFragmentDoc = gql`

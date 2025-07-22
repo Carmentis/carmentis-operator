@@ -19,7 +19,7 @@ import { ApplicationUpdateDto } from '../dto/ApplicationCreationDto';
 import { ApplicationType } from '../types/ApplicationType';
 import { mapper } from '../mapper';
 import { TransactionType } from '../types/TransactionType';
-import { CMTSToken, EncoderFactory, StringSignatureEncoder, TOKEN } from '@cmts-dev/carmentis-sdk/server';
+import { CMTSToken, EncoderFactory, StringSignatureEncoder, TOKEN, Transaction } from '@cmts-dev/carmentis-sdk/server';
 import { OrganisationChainStatusType } from '../types/OrganisationChainStatusType';
 import { GraphQLJwtAuthGuard } from '../../guards/GraphQLJwtAuthGuard';
 import { ApplicationByIdPipe } from '../../pipes/ApplicationByIdPipe';
@@ -164,9 +164,10 @@ export class OrganisationResolver {
 			return accountHistory.getAllTransactions().map(entry => {
 				return {
 					height: entry.getHeight(),
-					label: '',
+					label: this.formatTransactionLabel(entry),
 					transferredAt: entry.transferredAt().toLocaleDateString(),
 					amount: entry.getAmount().toString(),
+					amountInAtomics: entry.getAmount().getAmountAsAtomic(),
 					previousHistoryHash: entry.getPreviousHistoryHash().encode(),
 					linkedAccount: entry.getLinkedAccount().encode(),
 					chainReference: entry.getChainReference().encode(),
@@ -206,6 +207,14 @@ export class OrganisationResolver {
 		@Args('privateKey') privateKey: string,
 	) {
 		return false;
+	}
+
+	private formatTransactionLabel(transaction: Transaction): string {
+		if (transaction.isPurchase()) return 'Purchase';
+		if (transaction.isSale()) return 'Sale';
+		if (transaction.isReceivedPayment()) return 'Received payment';
+		if (transaction.isSentPayment()) return 'Sent payment';
+		return 'Unspecified';
 	}
 }
 

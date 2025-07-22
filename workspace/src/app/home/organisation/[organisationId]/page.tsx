@@ -30,9 +30,9 @@ import { useToast } from '@/app/layout';
 import { useOrganisation } from '@/contexts/organisation-store.context';
 import { useOrganisationMutationContext } from '@/contexts/organisation-mutation.context';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
-import WelcomeCards, { WelcomeCard } from '@/components/welcome-cards.component';
-import OrganisationAccountBalance from '@/components/organisation-account-balance.component';
-import AvatarOrganisation from '@/components/avatar-organisation';
+import { WelcomeCard } from '@/components/WelcomeCard';
+import OrganisationAccountBalance from '@/components/OrganisationAccountBalance';
+import AvatarOrganisation from '@/components/AvatarOrganisation';
 import {
 	useGetOrganisationStatisticsQuery,
 	useGetOrganisationBalanceQuery,
@@ -52,6 +52,7 @@ import PendingIcon from '@mui/icons-material/Pending';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/client';
 import {motion} from 'framer-motion';
+import WelcomeCards from '@/components/WelcomeCards';
 
 /**
  * Component to display organisation status chips with enhanced styling

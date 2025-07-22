@@ -1,4 +1,4 @@
-import FullSpaceSpinner from '@/components/full-page-spinner.component';
+import FullSpaceSpinner from '@/components/FullSpaceSpinner';
 
 export default function Loading() {
 	return <FullSpaceSpinner/>

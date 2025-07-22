@@ -1,14 +1,13 @@
 'use client';
 
-import FlexCenter from '@/components/flex-center.component';
 import { useGetInitialisationStatusQuery } from '@/generated/graphql';
 import { Card, CardContent, Typography } from '@mui/material';
 
 export default function TestPage() {
     return <div className={"bg-gray-100"}>
-        <FlexCenter>
+        <div className={`w-full h-full flex justify-center items-center align-middle`}>
             <OperatorConnectionCard/>
-        </FlexCenter>
+        </div>
     </div>
 }
 

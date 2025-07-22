@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Button, IconButton, Paper, Stack, TextField, Tooltip, Typography } from '@mui/material';
-import GenericTableComponent from '@/components/generic-table.component';
+import GenericTableComponent from '@/components/GenericTableComponent';
 import { useParams } from 'next/navigation';
 import { useBoolean } from 'react-use';
 import { useForm } from 'react-hook-form';
@@ -9,7 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCircleIcon } from '@heroicons/react/16/solid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import useConfirmationModal from '@/components/modals/confirmation-modal';
-import getApiKeyStatus from '@/hooks/api-key-status.hook';
+import useApiKeyStatusFormatter from '@/hooks/useApiKeyStatusFormatter';
 import {
 	CreatedApiKeyFragment,
 	useCreateApiKeyInApplicationMutation,
@@ -31,6 +31,7 @@ export default function ApiKeysPage() {
 	const applicationId = parseInt(params.applicationId);
 	const [createKey, {loading: isCreating}] = useCreateApiKeyInApplicationMutation();
 	const [deleteKey, {loading: isDeleting}] = useDeleteApiKeyMutation();
+	const formatApiKeyStatus = useApiKeyStatusFormatter();
 	const {data: apiKeys, loading: isLoading, error, refetch: mutate} = useGetAllApiKeysInApplicationQuery({
 		variables: { applicationId }
 	})
@@ -113,7 +114,7 @@ export default function ApiKeysPage() {
 			isLoading={isLoading}
 			error={error}
 			extractor={row => {
-				const status = getApiKeyStatus(row)
+				const status = formatApiKeyStatus(row)
 
 				return [
 					{ head: 'ID', value:  row.id },

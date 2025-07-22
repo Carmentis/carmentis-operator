@@ -2,12 +2,11 @@
 
 import { wiClient } from '@cmts-dev/carmentis-sdk/client';
 import { Typography } from '@mui/material';
-import FlexCenter from '@/components/flex-center.component';
 import { useEffect, useRef, useState } from 'react';
-import FullSpaceSpinner from '@/components/full-page-spinner.component';
+import FullSpaceSpinner from '@/components/FullSpaceSpinner';
 import { useToast } from '@/app/layout';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
-import VersionDisplay from '@/components/version-number';
+import WorkspaceVersion from '@/components/WorkspaceVersion';
 import { useGetChallengeQuery, useVerifyChallengeMutation } from '@/generated/graphql';
 import { TOKEN_STORAGE_ITEM } from '@/contexts/user-authentication.context';
 import { env } from 'next-runtime-env';
@@ -80,14 +79,16 @@ function ChallengeLogin({challenge}: {challenge: string}) {
             <div
                 className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                 <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
+
                     <Typography variant={"h4"}>Sign in to your workspace</Typography>
-                    <FlexCenter className={'flex-col'}>
+                    <div className={`w-full h-full flex justify-center items-center align-middle flex-col`}>
                         <div id={'qr-code'} className={"mb-2"} />
                         <button id="extension-button"
                                 className={'button py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100'}>Use
                             your extension
                         </button>
-                    </FlexCenter>
+                    </div>
+
                     <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                         Don’t have a wallet yet?  <a href="https://docs.carmentis.io/how-to/get-your-carmentis-wallet"
                                                      target={"_blank"}
@@ -102,6 +103,6 @@ function ChallengeLogin({challenge}: {challenge: string}) {
 
 function BottomRightVersionNumber() {
     return <div className={"absolute right-5 bottom-5"}>
-        <VersionDisplay/>
+        <WorkspaceVersion/>
     </div>
 }

@@ -1,5 +1,5 @@
 import { UserSummary } from '@/entities/user.entity';
-import GenericTableComponent from '@/components/generic-table.component';
+import GenericTableComponent from '@/components/GenericTableComponent';
 import React from 'react';
 import { Chip, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';

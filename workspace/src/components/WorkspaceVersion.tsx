@@ -1,7 +1,7 @@
 import { Typography } from '@mui/material';
 
-function VersionDisplay() {
+function WorkspaceVersion() {
 	return <Typography>Version {process.env.APP_VERSION}</Typography>;
 }
 
-export default VersionDisplay;
+export default WorkspaceVersion;

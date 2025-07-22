@@ -1,10 +1,6 @@
-import { Application } from '@/entities/application.entity';
 import { atom } from 'jotai/index';
-import {
-	applicationAtom,
-	applicationIsModifiedAtom,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { applicationAtom } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
+import { useSetAtom } from 'jotai';
 import { ApplicationTypeFragment } from '@/generated/graphql';
 
 type Action =
@@ -42,8 +38,4 @@ export const useUpdateApplication = () => {
 	};
 }
 
-
-export const useApplicationEditionStatus = () => {
-	return useAtomValue(applicationIsModifiedAtom);
-}
 

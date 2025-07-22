@@ -23,7 +23,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { useModal } from 'react-modal-hook';
-import GenericTableComponent from '@/components/generic-table.component';
+import GenericTableComponent from '@/components/GenericTableComponent';
 import { useCreateUserMutation, useDeleteUserMutation, useGetAllUsersQuery, useUpdateUserAdminMutation } from '@/generated/graphql';
 import { useAuthenticationContext } from '@/contexts/user-authentication.context';
 import { useConfirmationModal } from '@/contexts/popup-modal.component';

@@ -3,9 +3,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/app/layout';
 import { useOrganisation } from '@/contexts/organisation-store.context';
-import {
-	useApplicationEditionStatus,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
 import { useAtomValue, useSetAtom } from 'jotai';
 import {
 	applicationAtom,
@@ -15,12 +12,13 @@ import { useConfirmationModal } from '@/contexts/popup-modal.component';
 import Skeleton from 'react-loading-skeleton';
 import { Box, Button, Chip, Typography } from '@mui/material';
 import { ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/16/solid';
-import Spinner from '@/components/spinner';
+import Spinner from '@/components/Spinner';
 import {
 	useDeleteApplicationMutation, usePublishApplicationMutation,
 	usePublishOrganisationMutation,
 	useUpdateApplicationMutation,
 } from '@/generated/graphql';
+import { useApplicationEditionStatus } from '@/hooks/useApplicationEditionStatus';
 
 
 export type ApplicationDetailsNavbarProps = {

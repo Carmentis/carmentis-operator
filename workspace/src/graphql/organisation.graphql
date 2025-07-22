@@ -228,6 +228,8 @@ fragment Transaction on TransactionType {
   previousHistoryHash
   transferredAt
   label
+  amountInAtomics
+  height
 }
 query getTransactionsOfOrganisation($organisationId: Int!, $limit: Int!, $fromHash: String) {
   organisation(id: $organisationId) {

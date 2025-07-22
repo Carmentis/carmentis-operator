@@ -2,7 +2,7 @@
 
 import { createContext, PropsWithChildren, useContext, useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import Spinner from '@/components/spinner';
+import Spinner from '@/components/Spinner';
 
 /**
  * A React context to manage the navigation state of an application.

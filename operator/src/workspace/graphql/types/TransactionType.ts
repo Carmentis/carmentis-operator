@@ -21,8 +21,8 @@ export class TransactionType {
 	@Field()
 	label: string;
 
-	//@Field()
-	//name: string;
+	@Field()
+	amountInAtomics: number;
 
 	@Field()
 	transferredAt: string;

@@ -11,7 +11,7 @@ import { MuiThemeContextProvider } from '@/contexts/mui-theme.context';
 import { InitialisationStatusContext } from '@/contexts/initialisation-status.context';
 import { ModalProvider as ReactModalHookProvider } from 'react-modal-hook';
 import { ModalProvider } from '@/contexts/popup-modal.component';
-import { ApolloProvider } from '@apollo/client';
+import { ApolloError, ApolloProvider } from '@apollo/client';
 import { apolloClient } from '@/app/apollo-client';
 import { GraphQLFormattedError } from 'graphql/error';
 import {PublicEnvScript} from "next-runtime-env";
@@ -28,7 +28,7 @@ const toastConfig: ToastContainerProps = {
 };
 
 // toast hooks into a single utility for consistent usage
-type handledErrorTypes = string | string[] | readonly GraphQLFormattedError[];
+type handledErrorTypes = string | string[] | readonly GraphQLFormattedError[] | ApolloError;
 export const useToast = () => {
 
 	function handleError(message: handledErrorTypes) {

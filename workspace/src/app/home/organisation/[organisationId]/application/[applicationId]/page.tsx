@@ -2,8 +2,7 @@
 
 import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import ApplicationDetailsNavbar from '@/app/home/organisation/[organisationId]/application/[applicationId]/application-navbar';
-import FullPageLoadingComponent from '@/components/full-page-loading.component';
+import ApplicationDetailsNavbar from '@/app/home/organisation/[organisationId]/application/[applicationId]/ApplicationDetailsNavbar';
 import { useAtom, useAtomValue } from 'jotai';
 import {
   applicationAtom,
@@ -14,6 +13,7 @@ import ApplicationOverview from '@/app/home/organisation/[organisationId]/applic
 import { useGetApplicationInOrganisationQuery } from '@/generated/graphql';
 import { Box, Container, Typography, Alert, Paper, Divider } from '@mui/material';
 import AppsIcon from '@mui/icons-material/Apps';
+import FullSpaceSpinner from '@/components/FullSpaceSpinner';
 
 export default function ApplicationPage() {
   const [application, setApplication] = useAtom(applicationAtom);
@@ -36,7 +36,7 @@ export default function ApplicationPage() {
   }, [referenceApplication, setApplication]);
 
   if (!data || isLoading) {
-    return <FullPageLoadingComponent />;
+    return <FullSpaceSpinner />;
   }
 
   if (!application || !data || error) {

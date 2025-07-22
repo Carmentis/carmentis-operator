@@ -1,10 +1,11 @@
 'use client';
 
 
+import FullSpaceSpinner from '@/components/FullSpaceSpinner';
+
 export const TOKEN_STORAGE_ITEM = "carmentis-token";
 
 import { createContext, PropsWithChildren, useContext, useEffect, useState } from 'react';
-import FullPageLoadingComponent from '@/components/full-page-loading.component';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import { useGetCurrentUserQuery, UserFragment } from '@/generated/graphql';
 
@@ -38,7 +39,7 @@ export function UserAuthenticationContextProvider({children}: PropsWithChildren)
 	}
 
 	if (isLoading)
-		return <FullPageLoadingComponent/>
+		return <FullSpaceSpinner/>
 
 	if (!data || error)
 		return <>An error occurred</>

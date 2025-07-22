@@ -19,10 +19,10 @@ import {
   Tooltip, 
   Typography 
 } from '@mui/material';
-import GenericTableComponent from '@/components/generic-table.component';
+import GenericTableComponent from '@/components/GenericTableComponent';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
-import getApiKeyStatus from '@/hooks/api-key-status.hook';
+import useApiKeyStatusFormatter from '@/hooks/useApiKeyStatusFormatter';
 import { useToast } from '@/app/layout';
 import {
   ApiKeyUsageFragment,
@@ -89,6 +89,7 @@ function Header() {
   });
   const [updateKey] = useUpdateKeyMutation();
   const toast = useToast();
+  const apiKeyFormatter = useApiKeyStatusFormatter();
 
   function switchKeyStatus() {
     const key = data?.getApiKey;
@@ -153,7 +154,7 @@ function Header() {
             <Typography variant="h5" fontWeight="500">
               Key: {data.getApiKey.name}
             </Typography>
-            {getApiKeyStatus(data.getApiKey)}
+            {apiKeyFormatter(data.getApiKey)}
           </Box>
           <Tooltip title={data.getApiKey.isActive ? "Disable API key" : "Enable API key"}>
             <FormControlLabel

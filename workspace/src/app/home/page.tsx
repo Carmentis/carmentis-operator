@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import { useToast } from '@/app/layout';
-import AvatarOrganisation from '@/components/avatar-organisation';
+import AvatarOrganisation from '@/components/AvatarOrganisation';
 import { 
   Box, 
   Button, 
@@ -20,7 +20,6 @@ import {
   TextField, 
   Typography 
 } from '@mui/material';
-import { SearchInputForm } from '@/components/form/search-input.form';
 import Skeleton from 'react-loading-skeleton';
 import { useModal } from 'react-modal-hook';
 import { useCreateOrganisationMutation, useGetOrganisationsQuery } from '@/generated/graphql';
