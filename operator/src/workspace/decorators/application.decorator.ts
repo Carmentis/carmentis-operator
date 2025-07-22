@@ -1,6 +1,6 @@
 import { ArgumentMetadata, Injectable, NotFoundException, PipeTransform } from '@nestjs/common';
-import { ApplicationService } from '../../shared/services/application.service';
-import { OrganisationService } from '../../shared/services/organisation.service';
+import { ApplicationService } from '../../shared/services/ApplicationService';
+import { OrganisationService } from '../../shared/services/OrganisationService';
 
 
 @Injectable()

@@ -8,6 +8,6 @@ export const getPostgresConfig = (configService: ConfigService): TypeOrmModuleOp
 	username: configService.getOrThrow<string>('OPERATOR_POSTGRES_USER'),
 	password: configService.getOrThrow<string>('OPERATOR_POSTGRES_PASSWORD'),
 	database: configService.getOrThrow<string>('OPERATOR_POSTGRES_DB'),
-	entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+	entities: [__dirname + '/../**/*Entity{.ts,.js}'],
 	synchronize: true, // Set to false in production
 });

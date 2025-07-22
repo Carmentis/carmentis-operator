@@ -1,9 +1,9 @@
 import { createMap, createMapper } from '@automapper/core';
-import { ApiKeyEntity } from '../entities/api-key.entity';
-import { ApiKeyType, ApiKeyUsageType, RevealedApiKeyType } from './object-types/api-key.type';
-import { ApplicationEntity } from '../entities/application.entity';
-import { ApplicationType } from './object-types/application.type';
-import { ApiKeyUsageEntity } from '../entities/api-key-usage.entity';
+import { ApiKeyEntity } from '../entities/ApiKeyEntity';
+import { ApiKeyType, ApiKeyUsageType, RevealedApiKeyType } from './types/ApiKeyType';
+import { ApplicationEntity } from '../entities/ApplicationEntity';
+import { ApplicationType } from './types/ApplicationType';
+import { ApiKeyUsageEntity } from '../entities/ApiKeyUsageEntity';
 import { classes } from '@automapper/classes';
 
 export const mapper = createMapper({
