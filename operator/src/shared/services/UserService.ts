@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { UserEntity } from '../entities/UserEntity';
 import CreateUserDto from '../../workspace/dto/create-user.dto';
-import { getPublicKeyFromRequest } from '../../utils/request-public-key-access.hook';
 import CreateNotWhitelistedUserDto from '../../workspace/dto/create-user-public.dto';
 
 @Injectable()
@@ -15,20 +14,6 @@ export class UserService {
 	}
 
 
-
-	/**
-	 * Finds and returns the currently connected user based on the provided request.
-	 *
-	 * @param {Request} request The request object containing connection details, including the public key.
-	 * @return {Promise<object>} A promise that resolves with the currently connected user object.
-	 * @throws {NotFoundException} If no user is found matching the provided public key.
-	 */
-	async findCurrentlyConnectedUser(request: Request) {
-		const publicKey = getPublicKeyFromRequest(request);
-		const user = this.findOneByPublicKey(publicKey);
-		if (!user) throw new NotFoundException();
-		return user;
-	}
 
 	// Find one item by public key
 	async findOneByPublicKey(publicKey: string): Promise<UserEntity> {

@@ -18,7 +18,7 @@ import { ApiKeyService } from './services/ApiKeyService';
 import { ApiKeyUsageEntity } from './entities/ApiKeyUsageEntity';
 import { CryptoService } from './services/CryptoService';
 import { EncryptionService } from './services/EncryptionService';
-import { EncryptionServiceProxy } from './EncryptionServiceProxy';
+import { EncryptionServiceProxy } from './transformers/EncryptionServiceProxy';
 
 const WORKSPACE_PROVIDERS = [
 	EncryptionService,

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { WorkspaceApiModule } from './workspace/WorkspaceApiModule';
-import PackageConfigService from './package.service';
+import PackageConfigService from './services/PackageConfigService';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { getPostgresConfig } from './database/database.config';
+import { getPostgresConfig } from './database/getPostgresConfig';
 import { DatabaseInitService } from './database/DatabaseInitService';
 import { OperatorApiModule } from './operator/OperatorApiModule';
 import { SharedModule } from './shared/SharedModule';

@@ -1,6 +1,6 @@
 import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { OrganisationEntity } from '../../entities/OrganisationEntity';
-import { OrganisationService } from '../../services/OrganisationService';
+import { OrganisationEntity } from '../../../shared/entities/OrganisationEntity';
+import { OrganisationService } from '../../../shared/services/OrganisationService';
 import {
 	BadRequestException,
 	ForbiddenException,
@@ -9,20 +9,21 @@ import {
 	UnauthorizedException,
 	UseGuards, UseInterceptors,
 } from '@nestjs/common';
-import { CurrentUser } from '../../../workspace/decorators/current-user.decorator';
-import { UserEntity } from '../../entities/UserEntity';
-import ChainService from '../../services/ChainService';
+import { CurrentUser } from '../../decorators/CurrentUserDecorator';
+import { UserEntity } from '../../../shared/entities/UserEntity';
+import ChainService from '../../../shared/services/ChainService';
 import { OrganisationStatsDto } from '../dto/OrganisationStatsDto';
-import { ApplicationEntity } from '../../entities/ApplicationEntity';
-import { ApplicationService } from '../../services/ApplicationService';
-import { ApplicationByIdPipe, OrganisationByIdPipe } from '../../../workspace/decorators/application.decorator';
+import { ApplicationEntity } from '../../../shared/entities/ApplicationEntity';
+import { ApplicationService } from '../../../shared/services/ApplicationService';
 import { ApplicationUpdateDto } from '../dto/ApplicationCreationDto';
 import { ApplicationType } from '../types/ApplicationType';
 import { mapper } from '../mapper';
 import { TransactionType } from '../types/TransactionType';
 import { CMTSToken, EncoderFactory, StringSignatureEncoder, TOKEN } from '@cmts-dev/carmentis-sdk/server';
 import { OrganisationChainStatusType } from '../types/OrganisationChainStatusType';
-import { GraphQLJwtAuthGuard } from '../../../workspace/guards/GraphQLJwtAuthGuard';
+import { GraphQLJwtAuthGuard } from '../../guards/GraphQLJwtAuthGuard';
+import { ApplicationByIdPipe } from '../../pipes/ApplicationByIdPipe';
+import { OrganisationByIdPipe } from '../../pipes/OrganisationByIdPipe';
 
 @UseGuards(GraphQLJwtAuthGuard)
 @Resolver(of => OrganisationEntity)

@@ -1,5 +1,5 @@
 import { Column, ColumnOptions } from 'typeorm';
-import { EncryptionServiceProxy } from '../EncryptionServiceProxy';
+import { EncryptionServiceProxy } from '../transformers/EncryptionServiceProxy';
 import { EncryptionTransformer } from '../transformers/EncryptionTransformer';
 
 /**

@@ -1,16 +1,16 @@
 import { BadRequestException, NotFoundException, UseGuards } from '@nestjs/common';
 import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { ApiKeyEntity } from '../../entities/ApiKeyEntity';
-import { CurrentUser } from '../../../workspace/decorators/current-user.decorator';
-import { UserEntity } from '../../entities/UserEntity';
-import { ApiKeyService } from '../../services/ApiKeyService';
+import { ApiKeyEntity } from '../../../shared/entities/ApiKeyEntity';
+import { CurrentUser } from '../../decorators/CurrentUserDecorator';
+import { UserEntity } from '../../../shared/entities/UserEntity';
+import { ApiKeyService } from '../../../shared/services/ApiKeyService';
 import { ApiKeyType, ApiKeyUsageType, RevealedApiKeyType } from '../types/ApiKeyType';
-import { ApiKeyUsageEntity } from '../../entities/ApiKeyUsageEntity';
+import { ApiKeyUsageEntity } from '../../../shared/entities/ApiKeyUsageEntity';
 import { ApplicationType } from '../types/ApplicationType';
 import { mapper } from '../mapper';
-import { ApplicationEntity } from '../../entities/ApplicationEntity';
-import { ApplicationByIdPipe } from '../../../workspace/decorators/application.decorator';
-import { GraphQLJwtAuthGuard } from '../../../workspace/guards/GraphQLJwtAuthGuard';
+import { ApplicationEntity } from '../../../shared/entities/ApplicationEntity';
+import { GraphQLJwtAuthGuard } from '../../guards/GraphQLJwtAuthGuard';
+import { ApplicationByIdPipe } from '../../pipes/ApplicationByIdPipe';
 
 @UseGuards(GraphQLJwtAuthGuard)
 @Resolver(of => ApiKeyType)

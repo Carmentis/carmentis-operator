@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, Logger } from '@nestjs/common';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
-import { ApiKeyService } from '../services/ApiKeyService';
+import { ApiKeyService } from '../../shared/services/ApiKeyService';
 
 @Injectable()
 export class ApiKeyGuard implements CanActivate {

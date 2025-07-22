@@ -1,1 +1,0 @@
-export const getPublicKeyFromRequest = (req: Request) => req['publicKey'];

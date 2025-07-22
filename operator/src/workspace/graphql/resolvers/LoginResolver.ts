@@ -2,12 +2,12 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { ForbiddenException, Logger } from '@nestjs/common';
 
-import { ChallengeService } from '../../services/ChallengeService';
-import { UserService } from '../../services/UserService';
-import { EnvService } from '../../services/EnvService';
-import { Public } from '../../../workspace/decorators/public.decorator';
+import { ChallengeService } from '../../../shared/services/ChallengeService';
+import { UserService } from '../../../shared/services/UserService';
+import { EnvService } from '../../../shared/services/EnvService';
+import { Public } from '../../../shared/decorators/PublicDecorator';
 import { ChallengeVerificationResponse } from '../dto/ChallengeVerificationResponseDto';
-import { ChallengeEntity } from '../../entities/ChallengeEntity';
+import { ChallengeEntity } from '../../../shared/entities/ChallengeEntity';
 import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
 
 

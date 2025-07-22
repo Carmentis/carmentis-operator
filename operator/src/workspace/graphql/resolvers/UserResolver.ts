@@ -1,10 +1,10 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Injectable, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { UserEntity } from '../../entities/UserEntity';
-import { UserService } from '../../services/UserService';
-import { CurrentUser } from '../../../workspace/decorators/current-user.decorator';
+import { UserEntity } from '../../../shared/entities/UserEntity';
+import { UserService } from '../../../shared/services/UserService';
+import { CurrentUser } from '../../decorators/CurrentUserDecorator';
 
-import { GraphQLJwtAuthGuard } from '../../../workspace/guards/GraphQLJwtAuthGuard';
+import { GraphQLJwtAuthGuard } from '../../guards/GraphQLJwtAuthGuard';
 
 @UseGuards(GraphQLJwtAuthGuard)
 @Resolver(() => UserEntity)

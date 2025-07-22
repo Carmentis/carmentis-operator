@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import PackageConfigService from '../package.service';
-import { OperatorApiGateway } from './OperatorApiGateway';
-import { CorsMiddleware } from './CorsMiddleware';
+import PackageConfigService from '../services/PackageConfigService';
+import { OperatorApiGateway } from './gateways/OperatorApiGateway';
+import { CorsMiddleware } from './middlewares/CorsMiddleware';
 import { OperatorApiController } from './controllers/OperatorApiController';
 import { CryptoService } from '../shared/services/CryptoService';
 import { EnvService } from '../shared/services/EnvService';
@@ -11,6 +11,8 @@ import { OperatorService } from './services/OperatorService';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AnchorRequestEntity } from './entities/AnchorRequestEntity';
 import { AnchorRequestService } from './services/AnchorRequestService';
+import { APP_GUARD } from '@nestjs/core';
+import { ApiKeyGuard } from './guards/ApiKeyGuard';
 
 @Module({
 	imports: [
@@ -18,9 +20,21 @@ import { AnchorRequestService } from './services/AnchorRequestService';
 		TypeOrmModule.forFeature([
 			AnchorRequestEntity
 		]),
+
 	],
 	controllers: [OperatorApiController],
-	providers: [PackageConfigService, OperatorApiGateway, CryptoService, EnvService, OperatorService, AnchorRequestService],
+	providers: [
+		PackageConfigService,
+		OperatorApiGateway,
+		CryptoService,
+		EnvService,
+		OperatorService,
+		AnchorRequestService,
+		{
+			provide: APP_GUARD,
+			useClass: ApiKeyGuard,
+		}
+	],
 })
 export class OperatorApiModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {

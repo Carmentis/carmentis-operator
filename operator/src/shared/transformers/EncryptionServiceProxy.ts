@@ -1,4 +1,4 @@
-import { EncryptionService } from './services/EncryptionService';
+import { EncryptionService } from '../services/EncryptionService';
 
 export class EncryptionServiceProxy {
 	private static _instance: EncryptionService;

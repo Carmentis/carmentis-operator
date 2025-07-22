@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
 import { UserService } from '../../shared/services/UserService';
 import { UserEntity } from '../../shared/entities/UserEntity';
-import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { IS_PUBLIC_KEY } from '../../shared/decorators/PublicDecorator';
 import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
 
 @Injectable()

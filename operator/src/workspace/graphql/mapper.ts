@@ -1,9 +1,9 @@
 import { createMap, createMapper } from '@automapper/core';
-import { ApiKeyEntity } from '../entities/ApiKeyEntity';
+import { ApiKeyEntity } from '../../shared/entities/ApiKeyEntity';
 import { ApiKeyType, ApiKeyUsageType, RevealedApiKeyType } from './types/ApiKeyType';
-import { ApplicationEntity } from '../entities/ApplicationEntity';
+import { ApplicationEntity } from '../../shared/entities/ApplicationEntity';
 import { ApplicationType } from './types/ApplicationType';
-import { ApiKeyUsageEntity } from '../entities/ApiKeyUsageEntity';
+import { ApiKeyUsageEntity } from '../../shared/entities/ApiKeyUsageEntity';
 import { classes } from '@automapper/classes';
 
 export const mapper = createMapper({

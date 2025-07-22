@@ -1,10 +1,10 @@
 import { Args, Mutation, Query } from '@nestjs/graphql';
 import { ForbiddenException, Injectable, Logger, UseGuards } from '@nestjs/common';
-import { UserService } from '../../services/UserService';
-import { Public } from '../../../workspace/decorators/public.decorator';
-import { CryptoService } from '../../services/CryptoService';
+import { UserService } from '../../../shared/services/UserService';
+import { Public } from '../../../shared/decorators/PublicDecorator';
+import { CryptoService } from '../../../shared/services/CryptoService';
 import { SetupFirstAdminDto } from '../dto/SetupFirstAdminDto';
-import { GraphQLJwtAuthGuard } from '../../../workspace/guards/GraphQLJwtAuthGuard';
+import { GraphQLJwtAuthGuard } from '../../guards/GraphQLJwtAuthGuard';
 
 @UseGuards(GraphQLJwtAuthGuard)
 @Injectable()

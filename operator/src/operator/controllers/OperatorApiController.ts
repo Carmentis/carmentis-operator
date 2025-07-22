@@ -9,10 +9,10 @@ import {
 	MSG_APPROVAL_SIGNATURE,
 	WALLET_OP_MESSAGES,
 } from '@cmts-dev/carmentis-sdk/server';
-import { Public } from '../../workspace/decorators/public.decorator';
+import { Public } from '../../shared/decorators/PublicDecorator';
 import { EnvService } from '../../shared/services/EnvService';
 import { ApplicationService } from '../../shared/services/ApplicationService';
-import PackageConfigService from '../../package.service';
+import PackageConfigService from '../../services/PackageConfigService';
 import { ApiKeyService } from '../../shared/services/ApiKeyService';
 import { AnchorDto, AnchorWithWalletDto } from '../dto/AnchorDto';
 import {
@@ -24,7 +24,7 @@ import {
 	ApiOperation,
 	ApiResponse, ApiSecurity,
 } from '@nestjs/swagger';
-import { ApiKey } from '../../workspace/decorators/api-key.decorator';
+import { ApiKey } from '../decorators/ApiKeyDecorator';
 import { ApiKeyEntity } from '../../shared/entities/ApiKeyEntity';
 import { OperatorService } from '../services/OperatorService';
 import { randomBytes } from 'crypto';
