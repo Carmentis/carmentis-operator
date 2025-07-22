@@ -93,6 +93,20 @@ export class OrganisationEntity {
 	}
 
 	isReadyToBePublished() {
-		return true;
+		return this.isCountryCodeDefined() &&
+			this.isCityDefined() &&
+			this.isWebsiteDefined();
+	}
+
+	isCountryCodeDefined() {
+		return this.countryCode.length == 2;
+	}
+
+	isCityDefined() {
+		return this.city.length > 0;
+	}
+
+	isWebsiteDefined() {
+		return this.website.length > 0;
 	}
 }
