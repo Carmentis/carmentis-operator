@@ -3,7 +3,7 @@ import {
 	ApplicationPublicationExecutionContext,
 	Blockchain, BlockchainFacade,
 	Explorer,
-	Hash, OrganisationPublicationExecutionContext,
+	Hash, OrganizationPublicationExecutionContext,
 	ProviderFactory,
 	PublicSignatureKey,
 	StringSignatureEncoder,
@@ -62,18 +62,18 @@ export default class ChainService {
 		// create or update the application
 		const isAlreadyPublished = organisationEntity.published;
 		const organisationId = organisationEntity.virtualBlockchainId;
-		const publicationContext = new OrganisationPublicationExecutionContext()
+		const publicationContext = new OrganizationPublicationExecutionContext()
 			.withCity(organisationEntity.city)
 			.withName(organisationEntity.name)
 			.withWebsite(organisationEntity.website)
 			.withCountryCode(organisationEntity.countryCode);
 
 		if (isAlreadyPublished) {
-			publicationContext.withExistingOrganisationId(Hash.from(organisationId))
+			publicationContext.withExistingOrganizationId(Hash.from(organisationId))
 		}
 
 		const blockchain = BlockchainFacade.createFromNodeUrlAndPrivateKey(this.nodeUrl, organisationPrivateKey);
-		return blockchain.publishOrganisation(publicationContext);
+		return blockchain.publishOrganization(publicationContext);
 	}
 
 	/**
@@ -101,7 +101,7 @@ export default class ChainService {
 		if (isAlreadyPublished) {
 			publicationContext.withExistingApplicationId(Hash.from(applicationId))
 		} else {
-			publicationContext.withOrganisationId(Hash.from(organisation.virtualBlockchainId));
+			publicationContext.withOrganizationId(Hash.from(organisation.virtualBlockchainId));
 		}
 		const blockchain = BlockchainFacade.createFromNodeUrlAndPrivateKey(this.nodeUrl, organisationPrivateKey);
 		return blockchain.publishApplication(publicationContext);
