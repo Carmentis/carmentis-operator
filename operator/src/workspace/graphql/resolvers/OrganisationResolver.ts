@@ -1,29 +1,16 @@
 import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { OrganisationEntity } from '../../../shared/entities/OrganisationEntity';
 import { OrganisationService } from '../../../shared/services/OrganisationService';
-import {
-	BadRequestException,
-	ForbiddenException,
-	Logger,
-	NotFoundException,
-	UnauthorizedException,
-	UseGuards, UseInterceptors,
-} from '@nestjs/common';
+import { Logger, NotFoundException, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../../decorators/CurrentUserDecorator';
 import { UserEntity } from '../../../shared/entities/UserEntity';
 import ChainService from '../../../shared/services/ChainService';
-import { OrganisationStatsDto } from '../dto/OrganisationStatsDto';
-import { ApplicationEntity } from '../../../shared/entities/ApplicationEntity';
-import { ApplicationService } from '../../../shared/services/ApplicationService';
-import { ApplicationUpdateDto } from '../dto/ApplicationCreationDto';
-import { ApplicationType } from '../types/ApplicationType';
-import { mapper } from '../mapper';
 import { TransactionType } from '../types/TransactionType';
-import { CMTSToken, EncoderFactory, StringSignatureEncoder, TOKEN, Transaction } from '@cmts-dev/carmentis-sdk/server';
+import { CMTSToken, StringSignatureEncoder, Transaction } from '@cmts-dev/carmentis-sdk/server';
 import { OrganisationChainStatusType } from '../types/OrganisationChainStatusType';
 import { GraphQLJwtAuthGuard } from '../../guards/GraphQLJwtAuthGuard';
-import { ApplicationByIdPipe } from '../../pipes/ApplicationByIdPipe';
 import { OrganisationByIdPipe } from '../../pipes/OrganisationByIdPipe';
+import { NodeEntity } from '../../../shared/entities/NodeEntity';
 
 @UseGuards(GraphQLJwtAuthGuard)
 @Resolver(of => OrganisationEntity)
@@ -110,6 +97,12 @@ export class OrganisationResolver {
 	async getUsersInOrganisation(@Parent() organisation: OrganisationEntity): Promise<UserEntity[]> {
 		return this.organisationService.findAllUsersInOrganisation(organisation.id);
 	}
+
+	@ResolveField(() => [NodeEntity], { name: 'nodes' })
+	async getNodesInOrganisation(@Parent() organisation: OrganisationEntity): Promise<NodeEntity[]> {
+		return this.organisationService.findAllNodesInOrganisation(organisation.id);
+	}
+
 
 	@ResolveField(() => Boolean, { name: 'hasTokenAccount' })
 	async hasTokenAccount(
@@ -221,106 +214,3 @@ export class OrganisationResolver {
 
 
 
-@UseGuards(GraphQLJwtAuthGuard)
-@Resolver(of => ApplicationType)
-export class ApplicationResolver {
-	private logger = new Logger(ApplicationResolver.name);
-	constructor(
-		private readonly organisationService: OrganisationService,
-		private readonly applicationService: ApplicationService
-	) {}
-
-	@Query(() => [ApplicationType], { name: 'getAllApplicationsInOrganisation' })
-	async getAllApplicationsInOrganisation(
-		@Args('organisationId', { type: () => Int }) organisationId: number,
-	): Promise<ApplicationType[]> {
-		const applications = await this.applicationService.findAllApplicationsInOrganisationByOrganisationId(organisationId);
-		return mapper.mapArray(applications, ApplicationEntity, ApplicationType)
-	}
-
-	@Mutation(() => ApplicationType, { name: 'createApplicationInOrganisation' })
-	async createApplicationInOrganisation(
-		@CurrentUser() user: UserEntity,
-		@Args('organisationId', { type: () => Int }, OrganisationByIdPipe) organisation: OrganisationEntity,
-		@Args('applicationName', { type: () => String }) applicationName: string,
-	) {
-		// checks that the user belongs to the organisation
-		const userBelongsToOrganisation = await this.organisationService.checkUserBelongsToOrganisation(user, organisation);
-        if (!userBelongsToOrganisation) {
-            throw new UnauthorizedException('User does not belong to the organisation');
-        }
-
-		return await this.applicationService.createApplicationInOrganisationByName(
-			organisation,
-			applicationName,
-		)
-	}
-
-	@Query(() => ApplicationType, { name: 'getApplicationInOrganisation' })
-	async getApplicationInOrganisation(
-		@Args('applicationId', { type: () => Int }, ApplicationByIdPipe) application: ApplicationEntity,
-	): Promise<ApplicationType> {
-		return mapper.map(application, ApplicationEntity, ApplicationType);
-	}
-
-	@Mutation(returns => Boolean)
-	async publishApplication(
-		@Args('applicationId', { type: () => Int }, ApplicationByIdPipe) application: ApplicationEntity,
-		) {
-		const organisation = await this.organisationService.findOrganisationByApplication(application);
-		// reject the publication of an application if the organisation is not published itself
-		const organisationIsPublished = await this.organisationService.isPublished(organisation.id);
-		if (!organisationIsPublished) throw new ForbiddenException("Publish first the organisation before to publish an application.")
-
-		try {
-			await this.applicationService.publishApplication(application.id);
-		} catch (e) {
-			this.logger.error(e)
-			throw new BadRequestException(e);
-		}
-
-		return true;
-	}
-
-
-
-	@Mutation(() => Boolean, { name: 'deleteApplicationInOrganisation' })
-	async deleteApplicationInOrganisation(
-		@Args('applicationId', { type: () => Int }, ApplicationByIdPipe) application: ApplicationEntity,
-	) {
-		await this.applicationService.deleteApplicationById(application.id);
-		return true;
-	}
-
-	@Mutation(() => ApplicationType, { name: 'updateApplicationInOrganisation' })
-	async updateApplicationInOrganisation(
-		@Args('applicationId', { type: () => Int }, ApplicationByIdPipe) application: ApplicationEntity,
-		@Args('applicationUpdate') applicationUpdate: ApplicationUpdateDto,
-		) {
-		const updatedApplication = await this.applicationService.update(application, applicationUpdate);
-		return mapper.map(updatedApplication, ApplicationEntity, ApplicationType)
-	}
-
-}
-
-
-@UseGuards(GraphQLJwtAuthGuard)
-@Resolver(of => OrganisationStatsDto)
-export class OrganisationStatisticsResolver {
-
-	constructor(
-		private readonly organisationService: OrganisationService,
-	) {}
-
-	@Query(returns => OrganisationStatsDto)
-	async getOrganisationStatistics(@Args('id', { type: () => Int }) id: number): Promise<OrganisationStatsDto> {
-		const [numberOfApplications, numberOfUsers] = await Promise.all([
-			this.organisationService.getNumberOfApplicationsInOrganisation(id),
-			this.organisationService.getNumberOfUsersInOrganisation(id)
-		])
-		return {
-			numberOfApplications,
-			numberOfUsers,
-		}
-	}
-}

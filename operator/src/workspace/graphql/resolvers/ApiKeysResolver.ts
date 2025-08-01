@@ -4,13 +4,15 @@ import { ApiKeyEntity } from '../../../shared/entities/ApiKeyEntity';
 import { CurrentUser } from '../../decorators/CurrentUserDecorator';
 import { UserEntity } from '../../../shared/entities/UserEntity';
 import { ApiKeyService } from '../../../shared/services/ApiKeyService';
-import { ApiKeyType, ApiKeyUsageType, RevealedApiKeyType } from '../types/ApiKeyType';
+import { ApiKeyType } from '../types/ApiKeyType';
 import { ApiKeyUsageEntity } from '../../../shared/entities/ApiKeyUsageEntity';
 import { ApplicationType } from '../types/ApplicationType';
 import { mapper } from '../mapper';
 import { ApplicationEntity } from '../../../shared/entities/ApplicationEntity';
 import { GraphQLJwtAuthGuard } from '../../guards/GraphQLJwtAuthGuard';
 import { ApplicationByIdPipe } from '../../pipes/ApplicationByIdPipe';
+import { ApiKeyUsageType } from '../types/ApiKeyUsageType';
+import { RevealedApiKeyType } from '../types/RevealedApiKeyType';
 
 @UseGuards(GraphQLJwtAuthGuard)
 @Resolver(of => ApiKeyType)

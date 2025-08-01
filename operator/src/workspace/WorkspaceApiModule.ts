@@ -15,28 +15,23 @@ import { APP_GUARD } from '@nestjs/core';
 import { SharedModule } from '../shared/SharedModule';
 import { ApiKeyGuard } from '../operator/guards/ApiKeyGuard';
 import {
-	ApplicationResolver,
 	OrganisationResolver,
-	OrganisationStatisticsResolver,
+
 } from './graphql/resolvers/OrganisationResolver';
 import { LoginResolver } from './graphql/resolvers/LoginResolver';
 import { UserResolver } from './graphql/resolvers/UserResolver';
 import { ApiKeysResolver } from './graphql/resolvers/ApiKeysResolver';
 import { GeneralResolver } from './graphql/resolvers/GeneralResolver';
 import { GraphQLJwtAuthGuard } from './guards/GraphQLJwtAuthGuard';
+import { ApplicationResolver } from './graphql/resolvers/ApplicationResolver';
+import { OrganisationStatisticsResolver } from './graphql/resolvers/OrganisationStatisticsResolver';
+import { NodeEntity } from '../shared/entities/NodeEntity';
 
 // Extracted imports, controllers, and providers into constants
 export const DEFAULT_JWT_TOKEN_VALIDITY = "8h"
 
 const WORKSPACE_IMPORTS = [
 	SharedModule,
-	TypeOrmModule.forFeature([
-		UserEntity,
-		OrganisationEntity,
-		OrganisationAccessRightEntity,
-		ApplicationEntity,
-		ChallengeEntity
-	]),
 	JwtModule.register({
 		global: true,
 		secret: process.env.JWT_SECRET || crypto.randomBytes(32),

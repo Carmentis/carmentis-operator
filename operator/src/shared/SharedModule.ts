@@ -19,6 +19,7 @@ import { ApiKeyUsageEntity } from './entities/ApiKeyUsageEntity';
 import { CryptoService } from './services/CryptoService';
 import { EncryptionService } from './services/EncryptionService';
 import { EncryptionServiceProxy } from './transformers/EncryptionServiceProxy';
+import { NodeEntity } from './entities/NodeEntity';
 
 const WORKSPACE_PROVIDERS = [
 	EncryptionService,
@@ -45,7 +46,8 @@ export const DEFAULT_JWT_TOKEN_VALIDITY = "8h"
 			ApplicationEntity,
 			ChallengeEntity,
 			ApiKeyEntity,
-			ApiKeyUsageEntity
+			ApiKeyUsageEntity,
+			NodeEntity,
 		]),
 	],
 	providers: [

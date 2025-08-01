@@ -39,7 +39,7 @@ export class ApplicationEntity {
     @Column({ nullable: true, unique: true })
     virtualBlockchainId: string;
 
-    @ManyToOne(() => OrganisationEntity, (org) => org.applications, { onDelete: "CASCADE" })
+    @ManyToOne(() => OrganisationEntity, (org) => org.nodes, { onDelete: "CASCADE" })
     organisation: OrganisationEntity;
 
     @AutoMap()

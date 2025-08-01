@@ -2,6 +2,19 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type NodeEntity {
+  id: Float!
+  nodeAlias: String!
+  includedAt: DateTime!
+  rpcEndpoint: String!
+  virtualBlockchainId: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
 type OrganisationEntity {
   id: Int!
   name: String!
@@ -19,16 +32,12 @@ type OrganisationEntity {
   virtualBlockchainId: String
   balance: String!
   users: [UserEntity!]!
+  nodes: [NodeEntity!]!
   hasTokenAccount: Boolean!
   isAnchoredOnChain: Boolean!
   chainStatus: OrganisationChainStatusType!
   transactions(limit: Int!, fromHistoryHash: String): [TransactionType!]!
 }
-
-"""
-A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-"""
-scalar DateTime
 
 type UserEntity {
   publicKey: String!
@@ -41,9 +50,37 @@ type ChallengeEntity {
   challenge: String!
 }
 
-type OrganisationStatsDto {
-  numberOfApplications: Int!
-  numberOfUsers: Int!
+type TransactionType {
+  height: Int!
+  previousHistoryHash: String!
+  label: String!
+  amountInAtomics: Float!
+  transferredAt: String!
+  linkedAccount: String!
+  amount: String!
+  chainReference: String!
+}
+
+type OrganisationChainStatusType {
+  hasTokenAccount: Boolean!
+  isPublishedOnChain: Boolean!
+  hasEditedOrganization: Boolean!
+}
+
+type ChallengeVerificationResponse {
+  token: String!
+}
+
+type ApiKeyType {
+  id: Int!
+  name: String!
+  createdAt: DateTime!
+  activeUntil: DateTime!
+  isActive: Boolean!
+  partialKey: String!
+  application: ApplicationType!
+  countUsages(filterByUnauthorised: Boolean!): Int!
+  usages(limit: Int, offset: Int, filterByUnauthorized: Boolean): [ApiKeyUsageType!]!
 }
 
 type ApplicationType {
@@ -60,18 +97,6 @@ type ApplicationType {
   published: Boolean!
   publishedAt: DateTime
   isDraft: Boolean!
-}
-
-type ApiKeyType {
-  id: Int!
-  name: String!
-  createdAt: DateTime!
-  activeUntil: DateTime!
-  isActive: Boolean!
-  partialKey: String!
-  application: ApplicationType!
-  countUsages(filterByUnauthorised: Boolean!): Int!
-  usages(limit: Int, offset: Int, filterByUnauthorized: Boolean): [ApiKeyUsageType!]!
 }
 
 type ApiKeyUsageType {
@@ -96,25 +121,9 @@ type RevealedApiKeyType {
   key: String!
 }
 
-type TransactionType {
-  height: Int!
-  previousHistoryHash: String!
-  label: String!
-  amountInAtomics: Float!
-  transferredAt: String!
-  linkedAccount: String!
-  amount: String!
-  chainReference: String!
-}
-
-type OrganisationChainStatusType {
-  hasTokenAccount: Boolean!
-  isPublishedOnChain: Boolean!
-  hasEditedOrganization: Boolean!
-}
-
-type ChallengeVerificationResponse {
-  token: String!
+type OrganisationStatsDto {
+  numberOfApplications: Int!
+  numberOfUsers: Int!
 }
 
 type Query {

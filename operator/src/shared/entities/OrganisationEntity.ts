@@ -4,7 +4,8 @@ import { ApplicationEntity } from './ApplicationEntity';
 import { Exclude } from 'class-transformer';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EncryptedColumn } from '../decorators/EncryptionDecorator';
-import { PrivateSignatureKey, PublicSignatureKey, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
+import { Hash, PrivateSignatureKey, PublicSignatureKey, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
+import { NodeEntity } from './NodeEntity';
 
 @ObjectType()
 @Entity('organisation')
@@ -58,6 +59,9 @@ export class OrganisationEntity {
 	@OneToMany(() => ApplicationEntity, (app) => app.organisation, { cascade: true })
 	applications: ApplicationEntity[];
 
+	@OneToMany(() => NodeEntity, (node) => node.organisation, { cascade: true })
+	nodes: NodeEntity[];
+
 	@Field(type => Date)
 	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
 	createdAt: Date;
@@ -77,6 +81,14 @@ export class OrganisationEntity {
 	@Field(type => String, {nullable: true})
 	@Column({nullable: true})
 	virtualBlockchainId: string;
+
+	isPublished(): boolean {
+		return this.published
+	}
+
+	getVirtualBlockchainId(): Hash {
+		return Hash.from(this.virtualBlockchainId);
+	}
 
 	getPrivateSignatureKey(): PrivateSignatureKey {
 		const encoder = StringSignatureEncoder.defaultStringSignatureEncoder();

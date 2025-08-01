@@ -7,10 +7,11 @@ import {
 	ProviderFactory,
 	PublicSignatureKey,
 	StringSignatureEncoder,
-	TOKEN,
+	ValidatorNodePublicationExecutionContext,
 } from '@cmts-dev/carmentis-sdk/server';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { OrganisationEntity } from '../entities/OrganisationEntity';
+import { NodeEntity } from '../entities/NodeEntity';
 
 
 /**
@@ -170,4 +171,18 @@ export default class ChainService {
 	}
 
 
+	async claimNode(organisation: OrganisationEntity, node: NodeEntity) {
+		const blockchain = BlockchainFacade.createFromNodeUrl(node.rpcEndpoint);
+		const organizationId = organisation.getVirtualBlockchainId();
+		const nodeStatus = await blockchain.getNodeStatus();
+		const cometPublicKey = nodeStatus.getCometBFTNodePublicKey();
+		const cometPublicKeyType = nodeStatus.getCometBFTNodePublicKeyType();
+		const validatorNodeCreationContext = new ValidatorNodePublicationExecutionContext()
+			.withOrganizationId(organizationId)
+			.withPower(0)
+			.withCometPublicKeyType(cometPublicKeyType)
+			.withCometPublicKey(cometPublicKey);
+		const validatorNodeId = await blockchain.publishValidatorNode(validatorNodeCreationContext);
+		return validatorNodeId;
+	}
 }
