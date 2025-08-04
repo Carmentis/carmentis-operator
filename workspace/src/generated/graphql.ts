@@ -220,6 +220,14 @@ export type MutationVerifyChallengeArgs = {
   signature: Scalars['String']['input'];
 };
 
+export type NodeEntity = {
+  id: Scalars['Float']['output'];
+  includedAt: Scalars['DateTime']['output'];
+  nodeAlias: Scalars['String']['output'];
+  rpcEndpoint: Scalars['String']['output'];
+  virtualBlockchainId: Scalars['String']['output'];
+};
+
 export type OrganisationChainStatusType = {
   hasEditedOrganization: Scalars['Boolean']['output'];
   hasTokenAccount: Scalars['Boolean']['output'];
@@ -239,6 +247,7 @@ export type OrganisationEntity = {
   lastUpdateAt: Scalars['DateTime']['output'];
   logoUrl?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
+  nodes: Array<NodeEntity>;
   publicSignatureKey: Scalars['String']['output'];
   published: Scalars['Boolean']['output'];
   publishedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -629,6 +638,15 @@ export type GetOrganisationChainStatusQueryVariables = Exact<{
 
 export type GetOrganisationChainStatusQuery = { organisation: { chainStatus: { hasTokenAccount: boolean, isPublishedOnChain: boolean, hasEditedOrganization: boolean } } };
 
+export type NodeFragmentFragment = { id: number, nodeAlias: string, includedAt: any, virtualBlockchainId: string, rpcEndpoint: string };
+
+export type GetAllNodesQueryVariables = Exact<{
+  organisationId: Scalars['Int']['input'];
+}>;
+
+
+export type GetAllNodesQuery = { organisation: { nodes: Array<{ id: number, nodeAlias: string, includedAt: any, virtualBlockchainId: string, rpcEndpoint: string }> } };
+
 export type UserFragment = { publicKey: string, firstname: string, lastname: string, isAdmin: boolean };
 
 export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
@@ -743,6 +761,15 @@ export const TransactionFragmentDoc = gql`
   label
   amountInAtomics
   height
+}
+    `;
+export const NodeFragmentFragmentDoc = gql`
+    fragment NodeFragment on NodeEntity {
+  id
+  nodeAlias
+  includedAt
+  virtualBlockchainId
+  rpcEndpoint
 }
     `;
 export const UserFragmentDoc = gql`
@@ -2024,6 +2051,48 @@ export type GetOrganisationChainStatusQueryHookResult = ReturnType<typeof useGet
 export type GetOrganisationChainStatusLazyQueryHookResult = ReturnType<typeof useGetOrganisationChainStatusLazyQuery>;
 export type GetOrganisationChainStatusSuspenseQueryHookResult = ReturnType<typeof useGetOrganisationChainStatusSuspenseQuery>;
 export type GetOrganisationChainStatusQueryResult = Apollo.QueryResult<GetOrganisationChainStatusQuery, GetOrganisationChainStatusQueryVariables>;
+export const GetAllNodesDocument = gql`
+    query getAllNodes($organisationId: Int!) {
+  organisation(id: $organisationId) {
+    nodes {
+      ...NodeFragment
+    }
+  }
+}
+    ${NodeFragmentFragmentDoc}`;
+
+/**
+ * __useGetAllNodesQuery__
+ *
+ * To run a query within a React component, call `useGetAllNodesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetAllNodesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetAllNodesQuery({
+ *   variables: {
+ *      organisationId: // value for 'organisationId'
+ *   },
+ * });
+ */
+export function useGetAllNodesQuery(baseOptions: Apollo.QueryHookOptions<GetAllNodesQuery, GetAllNodesQueryVariables> & ({ variables: GetAllNodesQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetAllNodesQuery, GetAllNodesQueryVariables>(GetAllNodesDocument, options);
+      }
+export function useGetAllNodesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetAllNodesQuery, GetAllNodesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetAllNodesQuery, GetAllNodesQueryVariables>(GetAllNodesDocument, options);
+        }
+export function useGetAllNodesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetAllNodesQuery, GetAllNodesQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetAllNodesQuery, GetAllNodesQueryVariables>(GetAllNodesDocument, options);
+        }
+export type GetAllNodesQueryHookResult = ReturnType<typeof useGetAllNodesQuery>;
+export type GetAllNodesLazyQueryHookResult = ReturnType<typeof useGetAllNodesLazyQuery>;
+export type GetAllNodesSuspenseQueryHookResult = ReturnType<typeof useGetAllNodesSuspenseQuery>;
+export type GetAllNodesQueryResult = Apollo.QueryResult<GetAllNodesQuery, GetAllNodesQueryVariables>;
 export const GetCurrentUserDocument = gql`
     query getCurrentUser {
   getCurrentUser {

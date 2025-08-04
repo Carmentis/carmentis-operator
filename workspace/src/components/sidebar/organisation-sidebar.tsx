@@ -48,6 +48,9 @@ export default function OrganisationSideBar() {
 						 activeRegex={new RegExp('/application')}></SidebarItem>
 			<SidebarItem icon={"bi-currency-dollar"} text={"Transactions"} link={`${baseLink}/transactions`}
 						 activeRegex={new RegExp('/transactions')}></SidebarItem>
+			<SidebarItem icon={"bi-server"} text={"Nodes"} link={`${baseLink}/nodes`}
+						 activeRegex={new RegExp('/nodes')}></SidebarItem>
+
 		</>
 	} else {
 		content = <>

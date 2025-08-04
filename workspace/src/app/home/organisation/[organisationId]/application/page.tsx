@@ -106,12 +106,6 @@ export default function ListOfApplicationsPage() {
       <Box mb={4}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Box display="flex" alignItems="center" gap={2}>
-            <AppsIcon color="primary" fontSize="large" />
-            <Typography variant="h4" fontWeight="500" color="primary">
-              Applications
-            </Typography>
-          </Box>
-          <Box display="flex" alignItems="center" gap={2}>
             <Paper 
               elevation={0} 
               sx={{ 
@@ -152,7 +146,6 @@ export default function ListOfApplicationsPage() {
             </Button>
           </Box>
         </Box>
-        <Divider />
       </Box>
 
       {filteredApplications.length === 0 ? (

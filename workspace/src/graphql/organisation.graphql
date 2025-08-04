@@ -257,3 +257,20 @@ query getOrganisationChainStatus($organisationId: Int!) {
     }
   }
 }
+
+
+fragment NodeFragment on NodeEntity {
+  id,
+  nodeAlias,
+  includedAt,
+  virtualBlockchainId,
+  rpcEndpoint
+}
+
+query getAllNodes($organisationId: Int!) {
+  organisation(id: $organisationId) {
+    nodes {
+     ...NodeFragment
+    }
+  }
+}

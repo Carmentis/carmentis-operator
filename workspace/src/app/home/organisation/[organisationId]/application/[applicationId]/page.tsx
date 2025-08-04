@@ -64,16 +64,6 @@ export default function ApplicationPage() {
 
   return (
     <Container maxWidth={false} disableGutters>
-      <Box mb={4}>
-        <Box display="flex" alignItems="center" gap={2} mb={3}>
-          <AppsIcon color="primary" fontSize="large" />
-          <Typography variant="h4" fontWeight="500" color="primary">
-            {application.name}
-          </Typography>
-        </Box>
-        <Divider />
-      </Box>
-
       <ApplicationEditionView
         key={applicationId}
         refreshApplication={() => mutate()}
@@ -95,8 +85,7 @@ type ApplicationEditionViewProps = {
 function ApplicationEditionView(props: ApplicationEditionViewProps) {
   return (
     <Box display="flex" flexDirection="column" gap={4}>
-      <Paper 
-        elevation={0} 
+      <Paper
         sx={{ 
           p: 3, 
           borderRadius: 2, 

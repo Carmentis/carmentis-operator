@@ -11,7 +11,17 @@ import { useAtom } from 'jotai';
 import { organisationAtom } from '@/app/home/organisation/atom';
 import { useGetOrganisationQuery } from '@/generated/graphql';
 import FullSpaceSpinner from '@/components/FullSpaceSpinner';
+import { OrganisationHeader } from '@/app/home/organisation/[organisationId]/OrganisationHeader';
 
+
+export default function RootLayout({ children }: PropsWithChildren) {
+	return <>
+		<OrganisationDataAccess>
+			<OrganisationHeader/>
+			{children}
+		</OrganisationDataAccess>
+	</>;
+}
 
 
 function OrganisationDataAccess({ children }: PropsWithChildren) {
@@ -57,10 +67,3 @@ function OrganisationDataAccess({ children }: PropsWithChildren) {
 	</OrganisationMutationContextProvider>;
 }
 
-export default function RootLayout({ children }: PropsWithChildren) {
-	return <>
-		<OrganisationDataAccess>
-			{children}
-		</OrganisationDataAccess>
-	</>;
-}
