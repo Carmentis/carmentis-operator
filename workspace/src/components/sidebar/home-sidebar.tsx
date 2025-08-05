@@ -15,7 +15,7 @@ export default function HomeSideBar() {
 	return <Box display={"flex"} flexDirection={"column"} height={"100%"}>
 		<Box flexGrow={1}>
 			<AuthenticatedUserSidebarItem/>
-			<SidebarItem icon={<HomeIcon/>} text={"Organisations"} link={"/home"} activeRegex={/\/home$/}/>
+			<SidebarItem icon={<HomeIcon/>} text={"Home"} link={"/home"} activeRegex={/\/home$/}/>
 			<SidebarItem icon={<PeopleIcon/>} text={"Users"} link={"/home/user"} activeRegex={/\/home\/user$/}/>
 			<SidebarItem icon={<SettingsIcon/>} text={"Parameters"} link={"/home/parameters"} activeRegex={/\/home\/parameters$/}/>
 		</Box>

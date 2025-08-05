@@ -6,9 +6,22 @@ query getLinkedNode {
     getLinkedNode
 }
 
+query getAllApplications {
+    getAllApplications {
+        name
+        logoUrl
+        virtualBlockchainId
+        createdAt
+        organisationId
+        id
+    }
+}
+
 mutation setupFirstAdministrator($setupFirstAdmin: SetupFirstAdminDto!) {
     setupFirstAdministrator(setupFirstAdmin: $setupFirstAdmin)
 }
+
+
 
 mutation updateNodeInOrganisation($organisationId: Int!, $nodeId: Int!, $nodeAlias: String!, $nodeRpcEndpoint: String!) {
     updateNodeInOrganisation(

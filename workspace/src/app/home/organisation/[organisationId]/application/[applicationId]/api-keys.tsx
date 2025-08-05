@@ -141,11 +141,10 @@ export default function ApiKeysPage() {
 		<Box>
 			<Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
 				<Box display="flex" justifyContent="start" flexDirection={"column"} alignItems="start" >
-					<Typography variant="h6">
+					<Typography variant="h6" color={"primary"}>
 						API Keys
 					</Typography>
 					<Typography>Below are listed keys associated with the application <Typography fontWeight={"bold"} component={"span"}>{application.name}</Typography>. </Typography>
-
 				</Box>
 				<Button variant="contained" color="primary" onClick={() => setWantToCreateKey(true)}>
 					Generate Key

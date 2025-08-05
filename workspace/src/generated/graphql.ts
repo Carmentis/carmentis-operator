@@ -61,6 +61,7 @@ export type ApplicationType = {
   lastUpdateAt: Scalars['DateTime']['output'];
   logoUrl?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
+  organisationId: Scalars['Int']['output'];
   published: Scalars['Boolean']['output'];
   publishedAt?: Maybe<Scalars['DateTime']['output']>;
   version: Scalars['Int']['output'];
@@ -304,6 +305,7 @@ export type OrganisationStatsDto = {
 export type Query = {
   getAllApiKeysOfApplication: Array<ApiKeyType>;
   getAllApiKeysOfOrganisation: Array<ApiKeyType>;
+  getAllApplications: Array<ApplicationType>;
   getAllApplicationsInOrganisation: Array<ApplicationType>;
   getAllUsers: Array<UserEntity>;
   getApiKey: ApiKeyType;
@@ -424,6 +426,11 @@ export type GetLinkedNodeQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetLinkedNodeQuery = { getLinkedNode: string };
 
+export type GetAllApplicationsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetAllApplicationsQuery = { getAllApplications: Array<{ name: string, logoUrl?: string | null, virtualBlockchainId?: string | null, createdAt: any, organisationId: number, id: number }> };
+
 export type SetupFirstAdministratorMutationVariables = Exact<{
   setupFirstAdmin: SetupFirstAdminDto;
 }>;
@@ -465,7 +472,7 @@ export type UserEntityFragment = { publicKey: string, isAdmin: boolean, firstnam
 export type GetOrganisationsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetOrganisationsQuery = { organisations: Array<{ id: number, name: string, publicSignatureKey: string }> };
+export type GetOrganisationsQuery = { organisations: Array<{ id: number, name: string, publicSignatureKey: string, hasTokenAccount: boolean, createdAt: any, virtualBlockchainId?: string | null }> };
 
 export type GetOrganisationQueryVariables = Exact<{
   id: Scalars['Int']['input'];
@@ -928,6 +935,50 @@ export type GetLinkedNodeQueryHookResult = ReturnType<typeof useGetLinkedNodeQue
 export type GetLinkedNodeLazyQueryHookResult = ReturnType<typeof useGetLinkedNodeLazyQuery>;
 export type GetLinkedNodeSuspenseQueryHookResult = ReturnType<typeof useGetLinkedNodeSuspenseQuery>;
 export type GetLinkedNodeQueryResult = Apollo.QueryResult<GetLinkedNodeQuery, GetLinkedNodeQueryVariables>;
+export const GetAllApplicationsDocument = gql`
+    query getAllApplications {
+  getAllApplications {
+    name
+    logoUrl
+    virtualBlockchainId
+    createdAt
+    organisationId
+    id
+  }
+}
+    `;
+
+/**
+ * __useGetAllApplicationsQuery__
+ *
+ * To run a query within a React component, call `useGetAllApplicationsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetAllApplicationsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetAllApplicationsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetAllApplicationsQuery(baseOptions?: Apollo.QueryHookOptions<GetAllApplicationsQuery, GetAllApplicationsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetAllApplicationsQuery, GetAllApplicationsQueryVariables>(GetAllApplicationsDocument, options);
+      }
+export function useGetAllApplicationsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetAllApplicationsQuery, GetAllApplicationsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetAllApplicationsQuery, GetAllApplicationsQueryVariables>(GetAllApplicationsDocument, options);
+        }
+export function useGetAllApplicationsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetAllApplicationsQuery, GetAllApplicationsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetAllApplicationsQuery, GetAllApplicationsQueryVariables>(GetAllApplicationsDocument, options);
+        }
+export type GetAllApplicationsQueryHookResult = ReturnType<typeof useGetAllApplicationsQuery>;
+export type GetAllApplicationsLazyQueryHookResult = ReturnType<typeof useGetAllApplicationsLazyQuery>;
+export type GetAllApplicationsSuspenseQueryHookResult = ReturnType<typeof useGetAllApplicationsSuspenseQuery>;
+export type GetAllApplicationsQueryResult = Apollo.QueryResult<GetAllApplicationsQuery, GetAllApplicationsQueryVariables>;
 export const SetupFirstAdministratorDocument = gql`
     mutation setupFirstAdministrator($setupFirstAdmin: SetupFirstAdminDto!) {
   setupFirstAdministrator(setupFirstAdmin: $setupFirstAdmin)
@@ -1121,6 +1172,9 @@ export const GetOrganisationsDocument = gql`
     id
     name
     publicSignatureKey
+    hasTokenAccount
+    createdAt
+    virtualBlockchainId
   }
 }
     `;

@@ -9,7 +9,7 @@ import {
 import {
 	ShowConnectionFailureNodeStatus
 } from '@/app/home/organisation/[organisationId]/node/ShowConnectionFailureNodeStatus';
-import { Box, Card, Chip, MenuItem, TextField, Typography } from '@mui/material';
+import { Box, Card, Chip, Divider, MenuItem, TextField, Typography } from '@mui/material';
 import { NodeEntity } from '@/generated/graphql';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu';
 import { TrashIcon } from '@heroicons/react/16/solid';
@@ -45,7 +45,9 @@ export function ShowSingleNodeInCard({node}: {node: NodeEntity}) {
 				<Box>
 					<ThreeDotsMenu>
 						<MenuItem>Claim</MenuItem>
-						<MenuItem disabled={deleting} onClick={() => deleteNode(node.id)}> <TrashIcon/> Delete Node</MenuItem>
+						<MenuItem disabled={deleting} onClick={() => deleteNode(node.id)}>
+							<TrashIcon/> Delete Node
+						</MenuItem>
 					</ThreeDotsMenu>
 				</Box>
 			</Box>
@@ -54,16 +56,17 @@ export function ShowSingleNodeInCard({node}: {node: NodeEntity}) {
 
 
 			<Box display={"flex"} flexDirection={"column"} gap={1}>
-				<Box display={"flex"} flexWrap={"wrap"} gap={1}>
-					<Chip label={nodeStatus.isValidator() ? 'Validator' : 'Replicator'}/>
-					{ node.isClaimable && <Chip label={"Unclaimed"}/> }
-				</Box>
 				{
 					nodeInfos.map((info, index) => <Box key={index}>
 						<Typography>{info.name}:</Typography>
 						<TextField value={info.value} disabled={true} fullWidth={true}/>
 					</Box>)
 				}
+				<Divider sx={{my: 1}} />
+				<Box display={"flex"} flexWrap={"wrap"} gap={1}>
+					<Chip label={nodeStatus.isValidator() ? 'Validator' : 'Replicator'}/>
+					{ node.isClaimable && <Chip label={"Unclaimed"}/> }
+				</Box>
 			</Box>
 
 		</Box>

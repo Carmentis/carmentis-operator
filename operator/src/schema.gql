@@ -98,6 +98,7 @@ type ApplicationType {
   published: Boolean!
   publishedAt: DateTime
   isDraft: Boolean!
+  organisationId: Int!
 }
 
 type ApiKeyUsageType {
@@ -142,6 +143,7 @@ type Query {
   isInitialised: Boolean!
   getLinkedNode: String!
   getAllApplicationsInOrganisation(organisationId: Int!): [ApplicationType!]!
+  getAllApplications: [ApplicationType!]!
   getApplicationInOrganisation(applicationId: Int!): ApplicationType!
 }
 

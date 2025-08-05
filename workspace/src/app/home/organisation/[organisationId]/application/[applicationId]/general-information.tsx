@@ -52,7 +52,12 @@ export default function ApplicationOverview() {
 	return <>
 		<div className={'flex flex-col space-y-4'}>
 			<div>
-				<Typography variant={'h6'}>Application Information</Typography>
+				<Typography variant={'h6'} color={"primary"}>
+					Application Information
+				</Typography>
+				<Typography variant={"body1"}>
+					Edit the application information.
+				</Typography>
 			</div>
 			<div className="flex flex-col gap-6">
 				{overviewContent}

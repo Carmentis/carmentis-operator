@@ -156,4 +156,7 @@ export class ApplicationService {
     }
 
 
+	async findAllApplications() {
+		return this.applicationRepository.find();
+	}
 }

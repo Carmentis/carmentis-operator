@@ -9,7 +9,10 @@ query GetOrganisations {
   organisations {
     id,
     name,
-    publicSignatureKey
+    publicSignatureKey,
+    hasTokenAccount,
+    createdAt
+    virtualBlockchainId
   }
 }
 

@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { GraphQLJwtAuthGuard } from '../../guards/GraphQLJwtAuthGuard';
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApplicationType } from '../types/ApplicationType';
 import { OrganisationService } from '../../../shared/services/OrganisationService';
 import { ApplicationService } from '../../../shared/services/ApplicationService';
@@ -30,6 +30,18 @@ export class ApplicationResolver {
 	): Promise<ApplicationType[]> {
 		const applications = await this.applicationService.findAllApplicationsInOrganisationByOrganisationId(organisationId);
 		return mapper.mapArray(applications, ApplicationEntity, ApplicationType);
+	}
+
+	@Query(() => [ApplicationType], { name: 'getAllApplications' })
+	async getAllApplications(): Promise<ApplicationType[]> {
+		const applications = await this.applicationService.findAllApplications();
+		return mapper.mapArray(applications, ApplicationEntity, ApplicationType);
+	}
+
+	@ResolveField(() => Int, { name: 'organisationId' })
+	async getOrganisationId(@Parent() application: ApplicationEntity): Promise<number> {
+		const organisation = await this.organisationService.findOrganisationByApplication(application);
+		return organisation.id;
 	}
 
 	@Mutation(() => ApplicationType, { name: 'createApplicationInOrganisation' })

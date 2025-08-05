@@ -2,7 +2,7 @@ fragment User on UserEntity {
     publicKey,
     firstname,
     lastname,
-    isAdmin
+    isAdmin,
 }
 
 query getCurrentUser {

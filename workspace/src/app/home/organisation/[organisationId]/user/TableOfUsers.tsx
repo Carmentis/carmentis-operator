@@ -10,15 +10,16 @@ export default function TableOfUsers({ users, onClick, onDelete }: { users: User
 		onRowClicked: (user) => onClick(user),
 		extractor(row: UserSummary, index: number): { head: string; value: React.ReactNode }[] {
 			return [
-				{ head: "Public Key", value: row.publicKey },
-				{ head: "Name", value: `${row.firstname} ${row.lastname}` },
-				{ head: "Role", value: row.isAdmin && <Chip label={"Admin"}></Chip> },
 				{
 					head: '',
 					value: <IconButton onClick={() => onDelete(row.publicKey)}>
 						<DeleteIcon/>
 					</IconButton>
-				}
+				},
+				{ head: "Name", value: `${row.firstname} ${row.lastname}` },
+				{ head: "Role", value: row.isAdmin && <Chip label={"Admin"}></Chip> },
+
+				{ head: "Public Key", value: row.publicKey },
 			];
 		},
 	})

@@ -1,236 +1,39 @@
 'use client';
 
 import {
+	alpha,
 	Box,
-	Button,
-	Chip,
+	Button, ButtonGroup, Card,
 	Container,
-	Dialog,
-	DialogActions,
-	DialogContent,
-	DialogTitle,
 	Divider,
 	Grid,
-	IconButton,
-	Menu,
-	MenuItem,
 	Paper,
-	Stack,
 	TextField,
 	Tooltip,
 	Typography,
-	alpha,
 	useTheme,
-	Card,
-	CardContent,
 } from '@mui/material';
 import Skeleton from 'react-loading-skeleton';
 import React, { useEffect, useState } from 'react';
 import { useToast } from '@/app/layout';
 import { useOrganisation } from '@/contexts/organisation-store.context';
 import { useOrganisationMutationContext } from '@/contexts/organisation-mutation.context';
-import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
-import { WelcomeCard } from '@/components/WelcomeCard';
-import OrganisationAccountBalance from '@/components/OrganisationAccountBalance';
-import AvatarOrganisation from '@/components/AvatarOrganisation';
 import {
-	useGetOrganisationStatisticsQuery,
-	useGetOrganisationBalanceQuery,
+	useGetOrganisationChainStatusQuery,
+	useHasPublishedAccountOnChainQuery,
 	usePublishOrganisationMutation,
-	useUpdateOrganisationMutation, useHasPublishedAccountOnChainQuery, useGetOrganisationChainStatusQuery,
+	useUpdateOrganisationMutation,
 } from '@/generated/graphql';
 import SaveIcon from '@mui/icons-material/Save';
 import PublishIcon from '@mui/icons-material/Publish';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
-import PeopleIcon from '@mui/icons-material/People';
-import AppsIcon from '@mui/icons-material/Apps';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import CheckIcon from '@mui/icons-material/Check';
 import PendingIcon from '@mui/icons-material/Pending';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/client';
-import {motion} from 'framer-motion';
-import WelcomeCards from '@/components/WelcomeCards';
+import { motion } from 'framer-motion';
+import { OrganisationStepper } from '@/app/home/organisation/[organisationId]/OrganisationStepper';
+import { CheckComponent } from '@/app/home/organisation/[organisationId]/CheckComponent';
+import { useOrganisationPublicKey } from '@/hooks/useOrganisationPublicKey';
 
-
-/**
- * QuickAccessCards component provides quick navigation to important organisation pages
- * such as Applications, API Keys, Team Members, and Transactions.
- */
-function QuickAccessCards() {
-	const organisation = useOrganisation();
-	const navigation = useApplicationNavigationContext();
-	const theme = useTheme();
-	const baseLink = `/home/organisation/${organisation.id}`;
-
-	const quickAccessItems = [
-		{
-			title: "Applications",
-			icon: <AppsIcon />,
-			description: "Manage your applications",
-			onClick: () => navigation.push(`${baseLink}/application`),
-			color: theme.palette.primary.main
-		},
-		{
-			title: "API Keys",
-			icon: <VpnKeyIcon />,
-			description: "Manage your API keys",
-			onClick: () => navigation.push(`${baseLink}/apiKeys`),
-			color: theme.palette.secondary.main
-		},
-		{
-			title: "Team Members",
-			icon: <PeopleIcon />,
-			description: "Manage your team",
-			onClick: () => navigation.push(`${baseLink}/user`),
-			color: theme.palette.info.main
-		},
-		{
-			title: "Transactions",
-			icon: <ReceiptLongIcon />,
-			description: "View your transactions",
-			onClick: () => navigation.push(`${baseLink}/transactions`),
-			color: theme.palette.success.main
-		}
-	];
-
-	return (
-		<Paper 
-			elevation={0} 
-			sx={{
-				...glassStyles,
-				p: 3,
-				mb: 4
-			}}
-		>
-			<Typography variant="h6" fontWeight="500" mb={3} color="primary">
-				Quick Access
-			</Typography>
-			<Grid container spacing={3}>
-				{quickAccessItems.map((item, index) => (
-					<Grid item xs={12} sm={6} md={3} key={index}>
-						<motion.div>
-							<Paper
-								elevation={0}
-								sx={{
-									p: 3,
-									height: '100%',
-									borderRadius: 2,
-									background: 'rgba(255, 255, 255, 0.7)',
-									backdropFilter: 'blur(5px)',
-									border: '1px solid rgba(255, 255, 255, 0.5)',
-									cursor: 'pointer',
-									overflow: 'hidden',
-									position: 'relative',
-									'&::before': {
-										content: '""',
-										position: 'absolute',
-										top: 0,
-										left: 0,
-										width: '100%',
-										height: '5px',
-										backgroundColor: item.color,
-									}
-								}}
-								onClick={item.onClick}
-							>
-								<Box display="flex" flexDirection="column" alignItems="center" textAlign="center" gap={2}>
-									<Box
-										sx={{
-											display: 'flex',
-											alignItems: 'center',
-											justifyContent: 'center',
-											p: 1.5,
-											borderRadius: '50%',
-											bgcolor: alpha(item.color, 0.15),
-											color: item.color,
-											mb: 1,
-											width: 56,
-											height: 56
-										}}
-									>
-										{item.icon}
-									</Box>
-									<Typography variant="h6" fontWeight="600" color={item.color}>
-										{item.title}
-									</Typography>
-									<Typography variant="body2" color="text.secondary">
-										{item.description}
-									</Typography>
-								</Box>
-							</Paper>
-						</motion.div>
-					</Grid>
-				))}
-			</Grid>
-		</Paper>
-	);
-}
-
-/**
- * The WelcomeCards function fetches organisation statistics and displays them in a set of styled cards.
- * Each card represents key metrics such as Balance, Applications, and Users.
- */
-function OverviewOrganisationWelcomeCards() {
-	const organisation = useOrganisation();
-	const { data: statistics, loading, error } = useGetOrganisationStatisticsQuery({
-		variables: {
-			id: organisation.id
-		}
-	});
-
-	if (loading) return (
-		<Box
-			sx={{
-				display: 'grid',
-				gridTemplateColumns: {
-					xs: '1fr',
-					sm: 'repeat(2, 1fr)',
-					md: 'repeat(3, 1fr)'
-				},
-				gap: 3,
-				mb: 4
-			}}
-		>
-			{[1, 2, 3].map(i => (
-				<Skeleton key={i} height={140} />
-			))}
-		</Box>
-	);
-
-	if (!statistics || error) return (
-		<Typography color="error">
-			{error?.message || "Failed to load statistics"}
-		</Typography>
-	);
-
-	const welcomeCardData = [
-		{
-			icon: 'bi-wallet2',
-			title: 'Account Balance',
-			value: <OrganisationAccountBalance />
-		},
-		{
-			icon: 'bi-app',
-			title: 'Applications',
-			value: statistics.getOrganisationStatistics.numberOfApplications.toString()
-		},
-		{
-			icon: 'bi-person-badge',
-			title: 'Team Members',
-			value: statistics.getOrganisationStatistics.numberOfUsers.toString()
-		},
-	];
-
-	return (
-		<Box mb={4}>
-
-			<WelcomeCards items={welcomeCardData} />
-		</Box>
-	);
-}
 
 // Glass effect styles
 const glassStyles = {
@@ -246,19 +49,6 @@ const glassStyles = {
   }
 };
 
-// Animation variants for Framer Motion
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { 
-      duration: 0.5,
-      ease: "easeOut"
-    }
-  }
-};
-
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
@@ -271,7 +61,6 @@ const staggerContainer = {
 
 export default function Home() {
 	const organisation = useOrganisation();
-	const theme = useTheme();
 
 	if (!organisation) {
 		return (
@@ -288,9 +77,6 @@ export default function Home() {
 			</Container>
 		);
 	}
-
-	const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-	const publicKey = signatureEncoder.decodePublicKey(organisation.publicSignatureKey);
 
 	return (
 		<Container 
@@ -309,80 +95,82 @@ export default function Home() {
 				className="organisation-content"
 			>
 
-				<motion.div variants={fadeInUp}>
-					<OrganisationChainStatus/>
-				</motion.div>
+				<Grid container spacing={2}>
+					<Grid size={4}>
+						<OrganisationChainStatus/>
+					</Grid>
+					<Grid size={8}>
+						<Grid container spacing={2}>
+							<OrganisationEdition />
 
-				{/* Statistics Cards */}
-				<motion.div variants={fadeInUp}>
-					<OverviewOrganisationWelcomeCards />
-				</motion.div>
+							<Card>
+								<OrganisationPublicKey/>
+							</Card>
+						</Grid>
+					</Grid>
+				</Grid>
 
-				{/* Public Keys Section */}
-				<motion.div variants={fadeInUp}>
-					<Paper 
-						elevation={0} 
-						sx={{
-							...glassStyles,
-							p: 3,
-							mb: 4
-						}}
-					>
-						<Typography variant="h6" fontWeight="500" mb={2} color="primary">
-							Organisation Keys
-						</Typography>
 
-						<Box mb={3}>
-							<Typography variant="body2" color="text.secondary" gutterBottom>
-								Organisation public key
-							</Typography>
-							<Typography
-								variant="body1"
-								fontFamily="monospace"
-								sx={{
-									p: 2,
-									bgcolor: 'rgba(255, 255, 255, 0.5)',
-									borderRadius: 1,
-									overflowX: 'auto',
-									whiteSpace: 'nowrap',
-									border: '1px solid rgba(255, 255, 255, 0.3)',
-								}}
-							>
-								{publicKey.getPublicKeyAsString()}
-							</Typography>
-						</Box>
-
-						<Box>
-							<Typography variant="body2" color="text.secondary" gutterBottom>
-								Organisation tagged public key
-							</Typography>
-							<Typography
-								variant="body1"
-								fontFamily="monospace"
-								sx={{
-									p: 2,
-									bgcolor: 'rgba(255, 255, 255, 0.5)',
-									borderRadius: 1,
-									overflowX: 'auto',
-									whiteSpace: 'nowrap',
-									border: '1px solid rgba(255, 255, 255, 0.3)',
-								}}
-							>
-								{signatureEncoder.encodePublicKey(publicKey)}
-							</Typography>
-						</Box>
-					</Paper>
-				</motion.div>
-
-				{/* Organisation Details */}
-				<motion.div variants={fadeInUp}>
-					<OrganisationEdition />
-				</motion.div>
 			</motion.div>
 		</Container>
 	);
 }
 
+
+function OrganisationPublicKey() {
+	const { publicKey, decodedPublicKey } = useOrganisationPublicKey();
+	return <>
+		<Box display={"flex"} flexDirection={"row"} justifyContent={"space-between"}>
+			<Typography variant="h6" fontWeight="500" mb={2} color="primary">
+				Organisation Keys
+			</Typography>
+			<Box display="flex" gap={2}>
+				<Button variant={"contained"}>Copy public key</Button>
+				<Button variant={"contained"}>Copy tagged public key</Button>
+			</Box>
+		</Box>
+
+		<Box mb={3}>
+			<Typography variant="body2" color="text.secondary" gutterBottom>
+				Organisation public key
+			</Typography>
+			<Typography
+				variant="body1"
+				fontFamily="monospace"
+				sx={{
+					p: 2,
+					bgcolor: 'rgba(255, 255, 255, 0.5)',
+					borderRadius: 1,
+					overflowX: 'auto',
+					whiteSpace: 'nowrap',
+					border: '1px solid rgba(255, 255, 255, 0.3)',
+				}}
+			>
+				{decodedPublicKey.getPublicKeyAsString()}
+			</Typography>
+		</Box>
+
+		<Box>
+			<Typography variant="body2" color="text.secondary" gutterBottom>
+				Organisation tagged public key
+			</Typography>
+			<Typography
+				variant="body1"
+				fontFamily="monospace"
+				sx={{
+					p: 2,
+					bgcolor: 'rgba(255, 255, 255, 0.5)',
+					borderRadius: 1,
+					overflowX: 'auto',
+					whiteSpace: 'nowrap',
+					border: '1px solid rgba(255, 255, 255, 0.3)',
+				}}
+			>
+				{publicKey}
+			</Typography>
+		</Box>
+	</>
+}
 
 /**
  * OrganisationChainStatus component displays the blockchain status of an organisation.
@@ -401,33 +189,13 @@ function OrganisationChainStatus() {
 
 	if (loading) {
 		return (
-			<Paper 
-				elevation={0}
-				sx={{ 
-					...glassStyles,
-					p: 3, 
-					mb: 3, 
-					borderRadius: 2 
-				}}
-			>
-				<Skeleton height={60} />
-			</Paper>
+			<Card><Skeleton height={60} /></Card>
 		);
 	}
 
 	if (!data) {
 		return (
-			<Paper 
-				elevation={0}
-				sx={{ 
-					...glassStyles,
-					p: 3, 
-					mb: 3, 
-					borderRadius: 2 
-				}}
-			>
-				<Typography color="error">No blockchain status data available</Typography>
-			</Paper>
+			<Card><Typography color="error">No blockchain status data available</Typography></Card>
 		);
 	}
 
@@ -439,17 +207,7 @@ function OrganisationChainStatus() {
 	const progressPercentage = (completedSteps / totalSteps) * 100;
 
 	return (
-		<Paper 
-			elevation={0}
-			sx={{ 
-				...glassStyles,
-				p: 3, 
-				mb: 3, 
-				borderRadius: 2,
-				position: 'relative',
-				overflow: 'hidden'
-			}}
-		>
+		<Card>
 			<Box 
 				sx={{
 					position: 'absolute',
@@ -489,67 +247,7 @@ function OrganisationChainStatus() {
 					onNotChecked="Organisation not visible on the blockchain"
 				/>
 			</Grid>
-		</Paper>
-	);
-}
-
-function CheckComponent(input: { condition: boolean, title: string, onChecked: string, onNotChecked: string }) {
-	const {condition, title, onChecked, onNotChecked} = input;
-	const theme = useTheme();
-
-	return (
-		<Grid item xs={12} md={4}>
-			<motion.div
-				initial={{ opacity: 0, y: 10 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.3 }}
-			>
-				<Box 
-					sx={{
-						display: 'flex',
-						alignItems: 'center',
-						gap: 2,
-						p: 2,
-						borderRadius: 2,
-						bgcolor: condition 
-							? alpha(theme.palette.success.main, 0.1)
-							: alpha(theme.palette.warning.main, 0.1),
-						border: '1px solid',
-						borderColor: condition 
-							? alpha(theme.palette.success.main, 0.2)
-							: alpha(theme.palette.warning.main, 0.2),
-					}}
-				>
-					<Box
-						sx={{
-							bgcolor: condition 
-								? alpha(theme.palette.success.main, 0.2)
-								: alpha(theme.palette.warning.main, 0.2),
-							borderRadius: '50%',
-							width: 48,
-							height: 48,
-							display: 'flex',
-							alignItems: 'center',
-							justifyContent: 'center'
-						}}
-					>
-						{condition ? (
-							<CheckIcon sx={{ color: 'success.main' }} />
-						) : (
-							<PendingIcon sx={{ color: 'warning.main' }} />
-						)}
-					</Box>
-					<Box>
-						<Typography variant="subtitle1" fontWeight="600" color={condition ? 'success.main' : 'warning.main'}>
-							{title}
-						</Typography>
-						<Typography variant="body2" color="text.secondary">
-							{condition ? onChecked : onNotChecked}
-						</Typography>
-					</Box>
-				</Box>
-			</motion.div>
-		</Grid>
+		</Card>
 	);
 }
 
@@ -614,45 +312,14 @@ function OrganisationEdition() {
 
 	if (!organisation || isLoadingAccountExistenceCheck) {
 		return (
-			<Paper 
-				elevation={0} 
-				sx={{ 
-					...glassStyles,
-					p: 3, 
-					mb: 3, 
-					borderRadius: 2 
-				}}
-			>
-				<Skeleton count={1} height={200} />
-			</Paper>
+			<Skeleton count={1} height={200} />
 		);
 	}
 
 	return (
-		<Paper 
-			elevation={0} 
-			sx={{ 
-				...glassStyles,
-				p: 3, 
-				borderRadius: 2,
-				position: 'relative',
-				overflow: 'hidden'
-			}}
-		>
-			{/* Decorative gradient accent */}
-			<Box 
-				sx={{
-					position: 'absolute',
-					top: 0,
-					right: 0,
-					width: '30%',
-					height: '5px',
-					background: `linear-gradient(to right, ${alpha(theme.palette.primary.main, 0)}, ${theme.palette.primary.main})`,
-				}}
-			/>
-
+		<Card>
 			<Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-				<Typography variant="h6" fontWeight="600" color="primary">
+				<Typography variant="h6" color="primary">
 					Organisation Details
 				</Typography>
 				<Box>
@@ -666,12 +333,6 @@ function OrganisationEdition() {
 								onClick={save}
 								disabled={isUpdating}
 								startIcon={<SaveIcon />}
-								sx={{ 
-									borderRadius: 2, 
-									textTransform: 'none',
-									boxShadow: '0 4px 14px rgba(21, 154, 156, 0.3)',
-
-								}}
 							>
 								Save Changes
 							</Button>
@@ -707,8 +368,6 @@ function OrganisationEdition() {
 					)}
 				</Box>
 			</Box>
-
-			<Divider sx={{ mb: 4, opacity: 0.6 }} />
 
 			<Grid container spacing={3}>
 				<Grid item xs={12} md={6}>
@@ -843,6 +502,6 @@ function OrganisationEdition() {
 					/>
 				</Grid>
 			</Grid>
-		</Paper>
+		</Card>
 	);
 }
