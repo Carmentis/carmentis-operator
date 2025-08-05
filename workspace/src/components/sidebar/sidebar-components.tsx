@@ -16,7 +16,7 @@ export function CarmentisLogo() {
 }
 
 export function SidebarItem(
-	input: { icon: string, text: string, link?: string, className?: string, onClick?: () => void, activeRegex?: RegExp, id?: string },
+	input: { icon: any, text: string, link?: string, className?: string, onClick?: () => void, activeRegex?: RegExp, id?: string },
 ) {
 	const activePath = usePathname();
 	const interfaceStore = useInterfaceContext();
@@ -30,14 +30,13 @@ export function SidebarItem(
 	const toggleSidebarItemClasses = interfaceStore.sidebarHidden ? 'hidden-sidebar-item' : 'visible-sidebar-item';
 	const itemClass = `p-2 rounded cursor-pointer hover:bg-white  ${input.className} ${activeClasses} ${toggleSidebarItemClasses}`;
 
-	const content = <>
-		<i className={`bi ${input.icon}  mr-2 flex-shrink-0 w-5 h-5 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white`}></i>
-		<span
-			hidden={interfaceStore.sidebarHidden}
+	const content = <Box display={"flex"} flexDirection={'row'} gap={1}>
+		{input.icon}
+		<Typography
 			className=" text-left rtl:text-right whitespace-nowrap">
 						{input.text}
-					</span>
-	</>
+					</Typography>
+	</Box>
 
 	if (input.link) {
 		return  <div onClick={() => router.push(input.link)} className={itemClass}> {content} </div>;

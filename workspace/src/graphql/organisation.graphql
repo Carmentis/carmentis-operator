@@ -274,3 +274,8 @@ query getAllNodes($organisationId: Int!) {
     }
   }
 }
+
+mutation importNodeInOrganisation($organisationId: Int!, $nodeAlias: String!, $nodeRpcEndpoint: String!) {
+  importNodeInOrganisation(organisationId: $organisationId, nodeAlias: $nodeAlias, nodeRpcEndpoint: $nodeRpcEndpoint)
+}
+

@@ -12,7 +12,7 @@ export class NodeEntity {
 	id: number;
 
 	/**
-	 * A user uses an alias to distinguish more easily between the nodes.
+	 * A user uses an alias to distinguish more easily between the node.
 	 */
 	@Field()
 	@Column()
@@ -29,7 +29,7 @@ export class NodeEntity {
 	@ManyToOne(() => OrganisationEntity, (org) => org.nodes, { onDelete: "CASCADE" })
 	organisation: OrganisationEntity;
 
-	@Field(type => String)
+	@Field(type => String, { nullable: true })
 	@Column({ nullable: true })
 	virtualBlockchainId?: string;
 

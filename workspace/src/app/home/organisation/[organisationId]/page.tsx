@@ -54,65 +54,6 @@ import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/client';
 import {motion} from 'framer-motion';
 import WelcomeCards from '@/components/WelcomeCards';
 
-/**
- * Component to display organisation status chips with enhanced styling
- */
-function OrganisationStatus({ organisation }) {
-	const theme = useTheme();
-
-	if (!organisation) return null;
-
-	return (
-		<Box display="flex" gap={1}>
-			{organisation.isDraft && (
-				<motion.div
-				>
-					<Chip
-						label="Draft"
-						variant="outlined"
-						color="primary"
-						size="small"
-						sx={{
-							borderRadius: '16px',
-							backdropFilter: 'blur(5px)',
-							fontWeight: 500,
-							'& .MuiChip-label': {
-								px: 1.5
-							}
-						}}
-					/>
-				</motion.div>
-			)}
-			{organisation.published && (
-				<motion.div
-					initial={{ opacity: 0, scale: 0.8 }}
-					animate={{ opacity: 1, scale: 1 }}
-					transition={{ duration: 0.3, delay: 0.1 }}
-				>
-					<Chip
-						label={`Published ${new Date(organisation.publishedAt).toLocaleDateString()}`}
-						color="primary"
-						size="small"
-						icon={<PublishIcon />}
-						sx={{
-							borderRadius: '16px',
-							background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.8)})`,
-							color: 'white',
-							fontWeight: 500,
-							boxShadow: '0 2px 10px rgba(21, 154, 156, 0.2)',
-							'& .MuiChip-label': {
-								px: 1.5
-							},
-							'& .MuiChip-icon': {
-								color: 'white'
-							}
-						}}
-					/>
-				</motion.div>
-			)}
-		</Box>
-	);
-}
 
 /**
  * QuickAccessCards component provides quick navigation to important organisation pages
@@ -361,45 +302,6 @@ export default function Home() {
 				borderRadius: 2
 			}}
 		>
-			{/* Organisation Header with Status on the right */}
-			<motion.div
-				initial="hidden"
-				animate="visible"
-				variants={fadeInUp}
-			>
-				<Paper 
-					elevation={0} 
-					sx={{
-						...glassStyles,
-						p: 3,
-						mb: 4,
-						display: 'flex',
-						justifyContent: 'space-between',
-						alignItems: 'center'
-					}}
-				>
-					<Box display="flex" alignItems="center" gap={2}>
-						<AvatarOrganisation
-							organisationId={organisation.publicSignatureKey || organisation.id}
-							width={64}
-							height={64}
-						/>
-						<Box>
-							<Typography variant="h4" fontWeight="600" color="primary" gutterBottom>
-								{organisation.name}
-							</Typography>
-							<Typography variant="body2" color="text.secondary">
-								{organisation.city}, {organisation.countryCode}
-							</Typography>
-						</Box>
-					</Box>
-					<Box display="flex" alignItems="center" gap={2}>
-						<OrganisationStatus organisation={organisation} />
-						<OrganisationMenu />
-					</Box>
-				</Paper>
-			</motion.div>
-
 			<motion.div
 				initial="hidden"
 				animate="visible"
@@ -408,9 +310,7 @@ export default function Home() {
 			>
 
 				<motion.div variants={fadeInUp}>
-					<Box mb={4}>
-						<OrganisationChainStatus/>
-					</Box>
+					<OrganisationChainStatus/>
 				</motion.div>
 
 				{/* Statistics Cards */}
@@ -472,11 +372,6 @@ export default function Home() {
 							</Typography>
 						</Box>
 					</Paper>
-				</motion.div>
-
-				{/* Quick Access Cards */}
-				<motion.div variants={fadeInUp}>
-					<QuickAccessCards />
 				</motion.div>
 
 				{/* Organisation Details */}
@@ -658,102 +553,6 @@ function CheckComponent(input: { condition: boolean, title: string, onChecked: s
 	);
 }
 
-function OrganisationMenu() {
-	const organisation = useOrganisation();
-	const theme = useTheme();
-	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-	const open = Boolean(anchorEl);
-
-	const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-		setAnchorEl(event.currentTarget);
-	};
-
-	const handleClose = () => {
-		setAnchorEl(null);
-	};
-
-	return (
-		<motion.div
-			initial={{ opacity: 0, scale: 0.9 }}
-			animate={{ opacity: 1, scale: 1 }}
-			transition={{ duration: 0.3 }}
-		>
-			<Tooltip title="Organisation options">
-				<IconButton
-					id="organisation-menu-button"
-					aria-controls={open ? 'organisation-menu' : undefined}
-					aria-haspopup="true"
-					aria-expanded={open ? 'true' : undefined}
-					onClick={handleClick}
-					size="small"
-					sx={{
-						bgcolor: alpha(theme.palette.primary.main, 0.1),
-						backdropFilter: 'blur(5px)',
-						'&:hover': {
-							bgcolor: alpha(theme.palette.primary.main, 0.2),
-						}
-					}}
-				>
-					<MoreVertIcon color="primary" />
-				</IconButton>
-			</Tooltip>
-			<Menu
-				id="organisation-menu"
-				anchorEl={anchorEl}
-				open={open}
-				onClose={handleClose}
-				MenuListProps={{
-					'aria-labelledby': 'organisation-menu-button',
-				}}
-				PaperProps={{
-					elevation: 0,
-					sx: {
-						overflow: 'visible',
-						filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.1))',
-						background: 'rgba(255, 255, 255, 0.9)',
-						backdropFilter: 'blur(10px)',
-						borderRadius: 2,
-						border: '1px solid rgba(255, 255, 255, 0.5)',
-						mt: 1.5,
-						'&:before': {
-							content: '""',
-							display: 'block',
-							position: 'absolute',
-							top: 0,
-							right: 14,
-							width: 10,
-							height: 10,
-							bgcolor: 'rgba(255, 255, 255, 0.9)',
-							transform: 'translateY(-50%) rotate(45deg)',
-							zIndex: 0,
-							borderLeft: '1px solid rgba(255, 255, 255, 0.5)',
-							borderTop: '1px solid rgba(255, 255, 255, 0.5)',
-						},
-					},
-				}}
-				transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-				anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-			>
-				<MenuItem 
-					onClick={() => window.open(organisation.website, '_blank')}
-					sx={{
-						borderRadius: 1,
-						mx: 0.5,
-						my: 0.5,
-						'&:hover': {
-							bgcolor: alpha(theme.palette.primary.main, 0.1),
-						}
-					}}
-				>
-					<Box display="flex" alignItems="center" gap={1}>
-						<OpenInNewIcon fontSize="small" color="primary" />
-						<Typography>Visit website</Typography>
-					</Box>
-				</MenuItem>
-			</Menu>
-		</motion.div>
-	);
-}
 
 function OrganisationEdition() {
 	const organisation = useOrganisation();

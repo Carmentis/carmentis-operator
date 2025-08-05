@@ -16,6 +16,7 @@ import ChainService from './ChainService';
 import { CryptoService } from './CryptoService';
 import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
 import { NodeEntity } from '../entities/NodeEntity';
+import { NodeService } from './NodeService';
 
 
 @Injectable()
@@ -34,6 +35,7 @@ export class OrganisationService {
 		private readonly cryptoService: CryptoService,
 		@InjectRepository(NodeEntity)
 		private readonly nodeRepository: Repository<NodeEntity>,
+		private readonly nodeService: NodeService
 	) {}
 
 	// Find one item by ID
@@ -319,5 +321,10 @@ export class OrganisationService {
 		return this.organisationEntityRepository.findOne({
 			where: { applications: { id: application.id } }
 		})
+	}
+
+	async importNodeInOrganisation(organisationId: number, nodeAlias: string, nodeRpcEndpoint: string) {
+		const organisation = await this.findOne(organisationId);
+		return this.nodeService.importNode(organisation, nodeAlias, nodeRpcEndpoint)
 	}
 }

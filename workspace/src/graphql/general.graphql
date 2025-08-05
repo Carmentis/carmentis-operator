@@ -2,6 +2,10 @@ query getInitialisationStatus {
     isInitialised
 }
 
+query getLinkedNode {
+    getLinkedNode
+}
+
 mutation setupFirstAdministrator($setupFirstAdmin: SetupFirstAdminDto!) {
     setupFirstAdministrator(setupFirstAdmin: $setupFirstAdmin)
 }

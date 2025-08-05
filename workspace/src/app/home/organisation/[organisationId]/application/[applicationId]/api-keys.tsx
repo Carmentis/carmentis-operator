@@ -17,6 +17,7 @@ import {
 	useGetAllApiKeysInApplicationQuery,
 } from '@/generated/graphql';
 import { useToast } from '@/app/layout';
+import { useApplication } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
 
 const formSchema = z.object({
 	name: z.string().min(1, "The name is required"),
@@ -27,6 +28,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function ApiKeysPage() {
 	const notify = useToast();
+	const application = useApplication();
 	const params = useParams<{ organisationId: string, applicationId: string }>();
 	const applicationId = parseInt(params.applicationId);
 	const [createKey, {loading: isCreating}] = useCreateApiKeyInApplicationMutation();
@@ -138,9 +140,13 @@ export default function ApiKeysPage() {
 	return (
 		<Box>
 			<Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-				<Typography variant="h5" fontWeight="bold">
-					API Keys
-				</Typography>
+				<Box display="flex" justifyContent="start" flexDirection={"column"} alignItems="start" >
+					<Typography variant="h6">
+						API Keys
+					</Typography>
+					<Typography>Below are listed keys associated with the application <Typography fontWeight={"bold"} component={"span"}>{application.name}</Typography>. </Typography>
+
+				</Box>
 				<Button variant="contained" color="primary" onClick={() => setWantToCreateKey(true)}>
 					Generate Key
 				</Button>

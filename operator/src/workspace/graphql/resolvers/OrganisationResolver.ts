@@ -180,6 +180,16 @@ export class OrganisationResolver {
 		return true;
 	}
 
+	@Mutation(() => Boolean, { name: 'importNodeInOrganisation' })
+	async importNodeInOrganisation(
+		@Args('organisationId', { type: () => Int }) organisationId: number,
+		@Args('nodeAlias') nodeAlias: string,
+		@Args('nodeRpcEndpoint') nodeRpcEndpoint: string,
+	) {
+		await this.organisationService.importNodeInOrganisation(organisationId, nodeAlias, nodeRpcEndpoint);
+		return true;
+	}
+
 	@Mutation(() => Boolean, { name: 'removeUserFromOrganisation' })
 	async removeUserFromOrganisation(
 		@Args('organisationId', { type: () => Int }) organisationId: number,

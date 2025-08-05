@@ -20,6 +20,7 @@ import { CryptoService } from './services/CryptoService';
 import { EncryptionService } from './services/EncryptionService';
 import { EncryptionServiceProxy } from './transformers/EncryptionServiceProxy';
 import { NodeEntity } from './entities/NodeEntity';
+import { NodeService } from './services/NodeService';
 
 const WORKSPACE_PROVIDERS = [
 	EncryptionService,
@@ -32,6 +33,7 @@ const WORKSPACE_PROVIDERS = [
 	ChainService,
 	ChallengeService,
 	EnvService,
+	NodeService
 ];
 
 // Extracted imports, controllers, and providers into constants

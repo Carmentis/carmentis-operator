@@ -48,18 +48,6 @@ export default function TransactionsHistoryPage() {
 
 	return (
 		<Container maxWidth={false} disableGutters>
-			<Box mb={4}>
-				<Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-					<Box display="flex" alignItems="center" gap={2}>
-						<ReceiptLongIcon color="primary" fontSize="large" />
-						<Typography variant="h4" fontWeight="500" color="primary">
-							Transactions
-						</Typography>
-					</Box>
-				</Box>
-				<Divider />
-			</Box>
-
 			{data.organisation.hasTokenAccount ? (
 				<TransactionsContent
 					transactions={data.organisation.transactions}

@@ -10,7 +10,7 @@ import {
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { useConfirmationModal } from '@/contexts/popup-modal.component';
 import Skeleton from 'react-loading-skeleton';
-import { Box, Button, Chip, Typography } from '@mui/material';
+import { Box, Breadcrumbs, Button, Chip, Typography } from '@mui/material';
 import { ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/16/solid';
 import Spinner from '@/components/Spinner';
 import {
@@ -157,19 +157,30 @@ type EntityStatusHeaderProps = {
 function EntityStatusHeader(
 	input: EntityStatusHeaderProps
 ) {
-
+	const organisation = useOrganisation();
 	const BORDER_CLASSES = 'border-r-2 border-gray-200';
 	const ICON_ROTATION_CLASSES = 'h-5 w-5 transition-transform group-hover:rotate-45';
 	return (
 		<>
 			<Box display={"flex"} flexDirection={"row"} justifyContent={"space-between"}>
 				<Box display={"flex"} flexDirection={"row"} gap={2}>
-					<Typography
-						fontWeight={'bold'}
-						variant="h5"
-					>
-						{input.name}
-					</Typography>
+					<Breadcrumbs>
+						<Typography
+							variant="h6"
+						>
+							{organisation.name}
+						</Typography>
+						<Typography
+							variant="h6"
+						>
+							Applications
+						</Typography>
+						<Typography
+							variant="h6"
+						>
+							{input.name}
+						</Typography>
+					</Breadcrumbs>
 					<Box display={"flex"} flexDirection={"row"} gap={1}>
 						{input.published &&
 							<Chip variant="filled" className={"bg-primary-light"} label={`Published - ${input.virtualBlockchainId}`} />}

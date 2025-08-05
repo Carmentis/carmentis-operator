@@ -33,4 +33,8 @@ export class NodeService {
 	removeNode(organisation: OrganisationEntity, node: NodeEntity) {
 		return this.nodeRepository.delete({id: node.id})
 	}
+
+	deleteNode(organisation: OrganisationEntity, nodeId: number) {
+		return this.nodeRepository.delete({id: nodeId})
+	}
 }

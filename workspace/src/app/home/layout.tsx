@@ -3,7 +3,6 @@
 import { PropsWithChildren, ReactNode, useState } from 'react';
 import { UserAuthenticationContextProvider } from '@/contexts/user-authentication.context';
 import { usePathname } from 'next/navigation';
-import OrganisationSideBar from '@/components/sidebar/organisation-sidebar';
 import HomeSideBar from '@/components/sidebar/home-sidebar';
 import { Box, Drawer, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import { useInterfaceContext } from '@/contexts/interface.context';
@@ -11,9 +10,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 export default function RootLayout({ children }: PropsWithChildren) {
-  const pathname = usePathname();
-  const isOrganisation = pathname.startsWith('/home/organisation');
-  const sidebar = isOrganisation ? <OrganisationSideBar/> : <HomeSideBar/>;
+  const sidebar = <HomeSideBar/>;
 
   const interfaceStore = useInterfaceContext();
   const theme = useTheme();
@@ -75,14 +72,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
             },
           }}
         >
-          {!isMobile && (
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1 }}>
-              <IconButton onClick={handleDrawerToggle}>
-                {interfaceStore.sidebarHidden ? <MenuIcon /> : <ChevronLeftIcon />}
-              </IconButton>
-            </Box>
-          )}
-          <Box sx={{ p: 2 }}>
+          <Box sx={{ p: 2, }} className={"h-full"}>
             {sidebar}
           </Box>
         </Drawer>

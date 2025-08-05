@@ -5,6 +5,8 @@ import { Public } from '../../../shared/decorators/PublicDecorator';
 import { CryptoService } from '../../../shared/services/CryptoService';
 import { SetupFirstAdminDto } from '../dto/SetupFirstAdminDto';
 import { GraphQLJwtAuthGuard } from '../../guards/GraphQLJwtAuthGuard';
+import { ConfigService } from '@nestjs/config';
+import { EnvService } from '../../../shared/services/EnvService';
 
 @UseGuards(GraphQLJwtAuthGuard)
 @Injectable()
@@ -12,7 +14,8 @@ export class GeneralResolver {
 	private logger = new Logger(GeneralResolver.name);
 	constructor(
 		private readonly userService: UserService,
-		private readonly cryptoService: CryptoService
+		private readonly cryptoService: CryptoService,
+		private readonly envService: EnvService
 	) {}
 
 	@Public()
@@ -47,5 +50,12 @@ export class GeneralResolver {
 
 		return true;
 	}
+
+
+	@Query(() => String, { name: 'getLinkedNode' })
+	async getLinkedNode() {
+		return this.envService.nodeUrl;
+	}
+
 
 }

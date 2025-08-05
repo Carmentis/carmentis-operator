@@ -43,5 +43,25 @@ export class NodeResolver {
 		);
 	}
 
+	@Mutation(() => Boolean, { name: 'deleteNodeInOrganisation' })
+	async deleteNodeInOrganisation(
+		@CurrentUser() user: UserEntity,
+		@Args('organisationId', { type: () => Int }, OrganisationByIdPipe) organisation: OrganisationEntity,
+		@Args('nodeId', { type: () => Int }) nodeId: number,
+	){
+		// checks that the user belongs to the organisation
+		const userBelongsToOrganisation = await this.organisationService.checkUserBelongsToOrganisation(user, organisation);
+		if (!userBelongsToOrganisation) {
+			throw new UnauthorizedException('User does not belong to the organisation');
+		}
+
+		return await this.nodeService.deleteNode(
+			organisation,
+			nodeId
+		);
+	}
+
+
+
 
 }

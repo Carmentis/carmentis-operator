@@ -7,7 +7,7 @@ type NodeEntity {
   nodeAlias: String!
   includedAt: DateTime!
   rpcEndpoint: String!
-  virtualBlockchainId: String!
+  virtualBlockchainId: String
 }
 
 """
@@ -139,6 +139,7 @@ type Query {
   getAllApiKeysOfApplication(applicationId: Int!): [ApiKeyType!]!
   getApiKey(id: Int!): ApiKeyType!
   isInitialised: Boolean!
+  getLinkedNode: String!
   getAllApplicationsInOrganisation(organisationId: Int!): [ApplicationType!]!
   getApplicationInOrganisation(applicationId: Int!): ApplicationType!
 }
@@ -149,6 +150,7 @@ type Mutation {
   publishOrganisation(id: Int!): Boolean!
   deleteOrganisation(id: Int!): OrganisationEntity!
   addUserInOrganisation(organisationId: Int!, userPublicKey: String!): Boolean!
+  importNodeInOrganisation(organisationId: Int!, nodeAlias: String!, nodeRpcEndpoint: String!): Boolean!
   removeUserFromOrganisation(organisationId: Int!, userPublicKey: String!): Boolean!
   changeOrganisationKeyPair(organisationId: Int!, privateKey: String!): Boolean!
   verifyChallenge(challenge: String!, publicKey: String!, signature: String!): ChallengeVerificationResponse!

@@ -13,10 +13,10 @@ export default function useApiKeyStatusFormatter() {
 				if (activeUntil < now) {
 					status = <Chip label={"Exceeded lifetime"} />
 				} else {
-					status = <Chip label={"Active"} />
+					status = <Chip label={"Active"} color={"primary"}/>
 				}
 			} else {
-				status = <Chip label={"Active"} />
+				status = <Chip label={"Active"} color={"primary"} />
 			}
 		} else {
 			status = <Chip label={"Inactive"} />

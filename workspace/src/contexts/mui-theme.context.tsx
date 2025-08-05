@@ -6,11 +6,16 @@ export function MuiThemeContextProvider({ children }: PropsWithChildren) {
   const theme = createTheme({
     palette: {
       primary: {
-        main: '#159A9C', // primary-light from the original theme
+        main: '#1c4dcb', // primary-light from the original theme
       },
       secondary: {
         main: '#9C8714', // secondary-light from the original theme
       },
+    },
+    typography: {
+      body1: {
+        fontSize: 13
+      }
     },
     components: {
       MuiButton: {
@@ -21,12 +26,31 @@ export function MuiThemeContextProvider({ children }: PropsWithChildren) {
       MuiIconButton: {
         defaultProps: {
           className: 'bg-primary-light',
+          sx: {
+            fontSize: 13,
+          }
         },
       },
       MuiTextField: {
         defaultProps: {
           className: 'rounded-md',
+          size: "small"
         },
+      },
+      MuiCard: {
+        defaultProps: {
+          sx: {
+            p: 2
+          },
+          elevation: 2
+        }
+      },
+      MuiTab: {
+        defaultProps: {
+          sx: {
+            py: 0,
+          }
+        }
       },
     },
   });

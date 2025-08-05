@@ -12,17 +12,7 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey';
 export default function Page() {
 	return (
 		<Container maxWidth={false} disableGutters>
-			<Box mb={4}>
-				<Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-					<Box display="flex" alignItems="center" gap={2}>
-						<VpnKeyIcon color="primary" fontSize="large" />
-						<Typography variant="h4" fontWeight="500" color="primary">
-							API Keys
-						</Typography>
-					</Box>
-				</Box>
-				<Divider />
-			</Box>
+
 			<TableOfKeys />
 		</Container>
 	);

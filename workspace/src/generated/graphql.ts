@@ -95,6 +95,7 @@ export type Mutation = {
   deleteApplicationInOrganisation: Scalars['Boolean']['output'];
   deleteOrganisation: OrganisationEntity;
   deleteUser: UserEntity;
+  importNodeInOrganisation: Scalars['Boolean']['output'];
   publishApplication: Scalars['Boolean']['output'];
   publishOrganisation: Scalars['Boolean']['output'];
   removeUserFromOrganisation: Scalars['Boolean']['output'];
@@ -165,6 +166,13 @@ export type MutationDeleteUserArgs = {
 };
 
 
+export type MutationImportNodeInOrganisationArgs = {
+  nodeAlias: Scalars['String']['input'];
+  nodeRpcEndpoint: Scalars['String']['input'];
+  organisationId: Scalars['Int']['input'];
+};
+
+
 export type MutationPublishApplicationArgs = {
   applicationId: Scalars['Int']['input'];
 };
@@ -225,7 +233,7 @@ export type NodeEntity = {
   includedAt: Scalars['DateTime']['output'];
   nodeAlias: Scalars['String']['output'];
   rpcEndpoint: Scalars['String']['output'];
-  virtualBlockchainId: Scalars['String']['output'];
+  virtualBlockchainId?: Maybe<Scalars['String']['output']>;
 };
 
 export type OrganisationChainStatusType = {
@@ -278,6 +286,7 @@ export type Query = {
   getApplicationInOrganisation: ApplicationType;
   getChallenge: ChallengeEntity;
   getCurrentUser: UserEntity;
+  getLinkedNode: Scalars['String']['output'];
   getOrganisationStatistics: OrganisationStatsDto;
   getUserByPublicKey: UserEntity;
   isInitialised: Scalars['Boolean']['output'];
@@ -385,6 +394,11 @@ export type GetInitialisationStatusQueryVariables = Exact<{ [key: string]: never
 
 
 export type GetInitialisationStatusQuery = { isInitialised: boolean };
+
+export type GetLinkedNodeQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetLinkedNodeQuery = { getLinkedNode: string };
 
 export type SetupFirstAdministratorMutationVariables = Exact<{
   setupFirstAdmin: SetupFirstAdminDto;
@@ -638,14 +652,23 @@ export type GetOrganisationChainStatusQueryVariables = Exact<{
 
 export type GetOrganisationChainStatusQuery = { organisation: { chainStatus: { hasTokenAccount: boolean, isPublishedOnChain: boolean, hasEditedOrganization: boolean } } };
 
-export type NodeFragmentFragment = { id: number, nodeAlias: string, includedAt: any, virtualBlockchainId: string, rpcEndpoint: string };
+export type NodeFragmentFragment = { id: number, nodeAlias: string, includedAt: any, virtualBlockchainId?: string | null, rpcEndpoint: string };
 
 export type GetAllNodesQueryVariables = Exact<{
   organisationId: Scalars['Int']['input'];
 }>;
 
 
-export type GetAllNodesQuery = { organisation: { nodes: Array<{ id: number, nodeAlias: string, includedAt: any, virtualBlockchainId: string, rpcEndpoint: string }> } };
+export type GetAllNodesQuery = { organisation: { nodes: Array<{ id: number, nodeAlias: string, includedAt: any, virtualBlockchainId?: string | null, rpcEndpoint: string }> } };
+
+export type ImportNodeInOrganisationMutationVariables = Exact<{
+  organisationId: Scalars['Int']['input'];
+  nodeAlias: Scalars['String']['input'];
+  nodeRpcEndpoint: Scalars['String']['input'];
+}>;
+
+
+export type ImportNodeInOrganisationMutation = { importNodeInOrganisation: boolean };
 
 export type UserFragment = { publicKey: string, firstname: string, lastname: string, isAdmin: boolean };
 
@@ -817,6 +840,43 @@ export type GetInitialisationStatusQueryHookResult = ReturnType<typeof useGetIni
 export type GetInitialisationStatusLazyQueryHookResult = ReturnType<typeof useGetInitialisationStatusLazyQuery>;
 export type GetInitialisationStatusSuspenseQueryHookResult = ReturnType<typeof useGetInitialisationStatusSuspenseQuery>;
 export type GetInitialisationStatusQueryResult = Apollo.QueryResult<GetInitialisationStatusQuery, GetInitialisationStatusQueryVariables>;
+export const GetLinkedNodeDocument = gql`
+    query getLinkedNode {
+  getLinkedNode
+}
+    `;
+
+/**
+ * __useGetLinkedNodeQuery__
+ *
+ * To run a query within a React component, call `useGetLinkedNodeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetLinkedNodeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetLinkedNodeQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetLinkedNodeQuery(baseOptions?: Apollo.QueryHookOptions<GetLinkedNodeQuery, GetLinkedNodeQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetLinkedNodeQuery, GetLinkedNodeQueryVariables>(GetLinkedNodeDocument, options);
+      }
+export function useGetLinkedNodeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetLinkedNodeQuery, GetLinkedNodeQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetLinkedNodeQuery, GetLinkedNodeQueryVariables>(GetLinkedNodeDocument, options);
+        }
+export function useGetLinkedNodeSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetLinkedNodeQuery, GetLinkedNodeQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetLinkedNodeQuery, GetLinkedNodeQueryVariables>(GetLinkedNodeDocument, options);
+        }
+export type GetLinkedNodeQueryHookResult = ReturnType<typeof useGetLinkedNodeQuery>;
+export type GetLinkedNodeLazyQueryHookResult = ReturnType<typeof useGetLinkedNodeLazyQuery>;
+export type GetLinkedNodeSuspenseQueryHookResult = ReturnType<typeof useGetLinkedNodeSuspenseQuery>;
+export type GetLinkedNodeQueryResult = Apollo.QueryResult<GetLinkedNodeQuery, GetLinkedNodeQueryVariables>;
 export const SetupFirstAdministratorDocument = gql`
     mutation setupFirstAdministrator($setupFirstAdmin: SetupFirstAdminDto!) {
   setupFirstAdministrator(setupFirstAdmin: $setupFirstAdmin)
@@ -2093,6 +2153,43 @@ export type GetAllNodesQueryHookResult = ReturnType<typeof useGetAllNodesQuery>;
 export type GetAllNodesLazyQueryHookResult = ReturnType<typeof useGetAllNodesLazyQuery>;
 export type GetAllNodesSuspenseQueryHookResult = ReturnType<typeof useGetAllNodesSuspenseQuery>;
 export type GetAllNodesQueryResult = Apollo.QueryResult<GetAllNodesQuery, GetAllNodesQueryVariables>;
+export const ImportNodeInOrganisationDocument = gql`
+    mutation importNodeInOrganisation($organisationId: Int!, $nodeAlias: String!, $nodeRpcEndpoint: String!) {
+  importNodeInOrganisation(
+    organisationId: $organisationId
+    nodeAlias: $nodeAlias
+    nodeRpcEndpoint: $nodeRpcEndpoint
+  )
+}
+    `;
+export type ImportNodeInOrganisationMutationFn = Apollo.MutationFunction<ImportNodeInOrganisationMutation, ImportNodeInOrganisationMutationVariables>;
+
+/**
+ * __useImportNodeInOrganisationMutation__
+ *
+ * To run a mutation, you first call `useImportNodeInOrganisationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useImportNodeInOrganisationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [importNodeInOrganisationMutation, { data, loading, error }] = useImportNodeInOrganisationMutation({
+ *   variables: {
+ *      organisationId: // value for 'organisationId'
+ *      nodeAlias: // value for 'nodeAlias'
+ *      nodeRpcEndpoint: // value for 'nodeRpcEndpoint'
+ *   },
+ * });
+ */
+export function useImportNodeInOrganisationMutation(baseOptions?: Apollo.MutationHookOptions<ImportNodeInOrganisationMutation, ImportNodeInOrganisationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ImportNodeInOrganisationMutation, ImportNodeInOrganisationMutationVariables>(ImportNodeInOrganisationDocument, options);
+      }
+export type ImportNodeInOrganisationMutationHookResult = ReturnType<typeof useImportNodeInOrganisationMutation>;
+export type ImportNodeInOrganisationMutationResult = Apollo.MutationResult<ImportNodeInOrganisationMutation>;
+export type ImportNodeInOrganisationMutationOptions = Apollo.BaseMutationOptions<ImportNodeInOrganisationMutation, ImportNodeInOrganisationMutationVariables>;
 export const GetCurrentUserDocument = gql`
     query getCurrentUser {
   getCurrentUser {
