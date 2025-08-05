@@ -32,11 +32,16 @@ export interface NavigationInterface {
 	navigateToAdmin: () => void,
 	navigateToIndex: () => void,
 	navigateToOrganisation: (organisationId: number) => void
+	navigateToOrganisationApplications: (organisationId: number) => void
+	navigateToOrganisationNodes: (organisationId: number) => void
+	navigateToOrganisationKeys: (organisationId: number) => void
+	navigateToOrganisationMembers: (organisationId: number) => void
 	navigateToLogin: () => void;
 	navigateToOperatorStatus(): void;
 	navigateToSetup(): void;
 	navigateToApplication(organisationId: number, applicationId: number): void;
 	push(url: string): void,
+
 }
 
 
@@ -74,6 +79,10 @@ export function ApplicationNavigationContextProvider({ children }: PropsWithChil
 	const navigation: NavigationInterface = {
 		navigateToHome: () => navigate('/home'),
 		navigateToOrganisation: (id) => navigate(`/home/organisation/${id}`),
+		navigateToOrganisationKeys: (id) => navigate(`/home/organisation/${id}/apiKeys`),
+		navigateToOrganisationApplications: (id) => navigate(`/home/organisation/${id}/application`),
+		navigateToOrganisationNodes: (id) => navigate(`/home/organisation/${id}/node`),
+		navigateToOrganisationMembers: (id) => navigate(`/home/organisation/${id}/user`),
 		navigateToAdmin: () => navigate(`/admin`),
 		navigateToIndex: () => navigate('/'),
 		navigateToLogin: () => navigate('/'),

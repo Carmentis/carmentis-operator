@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useApplicationNavigationContext } from '@/contexts/application-navigation.context';
 import { useToast } from '@/app/layout';
 import AvatarOrganisation from '@/components/AvatarOrganisation';
+import Image from 'next/image';
 import {
 	Box,
 	Button,
@@ -94,6 +95,7 @@ export default function HomePage() {
 
 function Welcome() {
 	return <Box display={"flex"} flexDirection={"column"} gap={2}>
+		<Image src={"/carmentis.svg"} alt={"carmentis"} width={30} height={30}/>
 		<Typography variant={"h4"}>Welcome to your Workspace</Typography>
 		<Typography variant={"body1"} color={"text.secondary"}>
 			The workspace is used to manage your organisations, applications and nodes.
@@ -258,8 +260,23 @@ function ListOfOrganisations() {
 											You organisation is currently not published on the blockchain.
 										</Typography>
 									}
-									<Box mt={2}>
+									<Box mt={2} display={"flex"} gap={1}>
 										<Button variant={"contained"} onClick={() => onClick(organisation.id)}>Access</Button>
+										<Button onClick={() => navigation.navigateToOrganisationApplications(
+											organisation.id
+										)}>
+											Apps
+										</Button>
+										<Button  onClick={() => navigation.navigateToOrganisationNodes(
+											organisation.id
+										)}>
+											Nodes
+										</Button>
+										<Button  onClick={() => navigation.navigateToOrganisationMembers(
+											organisation.id
+										)}>
+											Members
+										</Button>
 									</Box>
 								</Card>
 
@@ -331,12 +348,15 @@ function ListOfApplications() {
 						</Typography>
 
 						<Box mt={2}/>
-						<Button variant={"contained"} onClick={() => navigation.navigateToApplication(
-							application.organisationId,
-							application.id
-						)}>
-							Access
-						</Button>
+						<Box display={"flex"} gap={1}>
+							<Button variant={"contained"} onClick={() => navigation.navigateToApplication(
+								application.organisationId,
+								application.id
+							)}>
+								Access
+							</Button>
+
+						</Box>
 
 
 					</Card>
