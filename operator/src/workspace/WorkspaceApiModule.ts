@@ -26,6 +26,7 @@ import { GraphQLJwtAuthGuard } from './guards/GraphQLJwtAuthGuard';
 import { ApplicationResolver } from './graphql/resolvers/ApplicationResolver';
 import { OrganisationStatisticsResolver } from './graphql/resolvers/OrganisationStatisticsResolver';
 import { NodeEntity } from '../shared/entities/NodeEntity';
+import { NodeResolver } from './graphql/resolvers/NodeResolver';
 
 // Extracted imports, controllers, and providers into constants
 export const DEFAULT_JWT_TOKEN_VALIDITY = "8h"
@@ -51,6 +52,7 @@ const WORKSPACE_PROVIDERS = [
 	ApiKeysResolver,
 	GeneralResolver,
 	ApplicationResolver,
+	NodeResolver,
 ];
 
 @Module({

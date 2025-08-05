@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { NodeEntity } from '../entities/NodeEntity';
 import { OrganisationEntity } from '../entities/OrganisationEntity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -36,5 +36,40 @@ export class NodeService {
 
 	deleteNode(organisation: OrganisationEntity, nodeId: number) {
 		return this.nodeRepository.delete({id: nodeId})
+	}
+
+	async updateNode(organisation: OrganisationEntity, nodeId: number, nodeAlias: string, nodeRpcEndpoint: string): Promise<NodeEntity> {
+		const node = await this.nodeRepository.findOne({
+			where: {
+				id: nodeId,
+				organisation: { id: organisation.id }
+			}
+		});
+
+		if (!node) {
+			throw new NotFoundException(`Node with id ${nodeId} not found in organisation ${organisation.id}`);
+		}
+
+		node.nodeAlias = nodeAlias;
+		node.rpcEndpoint = nodeRpcEndpoint;
+
+		return this.nodeRepository.save(node);
+	}
+
+	async claimNodeById(organisation: OrganisationEntity, nodeId: number): Promise<NodeEntity> {
+		const node = await this.nodeRepository.findOne({
+			where: {
+				id: nodeId,
+				organisation: { id: organisation.id }
+			}
+		});
+
+		if (!node) {
+			throw new NotFoundException(`Node with id ${nodeId} not found in organisation ${organisation.id}`);
+		}
+
+		// TODO: Implement the actual claim logic here
+
+		return node;
 	}
 }

@@ -9,3 +9,14 @@ query getLinkedNode {
 mutation setupFirstAdministrator($setupFirstAdmin: SetupFirstAdminDto!) {
     setupFirstAdministrator(setupFirstAdmin: $setupFirstAdmin)
 }
+
+mutation updateNodeInOrganisation($organisationId: Int!, $nodeId: Int!, $nodeAlias: String!, $nodeRpcEndpoint: String!) {
+    updateNodeInOrganisation(
+        organisationId: $organisationId,
+        nodeId: $nodeId,
+        nodeAlias: $nodeAlias,
+        nodeRpcEndpoint: $nodeRpcEndpoint
+    ) {
+        ...NodeFragment
+    }
+}

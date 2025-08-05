@@ -264,7 +264,8 @@ fragment NodeFragment on NodeEntity {
   nodeAlias,
   includedAt,
   virtualBlockchainId,
-  rpcEndpoint
+  rpcEndpoint,
+  isClaimable
 }
 
 query getAllNodes($organisationId: Int!) {
@@ -279,3 +280,15 @@ mutation importNodeInOrganisation($organisationId: Int!, $nodeAlias: String!, $n
   importNodeInOrganisation(organisationId: $organisationId, nodeAlias: $nodeAlias, nodeRpcEndpoint: $nodeRpcEndpoint)
 }
 
+mutation deleteNodeInOrganisation($organisationId: Int!, $nodeId: Int!) {
+  deleteNodeInOrganisation(organisationId: $organisationId, nodeId: $nodeId)
+}
+
+mutation claimNodeInOrganisation($organisationId: Int!, $nodeId: Int!) {
+    claimNodeInOrganisation(
+        organisationId: $organisationId, 
+        nodeId: $nodeId
+    ) {
+        ...NodeFragment
+    }
+}

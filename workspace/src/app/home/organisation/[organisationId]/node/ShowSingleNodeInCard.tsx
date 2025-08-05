@@ -13,23 +13,24 @@ import { Box, Card, Chip, MenuItem, TextField, Typography } from '@mui/material'
 import { NodeEntity } from '@/generated/graphql';
 import ThreeDotsMenu from '@/components/ThreeDotsMenu';
 import { TrashIcon } from '@heroicons/react/16/solid';
+import { useNodeStatusFromRpcEndpoint } from '@/hooks/useNodeStatusFromRpcEndpoint';
+import { useNodeCardLogic } from '@/hooks/useNodeCardLogic';
+import { useOrganisation } from '@/contexts/organisation-store.context';
+import { ShowLoadingNodeCard } from '@/app/home/organisation/[organisationId]/node/ShowLoadingNodeCard';
 
 export function ShowSingleNodeInCard({node}: {node: NodeEntity}) {
-	const {value: nodeStatus, loading, error} = useAsync(async () => {
-		const blockchain = BlockchainFacade.createFromNodeUrl(node.rpcEndpoint);
-		return await blockchain.getNodeStatus();
-	}, [node.rpcEndpoint]);
-
+	const {deleting, deleteNode} = useNodeCardLogic();
+	const {value: nodeStatus, loading, error} = useNodeStatusFromRpcEndpoint(node.rpcEndpoint);
 	const {width: cardWidth, height: cardHeight} = useNodeCardDimensions();
 
-	if (loading) return <Skeleton width={cardWidth} height={cardHeight}/>
+	if (loading || deleting) return <ShowLoadingNodeCard/>
 	if (!nodeStatus || error) return <ShowConnectionFailureNodeStatus node={node}/>
 
 	const nodeInfos = [
 		{ name: 'Node name', value: nodeStatus.getNodeName() },
 		{ name: 'Chain', value: nodeStatus.getChainId() },
 		{ name: 'RPC Address', value: node.rpcEndpoint },
-		{ name: 'Public key', value: nodeStatus.getCometBFTNodePublicKey()},
+		{ name: 'CometBFT Public key', value: nodeStatus.getCometBFTNodePublicKey()},
 	]
 
 	return <Card key={node.id} node={node} sx={{width: cardWidth, height: cardHeight}}>
@@ -44,7 +45,7 @@ export function ShowSingleNodeInCard({node}: {node: NodeEntity}) {
 				<Box>
 					<ThreeDotsMenu>
 						<MenuItem>Claim</MenuItem>
-						<MenuItem> <TrashIcon/> Delete Node</MenuItem>
+						<MenuItem disabled={deleting} onClick={() => deleteNode(node.id)}> <TrashIcon/> Delete Node</MenuItem>
 					</ThreeDotsMenu>
 				</Box>
 			</Box>
@@ -53,12 +54,12 @@ export function ShowSingleNodeInCard({node}: {node: NodeEntity}) {
 
 
 			<Box display={"flex"} flexDirection={"column"} gap={1}>
-				<Box>
-					<Typography>Status:</Typography>
+				<Box display={"flex"} flexWrap={"wrap"} gap={1}>
 					<Chip label={nodeStatus.isValidator() ? 'Validator' : 'Replicator'}/>
+					{ node.isClaimable && <Chip label={"Unclaimed"}/> }
 				</Box>
 				{
-					nodeInfos.map(info => <Box>
+					nodeInfos.map((info, index) => <Box key={index}>
 						<Typography>{info.name}:</Typography>
 						<TextField value={info.value} disabled={true} fullWidth={true}/>
 					</Box>)

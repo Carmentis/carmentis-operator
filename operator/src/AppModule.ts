@@ -25,6 +25,7 @@ import { join } from 'path';
 			useFactory: (configService: ConfigService) => getPostgresConfig(configService),
 		}),
 		GraphQLModule.forRoot<ApolloDriverConfig>({
+			debug: true,
 			driver: ApolloDriver,
 			autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
 		}),

@@ -8,6 +8,7 @@ type NodeEntity {
   includedAt: DateTime!
   rpcEndpoint: String!
   virtualBlockchainId: String
+  isClaimable: Boolean!
 }
 
 """
@@ -165,6 +166,9 @@ type Mutation {
   publishApplication(applicationId: Int!): Boolean!
   deleteApplicationInOrganisation(applicationId: Int!): Boolean!
   updateApplicationInOrganisation(applicationId: Int!, applicationUpdate: ApplicationUpdateDto!): ApplicationType!
+  deleteNodeInOrganisation(organisationId: Int!, nodeId: Int!): Boolean!
+  updateNodeInOrganisation(organisationId: Int!, nodeId: Int!, nodeAlias: String!, nodeRpcEndpoint: String!): NodeEntity!
+  claimNodeInOrganisation(organisationId: Int!, nodeId: Int!): NodeEntity!
 }
 
 input SetupFirstAdminDto {

@@ -87,12 +87,14 @@ export type ChallengeVerificationResponse = {
 export type Mutation = {
   addUserInOrganisation: Scalars['Boolean']['output'];
   changeOrganisationKeyPair: Scalars['Boolean']['output'];
+  claimNodeInOrganisation: NodeEntity;
   createApiKey: RevealedApiKeyType;
   createApplicationInOrganisation: ApplicationType;
   createOrganisation: OrganisationEntity;
   createUser: UserEntity;
   deleteApiKey: Scalars['Boolean']['output'];
   deleteApplicationInOrganisation: Scalars['Boolean']['output'];
+  deleteNodeInOrganisation: Scalars['Boolean']['output'];
   deleteOrganisation: OrganisationEntity;
   deleteUser: UserEntity;
   importNodeInOrganisation: Scalars['Boolean']['output'];
@@ -102,6 +104,7 @@ export type Mutation = {
   setupFirstAdministrator: Scalars['Boolean']['output'];
   updateApiKey: Scalars['Boolean']['output'];
   updateApplicationInOrganisation: ApplicationType;
+  updateNodeInOrganisation: NodeEntity;
   updateOrganisation: OrganisationEntity;
   updateUserAdminStatus: UserEntity;
   verifyChallenge: ChallengeVerificationResponse;
@@ -117,6 +120,12 @@ export type MutationAddUserInOrganisationArgs = {
 export type MutationChangeOrganisationKeyPairArgs = {
   organisationId: Scalars['Int']['input'];
   privateKey: Scalars['String']['input'];
+};
+
+
+export type MutationClaimNodeInOrganisationArgs = {
+  nodeId: Scalars['Int']['input'];
+  organisationId: Scalars['Int']['input'];
 };
 
 
@@ -153,6 +162,12 @@ export type MutationDeleteApiKeyArgs = {
 
 export type MutationDeleteApplicationInOrganisationArgs = {
   applicationId: Scalars['Int']['input'];
+};
+
+
+export type MutationDeleteNodeInOrganisationArgs = {
+  nodeId: Scalars['Int']['input'];
+  organisationId: Scalars['Int']['input'];
 };
 
 
@@ -207,6 +222,14 @@ export type MutationUpdateApplicationInOrganisationArgs = {
 };
 
 
+export type MutationUpdateNodeInOrganisationArgs = {
+  nodeAlias: Scalars['String']['input'];
+  nodeId: Scalars['Int']['input'];
+  nodeRpcEndpoint: Scalars['String']['input'];
+  organisationId: Scalars['Int']['input'];
+};
+
+
 export type MutationUpdateOrganisationArgs = {
   city: Scalars['String']['input'];
   countryCode: Scalars['String']['input'];
@@ -231,6 +254,7 @@ export type MutationVerifyChallengeArgs = {
 export type NodeEntity = {
   id: Scalars['Float']['output'];
   includedAt: Scalars['DateTime']['output'];
+  isClaimable: Scalars['Boolean']['output'];
   nodeAlias: Scalars['String']['output'];
   rpcEndpoint: Scalars['String']['output'];
   virtualBlockchainId?: Maybe<Scalars['String']['output']>;
@@ -406,6 +430,16 @@ export type SetupFirstAdministratorMutationVariables = Exact<{
 
 
 export type SetupFirstAdministratorMutation = { setupFirstAdministrator: boolean };
+
+export type UpdateNodeInOrganisationMutationVariables = Exact<{
+  organisationId: Scalars['Int']['input'];
+  nodeId: Scalars['Int']['input'];
+  nodeAlias: Scalars['String']['input'];
+  nodeRpcEndpoint: Scalars['String']['input'];
+}>;
+
+
+export type UpdateNodeInOrganisationMutation = { updateNodeInOrganisation: { id: number, nodeAlias: string, includedAt: any, virtualBlockchainId?: string | null, rpcEndpoint: string, isClaimable: boolean } };
 
 export type GetChallengeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -652,14 +686,14 @@ export type GetOrganisationChainStatusQueryVariables = Exact<{
 
 export type GetOrganisationChainStatusQuery = { organisation: { chainStatus: { hasTokenAccount: boolean, isPublishedOnChain: boolean, hasEditedOrganization: boolean } } };
 
-export type NodeFragmentFragment = { id: number, nodeAlias: string, includedAt: any, virtualBlockchainId?: string | null, rpcEndpoint: string };
+export type NodeFragmentFragment = { id: number, nodeAlias: string, includedAt: any, virtualBlockchainId?: string | null, rpcEndpoint: string, isClaimable: boolean };
 
 export type GetAllNodesQueryVariables = Exact<{
   organisationId: Scalars['Int']['input'];
 }>;
 
 
-export type GetAllNodesQuery = { organisation: { nodes: Array<{ id: number, nodeAlias: string, includedAt: any, virtualBlockchainId?: string | null, rpcEndpoint: string }> } };
+export type GetAllNodesQuery = { organisation: { nodes: Array<{ id: number, nodeAlias: string, includedAt: any, virtualBlockchainId?: string | null, rpcEndpoint: string, isClaimable: boolean }> } };
 
 export type ImportNodeInOrganisationMutationVariables = Exact<{
   organisationId: Scalars['Int']['input'];
@@ -669,6 +703,22 @@ export type ImportNodeInOrganisationMutationVariables = Exact<{
 
 
 export type ImportNodeInOrganisationMutation = { importNodeInOrganisation: boolean };
+
+export type DeleteNodeInOrganisationMutationVariables = Exact<{
+  organisationId: Scalars['Int']['input'];
+  nodeId: Scalars['Int']['input'];
+}>;
+
+
+export type DeleteNodeInOrganisationMutation = { deleteNodeInOrganisation: boolean };
+
+export type ClaimNodeInOrganisationMutationVariables = Exact<{
+  organisationId: Scalars['Int']['input'];
+  nodeId: Scalars['Int']['input'];
+}>;
+
+
+export type ClaimNodeInOrganisationMutation = { claimNodeInOrganisation: { id: number, nodeAlias: string, includedAt: any, virtualBlockchainId?: string | null, rpcEndpoint: string, isClaimable: boolean } };
 
 export type UserFragment = { publicKey: string, firstname: string, lastname: string, isAdmin: boolean };
 
@@ -793,6 +843,7 @@ export const NodeFragmentFragmentDoc = gql`
   includedAt
   virtualBlockchainId
   rpcEndpoint
+  isClaimable
 }
     `;
 export const UserFragmentDoc = gql`
@@ -908,6 +959,47 @@ export function useSetupFirstAdministratorMutation(baseOptions?: Apollo.Mutation
 export type SetupFirstAdministratorMutationHookResult = ReturnType<typeof useSetupFirstAdministratorMutation>;
 export type SetupFirstAdministratorMutationResult = Apollo.MutationResult<SetupFirstAdministratorMutation>;
 export type SetupFirstAdministratorMutationOptions = Apollo.BaseMutationOptions<SetupFirstAdministratorMutation, SetupFirstAdministratorMutationVariables>;
+export const UpdateNodeInOrganisationDocument = gql`
+    mutation updateNodeInOrganisation($organisationId: Int!, $nodeId: Int!, $nodeAlias: String!, $nodeRpcEndpoint: String!) {
+  updateNodeInOrganisation(
+    organisationId: $organisationId
+    nodeId: $nodeId
+    nodeAlias: $nodeAlias
+    nodeRpcEndpoint: $nodeRpcEndpoint
+  ) {
+    ...NodeFragment
+  }
+}
+    ${NodeFragmentFragmentDoc}`;
+export type UpdateNodeInOrganisationMutationFn = Apollo.MutationFunction<UpdateNodeInOrganisationMutation, UpdateNodeInOrganisationMutationVariables>;
+
+/**
+ * __useUpdateNodeInOrganisationMutation__
+ *
+ * To run a mutation, you first call `useUpdateNodeInOrganisationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateNodeInOrganisationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateNodeInOrganisationMutation, { data, loading, error }] = useUpdateNodeInOrganisationMutation({
+ *   variables: {
+ *      organisationId: // value for 'organisationId'
+ *      nodeId: // value for 'nodeId'
+ *      nodeAlias: // value for 'nodeAlias'
+ *      nodeRpcEndpoint: // value for 'nodeRpcEndpoint'
+ *   },
+ * });
+ */
+export function useUpdateNodeInOrganisationMutation(baseOptions?: Apollo.MutationHookOptions<UpdateNodeInOrganisationMutation, UpdateNodeInOrganisationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateNodeInOrganisationMutation, UpdateNodeInOrganisationMutationVariables>(UpdateNodeInOrganisationDocument, options);
+      }
+export type UpdateNodeInOrganisationMutationHookResult = ReturnType<typeof useUpdateNodeInOrganisationMutation>;
+export type UpdateNodeInOrganisationMutationResult = Apollo.MutationResult<UpdateNodeInOrganisationMutation>;
+export type UpdateNodeInOrganisationMutationOptions = Apollo.BaseMutationOptions<UpdateNodeInOrganisationMutation, UpdateNodeInOrganisationMutationVariables>;
 export const GetChallengeDocument = gql`
     query getChallenge {
   getChallenge {
@@ -2190,6 +2282,72 @@ export function useImportNodeInOrganisationMutation(baseOptions?: Apollo.Mutatio
 export type ImportNodeInOrganisationMutationHookResult = ReturnType<typeof useImportNodeInOrganisationMutation>;
 export type ImportNodeInOrganisationMutationResult = Apollo.MutationResult<ImportNodeInOrganisationMutation>;
 export type ImportNodeInOrganisationMutationOptions = Apollo.BaseMutationOptions<ImportNodeInOrganisationMutation, ImportNodeInOrganisationMutationVariables>;
+export const DeleteNodeInOrganisationDocument = gql`
+    mutation deleteNodeInOrganisation($organisationId: Int!, $nodeId: Int!) {
+  deleteNodeInOrganisation(organisationId: $organisationId, nodeId: $nodeId)
+}
+    `;
+export type DeleteNodeInOrganisationMutationFn = Apollo.MutationFunction<DeleteNodeInOrganisationMutation, DeleteNodeInOrganisationMutationVariables>;
+
+/**
+ * __useDeleteNodeInOrganisationMutation__
+ *
+ * To run a mutation, you first call `useDeleteNodeInOrganisationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteNodeInOrganisationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteNodeInOrganisationMutation, { data, loading, error }] = useDeleteNodeInOrganisationMutation({
+ *   variables: {
+ *      organisationId: // value for 'organisationId'
+ *      nodeId: // value for 'nodeId'
+ *   },
+ * });
+ */
+export function useDeleteNodeInOrganisationMutation(baseOptions?: Apollo.MutationHookOptions<DeleteNodeInOrganisationMutation, DeleteNodeInOrganisationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteNodeInOrganisationMutation, DeleteNodeInOrganisationMutationVariables>(DeleteNodeInOrganisationDocument, options);
+      }
+export type DeleteNodeInOrganisationMutationHookResult = ReturnType<typeof useDeleteNodeInOrganisationMutation>;
+export type DeleteNodeInOrganisationMutationResult = Apollo.MutationResult<DeleteNodeInOrganisationMutation>;
+export type DeleteNodeInOrganisationMutationOptions = Apollo.BaseMutationOptions<DeleteNodeInOrganisationMutation, DeleteNodeInOrganisationMutationVariables>;
+export const ClaimNodeInOrganisationDocument = gql`
+    mutation claimNodeInOrganisation($organisationId: Int!, $nodeId: Int!) {
+  claimNodeInOrganisation(organisationId: $organisationId, nodeId: $nodeId) {
+    ...NodeFragment
+  }
+}
+    ${NodeFragmentFragmentDoc}`;
+export type ClaimNodeInOrganisationMutationFn = Apollo.MutationFunction<ClaimNodeInOrganisationMutation, ClaimNodeInOrganisationMutationVariables>;
+
+/**
+ * __useClaimNodeInOrganisationMutation__
+ *
+ * To run a mutation, you first call `useClaimNodeInOrganisationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useClaimNodeInOrganisationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [claimNodeInOrganisationMutation, { data, loading, error }] = useClaimNodeInOrganisationMutation({
+ *   variables: {
+ *      organisationId: // value for 'organisationId'
+ *      nodeId: // value for 'nodeId'
+ *   },
+ * });
+ */
+export function useClaimNodeInOrganisationMutation(baseOptions?: Apollo.MutationHookOptions<ClaimNodeInOrganisationMutation, ClaimNodeInOrganisationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ClaimNodeInOrganisationMutation, ClaimNodeInOrganisationMutationVariables>(ClaimNodeInOrganisationDocument, options);
+      }
+export type ClaimNodeInOrganisationMutationHookResult = ReturnType<typeof useClaimNodeInOrganisationMutation>;
+export type ClaimNodeInOrganisationMutationResult = Apollo.MutationResult<ClaimNodeInOrganisationMutation>;
+export type ClaimNodeInOrganisationMutationOptions = Apollo.BaseMutationOptions<ClaimNodeInOrganisationMutation, ClaimNodeInOrganisationMutationVariables>;
 export const GetCurrentUserDocument = gql`
     query getCurrentUser {
   getCurrentUser {
