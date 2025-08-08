@@ -211,6 +211,7 @@ export type MutationSetupFirstAdministratorArgs = {
 
 
 export type MutationUpdateApiKeyArgs = {
+  activeUntil?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['Int']['input'];
   isActive: Scalars['Boolean']['input'];
   name: Scalars['String']['input'];
@@ -566,6 +567,7 @@ export type UpdateKeyMutationVariables = Exact<{
   id: Scalars['Int']['input'];
   name: Scalars['String']['input'];
   isActive: Scalars['Boolean']['input'];
+  activeUntil?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -1654,8 +1656,13 @@ export type GetApiKeyUsageLazyQueryHookResult = ReturnType<typeof useGetApiKeyUs
 export type GetApiKeyUsageSuspenseQueryHookResult = ReturnType<typeof useGetApiKeyUsageSuspenseQuery>;
 export type GetApiKeyUsageQueryResult = Apollo.QueryResult<GetApiKeyUsageQuery, GetApiKeyUsageQueryVariables>;
 export const UpdateKeyDocument = gql`
-    mutation UpdateKey($id: Int!, $name: String!, $isActive: Boolean!) {
-  updateApiKey(id: $id, name: $name, isActive: $isActive)
+    mutation UpdateKey($id: Int!, $name: String!, $isActive: Boolean!, $activeUntil: String) {
+  updateApiKey(
+    id: $id
+    name: $name
+    isActive: $isActive
+    activeUntil: $activeUntil
+  )
 }
     `;
 export type UpdateKeyMutationFn = Apollo.MutationFunction<UpdateKeyMutation, UpdateKeyMutationVariables>;
@@ -1676,6 +1683,7 @@ export type UpdateKeyMutationFn = Apollo.MutationFunction<UpdateKeyMutation, Upd
  *      id: // value for 'id'
  *      name: // value for 'name'
  *      isActive: // value for 'isActive'
+ *      activeUntil: // value for 'activeUntil'
  *   },
  * });
  */

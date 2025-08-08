@@ -129,8 +129,8 @@ query GetApiKeyUsage($id: Int!, $offset: Int!, $limit: Int!, $filterByUnauthoris
   }
 }
 
-mutation UpdateKey($id: Int!, $name: String!, $isActive: Boolean!) {
-  updateApiKey(id: $id, name: $name, isActive: $isActive)
+mutation UpdateKey($id: Int!, $name: String!, $isActive: Boolean!, $activeUntil: String) {
+  updateApiKey(id: $id, name: $name, isActive: $isActive, activeUntil: $activeUntil)
 }
 
 

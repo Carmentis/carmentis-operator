@@ -161,7 +161,7 @@ type Mutation {
   updateUserAdminStatus(publicKey: String!, isAdmin: Boolean!): UserEntity!
   deleteUser(publicKey: String!): UserEntity!
   createApiKey(applicationId: Int!, name: String!, activeUntil: String!): RevealedApiKeyType!
-  updateApiKey(id: Int!, name: String!, isActive: Boolean!): Boolean!
+  updateApiKey(id: Int!, name: String!, isActive: Boolean!, activeUntil: String): Boolean!
   deleteApiKey(id: Int!): Boolean!
   setupFirstAdministrator(setupFirstAdmin: SetupFirstAdminDto!): Boolean!
   createApplicationInOrganisation(organisationId: Int!, applicationName: String!): ApplicationType!

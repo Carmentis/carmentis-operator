@@ -77,18 +77,31 @@ export class ApiKeysResolver {
 		return mapper.map(key, ApiKeyEntity, ApiKeyType)
 	}
 
-	@Mutation(returns => Boolean)
-	async updateApiKey(
-		@CurrentUser() user: UserEntity,
-		@Args('id', { type: () => Int }) id: number,
-		@Args('name', { type: () => String }) name: string,
-		@Args('isActive', { type: () => Boolean }) isActive: boolean,
-	): Promise<boolean> {
-		const key = await this.apiKeyService.findOneById(id);
-		if (!key) throw new NotFoundException(`key with id ${id} not found`);
-		await this.apiKeyService.updateKey(key.id, { isActive, name });
-		return true;
-	}
+ @Mutation(returns => Boolean)
+ async updateApiKey(
+ 	@CurrentUser() user: UserEntity,
+ 	@Args('id', { type: () => Int }) id: number,
+ 	@Args('name', { type: () => String }) name: string,
+ 	@Args('isActive', { type: () => Boolean }) isActive: boolean,
+ 	@Args('activeUntil', { type: () => String, nullable: true }) activeUntil?: string,
+ ): Promise<boolean> {
+ 	const key = await this.apiKeyService.findOneById(id);
+ 	if (!key) throw new NotFoundException(`key with id ${id} not found`);
+	
+ 	const updateData: Partial<ApiKeyEntity> = { isActive, name };
+
+	 console.log("update api key, activeUntil:", activeUntil);
+ 	if (activeUntil) {
+ 		try {
+ 			updateData.activeUntil = new Date(Date.parse(activeUntil));
+ 		} catch (e) {
+ 			throw new BadRequestException(`Invalid date: ${e}`);
+ 		}
+ 	}
+	
+ 	await this.apiKeyService.updateKey(key.id, updateData);
+ 	return true;
+ }
 
 	@Mutation(returns => Boolean)
 	async deleteApiKey(
