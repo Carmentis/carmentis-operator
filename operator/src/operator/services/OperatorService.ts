@@ -36,9 +36,7 @@ export class OperatorService {
 		private anchorRequestService: AnchorRequestService,
 		private organisationService: OrganisationService,
 		private applicationService: ApplicationService,
-	) {
-
-	}
+	) {}
 
 
 	private logger = new Logger(OperatorService.name);
@@ -62,7 +60,8 @@ export class OperatorService {
 
 
 		// store the request
-		const storedRequest = await this.anchorRequestService.storeAnchorRequest(organisation, application, request);
+		const gasPrice = this.extractGasPrice(request);
+		const storedRequest = await this.anchorRequestService.storeAnchorRequest(organisation, application, request, gasPrice);
 		return { anchorRequestId: storedRequest.anchorRequestId }
 	};
 
@@ -142,7 +141,7 @@ export class OperatorService {
 		}
 	}
 
-	async approvalSignature(req: object, gasPrice: CMTSToken) {
+	async approvalSignature(req: object) {
 		// parse the anchor request id
 		const containsAnchorRequestId = 'anchorRequestId' in req;
 		if (!containsAnchorRequestId) throw new BadRequestException("Missing anchor request ID");
@@ -170,7 +169,7 @@ export class OperatorService {
 			// publish the micro-block
 			const vb = applicationLedger.getVirtualBlockchain();
 			await vb.addEndorserSignature(req.signature as Uint8Array);
-			vb.setGasPrice(gasPrice);
+			vb.setGasPrice(storedRequest.getGasPrice());
 			await vb.signAsAuthor(privateSignatureKey);
 			let mb = await vb.publish();
 
@@ -290,7 +289,9 @@ export class OperatorService {
 		const nodeUrl = this.envService.nodeUrl;
 		const privateSignatureKey = organisation.getPrivateSignatureKey();
 		const blockchain = BlockchainFacade.createFromNodeUrlAndPrivateKey(nodeUrl, privateSignatureKey);
+		const gasPrice = this.extractGasPrice(anchorDto);
 		const context = new RecordPublicationExecutionContext()
+			.withGasPrice(gasPrice)
 			.withRecord({
 				...anchorDto,
 				applicationId: application.virtualBlockchainId,
@@ -304,5 +305,12 @@ export class OperatorService {
 
 		// create a new anchor request entry to save the interaction
 		return this.anchorRequestService.createAndSaveCompletedAnchorRequest(virtualBlockId, microBlockHash, anchorDto, organisation, application)
+	}
+
+	private extractGasPrice(anchorDto: AnchorDto) {
+		const gasPriceInAtomic = anchorDto.gasPriceInAtomic;
+		return gasPriceInAtomic !== undefined ?
+			CMTSToken.oneCMTS() :
+			CMTSToken.createAtomic(gasPriceInAtomic);
 	}
 }

@@ -4,7 +4,7 @@ import { ApplicationEntity } from '../../shared/entities/ApplicationEntity';
 import { Repository } from 'typeorm';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
 import { AnchorDto, AnchorWithWalletDto } from '../dto/AnchorDto';
-import { EncoderFactory, Hash } from '@cmts-dev/carmentis-sdk/server';
+import { CMTSToken, EncoderFactory, Hash } from '@cmts-dev/carmentis-sdk/server';
 import { randomBytes } from 'crypto';
 import { OrganisationEntity } from '../../shared/entities/OrganisationEntity';
 
@@ -15,19 +15,17 @@ export class AnchorRequestService {
 		private readonly anchorRequestRepository: Repository<AnchorRequestEntity>,
 	) {}
 
-	/**
-	 * Stores an anchor request with the specified organisation, application, and request data.
-	 *
-	 * @param {OrganisationEntity} organisation - The organisation entity associated with the anchor request.
-	 **/
-	async storeAnchorRequest(organisation: OrganisationEntity, application: ApplicationEntity, request: AnchorWithWalletDto): Promise<AnchorRequestEntity> {
+
+	async storeAnchorRequest(organisation: OrganisationEntity, application: ApplicationEntity, request: AnchorWithWalletDto, gasPrice: CMTSToken): Promise<AnchorRequestEntity> {
 		const anchorRequestId = this.generateRandomAnchorRequestId();
+
 		return this.anchorRequestRepository.save({
 			anchorRequestId: anchorRequestId,
 			status: 'pending',
 			request,
 			organisationId: organisation.id,
 			applicationId: application.id,
+			gasPriceInAtomic: gasPrice.getAmountAsAtomic(),
 		})
 	}
 

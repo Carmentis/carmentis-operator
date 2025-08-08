@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { AnchorWithWalletDto } from '../dto/AnchorDto';
-import { Optional } from '@cmts-dev/carmentis-sdk/server';
+import { CMTSToken, Optional } from '@cmts-dev/carmentis-sdk/server';
 
 @Entity()
 export class AnchorRequestEntity {
@@ -35,6 +35,9 @@ export class AnchorRequestEntity {
 	@Column({ type: 'json' })
 	request: AnchorWithWalletDto;
 
+	@Column()
+	gasPriceInAtomic: number;
+
 	getAnchorRequestId(): string {
 		return this.anchorRequestId;
 	}
@@ -65,5 +68,9 @@ export class AnchorRequestEntity {
 
 	getStatus() {
 		return this.status
+	}
+
+	getGasPrice(): CMTSToken {
+		return CMTSToken.createAtomic(this.gasPriceInAtomic)
 	}
 }

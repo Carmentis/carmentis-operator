@@ -83,9 +83,23 @@ type ApplicationEditionViewProps = {
 }
 
 function ApplicationEditionView(props: ApplicationEditionViewProps) {
+	const application = useApplication();
+	
 	return (
 		<Box display="flex" flexDirection="column" gap={4}>
 			<ApplicationDetailsNavbar refreshApplication={props.refreshApplication} />
+			
+			{!application.published && (
+				<Alert 
+					severity="warning"
+					variant="outlined"
+				>
+					<Typography variant="body1">
+						This application is not yet published. The application is not registered on the blockchain, and no transactions can be associated with it or the organization.
+					</Typography>
+				</Alert>
+			)}
+			
 			<Grid container spacing={2}>
 				<Grid size={4}>
 					<Card>

@@ -1,24 +1,28 @@
-import { IsBoolean, IsDefined, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsDefined, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { Hash, OperatorAnchorRequest, Optional } from '@cmts-dev/carmentis-sdk/server';
+import { CMTSToken, Hash, OperatorAnchorRequest, Optional } from '@cmts-dev/carmentis-sdk/server';
 
 export class ChannelDto {
-	@ApiProperty({ description: 'Name of the channel' })
+	@ApiProperty({ title: 'Name of the channel' })
 	@IsString()
 	name: string;
 
-	@ApiProperty({ description: 'Indicates whether the channel is public or private' })
+	@ApiProperty({ title: "Channel visibility", description: 'Indicates whether the channel is public or private' })
 	@IsBoolean()
 	public: boolean;
 }
 
 export class ActorDto {
-	@ApiProperty({ description: 'Name of the actor.', example: "Endorser" })
+	@ApiProperty({ title: 'Name of the actor.', example: "Endorser" })
 	@IsString()
 	name: string;
 
-	@ApiProperty({ description: 'Public key of the actor (optional).' })
+	@ApiProperty({
+		title: 'Public key of the actor.',
+		description: "This field is used to indicate that a public key should be associated to a specific actor",
+		nullable: true
+	})
 	@IsString()
 	@IsOptional()
 	publicKey: string;
@@ -92,12 +96,21 @@ export class AnchorDto  {
 	@Type(() => ChannelDto)
 	channels: ChannelDto[];
 
-	@ApiProperty({ type: [ActorDto], description: 'List of created actors.' })
+	@ApiProperty({
+		type: [ActorDto],
+		title: "List of actors to create.",
+		description: 'This field contains all actors that need to be created to be used in transactions.',
+	})
 	@ValidateNested({ each: true })
 	@Type(() => ActorDto)
 	actors: ActorDto[];
 
-	@ApiProperty({ description: 'Data being anchored on chain.', type: Object, example: { "field1": "value1" } })
+	@ApiProperty({
+		title: "Data being anchored on chain.",
+		description: 'This field contains all your own business-related data being anchored in the blockchain.',
+		type: Object,
+		example: { "field1": "value1" }
+	})
 	@IsDefined()
 	data: Object;
 
@@ -123,9 +136,25 @@ export class AnchorDto  {
 	@IsOptional()
 	maskableFields: MaskableFieldDto[];
 
-	@ApiProperty({ description: 'Author', example: "Author" })
+	@ApiProperty({
+		title: "Author",
+		description: 'The author of a transaction corresponds to the actor having initiated the transaction (mostly your application server).',
+		example: "MyApplication"
+	})
 	@IsString()
 	author: string
+
+	@ApiProperty({
+		description: 'Gas price used to perform the transaction. Gas price should be atomic. When omitted, one CMTS is used as a gas price. For more information, see CMTSToken.',
+		example: CMTSToken.oneCMTS().getAmountAsAtomic(),
+		type: Number,
+		title: "Gas price (in atomic).",
+		nullable: true
+	})
+	@IsPositive({ message: 'Gas price must be positive.' })
+	gasPriceInAtomic?: number;
+
+
 
 	isVirtualBlockchainIdDefined(): boolean {
 		return this.virtualBlockchainId !== undefined;

@@ -33,6 +33,7 @@ import { motion } from 'framer-motion';
 import { OrganisationStepper } from '@/app/home/organisation/[organisationId]/OrganisationStepper';
 import { CheckComponent } from '@/app/home/organisation/[organisationId]/CheckComponent';
 import { useOrganisationPublicKey } from '@/hooks/useOrganisationPublicKey';
+import OrganisationWarnings from '@/app/home/organisation/[organisationId]/OrganisationWarnings';
 
 
 // Glass effect styles
@@ -104,6 +105,9 @@ export default function Home() {
 							</Typography>
 						</Box>
 					</Grid>
+					
+					<OrganisationWarnings />
+					
 					<Grid container spacing={2}>
 						<Grid size={4}>
 							<OrganisationChainStatus/>

@@ -224,10 +224,8 @@ export class OperatorApiController{
 			}
 			case MSG_APPROVAL_SIGNATURE:
 				this.logger.debug(`[${sessionId}] Entering approval signature`)
-				const gasPrice = CMTSToken.oneCMTS();
 				answer = await this.operatorService.approvalSignature(
 					object,
-					gasPrice
 				);
 				break;
 			default:
