@@ -68,8 +68,8 @@ export class NodeService {
 			throw new NotFoundException(`Node with id ${nodeId} not found in organisation ${organisation.id}`);
 		}
 
-		// TODO: Implement the actual claim logic here
-
-		return node;
+		const nodeVirtualBlockchainId = await this.chainService.claimNode(organisation, node);
+		node.virtualBlockchainId = nodeVirtualBlockchainId.encode();
+		return this.nodeRepository.save(node);
 	}
 }

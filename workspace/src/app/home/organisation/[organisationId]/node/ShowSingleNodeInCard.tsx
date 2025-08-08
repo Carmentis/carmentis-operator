@@ -19,11 +19,11 @@ import { useOrganisation } from '@/contexts/organisation-store.context';
 import { ShowLoadingNodeCard } from '@/app/home/organisation/[organisationId]/node/ShowLoadingNodeCard';
 
 export function ShowSingleNodeInCard({node}: {node: NodeEntity}) {
-	const {deleting, deleteNode} = useNodeCardLogic();
+	const {deleting, deleteNode, claiming, claimNode} = useNodeCardLogic();
 	const {value: nodeStatus, loading, error} = useNodeStatusFromRpcEndpoint(node.rpcEndpoint);
 	const {width: cardWidth, height: cardHeight} = useNodeCardDimensions();
 
-	if (loading || deleting) return <ShowLoadingNodeCard/>
+	if (loading || deleting || claiming) return <ShowLoadingNodeCard/>
 	if (!nodeStatus || error) return <ShowConnectionFailureNodeStatus node={node}/>
 
 	const nodeInfos = [
@@ -44,7 +44,7 @@ export function ShowSingleNodeInCard({node}: {node: NodeEntity}) {
 				</Box>
 				<Box>
 					<ThreeDotsMenu>
-						<MenuItem>Claim</MenuItem>
+						<MenuItem disabled={claiming} onClick={() => claimNode(node.id)}>Claim</MenuItem>
 						<MenuItem disabled={deleting} onClick={() => deleteNode(node.id)}>
 							<TrashIcon/> Delete Node
 						</MenuItem>

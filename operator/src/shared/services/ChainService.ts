@@ -124,28 +124,6 @@ export default class ChainService {
 
 	async getTransactionsHistory(publicSignatureKey: PublicSignatureKey, fromHistoryHash: string | undefined, limit: number) {
 		return this.blockchain.getAccountHistoryFromPublicKey(publicSignatureKey);
-		/*
-		const explorer = Explorer.createFromProvider(
-			ProviderFactory.createInMemoryProviderWithExternalProvider(this.nodeUrl),
-		);
-		try {
-			const accountHash = await explorer.getAccountByPublicKey(publicSignatureKey);
-			if (!accountHash) throw new NotFoundException('No account found');
-
-			const accountState = await explorer.getAccountState(accountHash);
-			return await explorer.getAccountHistory(
-				accountHash,
-				Hash.from(fromHistoryHash || accountState.lastHistoryHash),
-				limit
-			);
-
-		} catch (e) {
-			this.logger.log("Cannot produce history of transactions:", e);
-			throw new UnprocessableEntityException(e)
-		}
-
-		 */
-
 	}
 
 	async getBalanceOfAccount(publicSignatureKey: PublicSignatureKey) {
@@ -172,8 +150,13 @@ export default class ChainService {
 
 
 	async claimNode(organisation: OrganisationEntity, node: NodeEntity) {
-		const blockchain = BlockchainFacade.createFromNodeUrl(node.rpcEndpoint);
+		// create the blockchain client
 		const organizationId = organisation.getVirtualBlockchainId();
+		this.logger.verbose(`Proceeding to claim of node ${node.rpcEndpoint} by organisation ${organizationId.encode()} (ID: ${organisation.id})`)
+		const organisationPrivateKey = organisation.getPrivateSignatureKey();
+		const nodeRpcEndpoint = node.rpcEndpoint;
+		this.logger.verbose("Creating blockchain client for node: " + nodeRpcEndpoint)
+		const blockchain = BlockchainFacade.createFromNodeUrlAndPrivateKey(nodeRpcEndpoint, organisationPrivateKey);
 		const nodeStatus = await blockchain.getNodeStatus();
 		const cometPublicKey = nodeStatus.getCometBFTNodePublicKey();
 		const cometPublicKeyType = nodeStatus.getCometBFTNodePublicKeyType();
@@ -182,6 +165,8 @@ export default class ChainService {
 			.withPower(0)
 			.withCometPublicKeyType(cometPublicKeyType)
 			.withCometPublicKey(cometPublicKey);
+
+		this.logger.verbose(`Claiming node...`)
 		const validatorNodeId = await blockchain.publishValidatorNode(validatorNodeCreationContext);
 		return validatorNodeId;
 	}

@@ -107,6 +107,25 @@ function OrganisationStatus({ organisation }) {
 					/>
 				</motion.div>
 			)}
+			{
+				!organisation.published && (
+					<motion.div
+						initial={{ opacity: 0, scale: 0.8 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{ duration: 0.3, delay: 0.1 }}
+					>
+						<Tooltip title={"Your organisation is currently not published. Publish your organisation before publishing anything else."}>
+							<Chip
+								variant={"outlined"}
+								label={`Not published`}
+								size="small"
+								icon={<HubIcon />}
+
+							/>
+						</Tooltip>
+					</motion.div>
+				)
+			}
 			{organisation.published && (
 				<motion.div
 					initial={{ opacity: 0, scale: 0.8 }}

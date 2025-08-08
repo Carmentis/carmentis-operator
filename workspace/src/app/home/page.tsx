@@ -18,8 +18,8 @@ import {
 	Grid,
 	InputAdornment,
 	Paper,
-	TextField,
-	Typography
+	TextField, Tooltip,
+	Typography,
 } from '@mui/material';
 import Skeleton from 'react-loading-skeleton';
 import { useModal } from 'react-modal-hook';
@@ -250,8 +250,12 @@ function ListOfOrganisations() {
 									{
 										organisation.virtualBlockchainId &&
 										<Typography>
-											You organisation is published on the blockchain at
-											<Typography component={"span"} fontWeight={"bold"}>{organisation.virtualBlockchainId}.</Typography>
+											You organisation is published on the blockchain
+											at <Tooltip title={organisation.virtualBlockchainId}>
+												<Typography component={"span"} fontWeight={"bold"}>
+													{organisation.virtualBlockchainId.slice(0,20)}...{organisation.virtualBlockchainId.slice(-4)}.
+												</Typography>
+											</Tooltip>
 										</Typography>
 									}
 									{
