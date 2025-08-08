@@ -79,40 +79,50 @@ export default function Home() {
 	}
 
 	return (
-		<Container 
-			maxWidth={false} 
-			disableGutters
-			sx={{
-				minHeight: '100vh',
-				padding: 3,
-				borderRadius: 2
-			}}
-		>
-			<motion.div
-				initial="hidden"
-				animate="visible"
-				variants={staggerContainer}
-				className="organisation-content"
+		<>
+			<Container
+				maxWidth={false}
+				disableGutters
+				sx={{
+					minHeight: '100vh',
+					padding: 3,
+					borderRadius: 2
+				}}
 			>
+				<motion.div
+					initial="hidden"
+					animate="visible"
+					variants={staggerContainer}
+					className="organisation-content"
+				>
 
-				<Grid container spacing={2}>
-					<Grid size={4}>
-						<OrganisationChainStatus/>
+					<Grid size={12} mb={2}>
+						<Box display="flex" flexDirection={"column"}>
+							<Typography color={"primary"} variant={"h5"}>Overview</Typography>
+							<Typography>
+								Find out more about your organisation and its status on the blockchain.
+							</Typography>
+						</Box>
 					</Grid>
-					<Grid size={8}>
-						<Grid container spacing={2}>
-							<OrganisationEdition />
+					<Grid container spacing={2}>
+						<Grid size={4}>
+							<OrganisationChainStatus/>
+						</Grid>
+						<Grid size={8}>
+							<Grid container spacing={2}>
+								<OrganisationEdition />
 
-							<Card>
-								<OrganisationPublicKey/>
-							</Card>
+								<Card>
+									<OrganisationPublicKey/>
+								</Card>
+							</Grid>
 						</Grid>
 					</Grid>
-				</Grid>
 
 
-			</motion.div>
-		</Container>
+				</motion.div>
+			</Container>
+		</>
 	);
 }
 

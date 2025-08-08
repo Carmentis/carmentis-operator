@@ -4,6 +4,7 @@ import { UserSearchResult } from '@/entities/user.entity';
 import Skeleton from 'react-loading-skeleton';
 import {
 	Box,
+	Breadcrumbs,
 	Button,
 	Container,
 	Dialog,
@@ -30,8 +31,28 @@ import SearchIcon from '@mui/icons-material/Search';
 import PeopleIcon from '@mui/icons-material/People';
 import { useConfirmationModal } from '@/contexts/popup-modal.component';
 import { InsertExistingUserPanel } from '@/app/home/organisation/[organisationId]/user/InsertExistingUserPanel';
+import PersonIcon from '@mui/icons-material/Person';
 
 export default function UserPage() {
+
+	const organisation = useOrganisation();
+	return <>
+		<Box display={"flex"} flexDirection={"column"} alignItems={"start"} mb={2}>
+			<Breadcrumbs>
+				<Typography>{organisation.name}</Typography>
+				<Typography>Members</Typography>
+			</Breadcrumbs>
+			<Box display={"flex"} alignItems={"center"} alignContent={"center"} gap={1}>
+				<PersonIcon/>
+				<Typography variant={"h6"}>Members</Typography>
+			</Box>
+		</Box>
+		<UserLogic/>
+	</>
+}
+
+function UserLogic() {
+
 	// State
 	const [searchTerm, setSearchTerm] = useState('');
 

@@ -19,6 +19,7 @@ import {
 	useUpdateApplicationMutation,
 } from '@/generated/graphql';
 import { useApplicationEditionStatus } from '@/hooks/useApplicationEditionStatus';
+import GridViewIcon from '@mui/icons-material/GridView';
 
 
 export type ApplicationDetailsNavbarProps = {
@@ -164,30 +165,28 @@ function EntityStatusHeader(
 		<>
 			<Box display={"flex"} flexDirection={"row"} justifyContent={"space-between"}>
 				<Box display={"flex"} flexDirection={"row"} gap={2}>
-					<Breadcrumbs>
-						<Typography
-							variant="h6"
-						>
-							{organisation.name}
-						</Typography>
-						<Typography
-							variant="h6"
-						>
-							Applications
-						</Typography>
-						<Typography
-							variant="h6"
-						>
-							{input.name}
-						</Typography>
-					</Breadcrumbs>
-					<Box display={"flex"} flexDirection={"row"} gap={1}>
-						{input.published &&
-							<Chip variant="filled" className={"bg-primary-light"} label={`Published - ${input.virtualBlockchainId}`} />}
-						{input.isDraft &&
-							<Chip variant="filled" className={"border-primary-light text-primary-light"}
-								  label="Draft" />}
+					<Box display={"flex"} flexDirection={"column"}>
+						<Breadcrumbs>
+							<Typography>
+								{organisation.name}
+							</Typography>
+							<Typography>
+								Applications
+							</Typography>
+						</Breadcrumbs>
+						<Box display={"flex"} gap={1} alignItems={"center"} alignContent={"center"}>
+							<GridViewIcon/>
+							<Typography variant={"h6"}>{input.name}</Typography>
+							<Box display={"flex"} flexDirection={"row"} gap={1}>
+								{input.published &&
+									<Chip variant="filled" className={"bg-primary-light"} label={`Published - ${input.virtualBlockchainId}`} />}
+								{input.isDraft &&
+									<Chip variant="filled" className={"border-primary-light text-primary-light"}
+										  label="Draft" />}
+							</Box>
+						</Box>
 					</Box>
+
 				</Box>
 				<Box display={"flex"} flexDirection={"row"} gap={1}>
 					<div className={`space-x-2 ${BORDER_CLASSES} pr-2 flex flex-row`}>

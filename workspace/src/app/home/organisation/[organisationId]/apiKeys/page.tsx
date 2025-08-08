@@ -1,48 +1,103 @@
 'use client';
 
-import { Box, Button, Container, Divider, Paper, Typography } from '@mui/material';
+import { Box, Button, Container, Divider, IconButton, Paper, Typography } from '@mui/material';
 import { useOrganisation } from '@/contexts/organisation-store.context';
 import GenericTableComponent from '@/components/GenericTableComponent';
 import { useCustomRouter } from '@/contexts/application-navigation.context';
 import useApiKeyStatusFormatter from '@/hooks/useApiKeyStatusFormatter';
-import { ApiKeyDescriptionFragment, useGetApiKeysQuery } from '@/generated/graphql';
+import { ApiKeyDescriptionFragment, useGetApiKeysQuery, useUpdateKeyMutation, useDeleteApiKeyMutation } from '@/generated/graphql';
 import Skeleton from 'react-loading-skeleton';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useState } from 'react';
+import EditApiKeyModal, { EditApiKeyFormData } from '@/components/modals/EditApiKeyModal';
+import useConfirmationModal from '@/components/modals/confirmation-modal';
+import { useToast } from '@/app/layout';
 
 export default function Page() {
 	return (
 		<Container maxWidth={false} disableGutters>
-
 			<TableOfKeys />
 		</Container>
-	);
-}
-
-function renderLinkToApplication(application: {id: number, name: string}) {
-	const organisation = useOrganisation();
-	const router = useCustomRouter();
-	return (
-		<Typography
-			variant="body2"
-			sx={{
-				cursor: 'pointer',
-				color: 'primary.main',
-				'&:hover': { textDecoration: 'underline' }
-			}}
-			onClick={() => router.navigateToApplication(organisation.id, application.id)}
-		>
-			{application.name}
-		</Typography>
 	);
 }
 
 function TableOfKeys() {
 	const organisation = useOrganisation();
 	const router = useCustomRouter();
-	const {data: keys, loading: isLoading, error} = useGetApiKeysQuery({
+	const notify = useToast();
+	const [updateKey, { loading: isUpdating }] = useUpdateKeyMutation();
+	const [deleteKey, { loading: isDeleting }] = useDeleteApiKeyMutation();
+	const { data: keys, loading: isLoading, error, refetch: mutate } = useGetApiKeysQuery({
 		variables: { id: organisation.id }
 	});
-	const formatApiKeyStatus = useApiKeyStatusFormatter()
+	const formatApiKeyStatus = useApiKeyStatusFormatter();
+	
+	// State for edit modal
+	const [editModalOpen, setEditModalOpen] = useState(false);
+	const [currentApiKey, setCurrentApiKey] = useState<ApiKeyDescriptionFragment | null>(null);
+	
+	// Function to open the edit modal
+	const handleEditClick = (apiKey: ApiKeyDescriptionFragment, e: React.MouseEvent) => {
+		e.stopPropagation(); // Prevent row click
+		setCurrentApiKey(apiKey);
+		setEditModalOpen(true);
+	};
+	
+	// Function to handle saving edited API key
+	const handleSaveEdit = (data: EditApiKeyFormData) => {
+		if (!currentApiKey) return;
+		
+		updateKey({
+			variables: {
+				id: currentApiKey.id,
+				name: data.name,
+				isActive: data.isActive,
+				activeUntil: data.activeUntil
+			}
+		})
+		.then(result => {
+			const { errors } = result;
+			if (!errors) {
+				notify.info('API Key updated');
+				setEditModalOpen(false);
+				mutate();
+			} else {
+				notify.error(errors);
+			}
+		})
+		.catch(notify.error);
+	};
+	
+	// Confirmation modal for API key deletion
+	const [showModal, setState] = useConfirmationModal<number>({
+		title: "Confirm Deletion",
+		message: "Are you sure you want to delete this API key?",
+		yes: "Delete",
+		no: "Cancel",
+		onYes: (data: number) => {
+			if (isDeleting) return;
+			deleteKey({ variables: { keyId: data } })
+				.then(result => {
+					const { errors } = result;
+					if (!errors) {
+						notify.info('API Key deleted');
+						mutate();
+					} else {
+						notify.error(errors);
+					}
+				})
+				.catch(notify.error);
+		}
+	});
+	
+	// Function to confirm API key deletion
+	const confirmApiKeyDeletion = (apiKeyId: number, e: React.MouseEvent) => {
+		e.stopPropagation(); // Prevent row click
+		setState(apiKeyId);
+		showModal();
+	};
 
 	if (isLoading) {
 		return (
@@ -93,6 +148,25 @@ function TableOfKeys() {
 		);
 	}
 
+	function renderLinkToApplication(application: {id: number, name: string}) {
+		return (
+			<Typography
+				variant="body2"
+				sx={{
+					cursor: 'pointer',
+					color: 'primary.main',
+					'&:hover': { textDecoration: 'underline' }
+				}}
+				onClick={(e) => {
+					e.stopPropagation(); // Prevent row click
+					router.navigateToApplication(organisation.id, application.id);
+				}}
+			>
+				{application.name}
+			</Typography>
+		);
+	}
+
 	function extractDataFromKey(row: ApiKeyDescriptionFragment) {
 		const applicationValue = row.application ? renderLinkToApplication(row.application) : '--';
 		const status = formatApiKeyStatus(row);
@@ -103,6 +177,19 @@ function TableOfKeys() {
 			{ head: 'Status', value: status },
 			{ head: 'Created at', value: <Typography variant="body2">{new Date(row.createdAt).toLocaleString()}</Typography> },
 			{ head: 'Application', value: applicationValue },
+			{
+				head: '',
+				value: (
+					<Box>
+						<IconButton onClick={(e) => handleEditClick(row, e)} sx={{ mr: 1 }}>
+							<EditIcon />
+						</IconButton>
+						<IconButton onClick={(e) => confirmApiKeyDeletion(row.id, e)}>
+							<DeleteIcon />
+						</IconButton>
+					</Box>
+				)
+			}
 		];
 	}
 
@@ -113,6 +200,17 @@ function TableOfKeys() {
 				extractor={extractDataFromKey}
 				onRowClicked={key => router.push(`apiKeys/${key.id}/usage`)}
 			/>
+			
+			{/* Edit API Key Modal */}
+			{currentApiKey && (
+				<EditApiKeyModal
+					open={editModalOpen}
+					onClose={() => setEditModalOpen(false)}
+					apiKey={currentApiKey}
+					onSave={handleSaveEdit}
+					isLoading={isUpdating}
+				/>
+			)}
 		</Paper>
 	);
 }

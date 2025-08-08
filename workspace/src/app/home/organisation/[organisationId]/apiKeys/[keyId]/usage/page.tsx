@@ -8,17 +8,20 @@ import {
 	Divider,
 	FormControlLabel,
 	Grid,
+	IconButton,
 	Pagination,
 	Paper,
-	Switch,
+	Stack,
 	Table,
 	TableBody,
 	TableCell,
 	TableContainer,
 	TableHead,
-	TableRow, TextField,
+	TableRow,
+	TextField,
 	Tooltip,
 	Typography,
+	Switch,
 } from '@mui/material';
 import GenericTableComponent from '@/components/GenericTableComponent';
 import { useParams } from 'next/navigation';
@@ -34,8 +37,11 @@ import {
 import Skeleton from 'react-loading-skeleton';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
 import { useCustomRouter } from '@/contexts/application-navigation.context';
 import { useOrganisation } from '@/contexts/organisation-store.context';
+import EditApiKeyModal, { EditApiKeyFormData } from '@/components/modals/EditApiKeyModal';
+import KeyIcon from '@mui/icons-material/Key';
 
 export default function Page() {
 	return (
@@ -55,30 +61,42 @@ function Header() {
 	const { data, loading: isLoading, refetch: mutate } = useGetApiKeyQuery({
 		variables: { id: parseInt(keyId) },
 	});
-	const [updateKey] = useUpdateKeyMutation();
+	const [updateKey, { loading: isUpdating }] = useUpdateKeyMutation();
 	const toast = useToast();
 	const apiKeyFormatter = useApiKeyStatusFormatter();
-
-	function switchKeyStatus() {
-		const key = data?.getApiKey;
+	
+	// State for edit modal
+	const [editModalOpen, setEditModalOpen] = useState(false);
+	
+	// Function to open the edit modal
+	const handleEditClick = () => {
+		setEditModalOpen(true);
+	};
+	
+	// Function to handle saving edited API key
+	const handleSaveEdit = (formData: EditApiKeyFormData) => {
+		if (!data?.getApiKey) return;
+		
 		updateKey({
 			variables: {
 				id: parseInt(keyId),
-				name: key?.name,
-				isActive: !key.isActive
+				name: formData.name,
+				isActive: formData.isActive,
+				activeUntil: formData.activeUntil
 			}
 		})
-			.then(result => {
-				const { errors } = result;
-				if (errors) {
-					notify.error(errors);
-				} else {
-					notify.success("Key status updated successfully");
-					mutate();
-				}
-			})
-			.catch(toast.error);
-	}
+		.then(result => {
+			const { errors } = result;
+			if (!errors) {
+				notify.info('API Key updated');
+				setEditModalOpen(false);
+				mutate();
+			} else {
+				notify.error(errors);
+			}
+		})
+		.catch(notify.error);
+	};
 
 	if (isLoading) {
 		return (
@@ -119,42 +137,42 @@ function Header() {
 		{ head: 'Key name', value: data.getApiKey.name },
 		{ head: 'Last digits', value: data.getApiKey.partialKey },
 		{ head: 'Active until', value: new Date(data.getApiKey.activeUntil).toLocaleString() },
+		{ head: 'Status', value: data.getApiKey.isActive ? 'Active' : 'Inactive' },
 	]
+	
 	return (
 		<Box>
 			<Box display="flex" justifyContent="space-between" alignItems="center">
-				<Breadcrumbs>
-					<Typography variant={"h6"}>{organisation.name}</Typography>
-					<Typography variant={"h6"}>API Keys</Typography>
-					<Typography variant={"h6"}>{data.getApiKey.name}</Typography>
-				</Breadcrumbs>
-				<Tooltip title={data.getApiKey.isActive ? "Disable API key" : "Enable API key"}>
-					<FormControlLabel
-						control={
-							<Switch
-								checked={data.getApiKey.isActive}
-								onChange={switchKeyStatus}
-								color="primary"
-							/>
-						}
-						label={data.getApiKey.isActive ? "Enabled" : "Disabled"}
-						labelPlacement="start"
-					/>
-				</Tooltip>
+				<Box display={"flex"} flexDirection={"column"} alignItems={"start"}>
+					<Breadcrumbs>
+						<Typography>{organisation.name}</Typography>
+						<Typography>API Keys</Typography>
+					</Breadcrumbs>
+					<Box display={"flex"} gap={1}>
+						<KeyIcon/>
+						<Typography variant={"h6"}>{data.getApiKey.name}</Typography>
+					</Box>
+				</Box>
 			</Box>
 
-			<Grid container spacing={2}>
+			<Grid container spacing={2} sx={{ mt: 2 }}>
 				<Grid size={4}>
 					<Card>
-						<Box display="flex" flexDirection="column" gap={1}>
+						<Box display="flex" flexDirection="column" gap={2}>
 							<Box display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
-								<Typography variant={"h6"}>Key edition</Typography>
+								<Typography variant={"h6"}>API Key Details</Typography>
+								<IconButton onClick={handleEditClick} color="primary">
+									<EditIcon />
+								</IconButton>
+							</Box>
+							<Box display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
+								<Typography variant={"body2"} color="text.secondary">Status</Typography>
 								{apiKeyFormatter(data.getApiKey)}
 							</Box>
 							{keyInfos.map((v, i) => (
-								<Box>
-									<Typography>{v.head}</Typography>
-									<TextField fullWidth={true} value={v.value} disabled/>
+								<Box key={i} display="flex" flexDirection="column" gap={0.5}>
+									<Typography variant="body2" color="text.secondary">{v.head}</Typography>
+									<Typography variant="body1">{v.value}</Typography>
 								</Box>
 							))}
 						</Box>
@@ -164,7 +182,15 @@ function Header() {
 					<TableOfKeyUsage />
 				</Grid>
 			</Grid>
-
+			
+			{/* Edit API Key Modal */}
+			<EditApiKeyModal
+				open={editModalOpen}
+				onClose={() => setEditModalOpen(false)}
+				apiKey={data.getApiKey}
+				onSave={handleSaveEdit}
+				isLoading={isUpdating}
+			/>
 		</Box>
 	);
 }
@@ -221,19 +247,12 @@ function TableOfKeyUsage() {
 
 	if (!data || !data.getApiKey.usages || data.getApiKey.usages.length === 0) {
 		return (
-			<Card
-				sx={{
-					p: 4,
-					borderRadius: 2,
-					minHeight: 400,
-					textAlign: 'center'
-				}}
-			>
+			<Card>
 				<Typography variant="h6" color="text.secondary" gutterBottom>
 					No usage data found
 				</Typography>
 				<Typography variant="body2" color="text.secondary">
-					This API key has not been used yet or no records match your filter
+					This API key has not been used yet
 				</Typography>
 			</Card>
 		);
@@ -241,10 +260,6 @@ function TableOfKeyUsage() {
 
 	return (
 		<Box display="flex" flexDirection="column" gap={2}>
-			<Typography variant="h5" fontWeight="500">
-				Usage History
-			</Typography>
-
 			<Card>
 				<GenericTableComponent
 					data={data.getApiKey.usages}

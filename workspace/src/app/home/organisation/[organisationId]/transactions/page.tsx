@@ -4,13 +4,13 @@ import { CMTSToken } from '@cmts-dev/carmentis-sdk/client';
 import OrganisationAccountBalance from '@/components/OrganisationAccountBalance';
 import { useOrganisation, useOrganisationContext } from '@/contexts/organisation-store.context';
 import {
-	Box,
-	Button,
+	Box, Breadcrumbs,
+	Button, Card,
 	Container,
 	Divider,
 	Paper,
 	TextField,
-	Typography
+	Typography,
 } from '@mui/material';
 import { useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
@@ -20,8 +20,27 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import KeyIcon from '@mui/icons-material/Key';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import PaidIcon from '@mui/icons-material/Paid';
 
 export default function TransactionsHistoryPage() {
+	const organisation = useOrganisation();
+	return <>
+		<Box display={"flex"} flexDirection={"column"} alignItems={"start"} mb={2}>
+			<Breadcrumbs>
+				<Typography>{organisation.name}</Typography>
+				<Typography>Transactions</Typography>
+			</Breadcrumbs>
+			<Box display={"flex"} alignItems={"center"} alignContent={"center"} gap={1}>
+				<PaidIcon/>
+				<Typography variant={"h6"}>Transactions</Typography>
+			</Box>
+		</Box>
+		<TransactionsLogic/>
+
+	</>
+}
+
+function TransactionsLogic() {
 	const organisation = useOrganisation();
 	const [limit, setLimit] = useState(10);
 	const { data, loading: isLoading, error } = useGetTransactionsOfOrganisationQuery({
@@ -32,18 +51,7 @@ export default function TransactionsHistoryPage() {
 	});
 
 	if (isLoading || !data) {
-		return (
-			<Container maxWidth={false} disableGutters>
-				<Box mb={4}>
-					<Skeleton height={40} width={300} />
-					<Box mt={4}>
-						<Skeleton height={100} />
-						<Skeleton height={60} />
-						<Skeleton count={5} height={50} />
-					</Box>
-				</Box>
-			</Container>
-		);
+		return <LoadingTransactions/>
 	}
 
 	return (
@@ -60,33 +68,26 @@ export default function TransactionsHistoryPage() {
 	);
 }
 
-function TransactionsContent({ transactions, doubleDisplayedTransactionsNumber }: { transactions: TransactionType[], doubleDisplayedTransactionsNumber: () => void }) {
-	if (!transactions || transactions.length === 0) {
-		return (
-			<Box
-				display="flex"
-				flexDirection="column"
-				alignItems="center"
-				justifyContent="center"
-				py={8}
-				textAlign="center"
-			>
-				<Typography variant="h6" color="text.secondary" gutterBottom>
-					No transactions found
-				</Typography>
-				<Typography variant="body2" color="text.secondary">
-					Your account doesn't have any transactions yet
-				</Typography>
+function LoadingTransactions() {
+	return <Container maxWidth={false} disableGutters>
+		<Box mb={4}>
+			<Skeleton height={40} width={300} />
+			<Box mt={4}>
+				<Skeleton height={100} />
+				<Skeleton height={60} />
+				<Skeleton count={5} height={50} />
 			</Box>
-		);
-	}
+		</Box>
+	</Container>
+}
 
+function TransactionsContent({ transactions, doubleDisplayedTransactionsNumber }: { transactions: TransactionType[], doubleDisplayedTransactionsNumber: () => void }) {
 
 	return (
 		<Box display="flex" flexDirection="column" gap={4}>
 			<OrganisationBalance />
 
-			<Paper elevation={0} sx={{ borderRadius: 2, overflow: 'hidden', border: '1px solid #eaeaea' }}>
+			<Card>
 				<GenericTableComponent
 					data={transactions}
 					extractor={(v, i) => {
@@ -138,7 +139,7 @@ function TransactionsContent({ transactions, doubleDisplayedTransactionsNumber }
 						]
 					}}
 				/>
-			</Paper>
+			</Card>
 
 			<Box display="flex" justifyContent="center" mt={2}>
 				<Button
@@ -162,14 +163,7 @@ function NoAccountFound() {
 	const organisation = useOrganisationContext();
 
 	return (
-		<Paper
-			elevation={0}
-			sx={{
-				p: 4,
-				borderRadius: 2,
-				border: '1px solid #eaeaea'
-			}}
-		>
+		<Card>
 			<Box display="flex" flexDirection="column" gap={3}>
 				<Typography variant="h6" color="primary" gutterBottom>
 					No Token Account Found
@@ -205,20 +199,13 @@ function NoAccountFound() {
 					/>
 				</Box>
 			</Box>
-		</Paper>
+		</Card>
 	);
 }
 
 function OrganisationBalance() {
 	return (
-		<Paper
-			elevation={0}
-			sx={{
-				p: 3,
-				borderRadius: 2,
-				border: '1px solid #eaeaea'
-			}}
-		>
+		<Card>
 			<Box display="flex" alignItems="center" gap={2}>
 				<AccountBalanceIcon color="primary" />
 				<Box>
@@ -230,6 +217,6 @@ function OrganisationBalance() {
 					</Typography>
 				</Box>
 			</Box>
-		</Paper>
+		</Card>
 	);
 }
