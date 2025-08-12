@@ -26,7 +26,7 @@ export class NodeResolver {
 
 	@ResolveField(() => Boolean, { name: 'isClaimable' })
 	async isClaimable(@Parent() node: NodeEntity): Promise<boolean> {
-		return true;
+		return node.virtualBlockchainId === undefined;
 	}
 
 	@Mutation(() => Boolean, { name: 'deleteNodeInOrganisation' })

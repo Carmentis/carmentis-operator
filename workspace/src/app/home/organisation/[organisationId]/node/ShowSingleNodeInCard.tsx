@@ -1,8 +1,4 @@
 import StorageIcon from '@mui/icons-material/Storage';
-import { useAsync } from 'react-use';
-import { BlockchainFacade } from '@cmts-dev/carmentis-sdk/client';
-import Skeleton from 'react-loading-skeleton';
-import { useState } from 'react';
 import {
 	useNodeCardDimensions,
 } from '@/app/home/organisation/[organisationId]/node/NodeCardDimensions';
@@ -17,11 +13,13 @@ import { useNodeStatusFromRpcEndpoint } from '@/hooks/useNodeStatusFromRpcEndpoi
 import { useNodeCardLogic } from '@/hooks/useNodeCardLogic';
 import { useOrganisation } from '@/contexts/organisation-store.context';
 import { ShowLoadingNodeCard } from '@/app/home/organisation/[organisationId]/node/ShowLoadingNodeCard';
+import useOrganizationHoldingNode from '@/hooks/useOrganizationHoldingNode';
 
 export function ShowSingleNodeInCard({node}: {node: NodeEntity}) {
 	const {deleting, deleteNode, claiming, claimNode} = useNodeCardLogic();
 	const {value: nodeStatus, loading, error} = useNodeStatusFromRpcEndpoint(node.rpcEndpoint);
 	const {width: cardWidth, height: cardHeight} = useNodeCardDimensions();
+	const {organisationHoldingNode} = useOrganizationHoldingNode(node);
 
 	if (loading || deleting || claiming) return <ShowLoadingNodeCard/>
 	if (!nodeStatus || error) return <ShowConnectionFailureNodeStatus node={node}/>
@@ -44,7 +42,7 @@ export function ShowSingleNodeInCard({node}: {node: NodeEntity}) {
 				</Box>
 				<Box>
 					<ThreeDotsMenu>
-						<MenuItem disabled={claiming} onClick={() => claimNode(node.id)}>Claim</MenuItem>
+						<MenuItem disabled={claiming || organisationHoldingNode !== undefined} onClick={() => claimNode(node.id)}>Claim</MenuItem>
 						<MenuItem disabled={deleting} onClick={() => deleteNode(node.id)}>
 							<TrashIcon/> Delete Node
 						</MenuItem>
@@ -66,6 +64,7 @@ export function ShowSingleNodeInCard({node}: {node: NodeEntity}) {
 				<Box display={"flex"} flexWrap={"wrap"} gap={1}>
 					<Chip label={nodeStatus.isValidator() ? 'Validator' : 'Replicator'}/>
 					{ node.isClaimable && <Chip label={"Unclaimed"}/> }
+					{ organisationHoldingNode && <Chip label={`Hold by ${organisationHoldingNode.getName()}`} /> }
 				</Box>
 			</Box>
 

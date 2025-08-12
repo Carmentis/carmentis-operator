@@ -119,7 +119,6 @@ export class OrganisationResolver {
 	async isAnchoredOnChain(
 		@Parent() organisation: OrganisationEntity,
 	) {
-		if (organisation.virtualBlockchainId === undefined) return { published: false }
 		const published = await this.chainService.checkPublishedOnChain(organisation);
 		return { published }
 	}

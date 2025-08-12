@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import {
 	ApplicationPublicationExecutionContext,
-	Blockchain, BlockchainFacade,
+	Blockchain, BlockchainFacade, CometBFTPublicKey,
 	Explorer,
 	Hash, OrganizationPublicationExecutionContext,
 	ProviderFactory,
@@ -162,7 +162,6 @@ export default class ChainService {
 		const cometPublicKeyType = nodeStatus.getCometBFTNodePublicKeyType();
 		const validatorNodeCreationContext = new ValidatorNodePublicationExecutionContext()
 			.withOrganizationId(organizationId)
-			.withPower(0)
 			.withCometPublicKeyType(cometPublicKeyType)
 			.withCometPublicKey(cometPublicKey);
 
@@ -170,4 +169,5 @@ export default class ChainService {
 		const validatorNodeId = await blockchain.publishValidatorNode(validatorNodeCreationContext);
 		return validatorNodeId;
 	}
+
 }

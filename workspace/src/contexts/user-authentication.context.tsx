@@ -39,7 +39,7 @@ export function UserAuthenticationContextProvider({children}: PropsWithChildren)
 	}
 
 	if (isLoading)
-		return <FullSpaceSpinner/>
+		return <FullSpaceSpinner label={"Loading..."}/>
 
 	if (!data || error)
 		return <>An error occurred</>
