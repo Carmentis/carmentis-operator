@@ -68,6 +68,7 @@ export function OrganisationHeader() {
 				<OrganisationMenu />
 			</Box>
 		</Box>
+
 		<Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
 			<Tabs value={value} onChange={handleChange}>
 				<Tab label={<Typography>Home</Typography>}  icon={<HomeIcon/>} iconPosition={'start'} onClick={goToHome}/>
