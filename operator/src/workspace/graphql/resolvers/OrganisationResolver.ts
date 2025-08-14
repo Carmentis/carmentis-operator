@@ -231,6 +231,8 @@ export class OrganisationResolver {
 		if (transaction.isSale()) return 'Sale';
 		if (transaction.isReceivedPayment()) return 'Received payment';
 		if (transaction.isSentPayment()) return 'Sent payment';
+		if (transaction.isEarnedFees()) return "Earned fees";
+		if (transaction.isPaidFees()) return "Paid fees";
 		return 'Unspecified';
 	}
 }
