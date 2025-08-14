@@ -98,6 +98,7 @@ export type Mutation = {
   deleteNodeInOrganisation: Scalars['Boolean']['output'];
   deleteOrganisation: OrganisationEntity;
   deleteUser: UserEntity;
+  forceChainSync: Scalars['Boolean']['output'];
   importNodeInOrganisation: Scalars['Boolean']['output'];
   publishApplication: Scalars['Boolean']['output'];
   publishOrganisation: Scalars['Boolean']['output'];
@@ -179,6 +180,11 @@ export type MutationDeleteOrganisationArgs = {
 
 export type MutationDeleteUserArgs = {
   publicKey: Scalars['String']['input'];
+};
+
+
+export type MutationForceChainSyncArgs = {
+  id: Scalars['Int']['input'];
 };
 
 
@@ -572,6 +578,13 @@ export type UpdateKeyMutationVariables = Exact<{
 
 
 export type UpdateKeyMutation = { updateApiKey: boolean };
+
+export type ForceChainSyncMutationVariables = Exact<{
+  id: Scalars['Int']['input'];
+}>;
+
+
+export type ForceChainSyncMutation = { forceChainSync: boolean };
 
 export type GetUsersInOrganisationQueryVariables = Exact<{
   id: Scalars['Int']['input'];
@@ -1694,6 +1707,37 @@ export function useUpdateKeyMutation(baseOptions?: Apollo.MutationHookOptions<Up
 export type UpdateKeyMutationHookResult = ReturnType<typeof useUpdateKeyMutation>;
 export type UpdateKeyMutationResult = Apollo.MutationResult<UpdateKeyMutation>;
 export type UpdateKeyMutationOptions = Apollo.BaseMutationOptions<UpdateKeyMutation, UpdateKeyMutationVariables>;
+export const ForceChainSyncDocument = gql`
+    mutation forceChainSync($id: Int!) {
+  forceChainSync(id: $id)
+}
+    `;
+export type ForceChainSyncMutationFn = Apollo.MutationFunction<ForceChainSyncMutation, ForceChainSyncMutationVariables>;
+
+/**
+ * __useForceChainSyncMutation__
+ *
+ * To run a mutation, you first call `useForceChainSyncMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useForceChainSyncMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [forceChainSyncMutation, { data, loading, error }] = useForceChainSyncMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useForceChainSyncMutation(baseOptions?: Apollo.MutationHookOptions<ForceChainSyncMutation, ForceChainSyncMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ForceChainSyncMutation, ForceChainSyncMutationVariables>(ForceChainSyncDocument, options);
+      }
+export type ForceChainSyncMutationHookResult = ReturnType<typeof useForceChainSyncMutation>;
+export type ForceChainSyncMutationResult = Apollo.MutationResult<ForceChainSyncMutation>;
+export type ForceChainSyncMutationOptions = Apollo.BaseMutationOptions<ForceChainSyncMutation, ForceChainSyncMutationVariables>;
 export const GetUsersInOrganisationDocument = gql`
     query GetUsersInOrganisation($id: Int!) {
   organisation(id: $id) {

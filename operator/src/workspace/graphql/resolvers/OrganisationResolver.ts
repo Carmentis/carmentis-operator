@@ -60,6 +60,21 @@ export class OrganisationResolver {
 		});
 	}
 
+	@Mutation(returns => Boolean)
+	async forceChainSync(
+		@CurrentUser() user: UserEntity,
+		@Args('id', { type: () => Int }) id: number,
+	) {
+		try {
+			const organisation = await this.organisationService.findOne(id);
+			await this.organisationService.erasePublicationInformation(organisation);
+			return true;
+		} catch (e) {
+			this.logger.error("Cannot sync:", e);
+			return false;
+		}
+	}
+
 
 	@Mutation(returns => Boolean)
 	async publishOrganisation(@CurrentUser() user: UserEntity, @Args('id', { type: () => Int }) id: number) {

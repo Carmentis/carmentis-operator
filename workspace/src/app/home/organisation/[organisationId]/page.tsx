@@ -109,17 +109,14 @@ export default function Home() {
 					<OrganisationWarnings />
 					
 					<Grid container spacing={2}>
-						<Grid size={4}>
-							<OrganisationChainStatus/>
+						<Grid size={6}>
+							<OrganisationEdition />
 						</Grid>
-						<Grid size={8}>
-							<Grid container spacing={2}>
-								<OrganisationEdition />
+						<Grid size={6}>
 
-								<Card>
-									<OrganisationPublicKey/>
-								</Card>
-							</Grid>
+							<Card>
+								<OrganisationPublicKey/>
+							</Card>
 						</Grid>
 					</Grid>
 
@@ -391,21 +388,6 @@ function OrganisationEdition() {
 						value={name}
 						label="Name"
 						variant="outlined"
-						InputProps={{
-							sx: {
-								borderRadius: 2,
-								bgcolor: 'rgba(255, 255, 255, 0.5)',
-								'& .MuiOutlinedInput-notchedOutline': {
-									borderColor: 'rgba(255, 255, 255, 0.3)',
-								},
-								'&:hover .MuiOutlinedInput-notchedOutline': {
-									borderColor: 'rgba(21, 154, 156, 0.5)',
-								},
-								'&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-									borderColor: theme.palette.primary.main,
-								}
-							}
-						}}
 						onChange={e => {
 							setIsModified(true);
 							setName(e.target.value);
@@ -419,21 +401,6 @@ function OrganisationEdition() {
 						value={website}
 						label="Website"
 						variant="outlined"
-						InputProps={{
-							sx: {
-								borderRadius: 2,
-								bgcolor: 'rgba(255, 255, 255, 0.5)',
-								'& .MuiOutlinedInput-notchedOutline': {
-									borderColor: 'rgba(255, 255, 255, 0.3)',
-								},
-								'&:hover .MuiOutlinedInput-notchedOutline': {
-									borderColor: 'rgba(21, 154, 156, 0.5)',
-								},
-								'&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-									borderColor: theme.palette.primary.main,
-								}
-							}
-						}}
 						onChange={e => {
 							setIsModified(true);
 							setWebsite(e.target.value);
@@ -447,21 +414,6 @@ function OrganisationEdition() {
 						value={countryCode}
 						label="Country code"
 						variant="outlined"
-						InputProps={{
-							sx: {
-								borderRadius: 2,
-								bgcolor: 'rgba(255, 255, 255, 0.5)',
-								'& .MuiOutlinedInput-notchedOutline': {
-									borderColor: 'rgba(255, 255, 255, 0.3)',
-								},
-								'&:hover .MuiOutlinedInput-notchedOutline': {
-									borderColor: 'rgba(21, 154, 156, 0.5)',
-								},
-								'&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-									borderColor: theme.palette.primary.main,
-								}
-							}
-						}}
 						onChange={e => {
 							setIsModified(true);
 							setCountryCode(e.target.value);
@@ -475,21 +427,6 @@ function OrganisationEdition() {
 						value={city}
 						label="City"
 						variant="outlined"
-						InputProps={{
-							sx: {
-								borderRadius: 2,
-								bgcolor: 'rgba(255, 255, 255, 0.5)',
-								'& .MuiOutlinedInput-notchedOutline': {
-									borderColor: 'rgba(255, 255, 255, 0.3)',
-								},
-								'&:hover .MuiOutlinedInput-notchedOutline': {
-									borderColor: 'rgba(21, 154, 156, 0.5)',
-								},
-								'&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-									borderColor: theme.palette.primary.main,
-								}
-							}
-						}}
 						onChange={e => {
 							setIsModified(true);
 							setCity(e.target.value);
@@ -504,15 +441,6 @@ function OrganisationEdition() {
 						label="Virtual blockchain ID"
 						disabled
 						variant="outlined"
-						InputProps={{
-							sx: {
-								borderRadius: 2,
-								bgcolor: 'rgba(0, 0, 0, 0.03)',
-								'& .MuiOutlinedInput-notchedOutline': {
-									borderColor: 'rgba(0, 0, 0, 0.1)',
-								}
-							}
-						}}
 					/>
 				</Grid>
 			</Grid>

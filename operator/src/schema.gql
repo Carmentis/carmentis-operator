@@ -150,6 +150,7 @@ type Query {
 type Mutation {
   createOrganisation(name: String!): OrganisationEntity!
   updateOrganisation(id: Int!, name: String!, countryCode: String!, website: String!, city: String!): OrganisationEntity!
+  forceChainSync(id: Int!): Boolean!
   publishOrganisation(id: Int!): Boolean!
   deleteOrganisation(id: Int!): OrganisationEntity!
   addUserInOrganisation(organisationId: Int!, userPublicKey: String!): Boolean!

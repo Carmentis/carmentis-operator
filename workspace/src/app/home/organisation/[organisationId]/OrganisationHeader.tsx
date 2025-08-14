@@ -13,6 +13,9 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import OrganisationPublicationStatusChip
+	from '@/app/home/organisation/[organisationId]/OrganisationPublicationStatusChip';
+import { useForceChainSyncMutation } from '@/generated/graphql';
 
 
 export function OrganisationHeader() {
@@ -107,52 +110,7 @@ function OrganisationStatus({ organisation }) {
 					/>
 				</motion.div>
 			)}
-			{
-				!organisation.published && (
-					<motion.div
-						initial={{ opacity: 0, scale: 0.8 }}
-						animate={{ opacity: 1, scale: 1 }}
-						transition={{ duration: 0.3, delay: 0.1 }}
-					>
-						<Tooltip title={"Your organisation is currently not published. Publish your organisation before publishing anything else."}>
-							<Chip
-								variant={"outlined"}
-								label={`Not published`}
-								size="small"
-								icon={<HubIcon />}
-
-							/>
-						</Tooltip>
-					</motion.div>
-				)
-			}
-			{organisation.published && (
-				<motion.div
-					initial={{ opacity: 0, scale: 0.8 }}
-					animate={{ opacity: 1, scale: 1 }}
-					transition={{ duration: 0.3, delay: 0.1 }}
-				>
-					<Chip
-						label={`Published ${new Date(organisation.publishedAt).toLocaleDateString()}`}
-						color="primary"
-						size="small"
-						icon={<PublishIcon />}
-						sx={{
-							borderRadius: '16px',
-							background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.8)})`,
-							color: 'white',
-							fontWeight: 500,
-							boxShadow: '0 2px 10px rgba(21, 154, 156, 0.2)',
-							'& .MuiChip-label': {
-								px: 1.5
-							},
-							'& .MuiChip-icon': {
-								color: 'white'
-							}
-						}}
-					/>
-				</motion.div>
-			)}
+			<OrganisationPublicationStatusChip/>
 			<Chip
 				label={organisation.balance}
 				color="primary"
@@ -181,6 +139,7 @@ function OrganisationMenu() {
 	const theme = useTheme();
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
+	const [forceSync, {loading: isSyncing}] = useForceChainSyncMutation();
 
 	const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
 		setAnchorEl(event.currentTarget);
@@ -264,8 +223,22 @@ function OrganisationMenu() {
 					}}
 				>
 					<Box display="flex" alignItems="center" gap={1}>
-						<OpenInNewIcon fontSize="small" color="primary" />
 						<Typography>Visit website</Typography>
+					</Box>
+				</MenuItem>
+				<MenuItem
+					onClick={() => forceSync({ variables: { id: organisation.id } })}
+					sx={{
+						borderRadius: 1,
+						mx: 0.5,
+						my: 0.5,
+						'&:hover': {
+							bgcolor: alpha(theme.palette.primary.main, 0.1),
+						}
+					}}
+				>
+					<Box display="flex" alignItems="center" gap={1}>
+						<Typography>Force sync</Typography>
 					</Box>
 				</MenuItem>
 			</Menu>

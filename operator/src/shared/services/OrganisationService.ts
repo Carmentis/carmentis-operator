@@ -169,6 +169,7 @@ export class OrganisationService {
 		const updatedOrganisation = this.organisationEntityRepository.merge(organisation, update);
 
 		// Save the updated organisation back to the database
+		updatedOrganisation.isDraft = true;
 		return this.organisationEntityRepository.save(updatedOrganisation);
 	}
 
