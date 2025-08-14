@@ -1,9 +1,11 @@
 import { Chip, useTheme, alpha } from "@mui/material";
 import PublishIcon from '@mui/icons-material/Publish';
 import useOrganisationPublicationStatus from '@/hooks/useOrganisationPublicationStatus';
+import { useOrganisation } from '@/contexts/organisation-store.context';
 
 export default function OrganisationPublicationStatusChip() {
-	const {published, loading} = useOrganisationPublicationStatus();
+	const { virtualBlockchainId } = useOrganisation();
+	const {published, loading} = useOrganisationPublicationStatus({ virtualBlockchainId });
 	if (loading || typeof published !== 'boolean') return <ChipRenderer label={"Loading..."}/>
 	return  <ChipRenderer label={published ? "Published" : "Not published"}/>
 }

@@ -34,6 +34,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useAuthenticationContext } from '@/contexts/user-authentication.context';
 import Avatar from 'boring-avatars';
 import GridViewIcon from '@mui/icons-material/GridView';
+import useOrganisationPublicationStatus from '@/hooks/useOrganisationPublicationStatus';
 
 export default function HomePage() {
 	return (
@@ -247,23 +248,7 @@ function ListOfOrganisations() {
 									<Typography variant={"body1"}>
 										This organisation has been created at {new Date(organisation.createdAt).toLocaleString()}.
 									</Typography>
-									{
-										organisation.virtualBlockchainId &&
-										<Typography>
-											You organisation is published on the blockchain
-											at <Tooltip title={organisation.virtualBlockchainId}>
-												<Typography component={"span"} fontWeight={"bold"}>
-													{organisation.virtualBlockchainId.slice(0,20)}...{organisation.virtualBlockchainId.slice(-4)}.
-												</Typography>
-											</Tooltip>
-										</Typography>
-									}
-									{
-										!organisation.virtualBlockchainId &&
-										<Typography>
-											You organisation is currently not published on the blockchain.
-										</Typography>
-									}
+									<OrganisationPublicationStatusMessage virtualBlockchainId={organisation.virtualBlockchainId}/>
 									<Box mt={2} display={"flex"} gap={1}>
 										<Button variant={"contained"} onClick={() => onClick(organisation.id)}>Access</Button>
 										<Button onClick={() => navigation.navigateToOrganisationApplications(
@@ -295,6 +280,30 @@ function ListOfOrganisations() {
 	return content;
 }
 
+
+function OrganisationPublicationStatusMessage({virtualBlockchainId}: {virtualBlockchainId: string}) {
+	const {published, virtualBlockchainId: vbId, loading } =  useOrganisationPublicationStatus({virtualBlockchainId});
+	if (typeof published !== 'boolean' || loading) return <>Loading...</>
+	return <>
+		{
+			published &&
+			<Typography>
+				You organisation is published on the blockchain
+				at <Tooltip title={virtualBlockchainId}>
+				<Typography component={"span"} fontWeight={"bold"}>
+					{virtualBlockchainId.slice(0,20)}...{virtualBlockchainId.slice(-4)}.
+				</Typography>
+			</Tooltip>
+			</Typography>
+		}
+		{
+			!published &&
+			<Typography>
+				You organisation is currently not published on the blockchain.
+			</Typography>
+		}
+		</>
+}
 
 
 function ManageYourUsers() {
