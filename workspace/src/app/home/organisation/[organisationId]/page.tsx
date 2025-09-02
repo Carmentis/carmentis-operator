@@ -137,33 +137,12 @@ function OrganisationPublicKey() {
 			</Typography>
 			<Box display="flex" gap={2}>
 				<Button variant={"contained"}>Copy public key</Button>
-				<Button variant={"contained"}>Copy tagged public key</Button>
 			</Box>
-		</Box>
-
-		<Box mb={3}>
-			<Typography variant="body2" color="text.secondary" gutterBottom>
-				Organisation public key
-			</Typography>
-			<Typography
-				variant="body1"
-				fontFamily="monospace"
-				sx={{
-					p: 2,
-					bgcolor: 'rgba(255, 255, 255, 0.5)',
-					borderRadius: 1,
-					overflowX: 'auto',
-					whiteSpace: 'nowrap',
-					border: '1px solid rgba(255, 255, 255, 0.3)',
-				}}
-			>
-				{decodedPublicKey.getPublicKeyAsString()}
-			</Typography>
 		</Box>
 
 		<Box>
 			<Typography variant="body2" color="text.secondary" gutterBottom>
-				Organisation tagged public key
+				Organisation public key
 			</Typography>
 			<Typography
 				variant="body1"
