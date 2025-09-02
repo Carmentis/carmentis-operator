@@ -3,7 +3,7 @@ import {
 	ApplicationPublicationExecutionContext,
 	Blockchain, BlockchainFacade, CometBFTPublicKey,
 	Explorer,
-	Hash, OrganizationPublicationExecutionContext,
+	Hash, OrganizationPublicationExecutionContext, OrganizationWrapper,
 	ProviderFactory,
 	PublicSignatureKey,
 	StringSignatureEncoder,
@@ -155,7 +155,6 @@ export default class ChainService {
 		this.logger.verbose(`Proceeding to claim of node ${node.rpcEndpoint} by organisation ${organizationId.encode()} (ID: ${organisation.id})`)
 		const organisationPrivateKey = organisation.getPrivateSignatureKey();
 		const nodeRpcEndpoint = node.rpcEndpoint;
-		this.logger.verbose("Creating blockchain client for node: " + nodeRpcEndpoint)
 		const blockchain = BlockchainFacade.createFromNodeUrlAndPrivateKey(nodeRpcEndpoint, organisationPrivateKey);
 		const nodeStatus = await blockchain.getNodeStatus();
 		const cometPublicKey = nodeStatus.getCometBFTNodePublicKey();
@@ -170,4 +169,51 @@ export default class ChainService {
 		return validatorNodeId;
 	}
 
+
+	/**
+	 * In this method, we mutate the provided object to synchronize the organization and the underlying applications.
+	 *
+	 * Warning: all information are not present on chain, this method fills the gap when possible.
+	 *
+	 * @param organization
+	 */
+	async mutateOrganizationFromDataOnChain(organization: OrganisationEntity) {
+		// we first decode the public key of the organization.
+		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+		const publicKey = signatureEncoder.decodePublicKey(organization.publicSignatureKey);
+
+		// We search among all existing organizations if one as the same public key as ours
+		// TODO: This method can be really time-consuming, need a more appropriate approach!!!!
+		let fetchedOrganizationHash: Hash | undefined;
+		let fetchedOrganization: OrganizationWrapper | undefined = undefined;
+		const allOrganizations = await this.blockchain.getAllOrganizations();
+		for (const organizationHash of allOrganizations) {
+			const organization = await this.blockchain.loadOrganization(organizationHash);
+			const otherPublicKey = organization.getPublicKey().getPublicKeyAsString();
+			const myPublicKey = publicKey.getPublicKeyAsString();
+			if (myPublicKey === otherPublicKey) {
+				fetchedOrganization = organization;
+				fetchedOrganizationHash = organizationHash;
+			}
+		}
+
+		// if no organization is fetched, the organization is currently not published on chain
+		if (fetchedOrganization === undefined) {
+			organization.virtualBlockchainId = undefined;
+			organization.published = false;
+			organization.publishedAt = undefined;
+			return;
+		}
+
+		// We are now aware that the organization is published online, so we update the state of the organization.
+		// Since we do not know when the organization has been published, we set it to now.
+		organization.virtualBlockchainId = fetchedOrganizationHash.encode();
+		organization.published = true;
+		organization.isDraft = false;
+		organization.publishedAt = new Date();
+		organization.name = fetchedOrganization.getName();
+		organization.countryCode = fetchedOrganization.getCountryCode();
+		organization.city = fetchedOrganization.getCity();
+		organization.website = fetchedOrganization.getWebsite();
+	}
 }

@@ -119,6 +119,10 @@ export class OrganisationService {
 			editUsers: true,
 		})
 		await this.accessRightRepository.save(accessRight);
+
+		// we now attempt to synchronize the organization with the
+		await this.updateOrganizationFromDataOnChain(organisation);
+
 		return organisation
 	}
 
@@ -346,5 +350,11 @@ export class OrganisationService {
 	async importNodeInOrganisation(organisationId: number, nodeAlias: string, nodeRpcEndpoint: string) {
 		const organisation = await this.findOne(organisationId);
 		return this.nodeService.importNode(organisation, nodeAlias, nodeRpcEndpoint)
+	}
+
+
+	private async updateOrganizationFromDataOnChain(organization: OrganisationEntity) {
+		await this.chainService.mutateOrganizationFromDataOnChain(organization);
+		this.organisationEntityRepository.save(organization);
 	}
 }
