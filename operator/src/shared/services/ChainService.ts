@@ -216,4 +216,56 @@ export default class ChainService {
 		organization.city = fetchedOrganization.getCity();
 		organization.website = fetchedOrganization.getWebsite();
 	}
+
+	async fetchApplicationsAssociatedWithOrganizationsFromChain(organisation: OrganisationEntity) {
+		// TODO: This method can be time-consuming, we need a more direct approach!!!
+		const managedApplications: Partial<ApplicationEntity>[] = [];
+		const encoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+		const myPublicKey = organisation.publicSignatureKey;
+		const allApplicationsHashes = await this.blockchain.getAllApplications();
+		for (const applicationHash of allApplicationsHashes) {
+			const application = await this.blockchain.loadApplication(applicationHash);
+			const organizationHoldingApplication = await this.blockchain.loadOrganization(application.getOrganizationId());
+			const organizationPublicKey = organizationHoldingApplication.getPublicKey();
+			if (myPublicKey === encoder.encodePublicKey(organizationPublicKey)) {
+				managedApplications.push({
+					name: application.getName(),
+					website: application.getWebsite(),
+					logoUrl: application.getLogoUrl(),
+					isDraft: false,
+					publishedAt: new Date(),
+					virtualBlockchainId: applicationHash.encode(),
+					published: true,
+					description: application.getDescription(),
+					organisation,
+				});
+			}
+		}
+		return managedApplications
+	}
+
+	async fetchNodesAssociatedWithOrganizationFromChain(organization: OrganisationEntity) {
+		return []
+		/* We are currently unable to load nodes from chain: No information about the rpc endpoint.
+		const managedNodes: Partial<NodeEntity>[] = [];
+		const encoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+		const myPublicKey = organization.publicSignatureKey;
+		const allNodesHashes = await this.blockchain.getAllValidatorNodes();
+		let nodeIndex = 1; // we create a default alias for nodes we are loading
+		for (const nodeHash of allNodesHashes) {
+			const node = await this.blockchain.loadValidatorNode(nodeHash);
+			const organizationHoldingNode = await this.blockchain.loadOrganization(node.getOrganizationId());
+			const organizationPublicKey = organizationHoldingNode.getPublicKey();
+			if (myPublicKey === encoder.encodePublicKey(organizationPublicKey)) {
+				managedNodes.push({
+					organisation: organization,
+					nodeAlias: `Node ${nodeIndex}`,
+					rpcEndpoint:
+				});
+			}
+			nodeIndex += 1;
+		}
+
+		 */
+	}
 }

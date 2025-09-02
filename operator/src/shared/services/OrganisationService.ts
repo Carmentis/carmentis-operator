@@ -127,9 +127,19 @@ export class OrganisationService {
 		})
 		await this.accessRightRepository.save(accessRight);
 
-		// we now attempt to synchronize the organization with the
-		await this.updateOrganizationFromDataOnChain(organisation);
+		// we now attempt to synchronize the organization with the data on chain
+		await this.mutateOrganizationFromDataOnChain(organisation);
 
+		// we now attempt to fetch applications associated with the organization
+		const fetchedApplicationsFromChain = await this.chainService.fetchApplicationsAssociatedWithOrganizationsFromChain(
+			organisation,
+		);
+		await this.applicationRepository.save(fetchedApplicationsFromChain);
+
+		// we now attempt to fetch nodes associated with the organization
+		const fetchedNodesFromChain = await this.chainService.fetchNodesAssociatedWithOrganizationFromChain(
+			organisation,
+		)
 		return organisation
 	}
 
@@ -360,7 +370,7 @@ export class OrganisationService {
 	}
 
 
-	private async updateOrganizationFromDataOnChain(organization: OrganisationEntity) {
+	private async mutateOrganizationFromDataOnChain(organization: OrganisationEntity) {
 		await this.chainService.mutateOrganizationFromDataOnChain(organization);
 		this.organisationEntityRepository.save(organization);
 	}
