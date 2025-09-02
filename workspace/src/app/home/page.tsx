@@ -106,6 +106,7 @@ function Welcome() {
 
 function CreateYourOrganisation() {
 	const [name, setName] = useState("");
+	const [privateKey, setPrivateKey] = useState("");
 	const [createOrganisationMutation, {loading: isCreatingOrganisation}] = useCreateOrganisationMutation();
 	const navigation = useApplicationNavigationContext();
 	const notify = useToast();
@@ -115,8 +116,7 @@ function CreateYourOrganisation() {
 			notify.error("Organisation name cannot be empty");
 			return;
 		}
-
-		createOrganisationMutation({ variables: { name } })
+		createOrganisationMutation({ variables: { name, privateKey: privateKey.trim() } })
 			.then(({data}) => {
 				if (data && data.createOrganisation) {
 					notify.success("Organisation created successfully");
@@ -128,7 +128,7 @@ function CreateYourOrganisation() {
 		<Dialog open={true} maxWidth="sm" fullWidth>
 			<DialogTitle>Create New Organisation</DialogTitle>
 			<DialogContent>
-				<Box mt={2}>
+				<Box mt={2} display={"flex"} flexDirection={"column"} gap={2}>
 					<TextField
 						size="small"
 						fullWidth
@@ -138,6 +138,18 @@ function CreateYourOrganisation() {
 						value={name}
 						onChange={(e) => setName(e.target.value)}
 					/>
+					<TextField
+						size="small"
+						fullWidth
+						label="Organization private key (optional)"
+						placeholder="Paste a private key to use"
+						value={privateKey}
+						onChange={(e) => setPrivateKey(e.target.value)}
+						helperText="Optional. If provided, the server will use this private key for the organization. Leave empty to generate a new secure key automatically."
+					/>
+					<Typography variant="body2" color="text.secondary">
+						Keep this private key secure. Anyone with this key can control the organization&apos;s on-chain account.
+					</Typography>
 				</Box>
 			</DialogContent>
 			<DialogActions sx={{ px: 3, pb: 3 }}>
@@ -157,7 +169,7 @@ function CreateYourOrganisation() {
 				</Button>
 			</DialogActions>
 		</Dialog>
-	), [name, isCreatingOrganisation]);
+	), [name, privateKey, isCreatingOrganisation]);
 
 
 	return <Box>
@@ -336,7 +348,7 @@ function ListOfApplications() {
 	return <>
 		{
 			data.getAllApplications.map(application =>
-				<Grid size={6}>
+				<Grid size={6} key={application.id}>
 					<Card>
 						<Box display={"flex"} alignItems={"center"} gap={1}>
 							<GridViewIcon/>
@@ -383,7 +395,7 @@ function ListOfUsers() {
 	const {data: users, loading, error} = useGetAllUsersQuery();
 	if (loading || !users) return <></>
 	return users.getAllUsers.map(user =>
-		<Card sx={{width: 200, height:200}}>
+		<Card key={user.publicKey} sx={{width: 200, height:200}}>
 			<Box display={"flex"} flexDirection={"column"} alignContent={"center"} alignItems={"center"} width={"100%"} gap={2}>
 				<Avatar name={user.publicKey} size={48} variant={"beam"}/>
 				<Typography variant={"h5"}>{user.firstname} {user.lastname}</Typography>

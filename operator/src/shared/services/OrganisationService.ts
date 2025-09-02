@@ -14,7 +14,7 @@ import { OrganisationAccessRightEntity } from '../entities/OrganisationAccessRig
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import ChainService from './ChainService';
 import { CryptoService } from './CryptoService';
-import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
+import { PrivateSignatureKey, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
 import { NodeEntity } from '../entities/NodeEntity';
 import { NodeService } from './NodeService';
 
@@ -76,20 +76,39 @@ export class OrganisationService {
 	 *
 	 * @param {UserEntity} authUser - The authenticated user who will be granted administrative rights to the newly created organisation.
 	 * @param {string} organisationName - The name of the organisation to be created.
+	 * @param privateKey
 	 * @return {Promise<OrganisationEntity>} A promise that resolves to the newly created organisation entity.
 	 */
-	async createByName(authUser: UserEntity, organisationName: string): Promise<OrganisationEntity> {
+	async createByName(authUser: UserEntity, organisationName: string, privateKey?: string): Promise<OrganisationEntity> {
 
 		// create the organisation
 		const item = this.organisationEntityRepository.create({
 			name: organisationName,
 		});
 
-		// generate the signature key pair for the organisation
+		// If a private key is provided, we allow the creation of an organisation to fail
+		// if the provided key cannot be decoded.
+		let privateKeyToUse: PrivateSignatureKey;
 		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-		const {sk, pk} = this.cryptoService.randomKeyPair();
-		item.privateSignatureKey = signatureEncoder.encodePrivateKey(sk);
-		item.publicSignatureKey = signatureEncoder.encodePublicKey(pk);
+		if (typeof privateKey === 'string' && privateKey.length > 0) {
+			try {
+				const sk = signatureEncoder.decodePrivateKey(privateKey);
+				const pk = sk.getPublicKey();
+				this.logger.log(`Recognized public key for organization: ${signatureEncoder.encodePublicKey(pk)}`)
+				privateKeyToUse = sk;
+			} catch (e) {
+				throw new BadRequestException('Invalid private key provided.')
+			}
+		} else {
+			this.logger.log("No private key provided: use a randomly chosen one")
+			const {sk, pk} = this.cryptoService.randomKeyPair();
+			privateKeyToUse = sk;
+		}
+
+		// log the public key of the organization being created
+		item.privateSignatureKey = signatureEncoder.encodePrivateKey(privateKeyToUse);
+		item.publicSignatureKey = signatureEncoder.encodePublicKey(privateKeyToUse.getPublicKey());
+		this.logger.log(`Creating organization ${organisationName} with pk: ${item.publicSignatureKey}`);
 		const organisation = await this.organisationEntityRepository.save(item);
 
 		// we create an initial access right with the provided public key

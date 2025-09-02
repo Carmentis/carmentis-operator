@@ -146,6 +146,7 @@ export type MutationCreateApplicationInOrganisationArgs = {
 
 export type MutationCreateOrganisationArgs = {
   name: Scalars['String']['input'];
+  privateKey?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -504,6 +505,7 @@ export type GetOrganisationStatisticsQuery = { getOrganisationStatistics: { numb
 
 export type CreateOrganisationMutationVariables = Exact<{
   name: Scalars['String']['input'];
+  privateKey?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -1362,8 +1364,8 @@ export type GetOrganisationStatisticsLazyQueryHookResult = ReturnType<typeof use
 export type GetOrganisationStatisticsSuspenseQueryHookResult = ReturnType<typeof useGetOrganisationStatisticsSuspenseQuery>;
 export type GetOrganisationStatisticsQueryResult = Apollo.QueryResult<GetOrganisationStatisticsQuery, GetOrganisationStatisticsQueryVariables>;
 export const CreateOrganisationDocument = gql`
-    mutation CreateOrganisation($name: String!) {
-  createOrganisation(name: $name) {
+    mutation CreateOrganisation($name: String!, $privateKey: String) {
+  createOrganisation(name: $name, privateKey: $privateKey) {
     id
     name
     publicSignatureKey
@@ -1386,6 +1388,7 @@ export type CreateOrganisationMutationFn = Apollo.MutationFunction<CreateOrganis
  * const [createOrganisationMutation, { data, loading, error }] = useCreateOrganisationMutation({
  *   variables: {
  *      name: // value for 'name'
+ *      privateKey: // value for 'privateKey'
  *   },
  * });
  */

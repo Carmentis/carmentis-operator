@@ -33,8 +33,12 @@ export class OrganisationResolver {
 	}
 
 	@Mutation(returns => OrganisationEntity)
-	async createOrganisation(@CurrentUser() user: UserEntity, @Args('name') name: string) {
-		return this.organisationService.createByName(user, name)
+	async createOrganisation(
+		@CurrentUser() user: UserEntity,
+		@Args('name') name: string,
+		@Args('privateKey', { nullable: true }) privateKey?: string,
+	) {
+		return this.organisationService.createByName(user, name, privateKey)
 	}
 
 

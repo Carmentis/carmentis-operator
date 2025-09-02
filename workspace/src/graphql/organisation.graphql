@@ -51,8 +51,8 @@ query GetOrganisationStatistics($id: Int!) {
   }
 }
 
-mutation CreateOrganisation($name: String!) {
-  createOrganisation(name: $name) {
+mutation CreateOrganisation($name: String!, $privateKey: String) {
+  createOrganisation(name: $name, privateKey: $privateKey) {
     id
     name
     publicSignatureKey
