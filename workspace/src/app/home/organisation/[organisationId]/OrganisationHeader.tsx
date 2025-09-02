@@ -15,7 +15,8 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import OrganisationPublicationStatusChip
 	from '@/app/home/organisation/[organisationId]/OrganisationPublicationStatusChip';
-import { useForceChainSyncMutation } from '@/generated/graphql';
+import { useDeleteOrganisationMutation, useForceChainSyncMutation } from '@/generated/graphql';
+import { useNavigation } from '@refinedev/core';
 
 
 export function OrganisationHeader() {
@@ -137,14 +138,26 @@ function OrganisationStatus({ organisation }) {
 
 function OrganisationMenu() {
 	const organisation = useOrganisation();
+	const navigation = useNavigation();
 	const theme = useTheme();
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
 	const [forceSync, {loading: isSyncing}] = useForceChainSyncMutation();
 
+	const [deleteOrganization, {loading: isDeleting}] = useDeleteOrganisationMutation();
+
 	const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
 		setAnchorEl(event.currentTarget);
 	};
+
+	const handleDeletion = () => {
+		deleteOrganization({ variables: { id: organisation.id } })
+			.then(response => {
+				if (response.data) {
+					navigation.push('/home')
+				}
+			})
+	}
 
 	const handleClose = () => {
 		setAnchorEl(null);
@@ -240,6 +253,21 @@ function OrganisationMenu() {
 				>
 					<Box display="flex" alignItems="center" gap={1}>
 						<Typography>Force sync</Typography>
+					</Box>
+				</MenuItem>
+				<MenuItem
+					onClick={() => handleDeletion()}
+					sx={{
+						borderRadius: 1,
+						mx: 0.5,
+						my: 0.5,
+						'&:hover': {
+							bgcolor: alpha(theme.palette.primary.main, 0.1),
+						}
+					}}
+				>
+					<Box display="flex" alignItems="center" gap={1}>
+						<Typography>Delete organization</Typography>
 					</Box>
 				</MenuItem>
 			</Menu>
