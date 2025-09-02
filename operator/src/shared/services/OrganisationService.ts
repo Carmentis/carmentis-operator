@@ -107,10 +107,10 @@ export class OrganisationService {
 
 		// we reject the creation of the organization if the public key already exists in database
 		const encodedPublicKeyToUse = signatureEncoder.encodePublicKey(privateKeyToUse.getPublicKey());
-		const foundPublicKey = await this.organisationEntityRepository.findOneBy({
+		const foundOrganizationWithPublicKey = await this.organisationEntityRepository.findOneBy({
 			publicSignatureKey: encodedPublicKeyToUse,
 		})
-		if (foundPublicKey !== undefined) throw new BadRequestException('An organization with the same private key already exists.')
+		if (foundOrganizationWithPublicKey instanceof OrganisationEntity) throw new BadRequestException('An organization with the same private key already exists.')
 
 		// log the public key of the organization being created
 		item.privateSignatureKey = signatureEncoder.encodePrivateKey(privateKeyToUse);
