@@ -117,11 +117,15 @@ function CreateYourOrganisation() {
 			return;
 		}
 		createOrganisationMutation({ variables: { name, privateKey: privateKey.trim() } })
-			.then(({data}) => {
+			.then(({data, errors}) => {
+				if (errors) {
+					notify.error(errors);
+				}
 				if (data && data.createOrganisation) {
 					notify.success("Organisation created successfully");
 					navigation.navigateToOrganisation(data.createOrganisation.id);
 				}
+
 			}).catch(notify.error);
 	}
 	const [showModal, hideModal] = useModal(() => (

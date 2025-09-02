@@ -28,18 +28,23 @@ const toastConfig: ToastContainerProps = {
 };
 
 // toast hooks into a single utility for consistent usage
-type handledErrorTypes = string | string[] | readonly GraphQLFormattedError[] | ApolloError;
+type handledErrorTypes = string | readonly (string | GraphQLFormattedError)[] | ApolloError;
 export const useToast = () => {
 
 	function handleError(message: handledErrorTypes) {
-		console.log(message);
-		if (typeof message == 'string') toast.error(message);
-		else if (Array.isArray(message) && message.every(item => typeof item === 'string')) {
-			message.forEach(item => toast.error(item));
-		} else if ('message' in message && typeof message.message === 'string') {
-			toast.error(message.message);
+		if (Array.isArray(message)) {
+			for (const error of message) {
+				if (typeof error === 'string') {
+					toast.error(error);
+				}
+				if (typeof error === 'object' && typeof error.message === 'string') {
+					toast.error(error.message);
+				}
+			}
 		} else {
-			toast.error('An error occurred.');
+			if (message instanceof Error) {
+				toast.error(message.message)
+			}
 		}
 	}
 
