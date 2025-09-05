@@ -162,6 +162,7 @@ export default class ChainService {
 		const validatorNodeCreationContext = new ValidatorNodePublicationExecutionContext()
 			.withOrganizationId(organizationId)
 			.withCometPublicKeyType(cometPublicKeyType)
+			.withRpcEndpoint(nodeRpcEndpoint)
 			.withCometPublicKey(cometPublicKey);
 
 		this.logger.verbose(`Claiming node...`)
