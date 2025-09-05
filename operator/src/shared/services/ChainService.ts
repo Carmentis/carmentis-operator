@@ -182,20 +182,39 @@ export default class ChainService {
 		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
 		const publicKey = signatureEncoder.decodePublicKey(organization.publicSignatureKey);
 
-		// We search among all existing organizations if one as the same public key as ours
-		// TODO: This method can be really time-consuming, need a more appropriate approach!!!!
+		// If the organization contains a virtual blockchain id, we need to know if the organization
+		// is still valid or not.
+		const hasOrganizationId = organization.hasVirtualBlockchainId();
 		let fetchedOrganizationHash: Hash | undefined;
 		let fetchedOrganization: OrganizationWrapper | undefined = undefined;
-		const allOrganizations = await this.blockchain.getAllOrganizations();
-		for (const organizationHash of allOrganizations) {
-			const organization = await this.blockchain.loadOrganization(organizationHash);
-			const otherPublicKey = organization.getPublicKey().getPublicKeyAsString();
-			const myPublicKey = publicKey.getPublicKeyAsString();
-			if (myPublicKey === otherPublicKey) {
-				fetchedOrganization = organization;
-				fetchedOrganizationHash = organizationHash;
+		if (hasOrganizationId) {
+			const organizationId = organization.getVirtualBlockchainId();
+			try {
+				// if the organization can be fetched by its virtual blockchain ID, we now that the organization is defined on chain.
+				const organizationOnChain = await this.blockchain.loadOrganization(
+					organizationId
+				);
+
+				// we update the organization details from what is stored in chain
+				fetchedOrganization = organizationOnChain;
+				fetchedOrganizationHash = organization.getVirtualBlockchainId();
+			} catch (e) {
+				// the organization has not been found on chain with its identifier
+				this.logger.debug(`Organization not found on chain by its identifier ${organizationId.encode()}`)
 			}
 		}
+
+		// if the organization has not been found on chain, we launch a search by its public key
+		const { found, organization: foundOrganization, organizationId: foundOrganizationId } =
+			await this.searchOrganizationFromChain(publicKey);
+		if (found) {
+			fetchedOrganization = foundOrganization;
+			fetchedOrganizationHash = foundOrganizationId
+		} else {
+			this.logger.debug(`Organization not found on chain by its public key ${organization.publicSignatureKey}`)
+		}
+
+
 
 		// if no organization is fetched, the organization is currently not published on chain
 		if (fetchedOrganization === undefined) {
@@ -203,18 +222,33 @@ export default class ChainService {
 			organization.published = false;
 			organization.publishedAt = undefined;
 			return;
+		} else {
+			// We are now aware that the organization is published online, so we update the state of the organization.
+			// Since we do not know when the organization has been published, we set it to now.
+			organization.virtualBlockchainId = fetchedOrganizationHash.encode();
+			organization.published = true;
+			organization.isDraft = false;
+			organization.publishedAt = new Date();
+			organization.name = fetchedOrganization.getName();
+			organization.countryCode = fetchedOrganization.getCountryCode();
+			organization.city = fetchedOrganization.getCity();
+			organization.website = fetchedOrganization.getWebsite();
 		}
+	}
 
-		// We are now aware that the organization is published online, so we update the state of the organization.
-		// Since we do not know when the organization has been published, we set it to now.
-		organization.virtualBlockchainId = fetchedOrganizationHash.encode();
-		organization.published = true;
-		organization.isDraft = false;
-		organization.publishedAt = new Date();
-		organization.name = fetchedOrganization.getName();
-		organization.countryCode = fetchedOrganization.getCountryCode();
-		organization.city = fetchedOrganization.getCity();
-		organization.website = fetchedOrganization.getWebsite();
+	private async searchOrganizationFromChain(organizationPublicKey: PublicSignatureKey) {
+		// We search among all existing organizations if one as the same public key as ours
+		// TODO: This method can be really time-consuming, need a more appropriate approach!!!!
+		const allOrganizations = await this.blockchain.getAllOrganizations();
+		for (const organizationHash of allOrganizations) {
+			const organization = await this.blockchain.loadOrganization(organizationHash);
+			const otherPublicKey = organization.getPublicKey().getPublicKeyAsString();
+			const myPublicKey = organizationPublicKey.getPublicKeyAsString();
+			if (myPublicKey === otherPublicKey) {
+				return { found: true, organization: organization, organizationId: organizationHash };
+			}
+		}
+		return { found: false, organization: undefined, organizationId: undefined };
 	}
 
 	async fetchApplicationsAssociatedWithOrganizationsFromChain(organisation: OrganisationEntity) {

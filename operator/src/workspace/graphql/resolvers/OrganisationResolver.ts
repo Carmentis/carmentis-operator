@@ -71,7 +71,7 @@ export class OrganisationResolver {
 	) {
 		try {
 			const organisation = await this.organisationService.findOne(id);
-			await this.organisationService.erasePublicationInformation(organisation);
+			await this.organisationService.synchronizeOrganizationWithApplicationsAndNodesFromChain(organisation);
 			return true;
 		} catch (e) {
 			this.logger.error("Cannot sync:", e);

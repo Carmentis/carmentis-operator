@@ -121,4 +121,8 @@ export class OrganisationEntity {
 	isWebsiteDefined() {
 		return this.website.length > 0;
 	}
+
+	hasVirtualBlockchainId() {
+		return typeof this.virtualBlockchainId === 'string' && this.virtualBlockchainId.length > 0;
+	}
 }

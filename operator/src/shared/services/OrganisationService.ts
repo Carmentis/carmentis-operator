@@ -128,19 +128,25 @@ export class OrganisationService {
 		await this.accessRightRepository.save(accessRight);
 
 		// we now attempt to synchronize the organization with the data on chain
-		await this.mutateOrganizationFromDataOnChain(organisation);
+		return await this.synchronizeOrganizationWithApplicationsAndNodesFromChain(organisation);
+	}
 
-		// we now attempt to fetch applications associated with the organization
-		const fetchedApplicationsFromChain = await this.chainService.fetchApplicationsAssociatedWithOrganizationsFromChain(
-			organisation,
-		);
-		await this.applicationRepository.save(fetchedApplicationsFromChain);
+	/**
+	 * This method synchronizes the local organization and its applications and nodes with data stored on the chain.
+	 *
+	 * Note: This method *mutates* the local data and returns the updated organization.
+	 * @param organization
+	 */
+	async synchronizeOrganizationWithApplicationsAndNodesFromChain(organization: OrganisationEntity) {
+		await this.mutateOrganizationFromDataOnChain(organization);
+		await this.mutateApplicationsOfOrganizationFromDataOnChain(organization);
 
 		// we now attempt to fetch nodes associated with the organization
 		const fetchedNodesFromChain = await this.chainService.fetchNodesAssociatedWithOrganizationFromChain(
-			organisation,
+			organization,
 		)
-		return organisation
+
+		return organization;
 	}
 
 
@@ -370,8 +376,16 @@ export class OrganisationService {
 	}
 
 
-	private async mutateOrganizationFromDataOnChain(organization: OrganisationEntity) {
+	async mutateOrganizationFromDataOnChain(organization: OrganisationEntity) {
 		await this.chainService.mutateOrganizationFromDataOnChain(organization);
-		this.organisationEntityRepository.save(organization);
+		await this.organisationEntityRepository.save(organization);
+	}
+
+	async mutateApplicationsOfOrganizationFromDataOnChain(organization: OrganisationEntity) {
+		// we now attempt to fetch applications associated with the organization
+		const fetchedApplicationsFromChain = await this.chainService.fetchApplicationsAssociatedWithOrganizationsFromChain(
+			organization,
+		);
+		await this.applicationRepository.save(fetchedApplicationsFromChain);
 	}
 }
