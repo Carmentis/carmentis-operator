@@ -50,7 +50,7 @@ export default function HomePage() {
 					<Typography variant={"h5"} color={"primary"}>Your organisations</Typography>
 				</Box>
 				<Grid container width={"100%"}>
-					<Grid container spacing={2}>
+					<Grid container spacing={2} width={"100%"}>
 						<Grid size={3}>
 							<Card>
 								<CreateYourOrganisation/>
