@@ -3,12 +3,21 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './AppModule';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import getPort from 'get-port';
 
 
 async function bootstrap() {
 	const logger = new Logger();
-	const port: number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 	const app = await NestFactory.create(AppModule);
+
+
+	// we select the port to listen on
+	const specifiedPort: number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+	const usedPort = await getPort({port: specifiedPort});
+	if (specifiedPort !== usedPort) {
+		logger.warn(`Port ${specifiedPort} not available: Move on port ${usedPort}`);
+	}
+
 
 	// we disable cors
     app.enableCors({
@@ -47,8 +56,8 @@ async function bootstrap() {
 		swaggerCustomOptions
 	);
 
-	logger.log(`Operator back server listening at port ${port}...`)
-	await app.listen(port);
+	logger.log(`Operator back server listening at port ${usedPort}...`)
+	await app.listen(usedPort);
 }
 
 bootstrap();
