@@ -280,8 +280,6 @@ export default class ChainService {
 	}
 
 	async fetchNodesAssociatedWithOrganizationFromChain(organization: OrganisationEntity) {
-		return []
-		/* We are currently unable to load nodes from chain: No information about the rpc endpoint.
 		const managedNodes: Partial<NodeEntity>[] = [];
 		const encoder = StringSignatureEncoder.defaultStringSignatureEncoder();
 		const myPublicKey = organization.publicSignatureKey;
@@ -295,12 +293,11 @@ export default class ChainService {
 				managedNodes.push({
 					organisation: organization,
 					nodeAlias: `Node ${nodeIndex}`,
-					rpcEndpoint:
+					rpcEndpoint: node.getRpcEndpoint()
 				});
 			}
 			nodeIndex += 1;
 		}
-
-		 */
+		return managedNodes;
 	}
 }

@@ -140,12 +140,7 @@ export class OrganisationService {
 	async synchronizeOrganizationWithApplicationsAndNodesFromChain(organization: OrganisationEntity) {
 		await this.mutateOrganizationFromDataOnChain(organization);
 		await this.mutateApplicationsOfOrganizationFromDataOnChain(organization);
-
-		// we now attempt to fetch nodes associated with the organization
-		const fetchedNodesFromChain = await this.chainService.fetchNodesAssociatedWithOrganizationFromChain(
-			organization,
-		)
-
+		await this.mutateNodesOfOrganizationFromDataOnChain(organization);
 		return organization;
 	}
 
@@ -386,6 +381,32 @@ export class OrganisationService {
 		const fetchedApplicationsFromChain = await this.chainService.fetchApplicationsAssociatedWithOrganizationsFromChain(
 			organization,
 		);
-		await this.applicationRepository.save(fetchedApplicationsFromChain);
+
+		// for the moment, we only save applications that are not found on database
+		for (const fetchedApplication of fetchedApplicationsFromChain) {
+			const isContainedInLocalDatabase = await this.applicationRepository.existsBy({
+				virtualBlockchainId: fetchedApplication.virtualBlockchainId,
+			});
+			if (!isContainedInLocalDatabase) {
+				await this.applicationRepository.save(fetchedApplication);
+			} else {
+				const localApplication = await this.applicationRepository.findOneBy({
+					virtualBlockchainId: fetchedApplication.virtualBlockchainId,
+				})
+				await this.applicationRepository.save({
+					...localApplication,
+					...fetchedApplication
+				})
+			}
+		}
+	}
+
+	async mutateNodesOfOrganizationFromDataOnChain(organization: OrganisationEntity) {
+		// we now attempt to fetch nodes associated with the organization
+		const fetchedNodesFromChain = await this.chainService.fetchNodesAssociatedWithOrganizationFromChain(
+			organization,
+		)
+		this.logger.log(`Fetched nodes: ${fetchedNodesFromChain}`)
+		await this.nodeRepository.save(fetchedNodesFromChain)
 	}
 }
