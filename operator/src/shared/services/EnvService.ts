@@ -14,6 +14,8 @@ import { randomBytes } from 'crypto';
 export class EnvService implements OnModuleInit {
 	/** Path to the file containing the administrator creation token */
 	private _adminTokenFile: string;
+	/** Path to the file containing the JWT secret */
+	private _jwtSecretFile: string;
 	/** URL of the blockchain node */
 	private _nodeUrl: string;
 	/** Logger instance for this service */
@@ -27,8 +29,13 @@ export class EnvService implements OnModuleInit {
 		// Get the blockchain node URL
 		this._nodeUrl = this.operatorConfig.getNodeUrl(); //this.configService.getOrThrow<string>('NODE_URL');
 		this._adminTokenFile = this.operatorConfig.getAdminTokenPath();
+		this._jwtSecretFile = this.operatorConfig.getJwtStoragePath();
 
-
+		// create home directory if not exists
+		const home = this.operatorConfig.getHomePath();
+		mkdirSync(home, {
+			recursive: true,
+		});
 	}
 
 	/**
@@ -36,12 +43,6 @@ export class EnvService implements OnModuleInit {
 	 * Currently empty but can be used for additional initialization logic.
 	 */
 	async onModuleInit() {
-		// create home directory if not exists
-		const home = this.operatorConfig.getHomePath();
-		mkdirSync(home, {
-			recursive: true,
-		});
-
 		// Initialize admin token file path
 		const adminTokenPath = this.operatorConfig.getAdminTokenPath();
 		if (typeof adminTokenPath === 'string') {
@@ -113,5 +114,28 @@ export class EnvService implements OnModuleInit {
 	 */
 	get adminTokenFile(): string {
 		return this._adminTokenFile;
+	}
+
+	async getOrCreateJwtSecret() {
+		// Initialize JWT token
+		let specifiedJwtToken = this.operatorConfig.getJwtSecret();
+		if (specifiedJwtToken) {
+			this.logger.log("JWT secret specified in the configuration");
+		} else {
+			this.logger.log(`JWT secret not specified in the configuration: looking at ${this._jwtSecretFile}`);
+			try {
+				specifiedJwtToken = await fs.readFile(this._jwtSecretFile, 'utf8');
+			} catch (error) {
+				this.logger.warn(`Unable to read JWT token from file: ${error}`)
+				this.logger.log(`Generating new JWT token at ${this._jwtSecretFile}`)
+				specifiedJwtToken = randomBytes(32).toString('hex');
+			}
+		}
+		return specifiedJwtToken;
+	}
+
+	async storeJwtSecret(secret: string) {
+		this.logger.log(`Exporting JWT token at ${this._jwtSecretFile}`);
+		await fs.writeFile(this._jwtSecretFile, secret, 'utf8');
 	}
 }

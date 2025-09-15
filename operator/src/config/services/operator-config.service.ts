@@ -137,6 +137,17 @@ export class OperatorConfigService {
 	}
 
 	/**
+	 * Returns the JWT storage location.
+	 */
+	getJwtStoragePath(): string {
+		const home = this.config.operator.paths.home;
+		return join(
+			home,
+			this.config.operator.paths.jwt_secret
+		);
+	}
+
+	/**
 	 * Returns the configuration of the encryption layer used to encrypt sensitive information on the storage.
 	 */
 	getDatabaseEncryptionConfig() {

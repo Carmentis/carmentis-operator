@@ -29,19 +29,24 @@ import { NodeEntity } from '../shared/entities/NodeEntity';
 import { NodeResolver } from './graphql/resolvers/NodeResolver';
 import { OperatorConfigModule } from '../config/OperatorConfigModule';
 import { OperatorConfigService } from '../config/services/operator-config.service';
+import { EnvService } from '../shared/services/EnvService';
 
 
 const WORKSPACE_IMPORTS = [
 	OperatorConfigModule,
 	SharedModule,
 	JwtModule.registerAsync({
-		imports: [OperatorConfigModule],
-		inject: [OperatorConfigService],
-		useFactory: (configService: OperatorConfigService) => ({
-			global: true,
-			secret: configService.getJwtSecret(),
-			signOptions: { expiresIn: configService.getJwtTokenValidity() },
-		}),
+		imports: [OperatorConfigModule,SharedModule],
+		inject: [OperatorConfigService, EnvService],
+		useFactory: async (configService: OperatorConfigService, envService: EnvService) => {
+			const secret = await envService.getOrCreateJwtSecret();
+			await envService.storeJwtSecret(secret);
+			return {
+				global: true,
+				secret,
+				signOptions: { expiresIn: configService.getJwtTokenValidity() },
+			}
+		},
 	}),
 ];
 

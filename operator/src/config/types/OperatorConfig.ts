@@ -58,6 +58,7 @@ export const ConfigSchema = z.object({
 			home: z.string().default(process.cwd()),
 			init_token: z.string().default("admin-token.txt"),
 			db_encryption_key: z.string().default("db-encryption-key.txt"),
+			jwt_secret: z.string().default('jwt-secret.txt'),
 		}).default({}),
 	}),
 });
