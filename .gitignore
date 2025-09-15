@@ -1,3 +1,4 @@
+**/.operator
 *.env
 .idea
 **/node_modules
