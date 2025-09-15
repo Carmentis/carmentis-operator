@@ -3,29 +3,47 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './AppModule';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import getPort from 'get-port';
+import getPort, { portNumbers } from 'get-port';
+import { OperatorConfigService } from './config/services/operator-config.service';
 
 
 async function bootstrap() {
 	const logger = new Logger();
+
+	// create the application and load the configuration
 	const app = await NestFactory.create(AppModule);
+	const operatorConfig = app.get(OperatorConfigService);
 
 
-	// we select the port to listen on
-	const specifiedPort: number = process.env.PORT ? parseInt(process.env.PORT) : 3000;
-	const usedPort = await getPort({port: specifiedPort});
+	// we select the port to listen on. We use getPort to choose the closest available port.
+	const specifiedPort = operatorConfig.getPort()
+	const usedPort = await getPort({
+		port: portNumbers(specifiedPort, specifiedPort + 1000)
+	})
 	if (specifiedPort !== usedPort) {
 		logger.warn(`Port ${specifiedPort} not available: Move on port ${usedPort}`);
 	}
 
 
-	// we disable cors
+	// Set the cors config
+	const corsConfig = operatorConfig.getCorsConfig();
+	logger.log(`cors: origin: ${corsConfig.origin}, methods: ${corsConfig.methods}`);
     app.enableCors({
-		origin: '*',
-		methods: 'GET,POST,PUT,DELETE,OPTIONS',
+		origin: corsConfig.origin,
+		methods: corsConfig.methods,
 	});
-	//app.useGlobalFilters(new GlobalExceptionFilter());
+
+	// Set global verification enabled.
 	app.useGlobalPipes(new ValidationPipe({whitelist: true}));
+
+
+
+	// Set up the swagger
+	const swaggerCustomOptions = {
+		swaggerOptions: {
+			tryItOutEnabled: false,
+		},
+	};
 
 	const config = new DocumentBuilder()
 		.setTitle('Carmentis Operator API')
@@ -41,16 +59,11 @@ async function bootstrap() {
 		)
 		.build();
 
-	// no try
-	const swaggerCustomOptions = {
-		swaggerOptions: {
-			tryItOutEnabled: false,
-		},
-	};
-
 	const documentFactory = () => SwaggerModule.createDocument(app, config);
+	const swaggerPath = operatorConfig.getSwaggerPath();
+	logger.log(`Swagger Path: /${swaggerPath}`);
 	SwaggerModule.setup(
-		'swagger',
+		swaggerPath,
 		app,
 		documentFactory,
 		swaggerCustomOptions

@@ -13,9 +13,11 @@ import { AnchorRequestEntity } from './entities/AnchorRequestEntity';
 import { AnchorRequestService } from './services/AnchorRequestService';
 import { APP_GUARD } from '@nestjs/core';
 import { ApiKeyGuard } from './guards/ApiKeyGuard';
+import { OperatorConfigModule } from '../config/OperatorConfigModule';
 
 @Module({
 	imports: [
+		OperatorConfigModule,
 		SharedModule,
 		TypeOrmModule.forFeature([
 			AnchorRequestEntity

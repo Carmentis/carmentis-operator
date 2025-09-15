@@ -12,6 +12,7 @@ import {
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { OrganisationEntity } from '../entities/OrganisationEntity';
 import { NodeEntity } from '../entities/NodeEntity';
+import { OperatorConfigService } from '../../config/services/operator-config.service';
 
 
 /**
@@ -31,10 +32,12 @@ export default class ChainService {
 	private logger: Logger;
 	private nodeUrl: string;
 	private blockchain : BlockchainFacade;
-	constructor() {
+	constructor(
+		private readonly config: OperatorConfigService
+	) {
+		this.nodeUrl = this.config.getNodeUrl();
 		this.logger = new Logger(ChainService.name);
-		this.logger.log(`Linking operator with node located at ${process.env.NODE_URL}`)
-		this.nodeUrl = process.env.NODE_URL;
+		this.logger.log(`Linking operator with node located at ${this.nodeUrl}`)
 		this.blockchain = BlockchainFacade.createFromNodeUrl(this.nodeUrl);
 	}
 

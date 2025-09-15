@@ -24,6 +24,7 @@
     "@automapper/classes": "^8.8.1",
     "@automapper/core": "^8.8.1",
     "@cmts-dev/carmentis-sdk": "^1.13.0",
+    "@iarna/toml": "^2.2.5",
     "@nestjs/apollo": "^13.0.4",
     "@nestjs/common": "^11.0.13",
     "@nestjs/config": "^4.0.2",
@@ -43,11 +44,13 @@
     "dotenv": "^16.4.7",
     "get-port": "^7.1.0",
     "graphql": "^16.10.0",
+    "mysql2": "^3.14.5",
     "pg": "^8.13.1",
     "read-pkg": "^9.0.1",
     "reflect-metadata": "^0.1.14",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.1",
+    "sqlite3": "^5.1.7",
     "typeorm": "^0.3.21"
   },
   "devDependencies": {

@@ -27,16 +27,21 @@ import { ApplicationResolver } from './graphql/resolvers/ApplicationResolver';
 import { OrganisationStatisticsResolver } from './graphql/resolvers/OrganisationStatisticsResolver';
 import { NodeEntity } from '../shared/entities/NodeEntity';
 import { NodeResolver } from './graphql/resolvers/NodeResolver';
+import { OperatorConfigModule } from '../config/OperatorConfigModule';
+import { OperatorConfigService } from '../config/services/operator-config.service';
 
-// Extracted imports, controllers, and providers into constants
-export const DEFAULT_JWT_TOKEN_VALIDITY = "8h"
 
 const WORKSPACE_IMPORTS = [
+	OperatorConfigModule,
 	SharedModule,
-	JwtModule.register({
-		global: true,
-		secret: process.env.JWT_SECRET || crypto.randomBytes(32),
-		signOptions: { expiresIn: process.env.JWT_TOKEN_VALIDITY || DEFAULT_JWT_TOKEN_VALIDITY },
+	JwtModule.registerAsync({
+		imports: [OperatorConfigModule],
+		inject: [OperatorConfigService],
+		useFactory: (configService: OperatorConfigService) => ({
+			global: true,
+			secret: configService.getJwtSecret(),
+			signOptions: { expiresIn: configService.getJwtTokenValidity() },
+		}),
 	}),
 ];
 

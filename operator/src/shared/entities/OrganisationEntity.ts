@@ -63,12 +63,12 @@ export class OrganisationEntity {
 	nodes: NodeEntity[];
 
 	@Field(type => Date)
-	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+	@Column({ default: () => 'CURRENT_TIMESTAMP' })
 	createdAt: Date;
 
 	@Field(type => Date)
 	@UpdateDateColumn()
-	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+	@Column({ default: () => 'CURRENT_TIMESTAMP' })
 	lastUpdateAt: Date;
 
 	@OneToMany(() => OrganisationAccessRightEntity, (perm) => perm.organisation, { cascade: true })

@@ -19,7 +19,7 @@ export class NodeEntity {
 	nodeAlias: string;
 
 	@Field(type => Date)
-	@Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+	@Column({ default: () => 'CURRENT_TIMESTAMP' })
 	includedAt: Date;
 
 	@Field(type => String)

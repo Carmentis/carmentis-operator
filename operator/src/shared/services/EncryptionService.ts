@@ -1,13 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { EnvService } from './EnvService';
+import { OperatorConfigModule } from '../../config/OperatorConfigModule';
+import { OperatorConfigService } from '../../config/services/operator-config.service';
 
 @Injectable()
 export class EncryptionService {
-	private readonly algorithm = 'chacha20-poly1305';
-	private readonly ivLength = 12;
+	private algorithm;
+	private ivLength;
 
-	constructor(private readonly envService: EnvService) {}
+	constructor(
+		private config: OperatorConfigService,
+		private readonly envService: EnvService
+	) {
+		const encryptionConfig = this.config.getDatabaseEncryptionConfig();
+		this.algorithm = encryptionConfig.algorithm;
+		this.ivLength = encryptionConfig.ivLength;
+	}
 
 	encrypt(value: string): string {
 		const key = this.envService.dbEncryptionKey;

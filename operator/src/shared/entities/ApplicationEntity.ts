@@ -44,11 +44,11 @@ export class ApplicationEntity {
 
     @AutoMap()
     @UpdateDateColumn()
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @Column({ default: () => 'CURRENT_TIMESTAMP' })
     lastUpdateAt: Date;
 
     @AutoMap()
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+    @Column({ default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date;
 
     @AutoMap()

@@ -46,53 +46,9 @@ export class CryptoService implements OnModuleInit{
 		if (!CryptoService.initialized) {
 			CryptoService.initialized = true;
 			Promise.all([
-				this.setupOperatorKeyPair(),
 				this.setupAdminCreationToken(),
-				this.setupNode()
 			])
 		}
-	}
-
-	/**
-	 * Sets up the operator's cryptographic key pair.
-	 * Loads existing keys from file or generates new ones if needed.
-	 */
-	private async setupOperatorKeyPair() {
-		this.logger.log("Setting up the operator key pair");
-
-		const keyPairFilePath = this.envService.operatorKeyPairFile;
-		let operatorPrivateKey: PrivateSignatureKey = Secp256k1PrivateSignatureKey.gen();
-		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-		try {
-			// Check if the key pair file exists
-			const stringPrivateKey = await fs.readFile(keyPairFilePath, 'utf8');
-
-			if (stringPrivateKey) {
-				this.logger.log('Loaded existing key pair from file');
-				operatorPrivateKey = signatureEncoder.decodePrivateKey(stringPrivateKey);
-			} else {
-				throw new Error('Invalid key pair file, generating a new pair...');
-			}
-		} catch (err) {
-			// If file is not found or invalid, generate a new key pair
-			this.logger.warn('Key pair file not found or invalid, generating a new pair...');
-			this.logger.warn(`Reason: ${err}`)
-
-
-			await fs.writeFile(keyPairFilePath, signatureEncoder.encodePrivateKey(operatorPrivateKey));
-			this.logger.log(`New key pair generated and saved to file ${keyPairFilePath}`);
-		}
-	}
-
-
-	/**
-	 * Sets up the connection to the blockchain node.
-	 * Configures the operator to communicate with the specified node URL.
-	 */
-	private async setupNode() {
-		const nodeUrl = process.env.NODE_URL;
-		this.logger.log(`Linking operator api with node located at ${nodeUrl}`);
-		// Note: Additional node setup logic would be implemented here
 	}
 
 	/**

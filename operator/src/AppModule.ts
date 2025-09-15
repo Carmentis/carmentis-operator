@@ -10,9 +10,13 @@ import { SharedModule } from './shared/SharedModule';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
+import { getDatabaseConfig } from './database/getDatabaseConfig';
+import { OperatorConfigService } from './config/services/operator-config.service';
+import { OperatorConfigModule } from './config/OperatorConfigModule';
 
 @Module({
 	imports: [
+		OperatorConfigModule,
 		SharedModule,
 		OperatorApiModule,
 		WorkspaceApiModule,
@@ -21,16 +25,21 @@ import { join } from 'path';
 			isGlobal: true,
 		}),
 		TypeOrmModule.forRootAsync({
-			inject: [ConfigService],
-			useFactory: (configService: ConfigService) => getPostgresConfig(configService),
+			imports: [OperatorConfigModule],
+			inject: [OperatorConfigService],
+			useFactory: (configService: OperatorConfigService) => getDatabaseConfig(configService),
 		}),
-		GraphQLModule.forRoot<ApolloDriverConfig>({
-			debug: true,
+		GraphQLModule.forRootAsync<ApolloDriverConfig>({
 			driver: ApolloDriver,
-			autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+			imports: [OperatorConfigModule],
+			inject: [OperatorConfigService],
+			useFactory: (config: OperatorConfigService) => ({
+				debug: config.launchGraphQLInDebugMode(),
+				autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+			})
 		}),
 	],
-	providers: [PackageConfigService,DatabaseInitService],
+	providers: [PackageConfigService],
 	exports: [PackageConfigService],
 })
 export class AppModule {

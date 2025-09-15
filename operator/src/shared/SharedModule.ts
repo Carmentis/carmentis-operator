@@ -21,6 +21,7 @@ import { EncryptionService } from './services/EncryptionService';
 import { EncryptionServiceProxy } from './transformers/EncryptionServiceProxy';
 import { NodeEntity } from './entities/NodeEntity';
 import { NodeService } from './services/NodeService';
+import { OperatorConfigModule } from '../config/OperatorConfigModule';
 
 const WORKSPACE_PROVIDERS = [
 	EncryptionService,
@@ -36,11 +37,10 @@ const WORKSPACE_PROVIDERS = [
 	NodeService
 ];
 
-// Extracted imports, controllers, and providers into constants
-export const DEFAULT_JWT_TOKEN_VALIDITY = "8h"
 
 @Module({
 	imports: [
+		OperatorConfigModule,
 		TypeOrmModule.forFeature([
 			UserEntity,
 			OrganisationEntity,
