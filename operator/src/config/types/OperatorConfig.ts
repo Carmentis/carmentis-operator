@@ -26,6 +26,7 @@ export const ConfigSchema = z.object({
 				algorithm: z.string().default('chacha20-poly1305'),
 				iv_length: z.number().default(12),
 				encryption_key: z.string().optional(),
+				allow_encryption_key_generation: z.boolean().default(true),
 			}).default({}),
 			postgresql: z.object({
 				user: z.string(),
@@ -51,7 +52,9 @@ export const ConfigSchema = z.object({
 			 }).default({})
 		}).default({}),
 		paths: z.object({
-			init_token: z.string().default(join(process.cwd(), "admin-token.txt")),
+			home: z.string().default(process.cwd()),
+			init_token: z.string().default("admin-token.txt"),
+			db_encryption_key: z.string().default("db-encryption-key.txt"),
 		}).default({}),
 	}),
 });

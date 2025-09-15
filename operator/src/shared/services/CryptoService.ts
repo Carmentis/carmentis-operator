@@ -45,7 +45,7 @@ export class CryptoService implements OnModuleInit{
 	async onModuleInit() {
 		if (!CryptoService.initialized) {
 			CryptoService.initialized = true;
-			Promise.all([
+			await Promise.all([
 				this.setupAdminCreationToken(),
 			])
 		}
@@ -59,7 +59,7 @@ export class CryptoService implements OnModuleInit{
 	private async setupAdminCreationToken() {
 		this.logger.log("Setting up administrator creation token");
 
-		let filePath = this.envService.adminTokenFile;
+		const filePath = this.envService.adminTokenFile;
 		let token = CryptoService._adminCreationToken;
 		if (!token) {
 			const encoder = new BytesToHexEncoder();
@@ -72,8 +72,8 @@ export class CryptoService implements OnModuleInit{
 		} catch (err) {
 			// If file is not found or invalid, generate a new token
 			this.logger.warn('Administrator creation token file not found or invalid, generating a new token...');
-			await fs.writeFile(this.envService.adminTokenFile, token);
-			this.logger.log(`Generated token is saved to file ${this.envService.adminTokenFile}`);
+			await fs.writeFile(filePath, token);
+			this.logger.log(`Generated token is saved to file ${filePath}`);
 		}
 
 		CryptoService._adminCreationToken = token;

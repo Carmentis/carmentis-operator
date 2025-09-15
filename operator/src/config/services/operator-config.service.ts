@@ -90,7 +90,19 @@ export class OperatorConfigService {
 
 
 	getAdminTokenPath(): string {
-		return this.config.operator.paths.init_token;
+		const home = this.config.operator.paths.home;
+		return join(
+			home,
+			this.config.operator.paths.init_token
+		)
+	}
+
+	getDbEncryptionKeyPath(): string {
+		const home = this.config.operator.paths.home;
+		return join(
+			home,
+			this.config.operator.paths.db_encryption_key
+		);
 	}
 
 	/**
@@ -143,5 +155,13 @@ export class OperatorConfigService {
 
 	launchGraphQLInDebugMode() {
 		return this.config.operator.workspace.graphql.debug;
+	}
+
+	getHomePath() {
+		return this.config.operator.paths.home;
+	}
+
+	allowDbKeyGeneration() {
+		return this.config.operator.database.encryption.allow_encryption_key_generation;
 	}
 }

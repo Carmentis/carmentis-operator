@@ -2,6 +2,7 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { OperatorConfigService } from '../config/services/operator-config.service';
 import { Logger } from '@nestjs/common';
+import { join } from 'path';
 
 const entitiesLocation = __dirname + '/../**/*Entity{.ts,.js}';
 
@@ -50,7 +51,10 @@ export function getDatabaseConfig(config: OperatorConfigService): TypeOrmModuleO
 			entities: [entitiesLocation],
 			synchronize: true,
 			type: 'sqlite',
-			database: sqliteConfig.database,
+			database: join(
+				config.getHomePath(),
+				sqliteConfig.database,
+			)
 		}
 	}
 
