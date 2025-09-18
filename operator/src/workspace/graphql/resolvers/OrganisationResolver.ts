@@ -64,13 +64,6 @@ export class OrganisationResolver {
 			throw new NotFoundException('Organisation not found');
 		}
 
-		// perform validity check
-		console.log("update org:", organisationDto)
-		console.log("coutry code:", countryCode)
-		if (countryCode.length !== 2) throw new BadRequestException('Country code should be two letters long');
-
-
-
 		return this.organisationService.updateOrganisation(organisation, {
 			name,
             countryCode,
