@@ -24,7 +24,6 @@ export abstract class AuthGuard implements CanActivate {
 			context.getClass(),
 		]);
 		if (isPublic) {
-			this.logger.debug('Ignoring authentication: public request');
 			return true;
 		}
 
@@ -41,10 +40,8 @@ export abstract class AuthGuard implements CanActivate {
 		try {
 			const payload: { publicKey?: string } = this.jwtService.verify(token);
 			if (payload.publicKey) {
-				const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
 				const user = await this.userService.findOneByPublicKey(payload.publicKey);
 				if (user) {
-					this.logger.debug(`Accepting request: found user ${user.publicKey}`);
 					this.attachUserToRequest(context, user);
 					return true;
 				} else {
