@@ -93,25 +93,6 @@ function OrganisationStatus({ organisation }) {
 
 	return (
 		<Box display="flex" gap={1}>
-			{organisation.isDraft && (
-				<motion.div
-				>
-					<Chip
-						label="Draft"
-						variant="outlined"
-						color="primary"
-						size="small"
-						sx={{
-							borderRadius: '16px',
-							backdropFilter: 'blur(5px)',
-							fontWeight: 500,
-							'& .MuiChip-label': {
-								px: 1.5
-							}
-						}}
-					/>
-				</motion.div>
-			)}
 			<OrganisationPublicationStatusChip/>
 			<Chip
 				label={organisation.balance}

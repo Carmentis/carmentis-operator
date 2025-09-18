@@ -29,10 +29,6 @@ export class ApplicationEntity {
 
     @AutoMap()
     @Column({ nullable: true, default: '' })
-    domain: string;
-
-    @AutoMap()
-    @Column({ nullable: true, default: '' })
     website: string;
 
     @AutoMap()

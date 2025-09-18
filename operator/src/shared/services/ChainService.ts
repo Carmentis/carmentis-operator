@@ -101,6 +101,7 @@ export default class ChainService {
 		// create or update the application
 		const publicationContext = new ApplicationPublicationExecutionContext()
 			.withApplicationName(applicationEntity.name)
+			.withWebsite(applicationEntity.website)
 			.withApplicationDescription(applicationEntity.description);
 		if (isAlreadyPublished) {
 			publicationContext.withExistingApplicationId(Hash.from(applicationId))

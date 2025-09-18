@@ -177,13 +177,6 @@ function EntityStatusHeader(
 						<Box display={"flex"} gap={1} alignItems={"center"} alignContent={"center"}>
 							<GridViewIcon/>
 							<Typography variant={"h6"}>{input.name}</Typography>
-							<Box display={"flex"} flexDirection={"row"} gap={1}>
-								{input.published &&
-									<Chip variant="filled" className={"bg-primary-light"} label={`Published - ${input.virtualBlockchainId}`} />}
-								{input.isDraft &&
-									<Chip variant="filled" className={"border-primary-light text-primary-light"}
-										  label="Draft" />}
-							</Box>
 						</Box>
 					</Box>
 

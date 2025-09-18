@@ -16,13 +16,13 @@ export default function ApplicationOverview() {
 	const updateApplication = useUpdateApplication();
 	const [name, setName] = useState(application.name);
 	const [logoUrl, setLogoUrl] = useState(application.logoUrl);
-	const [domainUrl, setDomainUrl] = useState(application.domain);
+	const [domainUrl, setDomainUrl] = useState(application.website);
 	const [description, setDescription] = useState(application.description);
 
 	useEffect(() => {
 		setName(referenceApplication.name);
 		setLogoUrl(referenceApplication.logoUrl);
-		setDomainUrl(referenceApplication.domain);
+		setDomainUrl(referenceApplication.website);
 		setDescription(referenceApplication.description);
 	}, [referenceApplication]);
 
@@ -31,7 +31,7 @@ export default function ApplicationOverview() {
 			...application,
 			name,
 			logoUrl: logoUrl || '',
-			domain: domainUrl || '',
+			website: domainUrl || '',
 			description: description || '',
 		})
 	}, [name, logoUrl, domainUrl, description]);
@@ -60,6 +60,10 @@ export default function ApplicationOverview() {
 				</Typography>
 			</div>
 			<div className="flex flex-col gap-6">
+				<Typography>
+					<Typography className={"font-bold"} component={"span"}>Status: </Typography>
+					{application.virtualBlockchainId !== undefined ? 'Published' : 'Not published'}
+				</Typography>
 				{overviewContent}
 			</div>
 		</div>
