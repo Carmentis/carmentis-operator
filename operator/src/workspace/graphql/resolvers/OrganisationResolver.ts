@@ -46,14 +46,6 @@ export class OrganisationResolver {
 	@Mutation(returns => OrganisationEntity)
 	async updateOrganisation(
 		@CurrentUser() user: UserEntity,
-		/*
-		@Args('id', { type: () => Int }) id: number,
-		@Args('name', { type: () => String }) name: string,
-		@Args('countryCode', { type: () => String }) countryCode: string,
-		@Args('website', { type: () => String }) website: string,
-		@Args('city', { type: () => String }) city: string,
-
-		 */
 		@Args('organisation', {type: () => OrganisationUpdateDto})
 		organisationDto: OrganisationUpdateDto,
 	): Promise<OrganisationEntity> {
