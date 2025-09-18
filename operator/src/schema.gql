@@ -149,7 +149,7 @@ type Query {
 
 type Mutation {
   createOrganisation(name: String!, privateKey: String): OrganisationEntity!
-  updateOrganisation(organisation: OrganisationUpdateDto!): OrganisationEntity!
+  updateOrganisation(organisationId: Int!, organisation: OrganisationUpdateDto!): OrganisationEntity!
   forceChainSync(id: Int!): Boolean!
   publishOrganisation(id: Int!): Boolean!
   deleteOrganisation(id: Int!): OrganisationEntity!
@@ -175,7 +175,6 @@ type Mutation {
 }
 
 input OrganisationUpdateDto {
-  id: Int!
   name: String!
   countryCode: String!
   website: String!
@@ -193,6 +192,5 @@ input ApplicationUpdateDto {
   name: String!
   logoUrl: String
   description: String
-  domain: String
   website: String
 }

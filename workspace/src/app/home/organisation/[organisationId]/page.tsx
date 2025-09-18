@@ -278,8 +278,8 @@ function OrganisationEdition() {
 		console.log("Organization update:", city)
 		callOrganisationUpdate({
 			variables: {
+				organisationId: organisation.id,
 				organisation: {
-					id: organisation.id,
 					name,
 					city,
 					countryCode,

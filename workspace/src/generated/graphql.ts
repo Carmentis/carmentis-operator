@@ -71,7 +71,6 @@ export type ApplicationType = {
 
 export type ApplicationUpdateDto = {
   description?: InputMaybe<Scalars['String']['input']>;
-  domain?: InputMaybe<Scalars['String']['input']>;
   logoUrl?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   website?: InputMaybe<Scalars['String']['input']>;
@@ -241,6 +240,7 @@ export type MutationUpdateNodeInOrganisationArgs = {
 
 export type MutationUpdateOrganisationArgs = {
   organisation: OrganisationUpdateDto;
+  organisationId: Scalars['Int']['input'];
 };
 
 
@@ -309,7 +309,6 @@ export type OrganisationStatsDto = {
 export type OrganisationUpdateDto = {
   city: Scalars['String']['input'];
   countryCode: Scalars['String']['input'];
-  id: Scalars['Int']['input'];
   name: Scalars['String']['input'];
   website: Scalars['String']['input'];
 };
@@ -516,6 +515,7 @@ export type CreateOrganisationMutationVariables = Exact<{
 export type CreateOrganisationMutation = { createOrganisation: { id: number, name: string, publicSignatureKey: string } };
 
 export type UpdateOrganisationMutationVariables = Exact<{
+  organisationId: Scalars['Int']['input'];
   organisation: OrganisationUpdateDto;
 }>;
 
@@ -1400,8 +1400,8 @@ export type CreateOrganisationMutationHookResult = ReturnType<typeof useCreateOr
 export type CreateOrganisationMutationResult = Apollo.MutationResult<CreateOrganisationMutation>;
 export type CreateOrganisationMutationOptions = Apollo.BaseMutationOptions<CreateOrganisationMutation, CreateOrganisationMutationVariables>;
 export const UpdateOrganisationDocument = gql`
-    mutation UpdateOrganisation($organisation: OrganisationUpdateDto!) {
-  updateOrganisation(organisation: $organisation) {
+    mutation UpdateOrganisation($organisationId: Int!, $organisation: OrganisationUpdateDto!) {
+  updateOrganisation(organisationId: $organisationId, organisation: $organisation) {
     id
   }
 }
@@ -1421,6 +1421,7 @@ export type UpdateOrganisationMutationFn = Apollo.MutationFunction<UpdateOrganis
  * @example
  * const [updateOrganisationMutation, { data, loading, error }] = useUpdateOrganisationMutation({
  *   variables: {
+ *      organisationId: // value for 'organisationId'
  *      organisation: // value for 'organisation'
  *   },
  * });

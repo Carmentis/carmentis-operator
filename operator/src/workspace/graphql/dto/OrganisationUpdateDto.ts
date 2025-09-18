@@ -4,9 +4,6 @@ import { IsISO31661Alpha2, IsNotEmpty, IsUrl, MinLength } from 'class-validator'
 @InputType()
 export class OrganisationUpdateDto  {
 
-	@Field(type => Int)
-	id: number;
-
 	@Field(type => String)
 	@IsNotEmpty()
 	@MinLength(2)

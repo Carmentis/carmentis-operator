@@ -59,8 +59,8 @@ mutation CreateOrganisation($name: String!, $privateKey: String) {
   }
 }
 
-mutation UpdateOrganisation($organisation: OrganisationUpdateDto!) {
-    updateOrganisation(organisation: $organisation) {
+mutation UpdateOrganisation($organisationId: Int!, $organisation: OrganisationUpdateDto!) {
+    updateOrganisation(organisationId: $organisationId, organisation: $organisation) {
         id
     }
 }

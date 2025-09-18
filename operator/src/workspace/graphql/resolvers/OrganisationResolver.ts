@@ -46,16 +46,11 @@ export class OrganisationResolver {
 	@Mutation(returns => OrganisationEntity)
 	async updateOrganisation(
 		@CurrentUser() user: UserEntity,
+		@Args('organisationId', { type: () => Int }, OrganisationByIdPipe) organisation: OrganisationEntity,
 		@Args('organisation', {type: () => OrganisationUpdateDto})
 		organisationDto: OrganisationUpdateDto,
 	): Promise<OrganisationEntity> {
-		// search the organisation
-		const {id, countryCode, name, city, website} = organisationDto;
-		const organisation = await this.organisationService.findOne(id);
-		if (!organisation) {
-			throw new NotFoundException('Organisation not found');
-		}
-
+		const {countryCode, name, city, website} = organisationDto;
 		return this.organisationService.updateOrganisation(organisation, {
 			name,
             countryCode,

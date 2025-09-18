@@ -18,8 +18,5 @@ export class ApplicationUpdateDto extends ApplicationCreationDto {
 	description: string;
 
 	@Field(type => String, {nullable: true})
-	domain: string;
-
-	@Field(type => String, {nullable: true})
 	website: string;
 }
