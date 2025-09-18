@@ -1,23 +1,31 @@
 import { useUpdateApplication } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atom-logic';
 import { useEffect, useState } from 'react';
-import { TextField, Typography } from '@mui/material';
-import { useApplication } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
-import { useToast } from '@/app/layout';
+import { Button, Grid, TextField, Typography } from '@mui/material';
 import {
 	applicationAtom,
 	referenceApplicationAtom,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import { useAtomValue } from 'jotai';
 import { ApplicationTypeFragment } from '@/generated/graphql';
+import { useAsyncFn } from 'react-use';
 
 export default function ApplicationOverview() {
 	const application = useAtomValue(applicationAtom) as ApplicationTypeFragment;
 	const referenceApplication = useAtomValue(referenceApplicationAtom) as ApplicationTypeFragment;
-	const updateApplication = useUpdateApplication();
+	const callUpdateApplication = useUpdateApplication();
 	const [name, setName] = useState(application.name);
 	const [logoUrl, setLogoUrl] = useState(application.logoUrl);
 	const [domainUrl, setDomainUrl] = useState(application.website);
 	const [description, setDescription] = useState(application.description);
+	const [{loading: isSaving}, saveApplication] = useAsyncFn(async () => {
+		return callUpdateApplication({
+			...application,
+			name,
+			logoUrl: logoUrl || '',
+			website: domainUrl || '',
+			description: description || '',
+		})
+	})
 
 	useEffect(() => {
 		setName(referenceApplication.name);
@@ -27,13 +35,7 @@ export default function ApplicationOverview() {
 	}, [referenceApplication]);
 
 	useEffect(() => {
-		updateApplication({
-			...application,
-			name,
-			logoUrl: logoUrl || '',
-			website: domainUrl || '',
-			description: description || '',
-		})
+		saveApplication()
 	}, [name, logoUrl, domainUrl, description]);
 
 	const INPUTS = [
@@ -65,8 +67,26 @@ export default function ApplicationOverview() {
 					{application.virtualBlockchainId !== undefined ? 'Published' : 'Not published'}
 				</Typography>
 				{overviewContent}
+				<TextField
+					size={'small'}
+					label={"Virtual Blockchain ID"}
+					disabled={true}
+					value={application.virtualBlockchainId}
+				/>
+
 			</div>
 		</div>
 	</>;
 }
+
+/*
+<Grid container spacing={2}>
+					<Grid size={6}>
+						<Button fullWidth={true} onClick={() => saveApplication()} disabled={isSaving}>Save</Button>
+					</Grid>
+					<Grid size={6}>
+						<Button fullWidth={true}>Publish</Button>
+					</Grid>
+				</Grid>
+ */
 
