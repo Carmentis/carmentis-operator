@@ -275,18 +275,24 @@ function OrganisationEdition() {
 	}, [organisation]);
 
 	function save() {
+		console.log("Organization update:", city)
 		callOrganisationUpdate({
 			variables: {
-				id: organisation.id,
-				name: name,
-				city: city,
-				countryCode,
-				website
+				organisation: {
+					id: organisation.id,
+					name,
+					city,
+					countryCode,
+					website
+				}
+			},
+		}).then((response) => {
+			if (response.data) {
+				refreshOrganisation.mutate();
+				setIsModified(false);
+				notify.success("Organisation updated successfully");
 			}
-		}).then(() => {
-			refreshOrganisation.mutate();
-			setIsModified(false);
-			notify.success("Organisation updated successfully");
+
 		}).catch(e => {
 			notify.error(e);
 		});

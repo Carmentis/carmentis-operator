@@ -149,7 +149,7 @@ type Query {
 
 type Mutation {
   createOrganisation(name: String!, privateKey: String): OrganisationEntity!
-  updateOrganisation(id: Int!, name: String!, countryCode: String!, website: String!, city: String!): OrganisationEntity!
+  updateOrganisation(organisation: OrganisationUpdateDto!): OrganisationEntity!
   forceChainSync(id: Int!): Boolean!
   publishOrganisation(id: Int!): Boolean!
   deleteOrganisation(id: Int!): OrganisationEntity!
@@ -172,6 +172,14 @@ type Mutation {
   deleteNodeInOrganisation(organisationId: Int!, nodeId: Int!): Boolean!
   updateNodeInOrganisation(organisationId: Int!, nodeId: Int!, nodeAlias: String!, nodeRpcEndpoint: String!): NodeEntity!
   claimNodeInOrganisation(organisationId: Int!, nodeId: Int!): NodeEntity!
+}
+
+input OrganisationUpdateDto {
+  id: Int!
+  name: String!
+  countryCode: String!
+  website: String!
+  city: String!
 }
 
 input SetupFirstAdminDto {

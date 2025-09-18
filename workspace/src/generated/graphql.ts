@@ -240,11 +240,7 @@ export type MutationUpdateNodeInOrganisationArgs = {
 
 
 export type MutationUpdateOrganisationArgs = {
-  city: Scalars['String']['input'];
-  countryCode: Scalars['String']['input'];
-  id: Scalars['Int']['input'];
-  name: Scalars['String']['input'];
-  website: Scalars['String']['input'];
+  organisation: OrganisationUpdateDto;
 };
 
 
@@ -308,6 +304,14 @@ export type OrganisationEntityTransactionsArgs = {
 export type OrganisationStatsDto = {
   numberOfApplications: Scalars['Int']['output'];
   numberOfUsers: Scalars['Int']['output'];
+};
+
+export type OrganisationUpdateDto = {
+  city: Scalars['String']['input'];
+  countryCode: Scalars['String']['input'];
+  id: Scalars['Int']['input'];
+  name: Scalars['String']['input'];
+  website: Scalars['String']['input'];
 };
 
 export type Query = {
@@ -512,11 +516,7 @@ export type CreateOrganisationMutationVariables = Exact<{
 export type CreateOrganisationMutation = { createOrganisation: { id: number, name: string, publicSignatureKey: string } };
 
 export type UpdateOrganisationMutationVariables = Exact<{
-  id: Scalars['Int']['input'];
-  name: Scalars['String']['input'];
-  website: Scalars['String']['input'];
-  city: Scalars['String']['input'];
-  countryCode: Scalars['String']['input'];
+  organisation: OrganisationUpdateDto;
 }>;
 
 
@@ -1400,14 +1400,8 @@ export type CreateOrganisationMutationHookResult = ReturnType<typeof useCreateOr
 export type CreateOrganisationMutationResult = Apollo.MutationResult<CreateOrganisationMutation>;
 export type CreateOrganisationMutationOptions = Apollo.BaseMutationOptions<CreateOrganisationMutation, CreateOrganisationMutationVariables>;
 export const UpdateOrganisationDocument = gql`
-    mutation UpdateOrganisation($id: Int!, $name: String!, $website: String!, $city: String!, $countryCode: String!) {
-  updateOrganisation(
-    id: $id
-    name: $name
-    website: $website
-    city: $city
-    countryCode: $countryCode
-  ) {
+    mutation UpdateOrganisation($organisation: OrganisationUpdateDto!) {
+  updateOrganisation(organisation: $organisation) {
     id
   }
 }
@@ -1427,11 +1421,7 @@ export type UpdateOrganisationMutationFn = Apollo.MutationFunction<UpdateOrganis
  * @example
  * const [updateOrganisationMutation, { data, loading, error }] = useUpdateOrganisationMutation({
  *   variables: {
- *      id: // value for 'id'
- *      name: // value for 'name'
- *      website: // value for 'website'
- *      city: // value for 'city'
- *      countryCode: // value for 'countryCode'
+ *      organisation: // value for 'organisation'
  *   },
  * });
  */

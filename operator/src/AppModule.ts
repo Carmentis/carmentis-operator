@@ -36,6 +36,14 @@ import { OperatorConfigModule } from './config/OperatorConfigModule';
 			useFactory: (config: OperatorConfigService) => ({
 				debug: config.launchGraphQLInDebugMode(),
 				autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+				formatError: (error) => {
+					const original = error.extensions?.originalError as any;
+					return {
+						message: original?.message || error.message,
+						code: error.extensions?.code,
+						path: error.path,
+					};
+				},
 			})
 		}),
 	],

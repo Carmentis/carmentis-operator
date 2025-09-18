@@ -59,11 +59,12 @@ mutation CreateOrganisation($name: String!, $privateKey: String) {
   }
 }
 
-mutation UpdateOrganisation($id: Int!, $name: String!, $website: String!, $city: String!, $countryCode: String!) {
-  updateOrganisation(id: $id, name: $name, website: $website, city: $city, countryCode: $countryCode) {
-    id
-  }
+mutation UpdateOrganisation($organisation: OrganisationUpdateDto!) {
+    updateOrganisation(organisation: $organisation) {
+        id
+    }
 }
+
 
 mutation PublishOrganisation($organisationId: Int!) {
   publishOrganisation(id: $organisationId)

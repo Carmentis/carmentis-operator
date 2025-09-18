@@ -9,6 +9,7 @@ import {
 import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 import { env } from 'next-runtime-env';
+import { useToast } from '@/app/layout';
 
 const api = env('NEXT_PUBLIC_OPERATOR_URL')
 console.log("API:", api);
@@ -27,14 +28,17 @@ const authLink = setContext((_, { headers }) => {
 });
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
+	const toast = useToast();
 	if (graphQLErrors) {
 		for (const err of graphQLErrors) {
-			console.log(err)
-			if (err.extensions?.code === 'FORBIDDEN') {
+			if (err.code === 'FORBIDDEN') {
 				if (typeof window !== 'undefined') {
 					window.location = '/'
 				}
 				return;
+			}
+			if (err.message) {
+				toast.error(err.message)
 			}
 		}
 	}

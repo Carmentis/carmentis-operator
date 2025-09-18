@@ -1,7 +1,7 @@
 import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { OrganisationEntity } from '../../../shared/entities/OrganisationEntity';
 import { OrganisationService } from '../../../shared/services/OrganisationService';
-import { Logger, NotFoundException, UseGuards } from '@nestjs/common';
+import { BadRequestException, Logger, NotFoundException, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../../decorators/CurrentUserDecorator';
 import { UserEntity } from '../../../shared/entities/UserEntity';
 import ChainService from '../../../shared/services/ChainService';
@@ -11,6 +11,7 @@ import { OrganisationChainStatusType } from '../types/OrganisationChainStatusTyp
 import { GraphQLJwtAuthGuard } from '../../guards/GraphQLJwtAuthGuard';
 import { OrganisationByIdPipe } from '../../pipes/OrganisationByIdPipe';
 import { NodeEntity } from '../../../shared/entities/NodeEntity';
+import { OrganisationUpdateDto } from '../dto/OrganisationUpdateDto';
 
 @UseGuards(GraphQLJwtAuthGuard)
 @Resolver(of => OrganisationEntity)
@@ -45,16 +46,30 @@ export class OrganisationResolver {
 	@Mutation(returns => OrganisationEntity)
 	async updateOrganisation(
 		@CurrentUser() user: UserEntity,
+		/*
 		@Args('id', { type: () => Int }) id: number,
 		@Args('name', { type: () => String }) name: string,
 		@Args('countryCode', { type: () => String }) countryCode: string,
 		@Args('website', { type: () => String }) website: string,
 		@Args('city', { type: () => String }) city: string,
+
+		 */
+		@Args('organisation', {type: () => OrganisationUpdateDto})
+		organisationDto: OrganisationUpdateDto,
 	): Promise<OrganisationEntity> {
+		// search the organisation
+		const {id, countryCode, name, city, website} = organisationDto;
 		const organisation = await this.organisationService.findOne(id);
 		if (!organisation) {
 			throw new NotFoundException('Organisation not found');
 		}
+
+		// perform validity check
+		console.log("update org:", organisationDto)
+		console.log("coutry code:", countryCode)
+		if (countryCode.length !== 2) throw new BadRequestException('Country code should be two letters long');
+
+
 
 		return this.organisationService.updateOrganisation(organisation, {
 			name,
