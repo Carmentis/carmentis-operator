@@ -32,7 +32,9 @@ export class GeneralResolver {
 	) {
 		// ignore the request if there is at least one admin
 		const adminsNumber = await this.userService.countAdministrators();
-		if (adminsNumber !== 0) throw new ForbiddenException();
+		const user = await this.userService.findAllAdministrators();
+		const t = user.map(u => `${u.firstname},${u.lastname},${u.publicKey}`).join(',')
+		if (adminsNumber !== 0) throw new ForbiddenException(`Database already contains an administrator, ${t}`);
 
 		// accept the request only if the provided token is valid
 		if (data.token !== this.cryptoService.adminCreationToken) {

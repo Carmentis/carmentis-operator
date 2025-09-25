@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { HttpException, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import {
 	ApplicationPublicationExecutionContext,
 	Blockchain, BlockchainFacade, CometBFTPublicKey,
@@ -156,20 +156,24 @@ export default class ChainService {
 	async claimNode(organisation: OrganisationEntity, node: NodeEntity) {
 		// create the blockchain client
 		const organizationId = organisation.getVirtualBlockchainId();
-		this.logger.verbose(`Proceeding to claim of node ${node.rpcEndpoint} by organisation ${organizationId.encode()} (ID: ${organisation.id})`)
 		const organisationPrivateKey = organisation.getPrivateSignatureKey();
 		const nodeRpcEndpoint = node.rpcEndpoint;
 		const blockchain = BlockchainFacade.createFromNodeUrlAndPrivateKey(nodeRpcEndpoint, organisationPrivateKey);
 		const nodeStatus = await blockchain.getNodeStatus();
 		const cometPublicKey = nodeStatus.getCometBFTNodePublicKey();
 		const cometPublicKeyType = nodeStatus.getCometBFTNodePublicKeyType();
+
+		// create the node claim request
+		this.logger.debug(`Creating node claiming request for node: organizationId=${organizationId.encode()}, public key=${cometPublicKey}, public key type=${cometPublicKeyType}, rpc endpoint=${nodeRpcEndpoint}`)
 		const validatorNodeCreationContext = new ValidatorNodePublicationExecutionContext()
 			.withOrganizationId(organizationId)
 			.withCometPublicKeyType(cometPublicKeyType)
 			.withRpcEndpoint(nodeRpcEndpoint)
 			.withCometPublicKey(cometPublicKey);
 
-		this.logger.verbose(`Claiming node...`)
+		// execute the node claim request
+		this.logger.verbose(`Executing node claim request`)
+		throw "Oupsi"
 		const validatorNodeId = await blockchain.publishValidatorNode(validatorNodeCreationContext);
 		return validatorNodeId;
 	}

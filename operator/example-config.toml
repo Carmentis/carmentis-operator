@@ -1,63 +1,62 @@
+
 [operator]
-# URL of the node used by the operator to anchor information on chain
-node_url = "http://localhost:26657"
-# used port (default)
-port = 3000
+
+# URL of the node to interact with the blockchain.
+node_url = ...
+
+# Used port where the operator listens
+# port = 3000 # optional
 
 [operator.workspace.jwt]
-# secret key and token validity for JWT
-secret = "supersecretjwtkey" # (optional)
-tokenValidity = "8h" # (default)
+
+# JWT secret used to authenticate users when interacting with the Workspace API.
+# secret = ... # optional
+
+# Validity of the JWT secret
+# tokenValidity = "8h" # optional
 
 [operator.workspace.graphql]
-# graphql-related config
-debug = true # (default)
+
+# Enable graphql debug mode.
+# debug = true # optional
 
 [operator.swagger]
-# swagger-related config
-path = "swagger" # (default)
+# path = "swagger" # optional
 
 [operator.cors]
-# cors-related config
-origin = "*" # (default)
-methods = "GET,POST,PUT,DELETE,OPTIONS" # (default)
+# origin = "*" # optional
+# methods = "GET,POST,PUT,DELETE,OPTIONS" # optional
 
 [operator.database.encryption]
-# configuration of the encryption
-algorithm = "chacha20-poly1305" # (default)
-iv_length = 12 # (default)
-# Optional encryption key; when absent, it may be generated automatically
-encryption_key = "my-secret-encryption-key" # (optional)
-# When allowed, an encryption key is generated automatically.
-# Be careful, when the encryption key is changed, encrypted data cannot be decrypted by the server anymore.
-allow_encryption_key_generation = true # (default)
+# algorithm = "chacha20-poly1305" # optional
+# iv_length = 12 # optional
+# encryption_key = ... # optional
+# allow_encryption_key_generation = true # optional
 
-# Choose one of the following database sections depending on the backend you want:
+[operator.database.postgresql]
+user = ...
+password = ...
+database = ...
+url = ...
+port = ...
 
-#[operator.database.postgresql] # (optional)
-#user = "postgres"
-#password = "example"
-#database = "mydb"
-#url = "localhost"
-#port = 5432
+[operator.database.mysql]
+user = ...
+password = ...
+database = ...
+url = ...
+port = ...
 
-#[operator.database.mysql] # (optional)
-#user = "root"
-#password = "example"
-#database = "mydb"
-#url = "localhost"
-#port = 3306
-
-#[operator.database.sqlite] # (optional)
-# SQLite database file is stored relatively to the paths.home location.
-#database = "data.sqlite"
+[operator.database.sqlite]
+database = ...
 
 [operator.protocols.wap]
-# Wallet Authentication Protocol (WAP): Used to obtain wallet information and signature.
-version = "v0" # (default)
+# version = "v0" # optional
 
 [operator.paths]
-# By default, all paths are relative to the paths.home location.
-home = "/var/lib/myapp" # (default: current working directory)
-init_token = "admin-token.txt" # (default)
-db_encryption_key = "db-encryption-key.txt" # (default)
+# home = "/home/gamarcadet/git/carmentis-operator/operator" # optional
+# init_token = "admin-token.txt" # optional
+
+# Path where database encryption key is stored.
+# db_encryption_key = "db-encryption-key.txt" # optional
+# jwt_secret = "jwt-secret.txt" # optional

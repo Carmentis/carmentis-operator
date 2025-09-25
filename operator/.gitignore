@@ -1,6 +1,8 @@
 # config
 config.toml
 !example-config.toml
+doc-config.md
+config.md
 
 # compiled output
 /dist

@@ -1,5 +1,4 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import PackageConfigService from '../services/PackageConfigService';
 import { OperatorApiGateway } from './gateways/OperatorApiGateway';
 import { CorsMiddleware } from './middlewares/CorsMiddleware';
 import { OperatorApiController } from './controllers/OperatorApiController';
@@ -26,7 +25,6 @@ import { OperatorConfigModule } from '../config/OperatorConfigModule';
 	],
 	controllers: [OperatorApiController],
 	providers: [
-		PackageConfigService,
 		OperatorApiGateway,
 		CryptoService,
 		EnvService,

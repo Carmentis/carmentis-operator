@@ -12,7 +12,6 @@ import {
 import { Public } from '../../shared/decorators/PublicDecorator';
 import { EnvService } from '../../shared/services/EnvService';
 import { ApplicationService } from '../../shared/services/ApplicationService';
-import PackageConfigService from '../../services/PackageConfigService';
 import { ApiKeyService } from '../../shared/services/ApiKeyService';
 import { AnchorDto, AnchorWithWalletDto } from '../dto/AnchorDto';
 import {
@@ -43,7 +42,6 @@ export class OperatorApiController{
 	private logger = new Logger(OperatorApiController.name);
 	constructor(
 		private readonly applicationService: ApplicationService,
-		private readonly packageService: PackageConfigService,
 		private readonly apiKeyService: ApiKeyService,
 		private readonly operatorService: OperatorService,
 	) {}

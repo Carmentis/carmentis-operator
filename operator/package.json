@@ -17,7 +17,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "gen:config:example": "ts-node scripts/generate-example.ts",
+    "gen:config:md": "ts-node scripts/generate-config-doc.ts"
   },
   "dependencies": {
     "@apollo/server": "^4.11.3",
@@ -54,9 +56,11 @@
     "typeorm": "^0.3.21"
   },
   "devDependencies": {
+    "@nestjs/testing": "^11.1.6",
     "@semantic-release/commit-analyzer": "^13.0.1",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/release-notes-generator": "^14.0.3",
+    "@testcontainers/postgresql": "^11.6.0",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
@@ -72,12 +76,14 @@
     "semantic-release": "^24.2.3",
     "semantic-release-monorepo": "^8.0.2",
     "source-map-support": "^0.5.21",
-    "supertest": "^7.0.0",
+    "supertest": "^7.1.4",
+    "testcontainers": "^11.6.0",
     "ts-jest": "^29.1.0",
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.1.3"
+    "typescript": "^5.1.3",
+    "zod-to-json-schema": "^3.24.6"
   },
   "jest": {
     "moduleFileExtensions": [
