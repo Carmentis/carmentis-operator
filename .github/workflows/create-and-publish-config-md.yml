@@ -1,0 +1,37 @@
+name: Generate & Publish Markdown
+
+on:
+  push:
+    branches:
+      - main  # ou la branche sur laquelle tu veux déclencher
+
+jobs:
+  generate-doc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        working-directory: operator
+        run: npm install
+
+      - name: Generate Markdown
+        working-directory: operator
+        run: npm run gen:config:md
+
+      - name: Create/Update Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "latest-docs"
+          name: "Latest Docs"
+          body: "Automatically generated operator config markdown documentation"
+          files: "operator/config.md"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
