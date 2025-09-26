@@ -2,74 +2,96 @@ import * as z from "zod";
 import { join } from 'path';
 
 export const ConfigSchema = z.object({
-	operator: z.object({ // encapsulate the configuration for the operator in a specific section to allow single-file multi-servers config
-		node_url: z.string().url().describe("URL of the node to interact with the blockchain."), // URL of the node used by the operator to anchor information on chain
-		port: z.number().default(3000).describe("Used port where the operator listens"), // used port
-		workspace: z.object({ // focus on the workspace config
-			jwt: z.object({ // secret key and token validity for JWT
+	operator: z.object({
+		// Encapsulate the configuration for the operator in a specific section
+		// to allow single-file multi-servers config
+		node_url: z.string().url()
+			.describe("URL of the blockchain node used by the operator to anchor information on-chain."),
+
+		port: z.number().default(3000)
+			.describe("Port where the operator listens for incoming requests."),
+
+		workspace: z.object({
+			jwt: z.object({
 				secret: z.string().optional()
-					.describe("JWT secret used to authenticate users when interacting with the Workspace API."),
+					.describe("Secret key used for signing JWT tokens to authenticate users on the Workspace API."),
 				tokenValidity: z.string().optional().default("8h")
-					.describe("Validity of the JWT secret")
-			}).default({}).describe("JWT configuration."),
-			graphql: z.object({ // graphql-related config
-				debug: z.boolean().default(true).describe("Enable graphql debug mode."),
+					.describe("Validity duration of the generated JWT tokens (e.g., '8h')."),
+			}).default({}).describe("JWT authentication configuration."),
+
+			graphql: z.object({
+				debug: z.boolean().default(true)
+					.describe("Enable or disable GraphQL debug mode."),
 			}).default({}).describe("GraphQL configuration."),
-		})
-			.default({})
-			.describe("Workspace configuration."),
-		swagger: z.object({ // swagger-related config
-			path: z.string().default('swagger'),
-		}).default({}).describe("Swagger configuration."),
-		cors: z.object({ // cors-related config
-			origin: z.string().default('*'),
+		}).default({})
+			.describe("Workspace configuration, including authentication and GraphQL settings."),
+
+		swagger: z.object({
+			path: z.string().default('swagger')
+				.describe("Path under which Swagger UI and API docs are served."),
+		}).default({}).describe("Swagger documentation configuration."),
+
+		cors: z.object({
+			origin: z.string().default('*')
+				.describe("Allowed origins for CORS requests (e.g., '*')."),
 			methods: z.string().default('GET,POST,PUT,DELETE,OPTIONS')
+				.describe("Allowed HTTP methods for CORS requests."),
 		}).default({}).describe("CORS configuration."),
 
-		database: z.object({ // database-related config
-			encryption: z.object({ // configuration of the encryption
-				algorithm: z.string().default('chacha20-poly1305'),
-				iv_length: z.number().default(12),
-				encryption_key: z.string().optional(),
-				// When allowed, an encryption key is generated automatically.
-				// Be careful; when the encryption key is changed, the server cannot decrypt encrypted data anymore.
-				allow_encryption_key_generation: z.boolean().default(true),
+		database: z.object({
+			encryption: z.object({
+				algorithm: z.string().default('chacha20-poly1305')
+					.describe("Encryption algorithm used to protect sensitive data."),
+				iv_length: z.number().default(12)
+					.describe("Length of the initialization vector (IV) for encryption."),
+				encryption_key: z.string().optional()
+					.describe("Custom encryption key. If omitted and generation is allowed, a key will be generated."),
+				allow_encryption_key_generation: z.boolean().default(true)
+					.describe("Whether the system is allowed to generate an encryption key if none is provided."),
 			}).default({}).describe("Workspace-controlled database encryption configuration."),
+
 			postgresql: z.object({
-				user: z.string(),
-				password: z.string(),
-				database: z.string(),
-				url: z.string(),
-				port: z.number().positive("PostgreSQL port must be positive."),
-			}).optional(),
+				user: z.string().describe("PostgreSQL user."),
+				password: z.string().describe("PostgreSQL password."),
+				database: z.string().describe("Name of the PostgreSQL database."),
+				url: z.string().describe("PostgreSQL connection URL."),
+				port: z.number().positive("PostgreSQL port must be positive.")
+					.describe("Port number of the PostgreSQL server."),
+			}).optional().describe("PostgreSQL database configuration."),
+
 			mysql: z.object({
-				user: z.string(),
-				password: z.string(),
-				database: z.string(),
-				url: z.string(),
-				port: z.number().positive("MySQL port must be positive."),
-			}).optional(),
+				user: z.string().describe("MySQL user."),
+				password: z.string().describe("MySQL password."),
+				database: z.string().describe("Name of the MySQL database."),
+				url: z.string().describe("MySQL connection URL."),
+				port: z.number().positive("MySQL port must be positive.")
+					.describe("Port number of the MySQL server."),
+			}).optional().describe("MySQL database configuration."),
+
 			sqlite: z.object({
-				database: z.string() // SQLite database file is stored relatively to the paths.home location.
-			}).optional()
+				database: z.string()
+					.describe("Path to the SQLite database file (relative to paths.home)."),
+			}).optional().describe("SQLite database configuration."),
 		}).describe("Database configuration."),
-		// Protocols-related configuration
-		/**
-		 * Test
-		 */
+
 		protocols: z.object({
-			 wap: z.object({ // Wallet Authentication Protocol (WAP): used to obtain wallet information and signature.
-				 version: z.string().default("v0"),
-			 }).default({})
-		}).default({}),
-		paths: z.object({ // By default, all paths are relative to the paths.home location.
-			home: z.string().default(process.cwd()),
-			init_token: z.string().default("admin-token.txt"),
+			wap: z.object({
+				version: z.string().default("v0")
+					.describe("Version of the Wallet Authentication Protocol (WAP) used to obtain wallet information and signatures."),
+			}).default({}),
+		}).default({}).describe("Protocols configuration."),
+
+		paths: z.object({
+			home: z.string().default(process.cwd())
+				.describe("Base directory for all relative paths."),
+			init_token: z.string().default("admin-token.txt")
+				.describe("Path to the initialization token file used for first-time setup."),
 			db_encryption_key: z.string().default("db-encryption-key.txt")
-				.describe("Path where database encryption key is stored."),
-			jwt_secret: z.string().default('jwt-secret.txt'),
-		}).default({}),
-	}).describe("Test"),
+				.describe("Path where the database encryption key is stored."),
+			jwt_secret: z.string().default('jwt-secret.txt')
+				.describe("Path to the JWT secret file."),
+		}).default({}).describe("Filesystem paths configuration."),
+	}).describe("Operator configuration, encapsulating server, database, protocols, and paths settings."),
 });
 
 export type OperatorConfig = z.infer<typeof ConfigSchema>;
