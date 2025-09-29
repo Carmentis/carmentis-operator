@@ -173,7 +173,6 @@ export default class ChainService {
 
 		// execute the node claim request
 		this.logger.verbose(`Executing node claim request`)
-		throw "Oupsi"
 		const validatorNodeId = await blockchain.publishValidatorNode(validatorNodeCreationContext);
 		return validatorNodeId;
 	}
