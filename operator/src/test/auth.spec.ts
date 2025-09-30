@@ -17,6 +17,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import TestAgent from 'supertest/lib/agent';
+import { OperatorTestConfig } from './OperatorTestConfig';
 
 jest.setTimeout(120000); // augmenter le timeout pour le pull/start de l'image
 
@@ -193,6 +194,8 @@ beforeAll(async () => {
 			}),
 		],
 	})
+		.overrideProvider(OperatorConfigService)
+		.useValue(new OperatorTestConfig())
 		.compile();
 
 	// instantiate the application module
@@ -434,7 +437,6 @@ describe("Full e2e flow", () => {
 				firstUserEncodedPublicKey,
 				encodedSignature,
 			);
-			console.log(verifyResponse.body)
 			firstUserAuthToken = verifyResponse.body.data.verifyChallenge.token;
 			expect(verifyResponse.body.data.verifyChallenge).toHaveProperty('token');
 			expect(typeof firstUserAuthToken).toBe('string');
