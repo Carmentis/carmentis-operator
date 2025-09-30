@@ -17,26 +17,27 @@ export const ConfigSchema = z.object({
 					.describe("Secret key used for signing JWT tokens to authenticate users on the Workspace API."),
 				tokenValidity: z.string().optional().default("8h")
 					.describe("Validity duration of the generated JWT tokens (e.g., '8h')."),
-			}).default({}).describe("JWT authentication configuration."),
+			}).prefault({})
+				.describe("JWT authentication configuration."),
 
 			graphql: z.object({
 				debug: z.boolean().default(true)
 					.describe("Enable or disable GraphQL debug mode."),
-			}).default({}).describe("GraphQL configuration."),
-		}).default({})
+			}).prefault({}).describe("GraphQL configuration."),
+		}).prefault({})
 			.describe("Workspace configuration, including authentication and GraphQL settings."),
 
 		swagger: z.object({
 			path: z.string().default('swagger')
 				.describe("Path under which Swagger UI and API docs are served."),
-		}).default({}).describe("Swagger documentation configuration."),
+		}).prefault({}).describe("Swagger documentation configuration."),
 
 		cors: z.object({
 			origin: z.string().default('*')
 				.describe("Allowed origins for CORS requests (e.g., '*')."),
 			methods: z.string().default('GET,POST,PUT,DELETE,OPTIONS')
 				.describe("Allowed HTTP methods for CORS requests."),
-		}).default({}).describe("CORS configuration."),
+		}).prefault({}).describe("CORS configuration."),
 
 		database: z.object({
 			encryption: z.object({
@@ -48,7 +49,7 @@ export const ConfigSchema = z.object({
 					.describe("Custom encryption key. If omitted and generation is allowed, a key will be generated."),
 				allow_encryption_key_generation: z.boolean().default(true)
 					.describe("Whether the system is allowed to generate an encryption key if none is provided."),
-			}).default({}).describe("Workspace-controlled database encryption configuration."),
+			}).prefault({}).describe("Workspace-controlled database encryption configuration."),
 
 			postgresql: z.object({
 				user: z.string().describe("PostgreSQL user."),
@@ -78,8 +79,8 @@ export const ConfigSchema = z.object({
 			wap: z.object({
 				version: z.string().default("v0")
 					.describe("Version of the Wallet Authentication Protocol (WAP) used to obtain wallet information and signatures."),
-			}).default({}),
-		}).default({}).describe("Protocols configuration."),
+			}).prefault({}),
+		}).prefault({}).describe("Protocols configuration."),
 
 		paths: z.object({
 			home: z.string().default(process.cwd())
@@ -90,7 +91,7 @@ export const ConfigSchema = z.object({
 				.describe("Path where the database encryption key is stored."),
 			jwt_secret: z.string().default('jwt-secret.txt')
 				.describe("Path to the JWT secret file."),
-		}).default({}).describe("Filesystem paths configuration."),
+		}).prefault({}).describe("Filesystem paths configuration."),
 	}).describe("Operator configuration, encapsulating server, database, protocols, and paths settings."),
 });
 

@@ -23,11 +23,12 @@ export type LeafDoc = {
 };
 
 export function schemaToJson(schema: ZodTypeAny): LeafDoc {
+	/*
 	// Gestion des optional()
 	if (schema instanceof ZodOptional) {
 		const inner = schema.unwrap();
 		const result = schemaToJson(inner);
-		result.description = schema._def.description;
+		result.description = schema.description;
 		result.required = false;
 		return result;
 	}
@@ -37,8 +38,8 @@ export function schemaToJson(schema: ZodTypeAny): LeafDoc {
 		const inner = schema.removeDefault();
 		const result = schemaToJson(inner);
 
-		result.description = schema._def.description;
-		result.defaultValue = schema._def.defaultValue();
+		result.description = schema.description;
+		result.defaultValue = '';
 		result.required = false;
 		return result;
 	}
@@ -93,4 +94,7 @@ export function schemaToJson(schema: ZodTypeAny): LeafDoc {
 		description: schema._def.description,
 		required: true,
 	};
+
+	 */
+	throw new Error('Not implemented: Need to upgrade to latest zod version !');
 }

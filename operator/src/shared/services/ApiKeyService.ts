@@ -1,5 +1,4 @@
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { TypeOrmCrudService } from '@nestjsx/crud-typeorm';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,14 +9,13 @@ import { Request, Response } from 'express';
 import { OrganisationEntity } from '../entities/OrganisationEntity';
 
 @Injectable()
-export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
+export class ApiKeyService {
 	private logger = new Logger(ApiKeyService.name);
 	constructor(
-		@InjectRepository(ApiKeyEntity) repo: Repository<ApiKeyEntity>,
+		@InjectRepository(ApiKeyEntity) private readonly repo: Repository<ApiKeyEntity>,
 		@InjectRepository(ApiKeyUsageEntity) private usageRepo: Repository<ApiKeyUsageEntity>,
 		@InjectRepository(ApplicationEntity) private applicationRepository: Repository<ApplicationEntity>
 	) {
-		super(repo);
 	}
 
 	async findAllKeysByApplication(application: ApplicationEntity): Promise<any> {
@@ -128,7 +126,7 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 	}
 
 	async updateKey(id: number, updateKey: Partial<ApiKeyEntity>) {
-		const key = await this.findOne({where: { id: id }});
+		const key = await this.repo.findOne({where: { id: id }});
 		const updatedKey = {...key, ...updateKey};
 		return this.repo.save(updatedKey)
 	}

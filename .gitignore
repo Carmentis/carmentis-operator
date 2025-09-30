@@ -1,3 +1,5 @@
+.pnp*
+.yarn
 **/.operator
 *.env
 .idea
