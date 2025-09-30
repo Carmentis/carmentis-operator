@@ -83,6 +83,22 @@ const QUERY_GET_APPLICATION = `
   }
 `;
 
+const MUTATION_ADD_USER_IN_ORGANIZATION = `
+  mutation AddUserInOrganisation($orgId: Int!, $userPublicKey: String!) {
+    addUserInOrganisation(organisationId: $orgId, userPublicKey: $userPublicKey)
+  }
+`;
+
+const MUTATION_CREATE_API_KEY = `
+  mutation CreateApiKey($applicationId: Int!, $name: String!, $activeUntil: String!) {
+    createApiKey(applicationId: $applicationId, name: $name, activeUntil: $activeUntil) {
+      id
+      name
+      key
+    }
+  }
+`;
+
 
 
 //
@@ -90,7 +106,7 @@ let container: StartedPostgreSqlContainer;
 let app: INestApplication;
 let agent: TestAgent;
 
-// we generate the public key for two users
+// we generate the public key for three users
 const sigEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
 const firstUserPrivateKey = Secp256k1PrivateSignatureKey.gen();
 const firstUserPublicKey = firstUserPrivateKey.getPublicKey();
@@ -100,6 +116,10 @@ const firstUserEncodedPublicKey = sigEncoder.encodePublicKey(firstUserPublicKey)
 const secondUserPrivateKey = Secp256k1PrivateSignatureKey.gen();
 const secondUserPublicKey = secondUserPrivateKey.getPublicKey();
 const secondUserEncodedPublicKey = sigEncoder.encodePublicKey(secondUserPublicKey);
+
+const thirdUserPrivateKey = Secp256k1PrivateSignatureKey.gen();
+const thirdUserPublicKey = thirdUserPrivateKey.getPublicKey();
+const thirdUserEncodedPublicKey = sigEncoder.encodePublicKey(thirdUserPublicKey);
 
 // services
 let cryptoService: CryptoService;
@@ -269,6 +289,21 @@ class GqlQuery {
 			organizationId: orgId
 		})
 	}
+
+	async addUserToOrg(orgId: number, userPublicKey: string) {
+		return this.sendRequest(MUTATION_ADD_USER_IN_ORGANIZATION, {
+			orgId,
+			userPublicKey,
+		});
+	}
+
+	async createApiKey(applicationId: number, name: string, activeUntil: string) {
+		return this.sendRequest(MUTATION_CREATE_API_KEY, {
+			applicationId,
+			name,
+			activeUntil,
+		});
+	}
 }
 
 class GqlResponseChecker {
@@ -434,7 +469,7 @@ describe("Full e2e flow", () => {
 
 
 		const CARMENTIS_ORGANIZATION_NAME = "Carmentis"
-		let carmentisOrganizationId;
+		let firstOrgId;
 		it('should create an organization as first user', async () => {
 			// create the organization
 			const response = await GqlQuery.withAuth(firstUserAuthToken)
@@ -446,20 +481,20 @@ describe("Full e2e flow", () => {
 					.getData();
 
 			// check the returned data
-			carmentisOrganizationId = data.createOrganisation.id;
+			firstOrgId = data.createOrganisation.id;
 			const organizationName = data.createOrganisation.name;
-			expect(typeof carmentisOrganizationId).toEqual('number')
-			expect(carmentisOrganizationId).toBeGreaterThanOrEqual(1)
+			expect(typeof firstOrgId).toEqual('number')
+			expect(firstOrgId).toBeGreaterThanOrEqual(1)
 			expect(organizationName).toEqual(CARMENTIS_ORGANIZATION_NAME)
 		});
 
 
-		const FILE_SIGN_APPLICATION_NAME = "File Sign";
+		const FIRST_APP_NAME = "first application";
 		let fileSignApplicationId;
 		it("should create an carmentis's application as first user", async () => {
 			// create an application
 			const response = await GqlQuery.withAuth(firstUserAuthToken)
-				.createApp(FILE_SIGN_APPLICATION_NAME, carmentisOrganizationId);
+				.createApp(FIRST_APP_NAME, firstOrgId);
 			const data = GqlResponseChecker.fromResponse(response)
 				.expectNoError()
 				.expectDefinedData()
@@ -476,7 +511,7 @@ describe("Full e2e flow", () => {
 
 		it('should access an organization when member', async () => {
 			const response = await GqlQuery.withAuth(firstUserAuthToken)
-				.getOrgName(carmentisOrganizationId);
+				.getOrgName(firstOrgId);
 			const data = GqlResponseChecker.fromResponse(response)
 				.expectNoError()
 				.expectDefinedData()
@@ -486,29 +521,76 @@ describe("Full e2e flow", () => {
 
 		it('should NOT access an organization when NOT a member', async () => {
 			const response = await GqlQuery.withAuth(secondUserAuthToken)
-				.getOrgName(carmentisOrganizationId);
+				.getOrgName(firstOrgId);
 			GqlResponseChecker.fromResponse(response).expectForbidden();
 		})
 
 
-		const OTHER_ORGANIZATION_NAME = "Other"
-		let otherOrganizationId;
+		const SECOND_ORG_NAME = "Other"
+		let secondOrgID;
 		it('should create an organization as second user', async () => {
 			// create the organization
 			const response = await GqlQuery.withAuth(secondUserAuthToken)
-				.createOrg(OTHER_ORGANIZATION_NAME);
+				.createOrg(SECOND_ORG_NAME);
 			const data = GqlResponseChecker.fromResponse(response)
 				.expectDefinedBody()
 				.expectNoError()
 				.expectDefinedData()
 				.getData();
-			otherOrganizationId = data.createOrganisation.id;
+			secondOrgID = data.createOrganisation.id;
 		});
 
+		// TODO: it (second user) should create a member in the second organization
+		
+		// implement: third user cannot authenticate before registration
+		it('third user should NOT authenticate when not registered yet', async () => {
+			const challengeResponse = await GqlQuery.noAuth().getLoginChallenge();
+			GqlResponseChecker.fromResponse(challengeResponse).expectNoError();
+			const challenge = challengeResponse.body.data.getChallenge.challenge;
+			const signature = thirdUserPrivateKey.sign(sigEncoder.decodeMessage(challenge));
+			const encodedSignature = sigEncoder.encodeSignature(signature);
+			const verifyResponse = await GqlQuery.noAuth().verifyChallenge(
+				challenge,
+				thirdUserEncodedPublicKey,
+				encodedSignature,
+			);
+			GqlResponseChecker.fromResponse(verifyResponse).expectForbidden();
+		});
+		
+		// implement: second user creates third user and adds them to second organization
+		it('second user should create a member in the second organization', async () => {
+			const createUserResponse = await GqlQuery.withAuth(secondUserAuthToken)
+				.createUser(thirdUserEncodedPublicKey, 'Third', 'User', false);
+			GqlResponseChecker.fromResponse(createUserResponse).expectNoError();
+			const addMemberResponse = await GqlQuery.withAuth(secondUserAuthToken)
+				.addUserToOrg(secondOrgID, thirdUserEncodedPublicKey);
+			const data = GqlResponseChecker.fromResponse(addMemberResponse)
+				.expectNoError()
+				.expectDefinedData()
+				.getData();
+			expect(data.addUserInOrganisation).toBe(true);
+		});
+		
+		let thirdUserAuthToken;
+		it('third user should authenticate', async () => {
+			const challengeResponse = await GqlQuery.noAuth().getLoginChallenge();
+			const challenge = challengeResponse.body.data.getChallenge.challenge;
+			const signature = thirdUserPrivateKey.sign(sigEncoder.decodeMessage(challenge));
+			const encodedSignature = sigEncoder.encodeSignature(signature);
+			const verifyResponse = await GqlQuery.noAuth().verifyChallenge(
+				challenge,
+				thirdUserEncodedPublicKey,
+				encodedSignature,
+			);
+			thirdUserAuthToken = verifyResponse.body.data.verifyChallenge.token;
+			GqlResponseChecker.fromResponse(verifyResponse).expectNoError();
+		});
 
+		// TODO: it (third user) should create an application in the second organization.
+		
 		it('should access an organization when NOT a member but IS admin', async () => {
 			const response = await GqlQuery.withAuth(firstUserAuthToken)
-				.getOrgName(otherOrganizationId);
+				.getOrgName(secondOrgID);
 			GqlResponseChecker.fromResponse(response)
 				.expectNoError()
 				.expectDefinedData();
@@ -516,26 +598,77 @@ describe("Full e2e flow", () => {
 
 		it('should create an application in organization when NOT a member but IS admin', async () => {
 			const response = await GqlQuery.withAuth(firstUserAuthToken)
-				.createApp("Mon application", otherOrganizationId);
+				.createApp("Mon application", secondOrgID);
 			GqlResponseChecker.fromResponse(response)
 				.expectNoError()
 				.expectDefinedData();
 		})
 
+
+		// implement: second user creates an application in the second organization and save id
+		const SECOND_APP_NAME = "Second app";
+		let secondAppId;
+		it('second user should create an application in the second organization and save id', async () => {
+			const response = await GqlQuery.withAuth(secondUserAuthToken)
+				.createApp(SECOND_APP_NAME, secondOrgID);
+			const data = GqlResponseChecker.fromResponse(response)
+				.expectNoError()
+				.expectDefinedData()
+				.getData();
+			secondAppId = data.createApplicationInOrganisation.id;
+			expect(data.createApplicationInOrganisation.name).toBe(SECOND_APP_NAME);
+		});
+
 		it('should NOT create an application in organization when NOT a member and NOT admin', async () => {
 			const response = await GqlQuery.withAuth(secondUserAuthToken)
-				.createApp("Rejected application", carmentisOrganizationId);
+				.createApp("Rejected application", firstOrgId);
 			GqlResponseChecker.fromResponse(response).expectForbidden()
 		})
 
 		
 		
 
+		// implement: first user creates an API Key associated to the first application
+		it('first user should create an API Key associated to the first application', async () => {
+			const activeUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+			const response = await GqlQuery.withAuth(firstUserAuthToken)
+				.createApiKey(fileSignApplicationId, 'First app key', activeUntil);
+			const data = GqlResponseChecker.fromResponse(response)
+				.expectNoError()
+				.expectDefinedData()
+				.getData();
+			expect(data.createApiKey).toHaveProperty('id');
+			expect(data.createApiKey).toHaveProperty('name', 'First app key');
+			expect(typeof data.createApiKey.key).toBe('string');
+		});
 
+		// implement: second user should NOT create an API Key associated to the first application (not member nor admin)
+		it('second user should NOT create an API Key associated to the first application', async () => {
+			const activeUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+			const response = await GqlQuery.withAuth(secondUserAuthToken)
+				.createApiKey(fileSignApplicationId, 'Forbidden key', activeUntil);
+			GqlResponseChecker.fromResponse(response).expectForbidden();
+		});
 
+		// implement: first user creates an API key associated to the second application (is admin)
+		it('first user should create an API key associated to the second application (is admin)', async () => {
+			const activeUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+			const response = await GqlQuery.withAuth(firstUserAuthToken)
+				.createApiKey(secondAppId, 'Second app key', activeUntil);
+			GqlResponseChecker.fromResponse(response)
+				.expectNoError()
+				.expectDefinedData();
+		});
 
+		// TODO: it (first user) should add a node entity in the first organization.
 
+		// TODO: it (second user) should NOT add a node entity in the first organization.
 
+		// TODO: it (second user) should  add a node entity in the second organization
+
+		// TODO: it (first user) should add a node entity in the second organization.
+
+		// TODO: it (third user) should add a node entity in the second organization.
 	});
 
 
