@@ -1,0 +1,44 @@
+import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { OrganisationEntity } from '../../../../../shared/entities/OrganisationEntity';
+import { OrganisationService } from '../../../../../shared/services/OrganisationService';
+import { BadRequestException, ForbiddenException, Logger, NotFoundException, UseGuards } from '@nestjs/common';
+import { CurrentUser } from '../../../../decorators/CurrentUserDecorator';
+import { UserEntity } from '../../../../../shared/entities/UserEntity';
+import ChainService from '../../../../../shared/services/ChainService';
+import { TransactionType } from '../../../types/TransactionType';
+import { CMTSToken, StringSignatureEncoder, Transaction } from '@cmts-dev/carmentis-sdk/server';
+import { OrganisationChainStatusType } from '../../../types/OrganisationChainStatusType';
+import { GraphQLJwtAuthGuard } from '../../../../guards/GraphQLJwtAuthGuard';
+import { OrganisationByIdPipe } from '../../../../pipes/OrganisationByIdPipe';
+import { NodeEntity } from '../../../../../shared/entities/NodeEntity';
+import { OrganisationUpdateDto } from '../../../dto/OrganisationUpdateDto';
+import { JwtProtectedResolver } from '../JwtProtectedResolver';
+
+
+@Resolver(of => OrganisationEntity)
+export class UnrestrictedOrganisationResolver extends JwtProtectedResolver {
+	private logger = new Logger(UnrestrictedOrganisationResolver.name);
+	constructor(
+		private readonly organisationService: OrganisationService,
+	) { super() }
+
+	@Query(returns => [OrganisationEntity])
+	async organisations( @CurrentUser() user: UserEntity ): Promise<OrganisationEntity[]> {
+		return this.organisationService.findOrganisationsByUser(user);
+	}
+
+
+	@Mutation(returns => OrganisationEntity)
+	async createOrganisation(
+		@CurrentUser() user: UserEntity,
+		@Args('name') name: string,
+		@Args('privateKey', { nullable: true }) privateKey?: string,
+	) {
+		return this.organisationService.createByName(user, name, privateKey)
+	}
+
+}
+
+
+
+

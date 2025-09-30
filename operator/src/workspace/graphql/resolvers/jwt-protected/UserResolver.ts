@@ -1,17 +1,16 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Injectable, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { UserEntity } from '../../../shared/entities/UserEntity';
-import { UserService } from '../../../shared/services/UserService';
-import { CurrentUser } from '../../decorators/CurrentUserDecorator';
+import { UserEntity } from '../../../../shared/entities/UserEntity';
+import { UserService } from '../../../../shared/services/UserService';
+import { CurrentUser } from '../../../decorators/CurrentUserDecorator';
 
-import { GraphQLJwtAuthGuard } from '../../guards/GraphQLJwtAuthGuard';
+import { GraphQLJwtAuthGuard } from '../../../guards/GraphQLJwtAuthGuard';
+import { JwtProtectedResolver } from './JwtProtectedResolver';
 
-@UseGuards(GraphQLJwtAuthGuard)
 @Resolver(() => UserEntity)
-@Injectable()
-export class UserResolver {
-	constructor(private readonly userService: UserService) {
-	}
+export class UserResolver extends JwtProtectedResolver {
+	constructor(private readonly userService: UserService)
+	{ super() }
 
 	@Query(() => UserEntity, { name: 'getCurrentUser' })
 	async getCurrentUser(@CurrentUser() user: UserEntity): Promise<UserEntity> {
@@ -23,8 +22,7 @@ export class UserResolver {
 	async searchUser(
 		@Args('search', { type: () => String }) search: string
 	){
-			const results = await this.userService.search(search);
-			return results
+			return await this.userService.search(search);
 	}
 
 	@Query(() => [UserEntity], { name: 'getAllUsers' })

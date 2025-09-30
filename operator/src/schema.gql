@@ -51,23 +51,6 @@ type ChallengeEntity {
   challenge: String!
 }
 
-type TransactionType {
-  height: Int!
-  previousHistoryHash: String!
-  label: String!
-  amountInAtomics: Float!
-  transferredAt: String!
-  linkedAccount: String!
-  amount: String!
-  chainReference: String!
-}
-
-type OrganisationChainStatusType {
-  hasTokenAccount: Boolean!
-  isPublishedOnChain: Boolean!
-  hasEditedOrganization: Boolean!
-}
-
 type ChallengeVerificationResponse {
   token: String!
 }
@@ -128,35 +111,44 @@ type OrganisationStatsDto {
   numberOfUsers: Int!
 }
 
+type OrganisationChainStatusType {
+  hasTokenAccount: Boolean!
+  isPublishedOnChain: Boolean!
+  hasEditedOrganization: Boolean!
+}
+
+type TransactionType {
+  height: Int!
+  previousHistoryHash: String!
+  label: String!
+  amountInAtomics: Float!
+  transferredAt: String!
+  linkedAccount: String!
+  amount: String!
+  chainReference: String!
+}
+
 type Query {
   organisations: [OrganisationEntity!]!
-  organisation(id: Int!): OrganisationEntity!
   getChallenge: ChallengeEntity!
   getCurrentUser: UserEntity!
   searchUser(search: String!): [UserEntity!]!
   getAllUsers: [UserEntity!]!
   getUserByPublicKey(publicKey: String!): UserEntity!
-  getOrganisationStatistics(id: Int!): OrganisationStatsDto!
-  getAllApiKeysOfOrganisation(organisationId: Int!): [ApiKeyType!]!
   getAllApiKeysOfApplication(applicationId: Int!): [ApiKeyType!]!
   getApiKey(id: Int!): ApiKeyType!
   isInitialised: Boolean!
   getLinkedNode: String!
-  getAllApplicationsInOrganisation(organisationId: Int!): [ApplicationType!]!
   getAllApplications: [ApplicationType!]!
+  organisation(id: Int!): OrganisationEntity!
+  getAllApiKeysOfOrganisation(organisationId: Int!): [ApiKeyType!]!
+  getAllApplicationsInOrganisation(organisationId: Int!): [ApplicationType!]!
+  getOrganisationStatistics(id: Int!): OrganisationStatsDto!
   getApplicationInOrganisation(applicationId: Int!): ApplicationType!
 }
 
 type Mutation {
   createOrganisation(name: String!, privateKey: String): OrganisationEntity!
-  updateOrganisation(organisationId: Int!, organisation: OrganisationUpdateDto!): OrganisationEntity!
-  forceChainSync(id: Int!): Boolean!
-  publishOrganisation(id: Int!): Boolean!
-  deleteOrganisation(id: Int!): OrganisationEntity!
-  addUserInOrganisation(organisationId: Int!, userPublicKey: String!): Boolean!
-  importNodeInOrganisation(organisationId: Int!, nodeAlias: String!, nodeRpcEndpoint: String!): Boolean!
-  removeUserFromOrganisation(organisationId: Int!, userPublicKey: String!): Boolean!
-  changeOrganisationKeyPair(organisationId: Int!, privateKey: String!): Boolean!
   verifyChallenge(challenge: String!, publicKey: String!, signature: String!): ChallengeVerificationResponse!
   createUser(publicKey: String!, firstname: String!, lastname: String!, isAdmin: Boolean!): UserEntity!
   updateUserAdminStatus(publicKey: String!, isAdmin: Boolean!): UserEntity!
@@ -166,19 +158,20 @@ type Mutation {
   deleteApiKey(id: Int!): Boolean!
   setupFirstAdministrator(setupFirstAdmin: SetupFirstAdminDto!): Boolean!
   createApplicationInOrganisation(organisationId: Int!, applicationName: String!): ApplicationType!
-  publishApplication(applicationId: Int!): Boolean!
-  deleteApplicationInOrganisation(applicationId: Int!): Boolean!
-  updateApplicationInOrganisation(applicationId: Int!, applicationUpdate: ApplicationUpdateDto!): ApplicationType!
+  updateOrganisation(organisationId: Int!, organisation: OrganisationUpdateDto!): OrganisationEntity!
+  forceChainSync(id: Int!): Boolean!
+  publishOrganisation(id: Int!): Boolean!
+  deleteOrganisation(id: Int!): OrganisationEntity!
+  addUserInOrganisation(organisationId: Int!, userPublicKey: String!): Boolean!
+  importNodeInOrganisation(organisationId: Int!, nodeAlias: String!, nodeRpcEndpoint: String!): Boolean!
+  removeUserFromOrganisation(organisationId: Int!, userPublicKey: String!): Boolean!
+  changeOrganisationKeyPair(organisationId: Int!, privateKey: String!): Boolean!
   deleteNodeInOrganisation(organisationId: Int!, nodeId: Int!): Boolean!
   updateNodeInOrganisation(organisationId: Int!, nodeId: Int!, nodeAlias: String!, nodeRpcEndpoint: String!): NodeEntity!
   claimNodeInOrganisation(organisationId: Int!, nodeId: Int!): NodeEntity!
-}
-
-input OrganisationUpdateDto {
-  name: String!
-  countryCode: String!
-  website: String!
-  city: String!
+  publishApplication(applicationId: Int!): Boolean!
+  deleteApplicationInOrganisation(applicationId: Int!): Boolean!
+  updateApplicationInOrganisation(applicationId: Int!, applicationUpdate: ApplicationUpdateDto!): ApplicationType!
 }
 
 input SetupFirstAdminDto {
@@ -186,6 +179,13 @@ input SetupFirstAdminDto {
   firstname: String!
   lastname: String!
   token: String!
+}
+
+input OrganisationUpdateDto {
+  name: String!
+  countryCode: String!
+  website: String!
+  city: String!
 }
 
 input ApplicationUpdateDto {

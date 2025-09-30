@@ -15,6 +15,7 @@ import { plainToInstance } from 'class-transformer';
 import ChainService from './ChainService';
 import { OrganisationService } from './OrganisationService';
 import { EnvService } from './EnvService';
+import { UserEntity } from '../entities/UserEntity';
 
 
 @Injectable()
@@ -158,5 +159,28 @@ export class ApplicationService {
 
 	async findAllApplications() {
 		return this.applicationRepository.find();
+	}
+
+	/**
+	 * A user is allowed to perform action on an application if the user is an admin or is a member of the organization
+	 * owning the application.
+	 *
+	 * @param user
+	 * @param applicationId
+	 */
+	async isAuthorizedUser(user: UserEntity, applicationId: number) {
+		if (user.isAdmin) return true;
+		return await this.applicationRepository.exists({
+			where: {
+				id: applicationId,
+				organisation: {
+					accessRights: {
+						user: {
+							publicKey: user.publicKey
+						}
+					}
+				},
+			}
+		});
 	}
 }

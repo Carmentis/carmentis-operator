@@ -1,36 +1,28 @@
 import { BadRequestException, NotFoundException, UseGuards } from '@nestjs/common';
 import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { ApiKeyEntity } from '../../../shared/entities/ApiKeyEntity';
-import { CurrentUser } from '../../decorators/CurrentUserDecorator';
-import { UserEntity } from '../../../shared/entities/UserEntity';
-import { ApiKeyService } from '../../../shared/services/ApiKeyService';
-import { ApiKeyType } from '../types/ApiKeyType';
-import { ApiKeyUsageEntity } from '../../../shared/entities/ApiKeyUsageEntity';
-import { ApplicationType } from '../types/ApplicationType';
-import { mapper } from '../mapper';
-import { ApplicationEntity } from '../../../shared/entities/ApplicationEntity';
-import { GraphQLJwtAuthGuard } from '../../guards/GraphQLJwtAuthGuard';
-import { ApplicationByIdPipe } from '../../pipes/ApplicationByIdPipe';
-import { ApiKeyUsageType } from '../types/ApiKeyUsageType';
-import { RevealedApiKeyType } from '../types/RevealedApiKeyType';
+import { ApiKeyEntity } from '../../../../shared/entities/ApiKeyEntity';
+import { CurrentUser } from '../../../decorators/CurrentUserDecorator';
+import { UserEntity } from '../../../../shared/entities/UserEntity';
+import { ApiKeyService } from '../../../../shared/services/ApiKeyService';
+import { ApiKeyType } from '../../types/ApiKeyType';
+import { ApiKeyUsageEntity } from '../../../../shared/entities/ApiKeyUsageEntity';
+import { ApplicationType } from '../../types/ApplicationType';
+import { mapper } from '../../mapper';
+import { ApplicationEntity } from '../../../../shared/entities/ApplicationEntity';
+import { GraphQLJwtAuthGuard } from '../../../guards/GraphQLJwtAuthGuard';
+import { ApplicationByIdPipe } from '../../../pipes/ApplicationByIdPipe';
+import { ApiKeyUsageType } from '../../types/ApiKeyUsageType';
+import { RevealedApiKeyType } from '../../types/RevealedApiKeyType';
+import { JwtProtectedResolver } from './JwtProtectedResolver';
 
-@UseGuards(GraphQLJwtAuthGuard)
 @Resolver(of => ApiKeyType)
-export class ApiKeysResolver {
+export class ApiKeysResolver extends JwtProtectedResolver {
 
 	constructor(
 		private readonly apiKeyService: ApiKeyService,
-	) {}
+	) { super() }
 
 
-	@Query(returns => [ApiKeyType])
-	async getAllApiKeysOfOrganisation(
-		@CurrentUser() user: UserEntity,
-		@Args('organisationId', { type: () => Int }) organisationId: number
-	): Promise<ApiKeyType[]> {
-		const keys = await this.apiKeyService.findAllKeysByOrganisation(organisationId);
-		return mapper.mapArray(keys, ApiKeyEntity, ApiKeyType)
-	}
 
 	/**
 	 * This function creates an api key and reveal it.

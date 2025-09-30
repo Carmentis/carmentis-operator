@@ -2,18 +2,27 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 
 import { SharedModule } from '../shared/SharedModule';
-import { OrganisationResolver } from './graphql/resolvers/OrganisationResolver';
-import { LoginResolver } from './graphql/resolvers/LoginResolver';
-import { UserResolver } from './graphql/resolvers/UserResolver';
-import { ApiKeysResolver } from './graphql/resolvers/ApiKeysResolver';
-import { GeneralResolver } from './graphql/resolvers/GeneralResolver';
+import { UnrestrictedOrganisationResolver } from './graphql/resolvers/jwt-protected/organization/UnrestrictedOrganisationResolver';
+import { LoginResolver } from './graphql/resolvers/public/LoginResolver';
+import { UserResolver } from './graphql/resolvers/jwt-protected/UserResolver';
+import { ApiKeysResolver } from './graphql/resolvers/jwt-protected/ApiKeysResolver';
 import { GraphQLJwtAuthGuard } from './guards/GraphQLJwtAuthGuard';
-import { ApplicationResolver } from './graphql/resolvers/ApplicationResolver';
-import { OrganisationStatisticsResolver } from './graphql/resolvers/OrganisationStatisticsResolver';
-import { NodeResolver } from './graphql/resolvers/NodeResolver';
+import { ApplicationResolver } from './graphql/resolvers/jwt-protected/application/ApplicationResolver';
+import { NodeAdditionalFieldsResolver } from './graphql/resolvers/jwt-protected/NodeAdditionalFieldsResolver';
 import { OperatorConfigModule } from '../config/OperatorConfigModule';
 import { OperatorConfigService } from '../config/services/operator-config.service';
 import { EnvService } from '../shared/services/EnvService';
+import { OperatorInitializationResolver } from './graphql/resolvers/public/OperatorInitialization';
+import { OperatorConfigResolver } from './graphql/resolvers/jwt-protected/OperatorConfigResolver';
+import {
+	MemberRestrictedOrganizationResolver
+} from './graphql/resolvers/jwt-protected/organization/MemberRestrictedOrganizationResolver';
+import {
+	OrganizationAdditionalFieldsResolver
+} from './graphql/resolvers/jwt-protected/organization/OrganizationAdditionalFieldsResolver';
+import {
+	OrganizationMemberRestrictedApplicationResolver
+} from './graphql/resolvers/jwt-protected/application/OrganizationMemberRestrictedApplicationResolver';
 
 
 const WORKSPACE_IMPORTS = [
@@ -37,14 +46,17 @@ const WORKSPACE_IMPORTS = [
 
 const WORKSPACE_PROVIDERS = [
 	GraphQLJwtAuthGuard,
-	OrganisationResolver,
+	UnrestrictedOrganisationResolver,
 	LoginResolver,
 	UserResolver,
-	OrganisationStatisticsResolver,
 	ApiKeysResolver,
-	GeneralResolver,
+	OperatorInitializationResolver,
+	OperatorConfigResolver,
 	ApplicationResolver,
-	NodeResolver,
+	NodeAdditionalFieldsResolver,
+	MemberRestrictedOrganizationResolver,
+	OrganizationAdditionalFieldsResolver,
+	OrganizationMemberRestrictedApplicationResolver
 ];
 
 @Module({

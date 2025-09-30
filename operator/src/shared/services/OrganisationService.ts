@@ -38,6 +38,26 @@ export class OrganisationService {
 		private readonly nodeService: NodeService
 	) {}
 
+	/**
+	 * Returns true if the provided user belongs to the set of members in the organization or if the user is an administrator.
+	 *
+	 * @param user
+	 * @param organization
+	 */
+	async isAuthorizedUser(user: UserEntity, organization: number | OrganisationEntity): Promise<boolean> {
+		const organizationId = typeof organization === 'number' ? organization : organization.id;
+		const isAdmin = user.isAdmin;
+		const isMember = OrganisationAccessRightEntity.existsBy({
+			organisation: {
+				id: organizationId,
+			},
+			user: {
+				publicKey: user.publicKey,
+			}
+		})
+		return isAdmin || isMember;
+	}
+
 	// Find one item by ID
 	async findOne(id: number): Promise<OrganisationEntity> {
 		const organisation = await this.organisationEntityRepository.findOne({

@@ -1,10 +1,10 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { OrganisationEntity } from './OrganisationEntity';
 import { UserEntity } from './UserEntity';
 
 @Entity('organisation-access-right')
 @Unique('UQ_organisation_user', ['organisation', 'user'])
-export class OrganisationAccessRightEntity {
+export class OrganisationAccessRightEntity extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
