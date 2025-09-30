@@ -429,4 +429,13 @@ export class OrganisationService {
 		this.logger.log(`Fetched nodes: ${fetchedNodesFromChain}`)
 		await this.nodeRepository.save(fetchedNodesFromChain)
 	}
+
+	isMemberOfOrganization(orgId: number, publicKey: string) {
+		return OrganisationEntity.existsBy({
+			id: orgId,
+			accessRights: {
+				user: { publicKey: publicKey }
+			}
+		})
+	}
 }

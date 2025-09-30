@@ -7,6 +7,7 @@ import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { randomBytes } from 'crypto';
 import { ApiKeyUsageEntity } from '../entities/ApiKeyUsageEntity';
 import { Request, Response } from 'express';
+import { OrganisationEntity } from '../entities/OrganisationEntity';
 
 @Injectable()
 export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
@@ -179,5 +180,19 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 		} catch (e) {
 			throw new Error("Provided key has an invalid format")
 		}
+	}
+
+	async getOrganisationIdByApiKeyId(keyId: number) {
+		const org = await OrganisationEntity.findOne({
+			where: {
+				applications: {
+					apiKeys: {
+						id: keyId
+					}
+				}
+			},
+			select: ['id']
+		});
+		return org.id;
 	}
 }

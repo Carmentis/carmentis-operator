@@ -55,18 +55,6 @@ type ChallengeVerificationResponse {
   token: String!
 }
 
-type ApiKeyType {
-  id: Int!
-  name: String!
-  createdAt: DateTime!
-  activeUntil: DateTime!
-  isActive: Boolean!
-  partialKey: String!
-  application: ApplicationType!
-  countUsages(filterByUnauthorised: Boolean!): Int!
-  usages(limit: Int, offset: Int, filterByUnauthorized: Boolean): [ApiKeyUsageType!]!
-}
-
 type ApplicationType {
   id: Int!
   name: String!
@@ -82,6 +70,18 @@ type ApplicationType {
   publishedAt: DateTime
   isDraft: Boolean!
   organisationId: Int!
+}
+
+type ApiKeyType {
+  id: Int!
+  name: String!
+  createdAt: DateTime!
+  activeUntil: DateTime!
+  isActive: Boolean!
+  partialKey: String!
+  application: ApplicationType!
+  countUsages(filterByUnauthorised: Boolean!): Int!
+  usages(limit: Int, offset: Int, filterByUnauthorized: Boolean): [ApiKeyUsageType!]!
 }
 
 type ApiKeyUsageType {
@@ -129,34 +129,31 @@ type TransactionType {
 }
 
 type Query {
-  organisations: [OrganisationEntity!]!
+  getAllApplications: [ApplicationType!]!
   getChallenge: ChallengeEntity!
+  isInitialised: Boolean!
+  getLinkedNode: String!
+  organisations: [OrganisationEntity!]!
   getCurrentUser: UserEntity!
   searchUser(search: String!): [UserEntity!]!
   getAllUsers: [UserEntity!]!
   getUserByPublicKey(publicKey: String!): UserEntity!
-  getAllApiKeysOfApplication(applicationId: Int!): [ApiKeyType!]!
-  getApiKey(id: Int!): ApiKeyType!
-  isInitialised: Boolean!
-  getLinkedNode: String!
-  getAllApplications: [ApplicationType!]!
   organisation(id: Int!): OrganisationEntity!
   getAllApiKeysOfOrganisation(organisationId: Int!): [ApiKeyType!]!
   getAllApplicationsInOrganisation(organisationId: Int!): [ApplicationType!]!
   getOrganisationStatistics(id: Int!): OrganisationStatsDto!
   getApplicationInOrganisation(applicationId: Int!): ApplicationType!
+  getAllApiKeysOfApplication(applicationId: Int!): [ApiKeyType!]!
+  getApiKey(id: Int!): ApiKeyType!
 }
 
 type Mutation {
-  createOrganisation(name: String!, privateKey: String): OrganisationEntity!
   verifyChallenge(challenge: String!, publicKey: String!, signature: String!): ChallengeVerificationResponse!
+  setupFirstAdministrator(setupFirstAdmin: SetupFirstAdminDto!): Boolean!
+  createOrganisation(name: String!, privateKey: String): OrganisationEntity!
   createUser(publicKey: String!, firstname: String!, lastname: String!, isAdmin: Boolean!): UserEntity!
   updateUserAdminStatus(publicKey: String!, isAdmin: Boolean!): UserEntity!
   deleteUser(publicKey: String!): UserEntity!
-  createApiKey(applicationId: Int!, name: String!, activeUntil: String!): RevealedApiKeyType!
-  updateApiKey(id: Int!, name: String!, isActive: Boolean!, activeUntil: String): Boolean!
-  deleteApiKey(id: Int!): Boolean!
-  setupFirstAdministrator(setupFirstAdmin: SetupFirstAdminDto!): Boolean!
   createApplicationInOrganisation(organisationId: Int!, applicationName: String!): ApplicationType!
   updateOrganisation(organisationId: Int!, organisation: OrganisationUpdateDto!): OrganisationEntity!
   forceChainSync(id: Int!): Boolean!
@@ -172,6 +169,9 @@ type Mutation {
   publishApplication(applicationId: Int!): Boolean!
   deleteApplicationInOrganisation(applicationId: Int!): Boolean!
   updateApplicationInOrganisation(applicationId: Int!, applicationUpdate: ApplicationUpdateDto!): ApplicationType!
+  createApiKey(applicationId: Int!, name: String!, activeUntil: String!): RevealedApiKeyType!
+  updateApiKey(id: Int!, name: String!, isActive: Boolean!, activeUntil: String): Boolean!
+  deleteApiKey(id: Int!): Boolean!
 }
 
 input SetupFirstAdminDto {

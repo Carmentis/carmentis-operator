@@ -9,13 +9,14 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
 import { RESOURCE_ID_KEY } from '../decorators/ResourceId';
 import { UserEntity } from '../../shared/entities/UserEntity';
+import { AuthorizationService } from '../../shared/services/AuthorizationService';
 
 @Injectable()
-export class OrganizationMemberRestrictedGuard implements CanActivate {
-	private logger = new Logger(OrganizationMemberRestrictedGuard.name);
+export class OrganizationMemberRestrictedOrganizationGuard implements CanActivate {
+	private logger = new Logger(OrganizationMemberRestrictedOrganizationGuard.name);
 	constructor(
 		private reflector: Reflector,
-		private readonly orgService: OrganisationService,
+		private readonly authService: AuthorizationService
 	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -45,7 +46,7 @@ export class OrganizationMemberRestrictedGuard implements CanActivate {
 		}
 
 		// if found, delegate to the service to decide the authorization logic
-		const hasAccess = await this.orgService.isAuthorizedUser(
+		const hasAccess = await this.authService.isAuthorizedToAccessOrganization(
 			user,
 			Number.parseInt(organisationId, 10),
 		);

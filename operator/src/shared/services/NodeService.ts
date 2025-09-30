@@ -72,4 +72,16 @@ export class NodeService {
 		node.virtualBlockchainId = nodeVirtualBlockchainId.encode();
 		return this.nodeRepository.save(node);
 	}
+
+	async getOrganisationIdByNodeId(nodeId: number) {
+		const org = await OrganisationEntity.findOne({
+			where: {
+				nodes: {
+					id: nodeId
+				}
+			},
+			select: ['id']
+		});
+		return org.id;
+	}
 }

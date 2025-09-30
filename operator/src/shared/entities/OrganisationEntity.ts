@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { OrganisationAccessRightEntity } from './OrganisationAccessRightEntity';
 import { ApplicationEntity } from './ApplicationEntity';
 import { Exclude } from 'class-transformer';
@@ -9,7 +9,7 @@ import { NodeEntity } from './NodeEntity';
 
 @ObjectType()
 @Entity('organisation')
-export class OrganisationEntity {
+export class OrganisationEntity extends BaseEntity {
 	@Field(type => Int)
 	@PrimaryGeneratedColumn()
 	id: number;

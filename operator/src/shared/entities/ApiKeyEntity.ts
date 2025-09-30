@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { ApplicationEntity } from './ApplicationEntity';
 import { ApiKeyUsageEntity } from './ApiKeyUsageEntity';
@@ -6,7 +6,7 @@ import { AutoMap } from '@automapper/classes';
 import { EncryptedColumn } from '../decorators/EncryptionDecorator';
 
 @Entity('api-key')
-export class ApiKeyEntity {
+export class ApiKeyEntity extends BaseEntity {
 	@AutoMap()
 	@PrimaryGeneratedColumn()
 	id: number;

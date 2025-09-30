@@ -9,15 +9,13 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
 import { RESOURCE_ID_KEY } from '../decorators/ResourceId';
 import { UserEntity } from '../../shared/entities/UserEntity';
-import { ApplicationService } from '../../shared/services/ApplicationService';
-import { AuthorizationService } from '../../shared/services/AuthorizationService';
 
 @Injectable()
-export class OrganizationMemberRestrictedApplicationGuard implements CanActivate {
-	private logger = new Logger(OrganizationMemberRestrictedApplicationGuard.name);
+export class OrganizationMemberRestrictedApiKeyGuard implements CanActivate {
+	private logger = new Logger(OrganizationMemberRestrictedApiKeyGuard.name);
 	constructor(
 		private reflector: Reflector,
-		private readonly authService: AuthorizationService,
+		private readonly orgService: OrganisationService,
 	) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -31,25 +29,25 @@ export class OrganizationMemberRestrictedApplicationGuard implements CanActivate
 			return false
 		}
 
-
+		// récupère le nom du champ défini par le décorateur (ou fallback à "organisationId")
 		const paramName =
 			this.reflector.get<string>(
 				RESOURCE_ID_KEY,
 				context.getHandler(),
-			) ?? 'applicationId';
+			) ?? 'id';
 
-		const applicationId = this.extractApplicationId(args, paramName);
+		const organisationId = this.extractApiKeyId(args, paramName);
 
 		// if no organization found, then it is highly a misconfiguration, log with a warning and
-		if (!applicationId) {
-			this.logger.warn(`Application id not found at param ${paramName}, have you correctly configure the guard?`);
+		if (!organisationId) {
+			this.logger.warn(`Organisation id not found at param ${paramName}, have you correctly configure the guard?`);
 			return false;
 		}
 
 		// if found, delegate to the service to decide the authorization logic
-		const hasAccess = await this.authService.isAuthorizedToAccessApplication(
+		const hasAccess = await this.orgService.isAuthorizedUser(
 			user,
-			Number.parseInt(applicationId, 10),
+			Number.parseInt(organisationId, 10),
 		);
 
 
@@ -59,7 +57,7 @@ export class OrganizationMemberRestrictedApplicationGuard implements CanActivate
 		return true;
 	}
 
-	private extractApplicationId(
+	private extractApiKeyId(
 		args: Record<string, any>,
 		paramName: string,
 	): string | undefined {

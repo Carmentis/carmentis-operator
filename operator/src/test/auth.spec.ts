@@ -99,6 +99,22 @@ const MUTATION_CREATE_API_KEY = `
   }
 `;
 
+const MUTATION_IMPORT_NODE = `
+  mutation ImportNode($orgId: Int!, $alias: String!, $rpc: String!) {
+    importNodeInOrganisation(organisationId: $orgId, nodeAlias: $alias, nodeRpcEndpoint: $rpc)
+  }
+`;
+
+const QUERY_GET_ORGANIZATION_WITH_NODES = `
+  query GetOrganizationWithNodes($orgId: Int!) {
+    organisation(id: $orgId) {
+      id
+      name
+      nodes { id nodeAlias rpcEndpoint }
+    }
+  }
+`;
+
 
 
 //
@@ -303,6 +319,18 @@ class GqlQuery {
 			name,
 			activeUntil,
 		});
+	}
+
+	async importNodeInOrg(orgId: number, alias: string, rpc: string) {
+		return this.sendRequest(MUTATION_IMPORT_NODE, {
+			orgId,
+			alias,
+			rpc,
+		});
+	}
+
+	async getOrgWithNodes(orgId: number) {
+		return this.sendRequest(QUERY_GET_ORGANIZATION_WITH_NODES, { orgId });
 	}
 }
 
@@ -586,7 +614,13 @@ describe("Full e2e flow", () => {
 			GqlResponseChecker.fromResponse(verifyResponse).expectNoError();
 		});
 
-		// TODO: it (third user) should create an application in the second organization.
+		it('third user should create an application in the second organization', async () => {
+			const response = await GqlQuery.withAuth(thirdUserAuthToken)
+				.createApp('Third user app', secondOrgID);
+			GqlResponseChecker.fromResponse(response)
+				.expectNoError()
+				.expectDefinedData();
+		});
 		
 		it('should access an organization when NOT a member but IS admin', async () => {
 			const response = await GqlQuery.withAuth(firstUserAuthToken)
@@ -660,15 +694,65 @@ describe("Full e2e flow", () => {
 				.expectDefinedData();
 		});
 
-		// TODO: it (first user) should add a node entity in the first organization.
+		it('first user should add a node entity in the first organization', async () => {
+			const alias = 'first-org-node-1';
+			const rpc = 'http://first-org-node-1:26657';
+			const response = await GqlQuery.withAuth(firstUserAuthToken)
+				.importNodeInOrg(firstOrgId, alias, rpc);
+			GqlResponseChecker.fromResponse(response)
+				.expectNoError()
+				.expectDefinedData();
+			// verify node is present
+			const getOrgResp = await GqlQuery.withAuth(firstUserAuthToken)
+				.getOrgWithNodes(firstOrgId);
+			const data = GqlResponseChecker.fromResponse(getOrgResp)
+				.expectNoError()
+				.expectDefinedData()
+				.getData();
+			expect(Array.isArray(data.organisation.nodes)).toBe(true);
+			expect(data.organisation.nodes.some(n => n.nodeAlias === alias)).toBe(true);
+		});
 
-		// TODO: it (second user) should NOT add a node entity in the first organization.
+		it('second user should NOT add a node entity in the first organization', async () => {
+			const response = await GqlQuery.withAuth(secondUserAuthToken)
+				.importNodeInOrg(firstOrgId, 'unauthorized-node', 'http://unauth:26657');
+			GqlResponseChecker.fromResponse(response).expectForbidden();
+		});
 
-		// TODO: it (second user) should  add a node entity in the second organization
+		it('second user should add a node entity in the second organization', async () => {
+			const alias = 'second-org-node-second-user';
+			const rpc = 'http://second-org-node-2:26657';
+			const response = await GqlQuery.withAuth(secondUserAuthToken)
+				.importNodeInOrg(secondOrgID, alias, rpc);
+			GqlResponseChecker.fromResponse(response)
+				.expectNoError()
+				.expectDefinedData();
+		});
 
-		// TODO: it (first user) should add a node entity in the second organization.
+		it('first user (admin) should add a node entity in the second organization', async () => {
+			const response = await GqlQuery.withAuth(firstUserAuthToken)
+				.importNodeInOrg(secondOrgID, 'second-org-node-admin', 'http://second-org-node-admin:26657');
+			GqlResponseChecker.fromResponse(response)
+				.expectNoError()
+				.expectDefinedData();
+		});
 
-		// TODO: it (third user) should add a node entity in the second organization.
+		it('third user should add a node entity in the second organization', async () => {
+			const alias = 'second-org-node-third-user';
+			const response = await GqlQuery.withAuth(thirdUserAuthToken)
+				.importNodeInOrg(secondOrgID, alias, 'http://second-org-node-3:26657');
+			GqlResponseChecker.fromResponse(response)
+				.expectNoError()
+				.expectDefinedData();
+			// verify via member user
+			const getOrgResp = await GqlQuery.withAuth(secondUserAuthToken)
+				.getOrgWithNodes(secondOrgID);
+			const data = GqlResponseChecker.fromResponse(getOrgResp)
+				.expectNoError()
+				.expectDefinedData()
+				.getData();
+			expect(data.organisation.nodes.some(n => n.nodeAlias === alias)).toBe(true);
+		});
 	});
 
 

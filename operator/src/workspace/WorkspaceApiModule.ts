@@ -5,24 +5,29 @@ import { SharedModule } from '../shared/SharedModule';
 import { UnrestrictedOrganisationResolver } from './graphql/resolvers/jwt-protected/organization/UnrestrictedOrganisationResolver';
 import { LoginResolver } from './graphql/resolvers/public/LoginResolver';
 import { UserResolver } from './graphql/resolvers/jwt-protected/UserResolver';
-import { ApiKeysResolver } from './graphql/resolvers/jwt-protected/ApiKeysResolver';
 import { GraphQLJwtAuthGuard } from './guards/GraphQLJwtAuthGuard';
 import { ApplicationResolver } from './graphql/resolvers/jwt-protected/application/ApplicationResolver';
-import { NodeAdditionalFieldsResolver } from './graphql/resolvers/jwt-protected/NodeAdditionalFieldsResolver';
+import { NodeAdditionalFieldsResolver } from './graphql/resolvers/jwt-protected/node/NodeAdditionalFieldsResolver';
 import { OperatorConfigModule } from '../config/OperatorConfigModule';
 import { OperatorConfigService } from '../config/services/operator-config.service';
 import { EnvService } from '../shared/services/EnvService';
 import { OperatorInitializationResolver } from './graphql/resolvers/public/OperatorInitialization';
 import { OperatorConfigResolver } from './graphql/resolvers/jwt-protected/OperatorConfigResolver';
 import {
-	MemberRestrictedOrganizationResolver
-} from './graphql/resolvers/jwt-protected/organization/MemberRestrictedOrganizationResolver';
+	OrganizationMemberRestrictedOrganizationResolver
+} from './graphql/resolvers/jwt-protected/organization/OrganizationMemberRestrictedOrganizationResolver';
 import {
 	OrganizationAdditionalFieldsResolver
 } from './graphql/resolvers/jwt-protected/organization/OrganizationAdditionalFieldsResolver';
 import {
 	OrganizationMemberRestrictedApplicationResolver
 } from './graphql/resolvers/jwt-protected/application/OrganizationMemberRestrictedApplicationResolver';
+import {
+	ApiKeyAdditionalFieldsResolver
+} from './graphql/resolvers/jwt-protected/api-key/ApiKeyAdditionalFieldsResolver';
+import {
+	OrganizationMemberRestrictedApiKeyResolver
+} from './graphql/resolvers/jwt-protected/api-key/OrganizationMemberRestrictedApiKeyResolver';
 
 
 const WORKSPACE_IMPORTS = [
@@ -46,17 +51,33 @@ const WORKSPACE_IMPORTS = [
 
 const WORKSPACE_PROVIDERS = [
 	GraphQLJwtAuthGuard,
-	UnrestrictedOrganisationResolver,
-	LoginResolver,
-	UserResolver,
-	ApiKeysResolver,
-	OperatorInitializationResolver,
-	OperatorConfigResolver,
+
+
+
+
+
 	ApplicationResolver,
+
+	// public resolvers
+	LoginResolver,
+	OperatorInitializationResolver,
+
+	// config resolvers
+	OperatorConfigResolver,
+
+	// addition fields resolvers
 	NodeAdditionalFieldsResolver,
-	MemberRestrictedOrganizationResolver,
+	ApiKeyAdditionalFieldsResolver,
+
+	// authentication-protected resolvers
+	UnrestrictedOrganisationResolver,
+	UserResolver,
+
+	// organization member restricted resolvers
+	OrganizationMemberRestrictedOrganizationResolver,
 	OrganizationAdditionalFieldsResolver,
-	OrganizationMemberRestrictedApplicationResolver
+	OrganizationMemberRestrictedApplicationResolver,
+	OrganizationMemberRestrictedApiKeyResolver,
 ];
 
 @Module({

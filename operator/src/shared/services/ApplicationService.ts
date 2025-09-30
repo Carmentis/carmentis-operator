@@ -183,4 +183,16 @@ export class ApplicationService {
 			}
 		});
 	}
+
+	async getOrganisationIdByApplicationId(appId: number) {
+		const org = await OrganisationEntity.findOne({
+			where: {
+				applications: {
+					id: appId
+				}
+			},
+			select: ['id']
+		});
+		return org.id;
+	}
 }

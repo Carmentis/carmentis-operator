@@ -22,6 +22,7 @@ import { EncryptionServiceProxy } from './transformers/EncryptionServiceProxy';
 import { NodeEntity } from './entities/NodeEntity';
 import { NodeService } from './services/NodeService';
 import { OperatorConfigModule } from '../config/OperatorConfigModule';
+import { AuthorizationService } from './services/AuthorizationService';
 
 const WORKSPACE_PROVIDERS = [
 	EncryptionService,
@@ -34,7 +35,8 @@ const WORKSPACE_PROVIDERS = [
 	ChainService,
 	ChallengeService,
 	EnvService,
-	NodeService
+	NodeService,
+	AuthorizationService,
 ];
 
 

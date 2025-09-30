@@ -1,7 +1,7 @@
 import { JwtProtectedResolver } from '../JwtProtectedResolver';
 import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ForbiddenException, Logger, NotFoundException, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { OrganizationMemberRestrictedGuard } from '../../../../guards/OrganizationMemberRestrictedGuard';
+import { OrganizationMemberRestrictedOrganizationGuard } from '../../../../guards/OrganizationMemberRestrictedOrganizationGuard';
 import { OrganisationEntity } from '../../../../../shared/entities/OrganisationEntity';
 import { CurrentUser } from '../../../../decorators/CurrentUserDecorator';
 import { UserEntity } from '../../../../../shared/entities/UserEntity';
@@ -23,9 +23,9 @@ import { ApiKeyService } from '../../../../../shared/services/ApiKeyService';
 import { ApiKeyEntity } from '../../../../../shared/entities/ApiKeyEntity';
 
 @Resolver(of => OrganisationEntity)
-@UseGuards(OrganizationMemberRestrictedGuard)
-export class MemberRestrictedOrganizationResolver extends JwtProtectedResolver {
-	private logger = new Logger(MemberRestrictedOrganizationResolver.name);
+@UseGuards(OrganizationMemberRestrictedOrganizationGuard)
+export class OrganizationMemberRestrictedOrganizationResolver extends JwtProtectedResolver {
+	private logger = new Logger(OrganizationMemberRestrictedOrganizationResolver.name);
 	constructor(
 		private readonly organisationService: OrganisationService,
 		private readonly applicationService: ApplicationService,

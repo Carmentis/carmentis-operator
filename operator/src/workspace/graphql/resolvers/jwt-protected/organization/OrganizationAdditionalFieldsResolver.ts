@@ -1,7 +1,7 @@
 import { Args, Int, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { OrganisationEntity } from '../../../../../shared/entities/OrganisationEntity';
 import { ForbiddenException, UseGuards } from '@nestjs/common';
-import { OrganizationMemberRestrictedGuard } from '../../../../guards/OrganizationMemberRestrictedGuard';
+import { OrganizationMemberRestrictedOrganizationGuard } from '../../../../guards/OrganizationMemberRestrictedOrganizationGuard';
 import { JwtProtectedResolver } from '../JwtProtectedResolver';
 import { OrganisationByIdPipe } from '../../../../pipes/OrganisationByIdPipe';
 import { Transaction } from '@cmts-dev/carmentis-sdk';
@@ -15,7 +15,7 @@ import { OrganisationChainStatusType } from '../../../types/OrganisationChainSta
 import { TransactionType } from '../../../types/TransactionType';
 
 @Resolver(of => OrganisationEntity)
-@UseGuards(OrganizationMemberRestrictedGuard)
+@UseGuards(OrganizationMemberRestrictedOrganizationGuard)
 export class OrganizationAdditionalFieldsResolver extends JwtProtectedResolver {
 	constructor(
 		private readonly organisationService: OrganisationService,
