@@ -1,7 +1,7 @@
 {
   "name": "operator",
   "version": "0.0.1",
-  "description": "",
+  "description": "Operator server",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
@@ -101,5 +101,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "directories": {
+    "test": "test"
   }
 }
