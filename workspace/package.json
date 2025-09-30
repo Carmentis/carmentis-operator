@@ -2,6 +2,7 @@
   "name": "workspace",
   "version": "0.0.1",
   "private": true,
+  "licence": "Apache-2.0",
   "scripts": {
     "codegen": "graphql-codegen",
     "codegen:watch": "graphql-codegen --watch",
