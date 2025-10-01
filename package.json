@@ -1,12 +1,17 @@
 {
   "private": true,
-  "version": "0.0.0-development",
+  "version": "0.0.1",
   "licence": "Apache-2.0",
   "workspaces": [
     "workspace",
     "operator"
   ],
+  "scripts": {
+    "release": "semantic-release",
+    "docker:build": "bash scripts/docker-build-and-publish.sh"
+  },
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
@@ -14,5 +19,8 @@
     "@semantic-release/npm": "^12.0.2",
     "semantic-release": "^24.2.9"
   },
-  "packageManager": "yarn@4.10.3"
+  "packageManager": "yarn@4.10.3",
+  "resolutions": {
+    "carmentis-wallet-extension": "portal:/home/gamarcadet/git/carmentis-wallet-extension"
+  }
 }
