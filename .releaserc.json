@@ -35,7 +35,8 @@
       {
         "assets": [
           "package.json",
-          "**/package.json",
+          "workspace/package.json",
+          "operator/package.json",
           "CHANGELOG.md"
         ]
       }
