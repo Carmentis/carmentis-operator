@@ -8,7 +8,6 @@ config.md
 /dist
 /node_modules
 /build
-package-lock.json
 
 # keys
 admin-token.txt
@@ -22,6 +21,9 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+
+db-encryption-key.txt
+jwt-secret.txt
 
 # OS
 .DS_Store

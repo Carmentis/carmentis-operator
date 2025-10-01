@@ -1,5 +1,5 @@
 {
-  "name": "@cmts-dev/carmentis-operator",
+  "name": "operator",
   "version": "0.0.1",
   "description": "Operator server",
   "author": "",
@@ -18,7 +18,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "gen:config:example": "ts-node scripts/generate-example.ts",
-    "gen:config:md": "ts-node scripts/generate-config-doc.ts"
+    "gen:config:md": "ts-node scripts/generate-config-doc.ts",
+    "docker": "bash scripts/docker-build-and-publish.sh"
   },
   "dependencies": {
     "@apollo/server": "^4.11.3",
@@ -27,14 +28,14 @@
     "@cmts-dev/carmentis-sdk": "^1.13.2",
     "@iarna/toml": "^2.2.5",
     "@nestjs/apollo": "^13.0.4",
+    "@nestjs/cli": "^11.0.10",
     "@nestjs/common": "^11.0.13",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.6",
     "@nestjs/graphql": "^13.0.4",
     "@nestjs/jwt": "^11.0.0",
-    "@nestjs/passport": "^11.0.5",
-    "@nestjs/platform-express": "^11.0.13",
-    "@nestjs/platform-socket.io": "^11.0.13",
+    "@nestjs/platform-express": "^11.1.6",
+    "@nestjs/platform-socket.io": "^11.1.6",
     "@nestjs/swagger": "^11.1.1",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.6",
@@ -42,7 +43,7 @@
     "@noble/ciphers": "^1.3.0",
     "@noble/secp256k1": "^2.2.3",
     "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.1",
+    "class-validator": "^0.14.2",
     "dotenv": "^16.4.7",
     "get-port": "^7.1.0",
     "graphql": "^16.10.0",
@@ -54,6 +55,7 @@
     "socket.io": "^4.8.1",
     "sqlite3": "^5.1.7",
     "typeorm": "^0.3.21",
+    "webpack": "^5.102.0",
     "zod": "^4.1.11"
   },
   "devDependencies": {
@@ -103,6 +105,5 @@
   },
   "directories": {
     "test": "test"
-  },
-  "packageManager": "yarn@4.10.3"
+  }
 }

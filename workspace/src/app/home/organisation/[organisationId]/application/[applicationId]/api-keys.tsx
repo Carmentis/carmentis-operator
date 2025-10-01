@@ -20,7 +20,8 @@ import {
 	ApiKeyDescriptionFragment,
 } from '@/generated/graphql';
 import { useToast } from '@/app/layout';
-import { useApplication } from '@/app/home/organisation/[organisationId]/application/[applicationId]/page';
+
+import { useApplication } from '@/hooks/useApplication';
 
 const formSchema = z.object({
 	name: z.string().min(1, "The name is required"),

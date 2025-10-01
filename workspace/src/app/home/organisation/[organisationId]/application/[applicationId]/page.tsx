@@ -2,18 +2,20 @@
 
 import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import ApplicationDetailsNavbar from '@/app/home/organisation/[organisationId]/application/[applicationId]/ApplicationDetailsNavbar';
-import { useAtom, useAtomValue } from 'jotai';
+import ApplicationDetailsNavbar
+	from '@/app/home/organisation/[organisationId]/application/[applicationId]/ApplicationDetailsNavbar';
+import { useAtom } from 'jotai';
 import {
 	applicationAtom,
 	referenceApplicationAtom,
 } from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
 import ApiKeysPage from '@/app/home/organisation/[organisationId]/application/[applicationId]/api-keys';
-import ApplicationOverview from '@/app/home/organisation/[organisationId]/application/[applicationId]/general-information';
+import ApplicationOverview
+	from '@/app/home/organisation/[organisationId]/application/[applicationId]/general-information';
 import { useGetApplicationInOrganisationQuery } from '@/generated/graphql';
-import { Box, Container, Typography, Alert, Paper, Divider, Card, Grid } from '@mui/material';
-import AppsIcon from '@mui/icons-material/Apps';
+import { Alert, Box, Card, Container, Grid, Typography } from '@mui/material';
 import FullSpaceSpinner from '@/components/FullSpaceSpinner';
+import { useApplication } from '@/hooks/useApplication';
 
 export default function ApplicationPage() {
 	const [application, setApplication] = useAtom(applicationAtom);
@@ -71,12 +73,6 @@ export default function ApplicationPage() {
 		</Container>
 	);
 }
-
-export const useApplication = () => {
-	const application = useAtomValue(applicationAtom);
-	if (!application) throw new Error('Undefined application');
-	return application;
-};
 
 type ApplicationEditionViewProps = {
 	refreshApplication: () => void;

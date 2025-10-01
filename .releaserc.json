@@ -1,18 +1,43 @@
 {
   "branches": [
-    "main",
-    { "name": "dev-workflow", "prerelease": true }
+    "main"
   ],
   "plugins": [
-    "@semantic-release/commit-analyzer",
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "releaseRules": [
+          {
+            "type": "dev",
+            "release": "patch"
+          }
+        ]
+      }
+    ],
     "@semantic-release/release-notes-generator",
     "@semantic-release/changelog",
-    "@semantic-release/git",
-    "@semantic-release/github",
     [
       "@semantic-release/exec",
       {
-        "publishCmd": "echo ${nextRelease.version}"
+        "verifyConditionsCmd": "docker --version"
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "verifyConditionsCmd": "npm run test",
+        "prepareCmd": "npm run version:bump ${nextRelease.version}",
+        "publishCmd": "npm run docker build ${nextRelease.version} && npm run docker publish ${nextRelease.version}"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "package.json",
+          "**/package.json",
+          "CHANGELOG.md"
+        ]
       }
     ]
   ]

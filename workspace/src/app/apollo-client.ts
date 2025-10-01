@@ -31,7 +31,8 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 	const toast = useToast();
 	if (graphQLErrors) {
 		for (const err of graphQLErrors) {
-			if (err.code === 'FORBIDDEN') {
+
+			if ('code' in err && err.code === 'FORBIDDEN') {
 				if (typeof window !== 'undefined') {
 					window.location = '/'
 				}
