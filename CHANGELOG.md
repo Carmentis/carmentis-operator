@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/Carmentis/carmentis-operator/compare/v1.0.1...v1.0.2) (2025-10-01)
+
+
+### Bug Fixes
+
+* **ci:** use token with explicit right to create a package instead of the GITUB_TOKEN token ([aeba8e5](https://github.com/Carmentis/carmentis-operator/commit/aeba8e5599fa389f88e99a61b6ca304a4e78d0e8))
+
 ## [1.0.1](https://github.com/Carmentis/carmentis-operator/compare/v1.0.0...v1.0.1) (2025-10-01)
 
 # 1.0.0 (2025-10-01)
