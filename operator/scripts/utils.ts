@@ -1,100 +1,147 @@
 import {
-	ZodArray,
-	ZodBoolean,
-	ZodDefault,
-	ZodEnum,
-	ZodNumber,
-	ZodObject,
-	ZodOptional,
-	ZodString,
-	ZodTypeAny,
+	ZodTypeAny, ZodUnion, ZodDefault, ZodOptional, ZodNullable, ZodObject, ZodArray, ZodEnum, ZodLiteral, ZodPrefault, ZodString,
+	ZodNumber, ZodBoolean, ZodURL
 } from 'zod';
 
-
-
 export type LeafDoc = {
-	type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'enum' | 'unknown';
+	type: "string" | "number" | "boolean" | "object" | "array" | "enum" | "union" | "literal" | "unknown";
 	description?: string;
 	required: boolean;
 	defaultValue?: unknown;
-	properties?: Record<string, LeafDoc>; // pour les objets
-	items?: LeafDoc; // pour les arrays
-	enumValues?: string[]; // pour les enums
+	properties?: Record<string, LeafDoc>;
 };
 
-export function schemaToJson(schema: ZodTypeAny): LeafDoc {
-	/*
-	// Gestion des optional()
-	if (schema instanceof ZodOptional) {
-		const inner = schema.unwrap();
-		const result = schemaToJson(inner);
-		result.description = schema.description;
-		result.required = false;
-		return result;
-	}
-
-	// Gestion des default()
-	if (schema instanceof ZodDefault) {
-		const inner = schema.removeDefault();
-		const result = schemaToJson(inner);
-
-		result.description = schema.description;
-		result.defaultValue = '';
-		result.required = false;
-		return result;
-	}
-
-	// Gestion des objets
+export function schemaToJson(schema: ZodObject | ZodOptional | ZodPrefault | ZodString | ZodBoolean | ZodURL | ZodNumber | ZodDefault ): LeafDoc {
 	if (schema instanceof ZodObject) {
 		const shape = schema.shape;
-		const properties: Record<string, LeafDoc> = {};
-		for (const key in shape) {
-			properties[key] = schemaToJson(shape[key]);
+		const properties = Object.entries(shape);
+		const result: Record<string, LeafDoc> = {}
+		for (const [a, b] of properties) {
+			result[a] = schemaToJson(b)
 		}
+
+		// decide if the object is required or not based on the fact that the object contains at least one non-object field
+		const isRequired = Object.values(result).some(value => value.type !== "object");
 		return {
-			type: 'object',
-			description: schema._def.description,
-			required: true,
-			properties,
-		};
+			type: "object",
+			properties: result,
+			description: schema.description,
+			required: isRequired,
+		}
 	}
 
-	// Gestion des arrays
-	if (schema instanceof ZodArray) {
-		const inner = schemaToJson(schema.element);
-		return {
-			type: 'array',
-			description: schema._def.description,
-			required: true,
-			items: inner,
-		};
+	if (schema instanceof ZodPrefault) {
+		return schemaToJson(schema.def.innerType as ZodObject)
 	}
 
-	// Gestion des enums
-	if (schema instanceof ZodEnum) {
+	if (schema instanceof ZodString) {
 		return {
-			type: 'enum',
-			description: schema._def.description,
+			type: "string",
+			properties: {},
+			description: schema.description,
 			required: true,
-			enumValues: schema.options,
-		};
+		}
 	}
 
-	// Feuilles simples (string, number, boolean, etc.)
-	const type = schema instanceof ZodString
-		? 'string'
-		: schema instanceof ZodNumber
-			? 'number'
-			: schema instanceof ZodBoolean
-				? 'boolean'
-				: 'unknown';
+	if (schema instanceof ZodNumber) {
+		return {
+			type: "number",
+			properties: {},
+			description: schema.description,
+			required: true,
+		}
+	}
+
+	if (schema instanceof ZodBoolean) {
+		return {
+			type: "boolean",
+			properties: {},
+			description: schema.description,
+			required: true,
+		}
+	}
+
+	if (schema instanceof ZodURL) {
+		return {
+			type: "string",
+			properties: {},
+			description: schema.description,
+			required: true,
+		}
+	}
+
+	if (schema instanceof ZodDefault || schema instanceof ZodOptional) {
+		const innerType = schema.def.innerType;
+		const hasDefaultValue = schema instanceof ZodDefault;
+		const defaultValue = schema instanceof  ZodDefault ? schema.def.defaultValue : undefined;
+		const isOptional = schema instanceof ZodOptional;
+		const description = schema.description;
+		if (innerType instanceof ZodString) {
+			return {
+				type: innerType.type,
+				properties: {},
+				description: description,
+				required: false,
+				defaultValue
+			}
+		}
+
+		if (innerType instanceof ZodNumber) {
+			return {
+				type: innerType.type,
+				properties: {},
+				description: description,
+				required: false,
+				defaultValue
+			}
+		}
+
+		if (innerType instanceof ZodBoolean) {
+			return {
+				type: innerType.type,
+				properties: {},
+				description: description,
+				required: false,
+				defaultValue
+			}
+		}
+
+		if (innerType instanceof ZodURL) {
+			return {
+				type: 'string',
+				properties: {},
+				description: description,
+				required: false,
+				defaultValue
+			}
+		}
+
+
+
+		if (innerType instanceof ZodObject) {
+			const shape = innerType.shape;
+			const properties = Object.entries(shape);
+			const result = {}
+			for (const [a, b] of properties) {
+				result[a] = schemaToJson(b)
+			}
+			// @ts-ignore
+			return {
+				type: "object",
+				properties: result,
+				description: schema.description,
+				required: false,
+			}
+		}
+	}
+
+
+
 
 	return {
-		type,
-		description: schema._def.description,
-		required: true,
-	};
-
-	 */
-	throw new Error('Not implemented: Need to upgrade to latest zod version !');
+		type: "object",
+		properties: {},
+		description: '',
+		required: false,
+	}
 }

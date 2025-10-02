@@ -3,7 +3,7 @@ import * as path from 'path';
 import { ConfigSchema } from '../src/config/types/OperatorConfig';
 import { LeafDoc, schemaToJson } from './utils'; // adapte le chemin
 
-
+/*
 function jsonToToml(doc: LeafDoc, sectionPath: string[] = []): string {
 	let lines: string[] = [];
 
@@ -68,19 +68,22 @@ function jsonToToml(doc: LeafDoc, sectionPath: string[] = []): string {
 	return lines.join("");
 }
 
+ */
+
 /**
  * Génère le fichier example.toml
  */
 function generateExample() {
-	const json = schemaToJson(
-		ConfigSchema
-	);
+	/*
+	const json = ConfigSchema..({})
 	const toml = jsonToToml(
 		json
 	)
 
 	const outPath = path.join(__dirname, "../example-config.toml");
 	fs.writeFileSync(outPath, toml, "utf-8");
+
+	 */
 	console.log("✅ example.toml généré !");
 }
 

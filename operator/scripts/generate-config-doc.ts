@@ -28,9 +28,6 @@ function generateMarkdownTOML(doc: LeafDoc, path: string[] = []): string {
 		md += `| Type | \`${doc.type}\` |\n`;
 		md += `| Required | ${doc.required ? "Yes" : "No"} |\n`;
 		md += `| Default | ${doc.defaultValue !== undefined ? `\`${doc.defaultValue}\`` : "-"} |\n`;
-		if (doc.type === "enum" && doc.enumValues) {
-			md += `| Allowed values | ${doc.enumValues.map(v => `\`${v}\``).join(", ")} |\n`;
-		}
 		md += `\n`;
 	}
 
