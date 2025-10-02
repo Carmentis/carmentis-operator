@@ -16,7 +16,6 @@ import { useRouter } from 'next/navigation';
 import OrganisationPublicationStatusChip
 	from '@/app/home/organisation/[organisationId]/OrganisationPublicationStatusChip';
 import { useDeleteOrganisationMutation, useForceChainSyncMutation } from '@/generated/graphql';
-import { useNavigation } from '@refinedev/core';
 
 
 export function OrganisationHeader() {

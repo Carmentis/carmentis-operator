@@ -6,7 +6,6 @@ import Skeleton from 'react-loading-skeleton';
 import Avatar from 'boring-avatars';
 import Image from 'next/image';
 import { Box, Typography } from '@mui/material';
-import { useCustom } from '@refinedev/core';
 import { useCustomRouter } from '@/contexts/application-navigation.context';
 
 export function CarmentisLogo() {

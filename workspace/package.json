@@ -22,13 +22,7 @@
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.0.1",
     "@mui/icons-material": "^7.2.0",
-    "@mui/lab": "^7.0.0-beta.9",
     "@mui/material": "^7.0.0",
-    "@mui/x-date-pickers": "^7.28.2",
-    "@next/env": "^15.1.4",
-    "@parcel/watcher": "^2.5.1",
-    "@redux-devtools/extension": "^3.3.0",
-    "@refinedev/simple-rest": "^5.0.10",
     "bootstrap-icons": "^1.11.3",
     "boring-avatars": "^1.11.2",
     "framer-motion": "^12.23.12",
@@ -44,10 +38,7 @@
     "react-toastify": "^11.0.2",
     "react-use": "^17.6.0",
     "swr": "^2.3.0",
-    "tailwind": "^4.0.0",
-    "ts-randomstring": "^1.0.8",
-    "zod": "^3.24.2",
-    "zustand": "^5.0.2"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.5",
