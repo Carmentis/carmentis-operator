@@ -19,13 +19,7 @@
     [
       "@semantic-release/exec",
       {
-        "verifyConditionsCmd": "docker --version"
-      }
-    ],
-    [
-      "@semantic-release/exec",
-      {
-        "verifyConditionsCmd": "npm run test",
+        "verifyConditionsCmd": "npm run test && docker --version",
         "prepareCmd": "npm run version:bump ${nextRelease.version} && npm run docker build ${nextRelease.version}",
         "publishCmd": "npm run docker publish ${nextRelease.version}"
       }
