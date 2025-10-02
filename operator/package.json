@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@apollo/server": "^5.0.0",
+    "@as-integrations/express5": "^1.1.2",
     "@automapper/classes": "^8.8.1",
     "@automapper/core": "^8.8.1",
     "@cmts-dev/carmentis-sdk": "^1.13.2",
