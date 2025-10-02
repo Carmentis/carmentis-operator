@@ -1,3 +1,12 @@
+## [1.0.3](https://github.com/Carmentis/carmentis-operator/compare/v1.0.2...v1.0.3) (2025-10-02)
+
+
+### Bug Fixes
+
+* addition of missing packages for apollo ([406d48a](https://github.com/Carmentis/carmentis-operator/commit/406d48af3f369c56e6a8e51ccff25c4db3e3e640))
+* config documentation generation ([d6b2487](https://github.com/Carmentis/carmentis-operator/commit/d6b24876cbed9a3bbf9a645a2ece38e1b7c20322))
+* **sec:** update dependencies to remove flawed ones ([a397bfc](https://github.com/Carmentis/carmentis-operator/commit/a397bfc019b05ab3a2b9b25bf5db78a0e9d4f3d0))
+
 ## [1.0.2](https://github.com/Carmentis/carmentis-operator/compare/v1.0.1...v1.0.2) (2025-10-01)
 
 
