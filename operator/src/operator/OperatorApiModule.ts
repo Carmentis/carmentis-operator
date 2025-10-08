@@ -13,6 +13,7 @@ import { AnchorRequestService } from './services/AnchorRequestService';
 import { APP_GUARD } from '@nestjs/core';
 import { ApiKeyGuard } from './guards/ApiKeyGuard';
 import { OperatorConfigModule } from '../config/OperatorConfigModule';
+import { OperatorHealthApiController } from './controllers/OperatorHealthApiController';
 
 @Module({
 	imports: [
@@ -23,7 +24,7 @@ import { OperatorConfigModule } from '../config/OperatorConfigModule';
 		]),
 
 	],
-	controllers: [OperatorApiController],
+	controllers: [OperatorApiController, OperatorHealthApiController],
 	providers: [
 		OperatorApiGateway,
 		CryptoService,
