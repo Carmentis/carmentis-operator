@@ -163,6 +163,11 @@ export default class ChainService {
 		const cometPublicKey = nodeStatus.getCometBFTNodePublicKey();
 		const cometPublicKeyType = nodeStatus.getCometBFTNodePublicKeyType();
 
+		// we abort the node claiming process if the organization is not published yet
+		if (!organisation.isPublished()) {
+			throw new Error('Cannot claim of node for an unpublished organization');
+		}
+
 		// create the node claim request
 		this.logger.debug(`Creating node claiming request for node: organizationId=${organizationId.encode()}, public key=${cometPublicKey}, public key type=${cometPublicKeyType}, rpc endpoint=${nodeRpcEndpoint}`)
 		const validatorNodeCreationContext = new ValidatorNodePublicationExecutionContext()
