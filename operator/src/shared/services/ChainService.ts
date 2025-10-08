@@ -1,4 +1,11 @@
-import { HttpException, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import {
+	BadRequestException,
+	HttpException,
+	Injectable,
+	Logger,
+	NotFoundException,
+	UnprocessableEntityException,
+} from '@nestjs/common';
 import {
 	ApplicationPublicationExecutionContext,
 	Blockchain, BlockchainFacade, CometBFTPublicKey,
@@ -165,7 +172,7 @@ export default class ChainService {
 
 		// we abort the node claiming process if the organization is not published yet
 		if (!organisation.isPublished()) {
-			throw new Error('Cannot claim of node for an unpublished organization');
+			throw new BadRequestException('Cannot claim of node for an unpublished organization');
 		}
 
 		// create the node claim request
