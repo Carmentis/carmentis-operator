@@ -217,7 +217,7 @@ export class OperatorApiController{
 			}
 			case MSG_ACTOR_KEY: {
 				this.logger.debug(`[${sessionId}] Entering approval actor key`)
-				answer = await this.operatorService.approvalActorKey(object);
+				answer = await this.operatorService.handleActorKeys(object);
 				break;
 			}
 			case MSG_APPROVAL_SIGNATURE:
