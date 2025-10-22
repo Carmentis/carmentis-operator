@@ -174,10 +174,11 @@ export class OperatorService {
 			const blockchain = Blockchain.createFromProvider(provider);
 			let applicationLedger = await this.loadApplicationLedger(blockchain, application, storedRequest.request);
 
-			// subscribe the actor on the application ledger
+			// declare the public keys of the actor by adding a subscribe section
+			// containing the name of the actor and its public keys on the application ledger
 			const endorser = storedRequest.request.endorser;
 			this.logger.debug(`Subscribing actor ${endorser} on the application ledger...`);
-			applicationLedger.subscribeActor(
+			await applicationLedger.subscribeActor(
 				endorser,
 				decodedActorPublicSignatureKey,
 				decodedActorPublicEncryptionKey,
