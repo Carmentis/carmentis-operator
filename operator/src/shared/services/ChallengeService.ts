@@ -4,7 +4,12 @@ import { LessThan, Repository } from 'typeorm';
 import { ChallengeEntity } from '../entities/ChallengeEntity';
 import { bytesToHex } from '@noble/ciphers/utils';
 import { randomBytes } from 'crypto';
-import { EncoderFactory, PublicSignatureKey, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
+import {
+	CryptoEncoderFactory,
+	EncoderFactory,
+	PublicSignatureKey,
+	StringSignatureEncoder,
+} from '@cmts-dev/carmentis-sdk/server';
 
 const CHALLENGE_VALIDITY_INTERVAL_IN_MINUTES = 3;
 const CHALLENGE_VALIDITY_INTERVAL_IN_MILLISECONDS = CHALLENGE_VALIDITY_INTERVAL_IN_MINUTES * 60 * 1000;
@@ -55,12 +60,9 @@ export class ChallengeService {
 		}
 
 		// Verify the signature authenticity using the public key
-		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+		const signatureEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
 		const pk = publicKey;
-		this.logger.debug(`Received publicKey: ${publicKey} (${pk.getSignatureAlgorithmId()})` );
-		const encoder = EncoderFactory.defaultBytesToStringEncoder();
-		this.logger.debug("Authenticating with tagged public key", signatureEncoder.encodePublicKey(pk))
-		this.logger.debug("Authenticating with plain public key", encoder.encode(pk.getPublicKeyAsBytes()))
+		this.logger.debug(`Auth attempt with public key: ${signatureEncoder.encodePublicKey(pk)}`)
 		return pk.verify(
 			signatureEncoder.decodeMessage(challenge),
 			signature,

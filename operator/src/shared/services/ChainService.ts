@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import {
 	ApplicationPublicationExecutionContext,
-	Blockchain, BlockchainFacade, CometBFTPublicKey,
+	Blockchain, BlockchainFacade, CometBFTPublicKey, CryptoEncoderFactory,
 	Explorer,
 	Hash, OrganizationPublicationExecutionContext, OrganizationWrapper,
 	ProviderFactory,
@@ -65,7 +65,7 @@ export default class ChainService {
 
 
 		// load organisation key pair
-		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+		const signatureEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
 		const organisationPrivateKey = signatureEncoder.decodePrivateKey(organisationEntity.privateSignatureKey);
 
 
@@ -120,11 +120,12 @@ export default class ChainService {
 	}
 
 	async checkAccountExistence(publicSignatureKey: PublicSignatureKey) {
-		const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(this.nodeUrl);
-		const blockchain = Explorer.createFromProvider(provider);
+		//const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(this.nodeUrl);
+		const blockchain = BlockchainFacade.createFromNodeUrl(this.nodeUrl);
 		try {
-			this.logger.log(`Checking existence of token account from public key: '${publicSignatureKey}'`)
-			await blockchain.getAccountByPublicKey(publicSignatureKey);
+			const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
+			this.logger.debug(`Checking existence of token account from public key: '${encoder.encodePublicKey(publicSignatureKey)}'`)
+			await blockchain.getAccountBalanceFromPublicKey(publicSignatureKey);
 			return true;
 		} catch (e) {
 			this.logger.log('Organisation token account not found');

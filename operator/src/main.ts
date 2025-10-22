@@ -5,6 +5,7 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import getPort, { portNumbers } from 'get-port';
 import { OperatorConfigService } from './config/services/operator-config.service';
+import { AllExceptionsFilter } from './operator/filters/AllExceptionsFilter';
 
 
 async function bootstrap() {
@@ -35,6 +36,7 @@ async function bootstrap() {
 
 	// Set global verification enabled.
 	app.useGlobalPipes(new ValidationPipe({whitelist: true}));
+	app.useGlobalFilters(new AllExceptionsFilter());
 
 
 
