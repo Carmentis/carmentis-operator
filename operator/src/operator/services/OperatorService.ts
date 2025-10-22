@@ -12,6 +12,7 @@ import {
 	ApplicationLedgerNotFoundError, ApplicationLedgerVb,
 	ApplicationLedgerWrapper, Blockchain,
 	BlockchainFacade, CMTSToken,
+	CryptoEncoderFactory,
 	EncoderFactory,
 	Hash,
 	MessageSerializer,
@@ -26,7 +27,14 @@ export interface ApprovalObject {
 	vb: ApplicationLedgerVb
 }
 
-const approvalData = new Map<string, ApprovalObject>();
+//const approvalData = new Map<string, ApprovalObject>();
+/**
+ * This map is used to store the application ledger under approval process (only after approval data being sent to the wallet).
+ * The key is the anchor request ID.
+ * The value is the ApplicationLedger instance.
+ */
+const applicationLedgerUnderApproval = new Map<string, ApplicationLedger>(); 
+
 @Injectable()
 export class OperatorService {
 
@@ -75,6 +83,11 @@ export class OperatorService {
 		const request = await this.anchorRequestService.findAnchorRequestByAnchorRequestId(anchorRequestId);
 	}
 
+	/**
+	 * This method is called when the wallet wants to proceed with the approval, starting with the handshake.
+	 * @param req 
+	 * @returns 
+	 */
 	async approvalHandshake(req: object) {
 
 		// check that the request is well-formed
@@ -112,66 +125,160 @@ export class OperatorService {
 
 
 		this.logger.log("Sending approval data to the wallet")
-		return await this.sendApprovalData(blockchain, application, applicationLedger.getVirtualBlockchain(), storedRequest.request);
+		return await this.sendApprovalData(anchorRequestId, applicationLedger);
 	}
 
-	async approvalActorKey(req: object) {
-
+	/**
+	 * This method is called when the wallet sends the actor public keys for subscription.
+	 * 
+	 * @param req 
+	 * @returns 
+	 */
+	async handleActorKeys(req: object) {
+		// check the request id is contained in the request, otherwise halt
 		const containsAnchorRequestId = 'anchorRequestId' in req;
 		if (!containsAnchorRequestId) throw new BadRequestException("Missing anchor request ID");
+
+		// parse the anchor request id
  		const rawDataId: Uint8Array = req.anchorRequestId as Uint8Array;
 		const encoder = EncoderFactory.defaultBytesToStringEncoder();
 		const anchorRequestId = encoder.encode(rawDataId);
 		this.logger.debug(`Proceeding to approval actor key with dataId = ${anchorRequestId}`)
 
+		// exctract the actor public signature and encryption keys from the request
+		const containsActorPublicSignatureKey = 'actorSignaturePublicKey' in req && typeof req.actorSignaturePublicKey === 'string';
+		if (!containsActorPublicSignatureKey) throw new BadRequestException("Missing actor public signature key");
+		const actorPublicSignatureKey: string = req.actorSignaturePublicKey as string;
+
+		const containsActorPublicEncryptionKey = 'actorPkePublicKey' in req && typeof req.actorPkePublicKey === 'string';
+		if (!containsActorPublicEncryptionKey) throw new BadRequestException("Missing actor public encryption key");
+		const actorPublicEncryptionKey: string = req.actorPkePublicKey as string;
+
+		// decode the actor keys
+		const signatureEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
+		const decodedActorPublicSignatureKey = signatureEncoder.decodePublicKey(actorPublicSignatureKey);
+		const pkeEncoder = CryptoEncoderFactory.defaultStringPublicKeyEncryptionEncoder();
+		const decodedActorPublicEncryptionKey = pkeEncoder.decodePublicEncryptionKey(actorPublicEncryptionKey);
+
+		// proceed to load the anchor request and send the approval data
 		try {
+			// recover the organization and application associated with the anchor request
 			const storedRequest = await this.loadAnchorRequestFromDataId(anchorRequestId);
 			const {application, organisation} = await this.loadApplicationAndOrganisationFromAnchorRequest(storedRequest);
-			const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+			
+			// decode the organization private key
 			const organisationPrivateKey = signatureEncoder.decodePrivateKey(organisation.privateSignatureKey);
+
+			// recover the application ledger 
 			const provider = ProviderFactory.createKeyedProviderExternalProvider(organisationPrivateKey, this.envService.nodeUrl);
 			const blockchain = Blockchain.createFromProvider(provider);
 			let applicationLedger = await this.loadApplicationLedger(blockchain, application, storedRequest.request);
 
+			// subscribe the actor on the application ledger
+			const endorser = storedRequest.request.endorser;
+			this.logger.debug(`Subscribing actor ${endorser} on the application ledger...`);
+			applicationLedger.subscribeActor(
+				endorser,
+				decodedActorPublicSignatureKey,
+				decodedActorPublicEncryptionKey,
+			);
+			this.logger.debug(`Actor ${endorser} subscribed.`);
 
-			return await this.sendApprovalData(blockchain, application, applicationLedger.getVirtualBlockchain(), storedRequest.request);
+			return await this.sendApprovalData(anchorRequestId, applicationLedger);
 		}
 		catch(e) {
 			console.error(e);
 		}
 	}
 
+
+	/**
+	 * This method is used to send the approval data to the wallet.
+	 * 
+	 * Note: When sending the approval data, the application ledger is not yet stored in the blockchain and is 
+	 * stored in the applicationLedgerUnderApproval map until the signature is received from the wallet.
+	 * 
+	 * @param blockchain
+	 * @param application 
+	 * @param applicationLedger 
+	 * @param approvalObject 
+	 * @returns 
+	 */
+	async sendApprovalData(
+		anchorRequestId: string,
+		applicationLedger: ApplicationLedger, 
+	) {
+		this.logger.debug(`Sending approval data`);
+
+		try {
+			// load the micro-block that should be signed by the wallet
+			const microBlockToBeSigned = applicationLedger.getMicroblockData();
+
+			// store the application ledger under approval process
+			applicationLedgerUnderApproval.set(anchorRequestId, applicationLedger);
+			
+			// send the micro-block to be signed to the wallet
+			console.log(`sending block data (${microBlockToBeSigned.length} bytes)`);
+			const schemaSerializer = new MessageSerializer(WALLET_OP_MESSAGES);
+			return schemaSerializer.serialize(
+				MSG_ANS_APPROVAL_DATA,
+				{
+					data: microBlockToBeSigned
+				}
+			);
+		}
+		catch(e) {
+			console.error(e);
+			throw e;
+		}
+	}
+
+	/**
+	 * This method is called when the wallet sends the signature of the micro-block for approval.
+	 * 
+	 * @param req 
+	 * @returns 
+	 */
 	async approvalSignature(req: object) {
-		// parse the anchor request id
+		// check the request id is contained in the request, otherwise halt
 		const containsAnchorRequestId = 'anchorRequestId' in req;
 		if (!containsAnchorRequestId) throw new BadRequestException("Missing anchor request ID");
+
+		// parse the anchor request id
 		const rawDataId: Uint8Array = req.anchorRequestId as Uint8Array;
 		const encoder = EncoderFactory.defaultBytesToStringEncoder();
-		const dataId = encoder.encode(rawDataId);
-		this.logger.debug(`Proceeding to approval signature with dataId = ${dataId}`)
+		const anchorRequestId = encoder.encode(rawDataId);
+		this.logger.debug(`Proceeding to approval signature with anchor request id = ${anchorRequestId}`)
 
 		// parse the signature
 		const containsSignature = 'signature' in req && req.signature instanceof Uint8Array;
 		if (!containsSignature) throw new BadRequestException("Missing signature");
 
 		try {
-			const storedRequest = await this.loadAnchorRequestFromDataId(dataId);
-			const {application, organisation} = await this.loadApplicationAndOrganisationFromAnchorRequest(storedRequest);
-			const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+			// load the stored anchor request from the database
+			const storedRequest = await this.loadAnchorRequestFromDataId(anchorRequestId);
+
+			// load the organization private signature key
+			const {organisation} = await this.loadApplicationAndOrganisationFromAnchorRequest(storedRequest);
+			const signatureEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
 			const organisationPrivateKey = signatureEncoder.decodePrivateKey(organisation.privateSignatureKey);
-			const provider = ProviderFactory.createKeyedProviderExternalProvider(organisationPrivateKey, this.envService.nodeUrl);
-			const blockchain = Blockchain.createFromProvider(provider);
-			//const blockchain = BlockchainFacade.createFromNodeUrlAndPrivateKey(this.envService.nodeUrl, organisationPrivateKey);
-			const applicationLedger = await this.loadApplicationLedger(blockchain, application, storedRequest.request);
-			const privateSignatureKey = signatureEncoder.decodePrivateKey(organisation.privateSignatureKey);
+			
 
-
+			// search for the application ledger under approval in the map
+			const applicationLedger = applicationLedgerUnderApproval.get(anchorRequestId);
+			if (!applicationLedger) {
+				throw new Error(`No application ledger under approval found for anchor request id ${anchorRequestId}`);
+			}
 			// publish the micro-block
 			const vb = applicationLedger.getVirtualBlockchain();
 			await vb.addEndorserSignature(req.signature as Uint8Array);
 			vb.setGasPrice(storedRequest.getGasPrice());
-			await vb.signAsAuthor(privateSignatureKey);
-			let mb = await vb.publish();
+			await vb.signAsAuthor(organisationPrivateKey);
+			const shouldWaitUntilPublished = false;
+			const mb = await vb.publish(shouldWaitUntilPublished);
+
+			// remove the application ledger from the map as the approval process is completed
+			applicationLedgerUnderApproval.delete(anchorRequestId);
 
 			// mark the stored request has completed
 			const vbHash = vb.getId();
@@ -182,6 +289,7 @@ export class OperatorService {
 				Hash.from(mbHash),
 			);
 
+			// send the answer to the wallet
 			const schemaSerializer = new MessageSerializer(WALLET_OP_MESSAGES);
 			return schemaSerializer.serialize(
 				MSG_ANS_APPROVAL_SIGNATURE,
@@ -197,43 +305,6 @@ export class OperatorService {
 		}
 	}
 
-	async sendApprovalData(blockchain: Blockchain, application: ApplicationEntity, vb: ApplicationLedgerVb, approvalObject: AnchorWithWalletDto) {
-		this.logger.debug(`Sending approval data`);
-
-		try {
-			// form the request
-			const request = {...approvalObject, applicationId: application.virtualBlockchainId};
-
-			if (vb.isVirtualBlockchainIdDefined()) {
-				const vbIdentifier = Hash.from(vb.getId());
-				request.virtualBlockchainId = vbIdentifier.encode();
-				this.logger.debug(`sendApprovalData: virtual blockchain identifier = ${vbIdentifier.encode()}` )
-			} else {
-				this.logger.debug(`sendApprovalData: new virtual blockchain ` )
-			}
-
-			const applicationLedger = await blockchain.getApplicationLedgerFromJson(request)
-
-			console.log(`generateDataSections() succeeded`);
-
-			//let mb = await vb.getMicroblock(vb.height);
-			//let mb = vb.getMicroblockData()
-			let mb = applicationLedger.getMicroblockData();
-
-			console.log(`sending block data (${mb.length} bytes)`);
-			const schemaSerializer = new MessageSerializer(WALLET_OP_MESSAGES);
-			return schemaSerializer.serialize(
-				MSG_ANS_APPROVAL_DATA,
-				{
-					data: mb
-				}
-			);
-		}
-		catch(e) {
-			console.error(e);
-			throw e;
-		}
-	}
 
 	private async loadAnchorRequestFromDataId(dataId:string) {
 		// load the initial anchor request and halts if the request is not pending
