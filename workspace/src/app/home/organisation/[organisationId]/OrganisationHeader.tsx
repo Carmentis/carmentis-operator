@@ -118,7 +118,7 @@ function OrganisationStatus({ organisation }) {
 
 function OrganisationMenu() {
 	const organisation = useOrganisation();
-	const navigation = useNavigation();
+	const navigation = useRouter();
 	const theme = useTheme();
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const open = Boolean(anchorEl);
