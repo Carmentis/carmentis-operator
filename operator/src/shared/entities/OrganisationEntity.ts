@@ -49,7 +49,6 @@ export class OrganisationEntity extends BaseEntity {
 	website: string;
 
 	@EncryptedColumn()
-	@Exclude()
 	privateSignatureKey: string;
 
 	@Field(type => String)
