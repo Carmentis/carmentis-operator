@@ -39,6 +39,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 			useFactory: (config: OperatorConfigService) => ({
 				debug: config.launchGraphQLInDebugMode(),
 				autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+				context: ({ req, res }) => ({ req, res }),
 				formatError: (error) => {
 					const original = error.extensions?.originalError as any;
 					return {

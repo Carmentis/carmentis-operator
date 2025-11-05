@@ -1,6 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
-import { ForbiddenException, Logger, UseGuards } from '@nestjs/common';
+import { ForbiddenException, Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
 
 import { ChallengeService } from '../../../../shared/services/ChallengeService';
 import { UserService } from '../../../../shared/services/UserService';
@@ -13,7 +13,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Throttle } from '@nestjs/throttler';
 import { ThrottlerGraphqlGuard } from '../../../guards/ThrottlerGraphqlGuard';
 
-// TODO use @UseGuards(ThrottlerGraphqlGuard)
+@UseGuards(ThrottlerGraphqlGuard)
 @Resolver()
 export class LoginResolver {
 	private logger = new Logger(LoginResolver.name);
@@ -22,10 +22,9 @@ export class LoginResolver {
 		private readonly challengeService: ChallengeService,
 		private readonly userService: UserService,
 		private readonly jwtService: JwtService,
-		private readonly envService: EnvService,
 	) {}
 
-	//@Throttle({ default: { limit: 30, ttl: 60000 } })
+	@Throttle({ default: { limit: 30, ttl: 60000 } })
 	@Public()
 	@Query(() => ChallengeEntity)
 	async getChallenge() {
