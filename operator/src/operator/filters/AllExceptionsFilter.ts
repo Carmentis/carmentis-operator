@@ -23,8 +23,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
 		}
 
 		// Réponse générique (optionnelle)
-		response.status(500).json({
-			message: `Internal Server Error: ${exception instanceof Error ? exception.message : 'Unknown error'}`,
-		});
+		if (exception instanceof HttpException) {
+
+		} else {
+			response.status(500).json({
+				message: `Internal Server Error: ${exception instanceof Error ? exception.message : 'Unknown error'}`,
+			});
+		}
+
 	}
 }
