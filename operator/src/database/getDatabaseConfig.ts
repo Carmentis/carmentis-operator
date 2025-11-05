@@ -1,17 +1,28 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { ConfigService } from '@nestjs/config';
 import { OperatorConfigService } from '../config/services/operator-config.service';
 import { Logger } from '@nestjs/common';
 import { join } from 'path';
+import { DataSourceOptions } from 'typeorm';
 
 const entitiesLocation = __dirname + '/../**/*Entity{.ts,.js}';
 
-export function getDatabaseConfig(config: OperatorConfigService): TypeOrmModuleOptions {
+export function getDatabaseConfig(config: OperatorConfigService): DataSourceOptions {
 	// get the database configuration.
 	const databaseConfig = config.getDatabaseConfig();
 
 	// create a logger to help user identifying chosen driver
 	const logger = new Logger('DatabaseConfig');
+
+	// we specify common parameters values
+	const runningInDev = config.isRunningInDevMode();
+	const synchronize = runningInDev;
+	const migrationsRun = false;
+	const migrations = ['src/**/migrations/**.ts'];
+
+	// log config
+	const runningMode = runningInDev ? 'dev' : 'production';
+	logger.log(`Running in ${runningMode}`);
+	logger.log(`Synchronization enabled? ${synchronize}`);
+	logger.log(`Automatic migrations enabled? ${migrationsRun}`);
 
 	// check if the postgres config is defined
 	if (databaseConfig.postgres) {
@@ -19,7 +30,9 @@ export function getDatabaseConfig(config: OperatorConfigService): TypeOrmModuleO
 		const postgresConfig = databaseConfig.postgres;
 		return {
 			entities: [entitiesLocation],
-			synchronize: true,
+			synchronize,
+			migrationsRun,
+			migrations,
 			type: 'postgres',
 			host: postgresConfig.url, //configService.getOrThrow<string>('OPERATOR_POSTGRES_URL'),
 			port: postgresConfig.port, //configService.getOrThrow<number>('OPERATOR_POSTGRES_PORT'),
@@ -35,7 +48,9 @@ export function getDatabaseConfig(config: OperatorConfigService): TypeOrmModuleO
 		const mysqlConfig = databaseConfig.mysql;
 		return {
 			entities: [entitiesLocation],
-			synchronize: true,
+			synchronize,
+			migrationsRun,
+			migrations,
 			type: 'mysql',
 			host: mysqlConfig.url, //configService.getOrThrow<string>('OPERATOR_POSTGRES_URL'),
 			port: mysqlConfig.port, //configService.getOrThrow<number>('OPERATOR_POSTGRES_PORT'),
@@ -49,7 +64,9 @@ export function getDatabaseConfig(config: OperatorConfigService): TypeOrmModuleO
 		const sqliteConfig = databaseConfig.sqlite;
 		return {
 			entities: [entitiesLocation],
-			synchronize: true,
+			synchronize,
+			migrationsRun,
+			migrations,
 			type: 'sqlite',
 			database: join(
 				config.getHomePath(),

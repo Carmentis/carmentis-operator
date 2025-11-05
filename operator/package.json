@@ -7,7 +7,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "nest build",
-    "start": "nest start",
+    "start": "npm run migration:run && nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
@@ -19,7 +19,12 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "gen:config:example": "ts-node scripts/generate-example.ts",
     "gen:config:md": "ts-node scripts/generate-config-doc.ts",
-    "docker": "bash scripts/docker-build-and-publish.sh"
+    "docker": "bash scripts/docker-build-and-publish.sh",
+    "typeorm": "typeorm-ts-node-commonjs -d src/database/DataSource.ts",
+    "migration:generate": "npm run build && npm run typeorm -- migration:generate",
+    "migration:run": "npm run typeorm -- migration:run",
+    "migration:revert": "npm run typeorm -- migration:revert",
+    "migration:show": "npm run typeorm -- migration:show"
   },
   "dependencies": {
     "@apollo/server": "^5.0.0",
