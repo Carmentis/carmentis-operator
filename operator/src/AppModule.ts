@@ -9,6 +9,7 @@ import { join } from 'path';
 import { getDatabaseConfig } from './database/getDatabaseConfig';
 import { OperatorConfigService } from './config/services/operator-config.service';
 import { OperatorConfigModule } from './config/OperatorConfigModule';
+import DataSourceOptions from './database/DataSourceOptions';
 
 @Module({
 	imports: [
@@ -16,11 +17,7 @@ import { OperatorConfigModule } from './config/OperatorConfigModule';
 		SharedModule,
 		OperatorApiModule,
 		WorkspaceApiModule,
-		TypeOrmModule.forRootAsync({
-			imports: [OperatorConfigModule],
-			inject: [OperatorConfigService],
-			useFactory: (configService: OperatorConfigService) => getDatabaseConfig(configService),
-		}),
+		TypeOrmModule.forRoot(DataSourceOptions),
 		GraphQLModule.forRootAsync<ApolloDriverConfig>({
 			driver: ApolloDriver,
 			imports: [OperatorConfigModule],

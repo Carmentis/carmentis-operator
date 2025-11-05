@@ -26,6 +26,10 @@ export abstract class AbstractOperatorConfig {
 		}
 	}
 
+	isRunningInDevMode(): boolean {
+		return this.config.operator.dev;
+	}
+
 
 	getAdminTokenPath(): string {
 		const home = this.config.operator.paths.home;

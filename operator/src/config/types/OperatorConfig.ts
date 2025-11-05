@@ -8,6 +8,8 @@ export const ConfigSchema = z.object({
 		node_url: z.string().url()
 			.describe("URL of the blockchain node used by the operator to anchor information on-chain."),
 
+		// This dev flag is used mainly for the database migrations but can be used for other things
+		dev: z.boolean().default(false).describe("Allow the operator to run in developer mode."),
 		port: z.number().default(3000)
 			.describe("Port where the operator listens for incoming requests."),
 
