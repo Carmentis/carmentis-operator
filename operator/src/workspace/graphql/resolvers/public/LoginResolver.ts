@@ -1,6 +1,6 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
-import { ForbiddenException, Logger } from '@nestjs/common';
+import { ForbiddenException, Logger, UseGuards } from '@nestjs/common';
 
 import { ChallengeService } from '../../../../shared/services/ChallengeService';
 import { UserService } from '../../../../shared/services/UserService';
@@ -9,8 +9,11 @@ import { Public } from '../../../../shared/decorators/PublicDecorator';
 import { ChallengeVerificationResponse } from '../../dto/ChallengeVerificationResponseDto';
 import { ChallengeEntity } from '../../../../shared/entities/ChallengeEntity';
 import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { Throttle } from '@nestjs/throttler';
+import { ThrottlerGraphqlGuard } from '../../../guards/ThrottlerGraphqlGuard';
 
-
+// TODO use @UseGuards(ThrottlerGraphqlGuard)
 @Resolver()
 export class LoginResolver {
 	private logger = new Logger(LoginResolver.name);
@@ -22,12 +25,14 @@ export class LoginResolver {
 		private readonly envService: EnvService,
 	) {}
 
+	//@Throttle({ default: { limit: 30, ttl: 60000 } })
 	@Public()
 	@Query(() => ChallengeEntity)
 	async getChallenge() {
 		return this.challengeService.createChallenge();
 	}
 
+	@Throttle({ default: { limit: 30, ttl: 60000 } })
 	@Public()
 	@Mutation(() => ChallengeVerificationResponse)
 	async verifyChallenge(
@@ -35,8 +40,6 @@ export class LoginResolver {
 		@Args('publicKey') publicKey: string,
 		@Args('signature') signature: string
 	): Promise<ChallengeVerificationResponse> {
-		await this.challengeService.deleteOutdatedChallenges();
-
 		// parse the public key
 		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
 		const parsedPublicKey =  signatureEncoder.decodePublicKey(publicKey);
@@ -67,5 +70,10 @@ export class LoginResolver {
 		this.logger.debug(`Challenge verified: Connection accepted with token: ${token}`)
 
 		return { token };
+	}
+
+	@Cron(CronExpression.EVERY_MINUTE)
+	async deleteOutdatedChallenge() {
+		await this.challengeService.deleteOutdatedChallenges();
 	}
 }

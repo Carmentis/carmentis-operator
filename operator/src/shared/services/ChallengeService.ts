@@ -91,21 +91,36 @@ export class ChallengeService {
 	/**
 	 * Deletes challenges that are outdated based on their validity interval.
 	 *
+	 * @param batchLimit The size of batch of challenges that should be deleted (used to prevent deletion of too much challenges at a time).
+	 *
 	 * @return {Promise<number>} The number of challenges deleted.
 	 */
-	async deleteOutdatedChallenges(): Promise<number> {
-		// Find all challenges that are outdated
-		const outdatedChallenges = await this.challengeRepository.find({
-			where: {
-				validUntil: LessThan(new Date()),
-			},
-		});
+	async deleteOutdatedChallenges(batchLimit: number = 100): Promise<number> {
+		let totalDeletedChallenges = 0;
+		let isDeletingOutdatedChallenge = true;
+		do {
+			// Find all challenges that are outdated
+			const outdatedChallenges = await this.challengeRepository.find({
+				where: {
+					validUntil: LessThan(new Date()),
+				},
+				take: batchLimit
+			});
 
-		// Delete all outdated challenges
-		if (outdatedChallenges.length > 0) {
-			await this.challengeRepository.remove(outdatedChallenges);
-		}
+			// Delete all outdated challenges
+			if (outdatedChallenges.length > 0) {
+				// delete the challenges
+				this.logger.verbose(`Deleting ${outdatedChallenges.length} outdated challenges`);
+				await this.challengeRepository.remove(outdatedChallenges);
 
-		return outdatedChallenges.length;
+				// update the total number of deleted challenges
+				totalDeletedChallenges += outdatedChallenges.length;
+			} else {
+				isDeletingOutdatedChallenge = false;
+			}
+		} while (isDeletingOutdatedChallenge);
+
+
+		return totalDeletedChallenges;
 	}
 }

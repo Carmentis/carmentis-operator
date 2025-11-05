@@ -9,6 +9,8 @@ import { join } from 'path';
 import { getDatabaseConfig } from './database/getDatabaseConfig';
 import { OperatorConfigService } from './config/services/operator-config.service';
 import { OperatorConfigModule } from './config/OperatorConfigModule';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
 	imports: [
@@ -16,6 +18,15 @@ import { OperatorConfigModule } from './config/OperatorConfigModule';
 		SharedModule,
 		OperatorApiModule,
 		WorkspaceApiModule,
+		ScheduleModule.forRoot(),
+		ThrottlerModule.forRoot({
+			throttlers: [
+				{
+					ttl: 60000,
+					limit: 1000,
+				},
+			],
+		}),
 		TypeOrmModule.forRootAsync({
 			imports: [OperatorConfigModule],
 			inject: [OperatorConfigService],
