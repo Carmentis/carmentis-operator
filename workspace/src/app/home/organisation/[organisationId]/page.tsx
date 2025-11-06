@@ -26,29 +26,11 @@ import {
 } from '@/generated/graphql';
 import SaveIcon from '@mui/icons-material/Save';
 import PublishIcon from '@mui/icons-material/Publish';
-import CheckIcon from '@mui/icons-material/Check';
-import PendingIcon from '@mui/icons-material/Pending';
-import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/client';
 import { motion } from 'framer-motion';
-import { OrganisationStepper } from '@/app/home/organisation/[organisationId]/OrganisationStepper';
 import { CheckComponent } from '@/app/home/organisation/[organisationId]/CheckComponent';
 import { useOrganisationPublicKey } from '@/hooks/useOrganisationPublicKey';
 import OrganisationWarnings from '@/app/home/organisation/[organisationId]/OrganisationWarnings';
 
-
-// Glass effect styles
-const glassStyles = {
-  background: 'rgba(255, 255, 255, 0.25)',
-  backdropFilter: 'blur(10px)',
-  border: '1px solid rgba(255, 255, 255, 0.18)',
-  boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
-  borderRadius: 2,
-  transition: 'all 0.3s ease-in-out',
-  '&:hover': {
-    transform: 'translateY(-5px)',
-    boxShadow: '0 15px 30px 0 rgba(31, 38, 135, 0.25)',
-  }
-};
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -160,85 +142,6 @@ function OrganisationPublicKey() {
 			</Typography>
 		</Box>
 	</>
-}
-
-/**
- * OrganisationChainStatus component displays the blockchain status of an organisation.
- * It shows whether the organisation has a token account and whether it is published on the blockchain.
- * The component uses visual indicators and descriptive text to make the information easy to understand.
- * 
- * @returns {JSX.Element} A component displaying the blockchain status of the organisation
- */
-function OrganisationChainStatus() {
-	const organisation = useOrganisation();
-	const {data, loading} = useGetOrganisationChainStatusQuery({
-		variables: {
-			organisationId: organisation.id,
-		},
-	});
-
-	if (loading) {
-		return (
-			<Card><Skeleton height={60} /></Card>
-		);
-	}
-
-	if (!data) {
-		return (
-			<Card><Typography color="error">No blockchain status data available</Typography></Card>
-		);
-	}
-
-	const { hasTokenAccount, isPublishedOnChain, hasEditedOrganization } = data.organisation.chainStatus;
-
-	// Calculate overall progress
-	const completedSteps = [hasTokenAccount, hasEditedOrganization, isPublishedOnChain].filter(Boolean).length;
-	const totalSteps = 3;
-	const progressPercentage = (completedSteps / totalSteps) * 100;
-
-	return (
-		<Card>
-			<Box 
-				sx={{
-					position: 'absolute',
-					bottom: 0,
-					left: 0,
-					height: '4px',
-					width: `${progressPercentage}%`,
-					bgcolor: progressPercentage === 100 ? 'success.main' : 'primary.main',
-					transition: 'width 0.5s ease-in-out'
-				}}
-			/>
-
-			<Typography variant="h6" fontWeight="500"  color="primary">
-				Blockchain Status
-			</Typography>
-			<Typography  mb={3}>
-				Below are shown the current status of the organisation. When all checks are green, the organization is ready to interact on chain.
-			</Typography>
-
-			<Grid container spacing={3}>
-				<CheckComponent 
-					condition={hasTokenAccount} 
-					title="Token Account" 
-					onChecked="Organisation has a token account" 
-					onNotChecked="Organisation does not have a token account" 
-				/>
-				<CheckComponent 
-					condition={hasEditedOrganization} 
-					title="Organization Edited" 
-					onChecked="Organization is ready to be published" 
-					onNotChecked="Edit organization before publishing" 
-				/>
-				<CheckComponent 
-					condition={isPublishedOnChain} 
-					title="Published on Blockchain" 
-					onChecked="Organisation published on the blockchain" 
-					onNotChecked="Organisation not visible on the blockchain"
-				/>
-			</Grid>
-		</Card>
-	);
 }
 
 

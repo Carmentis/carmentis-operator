@@ -144,8 +144,8 @@ export type MutationCreateApplicationInOrganisationArgs = {
 
 
 export type MutationCreateOrganisationArgs = {
+  encodedWalletSeed?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
-  privateKey?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -292,6 +292,7 @@ export type OrganisationEntity = {
   users: Array<UserEntity>;
   version: Scalars['Int']['output'];
   virtualBlockchainId?: Maybe<Scalars['String']['output']>;
+  walletSeed: Scalars['String']['output'];
   website: Scalars['String']['output'];
 };
 
@@ -508,7 +509,7 @@ export type GetOrganisationStatisticsQuery = { getOrganisationStatistics: { numb
 
 export type CreateOrganisationMutationVariables = Exact<{
   name: Scalars['String']['input'];
-  privateKey?: InputMaybe<Scalars['String']['input']>;
+  encodedWalletSeed?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -1364,8 +1365,8 @@ export type GetOrganisationStatisticsLazyQueryHookResult = ReturnType<typeof use
 export type GetOrganisationStatisticsSuspenseQueryHookResult = ReturnType<typeof useGetOrganisationStatisticsSuspenseQuery>;
 export type GetOrganisationStatisticsQueryResult = Apollo.QueryResult<GetOrganisationStatisticsQuery, GetOrganisationStatisticsQueryVariables>;
 export const CreateOrganisationDocument = gql`
-    mutation CreateOrganisation($name: String!, $privateKey: String) {
-  createOrganisation(name: $name, privateKey: $privateKey) {
+    mutation CreateOrganisation($name: String!, $encodedWalletSeed: String) {
+  createOrganisation(name: $name, encodedWalletSeed: $encodedWalletSeed) {
     id
     name
     publicSignatureKey
@@ -1388,7 +1389,7 @@ export type CreateOrganisationMutationFn = Apollo.MutationFunction<CreateOrganis
  * const [createOrganisationMutation, { data, loading, error }] = useCreateOrganisationMutation({
  *   variables: {
  *      name: // value for 'name'
- *      privateKey: // value for 'privateKey'
+ *      encodedWalletSeed: // value for 'encodedWalletSeed'
  *   },
  * });
  */

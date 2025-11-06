@@ -106,7 +106,7 @@ function Welcome() {
 
 function CreateYourOrganisation() {
 	const [name, setName] = useState("");
-	const [privateKey, setPrivateKey] = useState("");
+	const [encodedWalletSeed, setEncodedWalletSeed] = useState("");
 	const [createOrganisationMutation, {loading: isCreatingOrganisation}] = useCreateOrganisationMutation();
 	const navigation = useApplicationNavigationContext();
 	const notify = useToast();
@@ -116,7 +116,7 @@ function CreateYourOrganisation() {
 			notify.error("Organisation name cannot be empty");
 			return;
 		}
-		createOrganisationMutation({ variables: { name, privateKey: privateKey.trim() } })
+		createOrganisationMutation({ variables: { name, encodedWalletSeed: encodedWalletSeed.trim() } })
 			.then(({data, errors}) => {
 				if (errors) {
 					notify.error(errors);
@@ -145,14 +145,14 @@ function CreateYourOrganisation() {
 					<TextField
 						size="small"
 						fullWidth
-						label="Organization private key (optional)"
-						placeholder="Paste a private key to use"
-						value={privateKey}
-						onChange={(e) => setPrivateKey(e.target.value)}
-						helperText="Optional. If provided, the server will use this private key for the organization. Leave empty to generate a new secure key automatically."
+						label="Organization wallet seed (optional)"
+						placeholder="Paste an encoded wallet seed to use"
+						value={encodedWalletSeed}
+						onChange={(e) => setEncodedWalletSeed(e.target.value)}
+						helperText="Optional. If provided, the server will use this wallet seed to generate keys for the organization. Leave empty to generate it automatically."
 					/>
 					<Typography variant="body2" color="text.secondary">
-						Keep this private key secure. Anyone with this key can control the organization&apos;s on-chain account.
+						Keep this seed secure. Anyone with it can control the organization.
 					</Typography>
 				</Box>
 			</DialogContent>
@@ -173,7 +173,7 @@ function CreateYourOrganisation() {
 				</Button>
 			</DialogActions>
 		</Dialog>
-	), [name, privateKey, isCreatingOrganisation]);
+	), [name, encodedWalletSeed, isCreatingOrganisation]);
 
 
 	return <Box>

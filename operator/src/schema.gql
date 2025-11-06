@@ -26,7 +26,7 @@ type OrganisationEntity {
   city: String!
   countryCode: String!
   website: String!
-  publicSignatureKey: String!
+  walletSeed: String!
   createdAt: DateTime!
   lastUpdateAt: DateTime!
   version: Int!
@@ -36,6 +36,7 @@ type OrganisationEntity {
   nodes: [NodeEntity!]!
   hasTokenAccount: Boolean!
   isAnchoredOnChain: Boolean!
+  publicSignatureKey: String!
   chainStatus: OrganisationChainStatusType!
   transactions(limit: Int!, fromHistoryHash: String): [TransactionType!]!
 }
@@ -150,7 +151,7 @@ type Query {
 type Mutation {
   verifyChallenge(challenge: String!, publicKey: String!, signature: String!): ChallengeVerificationResponse!
   setupFirstAdministrator(setupFirstAdmin: SetupFirstAdminDto!): Boolean!
-  createOrganisation(name: String!, privateKey: String): OrganisationEntity!
+  createOrganisation(name: String!, encodedWalletSeed: String): OrganisationEntity!
   createUser(publicKey: String!, firstname: String!, lastname: String!, isAdmin: Boolean!): UserEntity!
   updateUserAdminStatus(publicKey: String!, isAdmin: Boolean!): UserEntity!
   deleteUser(publicKey: String!): UserEntity!

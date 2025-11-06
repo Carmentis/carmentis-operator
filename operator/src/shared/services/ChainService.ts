@@ -1,18 +1,15 @@
-import {
-	BadRequestException,
-	HttpException,
-	Injectable,
-	Logger,
-	NotFoundException,
-	UnprocessableEntityException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import {
 	ApplicationPublicationExecutionContext,
-	Blockchain, BlockchainFacade, CometBFTPublicKey, CryptoEncoderFactory,
-	Explorer,
-	Hash, OrganizationPublicationExecutionContext, OrganizationWrapper,
+	Blockchain,
+	BlockchainFacade, CMTSToken,
+	CryptoEncoderFactory,
+	Hash,
+	OrganizationPublicationExecutionContext,
+	OrganizationWrapper,
 	ProviderFactory,
 	PublicSignatureKey,
+	SignatureSchemeId,
 	StringSignatureEncoder,
 	ValidatorNodePublicationExecutionContext,
 } from '@cmts-dev/carmentis-sdk/server';
@@ -65,9 +62,11 @@ export default class ChainService {
 
 
 		// load organisation key pair
-		const signatureEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
-		const organisationPrivateKey = signatureEncoder.decodePrivateKey(organisationEntity.privateSignatureKey);
-
+		//const signatureEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
+		//const organisationPrivateKey = signatureEncoder.decodePrivateKey(organisationEntity.privateSignatureKey);
+		const walletCrypto = organisationEntity.getWallet();
+		const orgAccount = walletCrypto.getDefaultAccountCrypto();
+		const organisationPrivateKey = orgAccount.getPrivateSignatureKey(SignatureSchemeId.SECP256K1);
 
 
 		// create or update the application
@@ -99,8 +98,7 @@ export default class ChainService {
 	): Promise<Hash> {
 
 		// load the organisation key pair and application id
-		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-		const organisationPrivateKey = signatureEncoder.decodePrivateKey(organisation.privateSignatureKey);
+		const organisationPrivateKey = organisation.getPrivateSignatureKey();
 		const applicationId = applicationEntity.virtualBlockchainId;
 		const isAlreadyPublished = applicationEntity.published;
 
@@ -135,14 +133,22 @@ export default class ChainService {
 
 
 	async getTransactionsHistory(publicSignatureKey: PublicSignatureKey, fromHistoryHash: string | undefined, limit: number) {
-		return this.blockchain.getAccountHistoryFromPublicKey(publicSignatureKey);
+		this.logger.debug("Getting transactions history");
+		return await this.blockchain.getAccountHistoryFromPublicKey(publicSignatureKey);
 	}
 
 	async getBalanceOfAccount(publicSignatureKey: PublicSignatureKey) {
-		return this.blockchain.getAccountBalanceFromPublicKey(publicSignatureKey);
+		try {
+			this.logger.debug("Getting balance of account");
+			return this.blockchain.getAccountBalanceFromPublicKey(publicSignatureKey);
+		} catch {
+			return CMTSToken.zero();
+		}
 	}
 
 	async checkPublishedOnChain(organisation: OrganisationEntity) {
+		this.logger.debug("Checking organisation published on chain");
+
 		// if the organisation do not have virtual blockchain id, it has not been published
 		if (!organisation.virtualBlockchainId) return false;
 
@@ -199,10 +205,6 @@ export default class ChainService {
 	 * @param organization
 	 */
 	async mutateOrganizationFromDataOnChain(organization: OrganisationEntity) {
-		// we first decode the public key of the organization.
-		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-		const publicKey = signatureEncoder.decodePublicKey(organization.publicSignatureKey);
-
 		// If the organization contains a virtual blockchain id, we need to know if the organization
 		// is still valid or not.
 		const hasOrganizationId = organization.hasVirtualBlockchainId();
@@ -226,13 +228,17 @@ export default class ChainService {
 		}
 
 		// if the organization has not been found on chain, we launch a search by its public key
+		// TODO: search for all types of public keys
+		const publicKey = organization.getPublicSignatureKey();
 		const { found, organization: foundOrganization, organizationId: foundOrganizationId } =
 			await this.searchOrganizationFromChain(publicKey);
+
 		if (found) {
 			fetchedOrganization = foundOrganization;
 			fetchedOrganizationHash = foundOrganizationId
 		} else {
-			this.logger.debug(`Organization not found on chain by its public key ${organization.publicSignatureKey}`)
+			const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
+			this.logger.debug(`Organization not found on chain by its public key ${encoder.encodePublicKey(publicKey)}`)
 		}
 
 
@@ -272,17 +278,17 @@ export default class ChainService {
 		return { found: false, organization: undefined, organizationId: undefined };
 	}
 
-	async fetchApplicationsAssociatedWithOrganizationsFromChain(organisation: OrganisationEntity) {
+	async fetchApplicationsAssociatedWithOrganizationsFromChain(organization: OrganisationEntity) {
 		// TODO: This method can be time-consuming, we need a more direct approach!!!
 		const managedApplications: Partial<ApplicationEntity>[] = [];
-		const encoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-		const myPublicKey = organisation.publicSignatureKey;
 		const allApplicationsHashes = await this.blockchain.getAllApplications();
 		for (const applicationHash of allApplicationsHashes) {
 			const application = await this.blockchain.loadApplication(applicationHash);
 			const organizationHoldingApplication = await this.blockchain.loadOrganization(application.getOrganizationId());
 			const organizationPublicKey = organizationHoldingApplication.getPublicKey();
-			if (myPublicKey === encoder.encodePublicKey(organizationPublicKey)) {
+			const organizationPublicKeyType = organizationPublicKey.getSignatureSchemeId();
+			const myPublicKey = organization.getPublicSignatureKey(organizationPublicKeyType);
+			if (myPublicKey.getPublicKeyAsString() === organizationPublicKey.getPublicKeyAsString()) {
 				managedApplications.push({
 					name: application.getName(),
 					website: application.getWebsite(),
@@ -292,7 +298,7 @@ export default class ChainService {
 					virtualBlockchainId: applicationHash.encode(),
 					published: true,
 					description: application.getDescription(),
-					organisation,
+					organisation: organization,
 				});
 			}
 		}
@@ -301,15 +307,17 @@ export default class ChainService {
 
 	async fetchNodesAssociatedWithOrganizationFromChain(organization: OrganisationEntity) {
 		const managedNodes: Partial<NodeEntity>[] = [];
-		const encoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-		const myPublicKey = organization.publicSignatureKey;
+		const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
+
 		const allNodesHashes = await this.blockchain.getAllValidatorNodes();
 		let nodeIndex = 1; // we create a default alias for nodes we are loading
 		for (const nodeHash of allNodesHashes) {
 			const node = await this.blockchain.loadValidatorNode(nodeHash);
 			const organizationHoldingNode = await this.blockchain.loadOrganization(node.getOrganizationId());
 			const organizationPublicKey = organizationHoldingNode.getPublicKey();
-			if (myPublicKey === encoder.encodePublicKey(organizationPublicKey)) {
+			const organizationPublicKeyType = organizationPublicKey.getSignatureSchemeId();
+			const myPublicKey = organization.getPublicSignatureKey(organizationPublicKeyType);
+			if (myPublicKey.getPublicKeyAsString() === organizationPublicKey.getPublicKeyAsString()) {
 				managedNodes.push({
 					organisation: organization,
 					nodeAlias: `Node ${nodeIndex}`,

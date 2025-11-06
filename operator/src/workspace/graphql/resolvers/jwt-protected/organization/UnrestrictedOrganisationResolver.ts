@@ -32,9 +32,9 @@ export class UnrestrictedOrganisationResolver extends JwtProtectedResolver {
 	async createOrganisation(
 		@CurrentUser() user: UserEntity,
 		@Args('name') name: string,
-		@Args('privateKey', { nullable: true }) privateKey?: string,
+		@Args('encodedWalletSeed', { nullable: true }) encodedWalletSeed?: string,
 	) {
-		return this.organisationService.createByName(user, name, privateKey)
+		return this.organisationService.createByName(user, name, encodedWalletSeed)
 	}
 
 }

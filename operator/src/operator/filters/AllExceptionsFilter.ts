@@ -13,10 +13,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
 		// Si l'exception est une HttpException, on peut récupérer la stack
 		if (exception instanceof HttpException) {
-			console.error(exception.stack);
+			console.error("HttpException", exception.stack);
 		} else if (exception instanceof Error) {
 			// Pour les autres erreurs standards
-			console.error(exception.stack);
+			console.error("Error:", exception.stack);
 		} else {
 			// Si ce n'est pas une Error (cas très rare)
 			console.error('Exception inconnue :', exception);

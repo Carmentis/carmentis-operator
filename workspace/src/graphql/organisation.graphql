@@ -51,8 +51,8 @@ query GetOrganisationStatistics($id: Int!) {
   }
 }
 
-mutation CreateOrganisation($name: String!, $privateKey: String) {
-  createOrganisation(name: $name, privateKey: $privateKey) {
+mutation CreateOrganisation($name: String!, $encodedWalletSeed: String) {
+  createOrganisation(name: $name, encodedWalletSeed: $encodedWalletSeed) {
     id
     name
     publicSignatureKey

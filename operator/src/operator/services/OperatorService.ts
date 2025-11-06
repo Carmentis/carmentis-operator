@@ -103,8 +103,7 @@ export class OperatorService {
 		// load the initial anchor request and halts if the request is not pending
 		const storedRequest = await this.loadAnchorRequestFromDataId(anchorRequestId);
 		const {application, organisation} = await this.loadApplicationAndOrganisationFromAnchorRequest(storedRequest);
-		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-		const organisationPrivateKey = signatureEncoder.decodePrivateKey(organisation.privateSignatureKey);
+		const organisationPrivateKey = organisation.getPrivateSignatureKey();
 		const provider = ProviderFactory.createKeyedProviderExternalProvider(organisationPrivateKey, this.envService.nodeUrl);
 		const blockchain = Blockchain.createFromProvider(provider);
 		let applicationLedger = await this.loadApplicationLedger(blockchain, application, storedRequest.request);
@@ -167,7 +166,7 @@ export class OperatorService {
 			const {application, organisation} = await this.loadApplicationAndOrganisationFromAnchorRequest(storedRequest);
 			
 			// decode the organization private key
-			const organisationPrivateKey = signatureEncoder.decodePrivateKey(organisation.privateSignatureKey);
+			const organisationPrivateKey = organisation.getPrivateSignatureKey();
 
 			// recover the application ledger 
 			const provider = ProviderFactory.createKeyedProviderExternalProvider(organisationPrivateKey, this.envService.nodeUrl);
@@ -261,8 +260,7 @@ export class OperatorService {
 
 			// load the organization private signature key
 			const {organisation} = await this.loadApplicationAndOrganisationFromAnchorRequest(storedRequest);
-			const signatureEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
-			const organisationPrivateKey = signatureEncoder.decodePrivateKey(organisation.privateSignatureKey);
+			const organisationPrivateKey = organisation.getPrivateSignatureKey();
 			
 
 			// search for the application ledger under approval in the map

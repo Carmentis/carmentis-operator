@@ -14,7 +14,13 @@ import { OrganisationAccessRightEntity } from '../entities/OrganisationAccessRig
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import ChainService from './ChainService';
 import { CryptoService } from './CryptoService';
-import { PrivateSignatureKey, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
+import {
+	CryptoEncoderFactory, NodeConnectionRefusedError, NodeEndpointClosedWhileCatchingUpError,
+	ParsingError,
+	PrivateSignatureKey,
+	StringSignatureEncoder,
+	WalletCrypto,
+} from '@cmts-dev/carmentis-sdk/server';
 import { NodeEntity } from '../entities/NodeEntity';
 import { NodeService } from './NodeService';
 
@@ -69,14 +75,6 @@ export class OrganisationService {
 		return organisation;
 	}
 
-	async findPublicKeyById(organisationId: number): Promise<{publicSignatureKey: string}> {
-		return await this.organisationEntityRepository.findOne({
-			where: {id: organisationId},
-			select: ['publicSignatureKey'],
-		});
-	}
-
-
 	async findAllUsersInOrganisation(organisationId: number): Promise<UserEntity[]> {
 		return this.userRepository.find({
 			where: { accessRights: { organisation: { id: organisationId } } },
@@ -96,46 +94,42 @@ export class OrganisationService {
 	 *
 	 * @param {UserEntity} authUser - The authenticated user who will be granted administrative rights to the newly created organisation.
 	 * @param {string} organisationName - The name of the organisation to be created.
-	 * @param privateKey
+	 * @param encodedWalletSeed
 	 * @return {Promise<OrganisationEntity>} A promise that resolves to the newly created organisation entity.
 	 */
-	async createByName(authUser: UserEntity, organisationName: string, privateKey?: string): Promise<OrganisationEntity> {
+	async createByName(authUser: UserEntity, organisationName: string, encodedWalletSeed?: string): Promise<OrganisationEntity> {
 
 		// create the organisation
 		const item = this.organisationEntityRepository.create({
 			name: organisationName,
 		});
-
-		// If a private key is provided, we allow the creation of an organisation to fail
-		// if the provided key cannot be decoded.
-		let privateKeyToUse: PrivateSignatureKey;
-		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-		if (typeof privateKey === 'string' && privateKey.length > 0) {
+		
+		// If a wallet seed is provided, we reject the creation of an organisation 
+		// if we cannot decode it
+		let wallet: WalletCrypto;
+		if (typeof encodedWalletSeed === 'string' && encodedWalletSeed.trim().length > 0) {
 			try {
-				const sk = signatureEncoder.decodePrivateKey(privateKey);
-				const pk = sk.getPublicKey();
-				this.logger.log(`Recognized public key for organization: ${signatureEncoder.encodePublicKey(pk)}`)
-				privateKeyToUse = sk;
+				wallet = WalletCrypto.parseFromString(encodedWalletSeed);
 			} catch (e) {
-				throw new BadRequestException('Invalid private key provided.')
+				if (e instanceof ParsingError) {
+					throw new BadRequestException("Invalid seed provided");
+				}
+				throw new InternalServerErrorException(e);
 			}
 		} else {
-			this.logger.log("No private key provided: use a randomly chosen one")
-			const {sk, pk} = this.cryptoService.randomKeyPair();
-			privateKeyToUse = sk;
+			this.logger.log("No seed provided: use a randomly chosen one")
+			wallet = WalletCrypto.generateWallet();
 		}
 
-		// we reject the creation of the organization if the public key already exists in database
-		const encodedPublicKeyToUse = signatureEncoder.encodePublicKey(privateKeyToUse.getPublicKey());
-		const foundOrganizationWithPublicKey = await this.organisationEntityRepository.findOneBy({
-			publicSignatureKey: encodedPublicKeyToUse,
-		})
-		if (foundOrganizationWithPublicKey instanceof OrganisationEntity) throw new BadRequestException('An organization with the same private key already exists.')
+		// update the created organization with the wallet seed and the public key.
+
 
 		// log the public key of the organization being created
-		item.privateSignatureKey = signatureEncoder.encodePrivateKey(privateKeyToUse);
-		item.publicSignatureKey = encodedPublicKeyToUse;
-		this.logger.log(`Creating organization ${organisationName} with pk: ${item.publicSignatureKey}`);
+		const sigEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
+		const publicKey = wallet.getPrivateSignatureKey().getPublicKey();
+		const encodedPublicKey = sigEncoder.encodePublicKey(publicKey);
+		item.walletSeed = wallet.encode();
+		this.logger.log(`Creating organization ${organisationName} with pk: ${encodedPublicKey}`);
 		const organisation = await this.organisationEntityRepository.save(item);
 
 		// we create an initial access right with the provided public key
@@ -158,9 +152,19 @@ export class OrganisationService {
 	 * @param organization
 	 */
 	async synchronizeOrganizationWithApplicationsAndNodesFromChain(organization: OrganisationEntity) {
-		await this.mutateOrganizationFromDataOnChain(organization);
-		await this.mutateApplicationsOfOrganizationFromDataOnChain(organization);
-		await this.mutateNodesOfOrganizationFromDataOnChain(organization);
+		try {
+			await this.mutateOrganizationFromDataOnChain(organization);
+			await this.mutateApplicationsOfOrganizationFromDataOnChain(organization);
+			await this.mutateNodesOfOrganizationFromDataOnChain(organization);
+		} catch (e) {
+			// In case where the node cannot be contacted, which may happen
+			if (e instanceof NodeConnectionRefusedError || e instanceof NodeEndpointClosedWhileCatchingUpError) {
+				this.logger.log(`Unable to connect to the node: ${e.message}`);
+			} else {
+				throw new InternalServerErrorException(e);
+			}
+		}
+
 		return organization;
 	}
 

@@ -5,7 +5,12 @@ import { OrganizationMemberRestrictedOrganizationGuard } from '../../../../guard
 import { JwtProtectedResolver } from '../JwtProtectedResolver';
 import { OrganisationByIdPipe } from '../../../../pipes/OrganisationByIdPipe';
 import { Transaction } from '@cmts-dev/carmentis-sdk';
-import { CMTSToken, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
+import {
+	CMTSToken,
+	CryptoEncoderFactory,
+	SignatureSchemeId,
+	StringSignatureEncoder,
+} from '@cmts-dev/carmentis-sdk/server';
 import { CurrentUser } from '../../../../decorators/CurrentUserDecorator';
 import { UserEntity } from '../../../../../shared/entities/UserEntity';
 import ChainService from '../../../../../shared/services/ChainService';
@@ -30,8 +35,7 @@ export class OrganizationAdditionalFieldsResolver extends JwtProtectedResolver {
 		const isAuthorized = this.organisationService.isAuthorizedUser(user, organisation);
 		if (!isAuthorized) throw new ForbiddenException();
 		try {
-			const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-			const publicKey = signatureEncoder.decodePublicKey(organisation.publicSignatureKey);
+			const publicKey = organisation.getPublicSignatureKey();
 			const balance = await this.chainService.getBalanceOfAccount(publicKey);
 			return balance.toString();
 		} catch (error) {
@@ -41,12 +45,12 @@ export class OrganizationAdditionalFieldsResolver extends JwtProtectedResolver {
 
 	@ResolveField(() => [UserEntity], { name: 'users' })
 	async getUsersInOrganisation(@Parent() organisation: OrganisationEntity): Promise<UserEntity[]> {
-		return this.organisationService.findAllUsersInOrganisation(organisation.id);
+		return await this.organisationService.findAllUsersInOrganisation(organisation.id);
 	}
 
 	@ResolveField(() => [NodeEntity], { name: 'nodes' })
 	async getNodesInOrganisation(@Parent() organisation: OrganisationEntity): Promise<NodeEntity[]> {
-		return this.organisationService.findAllNodesInOrganisation(organisation.id);
+		return await this.organisationService.findAllNodesInOrganisation(organisation.id);
 	}
 
 
@@ -54,11 +58,8 @@ export class OrganizationAdditionalFieldsResolver extends JwtProtectedResolver {
 	async hasTokenAccount(
 		@Parent() organisation: OrganisationEntity,
 	) {
-		const {publicSignatureKey} = await this.organisationService.findPublicKeyById(organisation.id);
-		const publicKeySignatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-		return this.chainService.checkAccountExistence(
-			publicKeySignatureEncoder.decodePublicKey(publicSignatureKey)
-		)
+		const publicKey = organisation.getPublicSignatureKey();
+		return await this.chainService.checkAccountExistence(publicKey)
 	}
 
 	@ResolveField(() => Boolean, { name: 'isAnchoredOnChain' })
@@ -69,15 +70,28 @@ export class OrganizationAdditionalFieldsResolver extends JwtProtectedResolver {
 		return { published }
 	}
 
+
+	/**
+	 * Returns the public key of the organization.
+	 * @param organisation
+	 */
+	@ResolveField(() => String, { name: 'publicSignatureKey' })
+	getPublicSignatureKey(
+		@Parent() organisation: OrganisationEntity,
+	) {
+		const usedSchemeId=  SignatureSchemeId.SECP256K1;
+		const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
+		return encoder.encodePublicKey(
+			organisation.getPublicSignatureKey(usedSchemeId)
+		);
+	}
+
 	@ResolveField(() => OrganisationChainStatusType, { name: 'chainStatus' })
 	async getChainStatus(
 		@Parent() organisation: OrganisationEntity,
 	) {
-		const {publicSignatureKey} = await this.organisationService.findPublicKeyById(organisation.id);
-		const publicKeySignatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-		const hasTokenAccount = await this.chainService.checkAccountExistence(
-			publicKeySignatureEncoder.decodePublicKey(publicSignatureKey)
-		);
+		const publicKey = organisation.getPublicSignatureKey();
+		const hasTokenAccount = await this.chainService.checkAccountExistence(publicKey);
 		const hasEditedOrganization = organisation.isReadyToBePublished();
 		const isPublishedOnChain = await this.chainService.checkPublishedOnChain(organisation);
 		return { hasTokenAccount, isPublishedOnChain, hasEditedOrganization }
@@ -90,10 +104,9 @@ export class OrganizationAdditionalFieldsResolver extends JwtProtectedResolver {
 		@Args('fromHistoryHash', { nullable: true }) fromHistoryHash : string | undefined,
 	): Promise<TransactionType[]> {
 		try {
-			const {publicSignatureKey} = await this.organisationService.findPublicKeyById(organisation.id);
-			const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+			const publicKey = organisation.getPublicSignatureKey();
 			const accountHistory = await this.chainService.getTransactionsHistory(
-				signatureEncoder.decodePublicKey(publicSignatureKey),
+				publicKey,
 				fromHistoryHash,
 				parseInt(limit)
 			);

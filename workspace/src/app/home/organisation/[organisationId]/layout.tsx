@@ -16,6 +16,7 @@ import useOrganisationHasAccount from '@/hooks/useOrganisationHasAccount';
 import { useOrganisation } from '@/contexts/organisation-store.context';
 import useOrganisationAsync from '@/hooks/useOrganisationAsync';
 import { Box, Button, Card, CardActions, Container, Grid, Typography } from '@mui/material';
+import { useOrganizationDeletion } from '@/hooks/useOrganizationDeletion';
 
 
 export default function RootLayout({ children }: PropsWithChildren) {
@@ -75,28 +76,31 @@ function OrganisationPage({children}: PropsWithChildren) {
 function NeedToCreateAccount() {
 	const organisation = useOrganisation();
 	const publicKey = organisation?.publicSignatureKey ?? '—';
-
+	const {deleteOrg, isDeleting} = useOrganizationDeletion();
 	return <Container>
 		<Grid>
 			<Card>
-				<Box sx={{display: "flex", gap:2, alignItems: "center"}}>
-					<div
-						aria-hidden="true"
-						style={{
-							width: 38,
-							height: 38,
-							borderRadius: 8,
-							background: '#eef2f7',
-							display: 'flex',
-							alignItems: 'center',
-							justifyContent: 'center',
-							fontWeight: 600,
-							color: '#374151',
-						}}
-					>
-						{organisation.name.slice(0, 1).toUpperCase()}
-					</div>
-					<Typography variant={"h5"}>{organisation.name}</Typography>
+				<Box sx={{display: "flex", gap:2, justifyContent: "space-between"}}>
+					<Box sx={{display: "flex", gap:2, alignItems: "center"}}>
+						<div
+							aria-hidden="true"
+							style={{
+								width: 38,
+								height: 38,
+								borderRadius: 8,
+								background: '#eef2f7',
+								display: 'flex',
+								alignItems: 'center',
+								justifyContent: 'center',
+								fontWeight: 600,
+								color: '#374151',
+							}}
+						>
+							{organisation.name.slice(0, 1).toUpperCase()}
+						</div>
+						<Typography variant={"h5"}>{organisation.name}</Typography>
+					</Box>
+					<Button onClick={() => deleteOrg(organisation.id)}>Delete</Button>
 				</Box>
 
 				<Box sx={{display:"flex", flexDirection: "column", gap: 2, mt: 4}}>

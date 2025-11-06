@@ -1,10 +1,16 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { OrganisationAccessRightEntity } from './OrganisationAccessRightEntity';
 import { ApplicationEntity } from './ApplicationEntity';
-import { Exclude } from 'class-transformer';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EncryptedColumn } from '../decorators/EncryptionDecorator';
-import { Hash, PrivateSignatureKey, PublicSignatureKey, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
+import {
+	Hash,
+	PrivateSignatureKey,
+	PublicSignatureKey,
+	SignatureSchemeId,
+	StringSignatureEncoder,
+	WalletCrypto,
+} from '@cmts-dev/carmentis-sdk/server';
 import { NodeEntity } from './NodeEntity';
 
 @ObjectType()
@@ -48,12 +54,9 @@ export class OrganisationEntity extends BaseEntity {
 	@Column({default: ''})
 	website: string;
 
-	@EncryptedColumn()
-	privateSignatureKey: string;
-
 	@Field(type => String)
-	@Column()
-	publicSignatureKey: string;
+	@EncryptedColumn()
+	walletSeed: string;
 
 	@OneToMany(() => ApplicationEntity, (app) => app.organisation, { cascade: true })
 	applications: ApplicationEntity[];
@@ -89,14 +92,21 @@ export class OrganisationEntity extends BaseEntity {
 		return Hash.from(this.virtualBlockchainId);
 	}
 
-	getPrivateSignatureKey(): PrivateSignatureKey {
-		const encoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-		return encoder.decodePrivateKey(this.privateSignatureKey);
+	getWallet(): WalletCrypto {
+		return WalletCrypto.parseFromString(this.walletSeed);
 	}
 
-	getPublicSignatureKey(): PublicSignatureKey {
-		const encoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-		return encoder.decodePublicKey(this.publicSignatureKey);
+	getPrivateSignatureKey(schemeId: SignatureSchemeId = SignatureSchemeId.SECP256K1): PrivateSignatureKey {
+		const wallet = this.getWallet();
+		return wallet
+			.getDefaultAccountCrypto()
+			.getPrivateSignatureKey(schemeId);
+		//return wallet.getPrivateSignatureKey();
+	}
+
+	getPublicSignatureKey(schemeId: SignatureSchemeId = SignatureSchemeId.SECP256K1): PublicSignatureKey {
+		const privateKey = this.getPrivateSignatureKey(schemeId);
+		return privateKey.getPublicKey();
 	}
 
 	getId() {

@@ -3,7 +3,7 @@
 import { AuthenticatedUserSidebarItem, CarmentisLogo, SidebarItem } from '@/components/sidebar/sidebar-components';
 import Skeleton from 'react-loading-skeleton';
 import { useLinkedNodeStatus } from '@/hooks/useLinkedNodeStatus';
-import { Box, Card, Typography } from '@mui/material';
+import { Alert, Box, Card, Typography } from '@mui/material';
 import StorageIcon from '@mui/icons-material/Storage';
 import HomeIcon from '@mui/icons-material/Home';
 import PeopleIcon from '@mui/icons-material/People';
@@ -32,18 +32,31 @@ export default function HomeSideBar() {
 
 function LinkedNodeSidebarItem() {
 	const {status: nodeStatus, loading, error} = useLinkedNodeStatus();
-	if (loading) return <Skeleton/>
-	if (!nodeStatus || error) return <>{error?.message}</>
-	return <Card sx={{p:2}}>
-		<Box display={"flex"} flexDirection={"row"} gap={1}>
-			<StorageIcon/>
-			<Typography>
-				{nodeStatus.getNodeName()}
-			</Typography>
-		</Box>
-		<Typography variant={"body1"} color={"textSecondary"}>
-			You are connected to chain <Typography>{nodeStatus.getChainId()}.</Typography>
-		</Typography>
 
-	</Card>
+	// show a loading status
+	if (loading) return <Skeleton/>
+
+	// compute the message to show
+	let content = <></>
+	if (!nodeStatus || error) {
+		content = <Alert severity={"warning"} >
+			Node offline
+		</Alert>
+	} else {
+		content = <Card sx={{p:2}}>
+			<Box display={"flex"} flexDirection={"row"} gap={1}>
+				<StorageIcon/>
+				<Typography>
+					{nodeStatus.getNodeName()}
+				</Typography>
+			</Box>
+			<Typography variant={"body1"} color={"textSecondary"}>
+				You are connected to chain <Typography>{nodeStatus.getChainId()}.</Typography>
+			</Typography>
+		</Card>
+	}
+
+	return <>
+		{content}
+	</>
 }
