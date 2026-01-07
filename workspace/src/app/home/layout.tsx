@@ -29,31 +29,64 @@ export default function RootLayout({ children }: PropsWithChildren) {
 
   return (
     <UserAuthenticationContextProvider>
-      <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f8f9fa' }}>
+      <Box sx={{ display: 'flex', height: '100vh', bgcolor: 'grey.50' }}>
         {/* Mobile menu button */}
         {isMobile && (
           <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
+            aria-label="Toggle navigation menu"
             onClick={handleDrawerToggle}
-            sx={{ 
-              position: 'fixed', 
-              top: 10, 
-              left: 10, 
-              zIndex: 1200,
-              bgcolor: 'white',
-              boxShadow: 1,
-              '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' }
+            sx={{
+              position: 'fixed',
+              top: 16,
+              left: 16,
+              zIndex: 1300,
+              bgcolor: 'background.paper',
+              boxShadow: 2,
+              '&:hover': {
+                bgcolor: 'background.paper',
+                boxShadow: 3,
+              },
             }}
           >
             <MenuIcon />
           </IconButton>
         )}
 
+        {/* Toggle button for desktop */}
+        {!isMobile && (
+          <IconButton
+            onClick={handleDrawerToggle}
+            sx={{
+              position: 'fixed',
+              top: 16,
+              left: drawerWidth - 20,
+              zIndex: 1300,
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              width: 32,
+              height: 32,
+              transition: theme.transitions.create('left', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+              '&:hover': {
+                bgcolor: 'action.hover',
+              },
+            }}
+          >
+            <ChevronLeftIcon
+              sx={{
+                transform: interfaceStore.sidebarHidden ? 'rotate(180deg)' : 'none',
+                transition: 'transform 0.2s',
+              }}
+            />
+          </IconButton>
+        )}
+
         {/* Sidebar */}
         <Drawer
-          variant={isMobile ? "temporary" : "permanent"}
+          variant={isMobile ? 'temporary' : 'permanent'}
           open={isMobile ? mobileOpen : true}
           onClose={isMobile ? handleDrawerToggle : undefined}
           sx={{
@@ -62,9 +95,9 @@ export default function RootLayout({ children }: PropsWithChildren) {
             '& .MuiDrawer-paper': {
               width: drawerWidth,
               boxSizing: 'border-box',
-              bgcolor: '#f0f2f5',
-              borderRight: 'none',
-              boxShadow: '0 0 10px rgba(0,0,0,0.05)',
+              bgcolor: 'background.default',
+              borderRight: 1,
+              borderColor: 'divider',
               transition: theme.transitions.create('width', {
                 easing: theme.transitions.easing.sharp,
                 duration: theme.transitions.duration.enteringScreen,
@@ -72,9 +105,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
             },
           }}
         >
-          <Box sx={{ p: 2, }} className={"h-full"}>
-            {sidebar}
-          </Box>
+          <Box sx={{ p: 2, height: '100%' }}>{sidebar}</Box>
         </Drawer>
 
         {/* Main content */}
@@ -82,13 +113,9 @@ export default function RootLayout({ children }: PropsWithChildren) {
           component="main"
           sx={{
             flexGrow: 1,
-            p: 3,
+            p: { xs: 2, sm: 3 },
             width: { sm: `calc(100% - ${drawerWidth}px)` },
-            //ml: { sm: `${drawerWidth}px` },
-            bgcolor: 'white',
-            //borderRadius: '12px',
-            //boxShadow: '0 0 20px rgba(0,0,0,0.03)',
-            //m: 2,
+            bgcolor: 'background.default',
             overflow: 'auto',
             transition: theme.transitions.create(['margin', 'width'], {
               easing: theme.transitions.easing.sharp,

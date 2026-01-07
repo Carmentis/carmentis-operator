@@ -1,203 +1,205 @@
 'use client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { Box, Breadcrumbs, Button, ButtonBase, Chip, Skeleton, Stack, Typography } from '@mui/material';
+import SaveIcon from '@mui/icons-material/Save';
+import PublishIcon from '@mui/icons-material/Publish';
+import DeleteIcon from '@mui/icons-material/Delete';
+import GridViewIcon from '@mui/icons-material/GridView';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { useToast } from '@/app/layout';
 import { useOrganisation } from '@/contexts/organisation-store.context';
-import { useAtomValue, useSetAtom } from 'jotai';
-import {
-	applicationAtom,
-	referenceApplicationAtom,
-} from '@/app/home/organisation/[organisationId]/application/[applicationId]/atoms';
+import { applicationAtom, referenceApplicationAtom } from './atoms';
 import { useConfirmationModal } from '@/contexts/popup-modal.component';
-import Skeleton from 'react-loading-skeleton';
-import { Box, Breadcrumbs, Button, Chip, Typography } from '@mui/material';
-import { ArrowUpOnSquareIcon, TrashIcon } from '@heroicons/react/16/solid';
-import Spinner from '@/components/Spinner';
 import {
-	useDeleteApplicationMutation, usePublishApplicationMutation,
-	usePublishOrganisationMutation,
+	useDeleteApplicationMutation,
+	usePublishApplicationMutation,
 	useUpdateApplicationMutation,
 } from '@/generated/graphql';
 import { useApplicationEditionStatus } from '@/hooks/useApplicationEditionStatus';
-import GridViewIcon from '@mui/icons-material/GridView';
 
 
-export type ApplicationDetailsNavbarProps = {
-	refreshApplication: () => void
+interface ApplicationDetailsNavbarProps {
+	refreshApplication: () => void;
 }
-export default function ApplicationDetailsNavbar(
-	{refreshApplication}: ApplicationDetailsNavbarProps
-) {
+
+export default function ApplicationDetailsNavbar({ refreshApplication }: ApplicationDetailsNavbarProps) {
 	const organisation = useOrganisation();
-	const organisationId = organisation.id;
+	const router = useRouter();
+	const notify = useToast();
+	const confirmModal = useConfirmationModal();
+
 	const application = useAtomValue(applicationAtom);
 	const setReferenceApplication = useSetAtom(referenceApplicationAtom);
 	const isModified = useApplicationEditionStatus();
 
+	const [updateApplication, { loading: isUpdating }] = useUpdateApplicationMutation();
+	const [deleteApplication, { loading: isDeleting }] = useDeleteApplicationMutation();
+	const [publishApplication, { loading: isPublishing }] = usePublishApplicationMutation();
 
-	const [updateApplication, {loading: isUpdating}] = useUpdateApplicationMutation();
-	const [deleteApplication, {loading: isDeleting}] = useDeleteApplicationMutation();
-	const [publishApplication, {loading: isPublishing}] = usePublishApplicationMutation();
+	const handleSave = async () => {
+		if (!application) return;
 
-	const router = useRouter();
-	const notify = useToast();
-	const [isApplicationSaving, setApplicationSaving] = useState(false);
-	const confirmModal = useConfirmationModal();
+		try {
+			const result = await updateApplication({
+				variables: {
+					applicationId: application.id,
+					application: {
+						name: application.name,
+						logoUrl: application.logoUrl,
+						website: application.website,
+						description: application.description,
+					},
+				},
+			});
 
-	useEffect(() => {
-		setApplicationSaving(isUpdating);
-	}, [isUpdating]);
-
-	const saveApplication = () => {
-		if (!application) return
-		updateApplication({
-			variables: {
-				applicationId: application.id,
-				application: {
-					name: application.name,
-					logoUrl: application.logoUrl,
-					website: application.website,
-					description: application.description,
-				}
-			}
-		}).then(result => {
-			const {data, errors} = result;
-			if (data) {
-				refreshApplication()
-				setApplicationSaving(false);
+			if (result.data) {
+				refreshApplication();
 				setReferenceApplication(application);
-				notify.info('Application saved');
-			} else if (errors) {
-				notify.error(errors)
+				notify.success('Application saved successfully');
+			} else if (result.errors) {
+				notify.error(result.errors);
 			}
-		})
+		} catch (error) {
+			notify.error(error);
+		}
 	};
 
-
-
-	const confirmApplicationDeletion = () => {
+	const handleDelete = () => {
 		confirmModal(
 			'Delete Application',
-			'This action cannot be undone.',
+			'This action cannot be undone. All data associated with this application will be permanently removed.',
 			'Delete',
 			'Cancel',
-			() => {
-				if (isDeleting) return
-				if (!application) return
-				deleteApplication({
-					variables: { applicationId: application.id }
-				}).then(result => {
-					const {data, errors} = result;
-					if (data) {
-						notify.info('Application deleted');
-						router.replace(`/home/organisation/${organisationId}/application`);
-					} else if (errors)  {
-						notify.error(errors)
+			async () => {
+				if (!application) return;
+
+				try {
+					const result = await deleteApplication({
+						variables: { applicationId: application.id },
+					});
+
+					if (result.data) {
+						notify.success('Application deleted successfully');
+						router.replace(`/home/organisation/${organisation.id}/application`);
+					} else if (result.errors) {
+						notify.error(result.errors);
 					}
-				})
+				} catch (error) {
+					notify.error(error);
+				}
 			}
-		)
+		);
 	};
 
-	function confirmApplicationPublication() {
+	const handlePublish = () => {
 		confirmModal(
 			'Publish Application',
-            'This action cannot be undone.',
-            'Publish',
-            'Cancel',
-            () => {
-				if (isPublishing) return
-				if (!application) return
-				publishApplication({
-					variables: { applicationId: application.id }
-				}).then(result => {
-					const {data, errors} = result;
-					if ( data ) {
-						refreshApplication()
-						notify.info('Application published');
-					} else if (errors) {
-						notify.error(errors)
+			'This action will register the application on the blockchain. This cannot be undone.',
+			'Publish',
+			'Cancel',
+			async () => {
+				if (!application) return;
+
+				try {
+					const result = await publishApplication({
+						variables: { applicationId: application.id },
+					});
+
+					if (result.data) {
+						refreshApplication();
+						notify.success('Application published successfully');
+					} else if (result.errors) {
+						notify.error(result.errors);
 					}
-				})
+				} catch (error) {
+					notify.error(error);
+				}
 			}
-		)
+		);
+	};
+
+	if (!application) {
+		return (
+			<Box>
+				<Skeleton variant="rectangular" height={80} sx={{ borderRadius: 2 }} />
+			</Box>
+		);
 	}
 
-	if (!application) return <Skeleton/>
-	return <EntityStatusHeader
-		virtualBlockchainId={application.virtualBlockchainId || ''}
-		name={application.name}
-		version={application.version}
-		published={application.published}
-		isDraft={application.isDraft}
-		save={saveApplication}
-		isSaving={isApplicationSaving}
-		isModified={isModified}
-		delete={confirmApplicationDeletion}
-		publish={confirmApplicationPublication}
-	/>
-
-
-}
-
-
-type EntityStatusHeaderProps = {
-	virtualBlockchainId: string,
-	name: string,
-	version: number,
-	logoUrl?: string,
-	published: boolean,
-	isDraft: boolean,
-	isModified: boolean,
-	isSaving: boolean,
-	save: () => void
-	delete: () => void
-	publish: () => void
-}
-
-function EntityStatusHeader(
-	input: EntityStatusHeaderProps
-) {
-	const organisation = useOrganisation();
-	const BORDER_CLASSES = 'border-r-2 border-gray-200';
-	const ICON_ROTATION_CLASSES = 'h-5 w-5 transition-transform group-hover:rotate-45';
 	return (
-		<>
-			<Box display={"flex"} flexDirection={"row"} justifyContent={"space-between"}>
-				<Box display={"flex"} flexDirection={"row"} gap={2}>
-					<Box display={"flex"} flexDirection={"column"}>
-						<Breadcrumbs>
-							<Typography>
-								{organisation.name}
-							</Typography>
-							<Typography>
-								Applications
-							</Typography>
-						</Breadcrumbs>
-						<Box display={"flex"} gap={1} alignItems={"center"} alignContent={"center"}>
-							<GridViewIcon/>
-							<Typography variant={"h6"}>{input.name}</Typography>
-						</Box>
-					</Box>
+		<Stack spacing={2}>
+			{/* Breadcrumbs */}
+			<Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
+				<ButtonBase
+					onClick={() => router.push(`/home/organisation/${organisation.id}`)}
+					sx={{ borderRadius: 1, px: 0.5 }}
+				>
+					<Typography variant="body2" color="text.secondary">
+						{organisation.name}
+					</Typography>
+				</ButtonBase>
+				<ButtonBase
+					onClick={() => router.push(`/home/organisation/${organisation.id}/application`)}
+					sx={{ borderRadius: 1, px: 0.5 }}
+				>
+					<Typography variant="body2" color="text.secondary">
+						Applications
+					</Typography>
+				</ButtonBase>
+				<Typography variant="body2" color="text.primary">
+					{application.name}
+				</Typography>
+			</Breadcrumbs>
 
+			{/* Header */}
+			<Box display="flex" justifyContent="space-between" alignItems="center">
+				<Box display="flex" alignItems="center" gap={1.5}>
+					<GridViewIcon color="primary" />
+					<Typography variant="h5" fontWeight={600}>
+						{application.name}
+					</Typography>
+					{application.published && (
+						<Chip label="Published" color="success" size="small" />
+					)}
+					{application.isDraft && (
+						<Chip label="Draft" color="default" size="small" />
+					)}
 				</Box>
-				<Box display={"flex"} flexDirection={"row"} gap={1}>
-					<div className={`space-x-2 ${BORDER_CLASSES} pr-2 flex flex-row`}>
-						{input.isModified && <Button variant={"contained"} onClick={input.save}>
-							{input.isSaving ? <Spinner /> : <i className="bi bi-floppy-fill"></i>}
-							<span>save</span>
-						</Button>}
-						{input.isDraft &&
-							<Button variant={"contained"} onClick={input.publish}>
-								<ArrowUpOnSquareIcon className={ICON_ROTATION_CLASSES} />
-								<span>Publish</span>
-							</Button>}
-					</div>
-					<Button variant={"contained"} onClick={input.delete}>
-						<TrashIcon className={ICON_ROTATION_CLASSES} />
+
+				<Stack direction="row" spacing={1}>
+					{isModified && (
+						<Button
+							variant="contained"
+							startIcon={<SaveIcon />}
+							onClick={handleSave}
+							disabled={isUpdating}
+						>
+							Save
+						</Button>
+					)}
+					{application.isDraft && !isModified && (
+						<Button
+							variant="contained"
+							startIcon={<PublishIcon />}
+							onClick={handlePublish}
+							disabled={isPublishing}
+						>
+							Publish
+						</Button>
+					)}
+					<Button
+						variant="outlined"
+						color="error"
+						startIcon={<DeleteIcon />}
+						onClick={handleDelete}
+						disabled={isDeleting}
+					>
+						Delete
 					</Button>
-				</Box>
+				</Stack>
 			</Box>
-		</>
+		</Stack>
 	);
 }

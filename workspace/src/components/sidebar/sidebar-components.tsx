@@ -1,109 +1,188 @@
-import { useParams, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useInterfaceContext } from '@/contexts/interface.context';
-import Link from 'next/link';
 import { useAuthenticationContext } from '@/contexts/user-authentication.context';
-import Skeleton from 'react-loading-skeleton';
+import { useLinkedNodeStatus } from '@/hooks/useLinkedNodeStatus';
 import Avatar from 'boring-avatars';
-import Image from 'next/image';
-import { Box, Typography } from '@mui/material';
+import { Alert, Box, ButtonBase, Skeleton, Stack, Typography, alpha } from '@mui/material';
 import { useCustomRouter } from '@/contexts/application-navigation.context';
+import StorageIcon from '@mui/icons-material/Storage';
+import React from 'react';
 
-export function CarmentisLogo() {
-	return <div className={"w-full p-2"}>
-		<Image src={"/logo-full.svg"} alt={"test"} width={100} height={100}/>
-	</div>
+interface SidebarItemProps {
+	icon: React.ReactNode;
+	text: string;
+	link?: string;
+	onClick?: () => void;
+	activeRegex?: RegExp;
+	id?: string;
 }
 
-export function SidebarItem(
-	input: { icon: any, text: string, link?: string, className?: string, onClick?: () => void, activeRegex?: RegExp, id?: string },
-) {
+export function SidebarItem({ icon, text, link, onClick, activeRegex, id }: SidebarItemProps) {
 	const activePath = usePathname();
 	const interfaceStore = useInterfaceContext();
 	const router = useCustomRouter();
 
-	// check if active and set the active classes
-	const isActive = input.activeRegex && input.activeRegex.test(activePath);
-	const activeClasses = isActive ? 'active-sidebar-item' : '';
+	const isActive = activeRegex && activeRegex.test(activePath);
+	const isCollapsed = interfaceStore.sidebarHidden;
 
-	// check if hidden or not
-	const toggleSidebarItemClasses = interfaceStore.sidebarHidden ? 'hidden-sidebar-item' : 'visible-sidebar-item';
-	const itemClass = `p-2 rounded cursor-pointer hover:bg-white  ${input.className} ${activeClasses} ${toggleSidebarItemClasses}`;
+	const handleClick = () => {
+		if (link) {
+			router.push(link);
+		} else if (onClick) {
+			onClick();
+		}
+	};
 
-	const content = <Box display={"flex"} flexDirection={'row'} gap={1}>
-		{input.icon}
-		<Typography
-			className=" text-left rtl:text-right whitespace-nowrap">
-						{input.text}
+	return (
+		<ButtonBase
+			id={id}
+			onClick={handleClick}
+			sx={{
+				width: '100%',
+				borderRadius: 1.5,
+				px: 1.5,
+				py: 1,
+				justifyContent: isCollapsed ? 'center' : 'flex-start',
+				transition: 'all 0.2s',
+				color: isActive ? 'primary.main' : 'text.secondary',
+				bgcolor: isActive ? (theme) => alpha(theme.palette.primary.main, 0.08) : 'transparent',
+				'&:hover': {
+					bgcolor: isActive
+						? (theme) => alpha(theme.palette.primary.main, 0.12)
+						: 'action.hover',
+				},
+			}}
+		>
+			<Box display="flex" alignItems="center" gap={1.5}>
+				<Box sx={{ display: 'flex', fontSize: 20 }}>{icon}</Box>
+				{!isCollapsed && (
+					<Typography variant="body2" fontWeight={isActive ? 600 : 400}>
+						{text}
 					</Typography>
-	</Box>
-
-	if (input.link) {
-		return  <div onClick={() => router.push(input.link)} className={itemClass}> {content} </div>;
-	} else {
-		return <div className={itemClass} onClick={input.onClick} id={input.id}> {content} </div>
-	}
+				)}
+			</Box>
+		</ButtonBase>
+	);
 }
-
 
 export function AuthenticatedUserSidebarItem() {
 	const authenticatedUserContext = useAuthenticationContext();
 	const interfaceContext = useInterfaceContext();
 
-	if (!authenticatedUserContext.isAuthenticated())
-		return <div className={"p-4"}>
-			<Skeleton count={1} height={30}/>
-	</div>
+	if (!authenticatedUserContext.isAuthenticated()) {
+		return (
+			<Box p={2}>
+				<Skeleton variant="rectangular" height={56} sx={{ borderRadius: 2 }} />
+			</Box>
+		);
+	}
 
 	const user = authenticatedUserContext.getAuthenticatedUser();
+	const isCollapsed = interfaceContext.sidebarHidden;
 
-
-	return <div className={"flex flex-row visible-sidebar-item p-2 hover:bg-white hover:cursor-pointer rounded mb-4"} style={{ backgroundColor: '#ffffff', boxShadow: '0 2px 5px rgba(0,0,0,0.08)' }}>
-		{ interfaceContext.sidebarHidden &&
-			<>
-				<Avatar 
-					className={"w-full h-full"} 
-					variant={"beam"} 
-					name={user.publicKey}
-					size={40}
-					square={false}
-					colors={['#159A9C', '#9C8714', '#1E293B', '#0F172A', '#0D9488']}
-				/>
-			</>
-		}
-
-		{ !interfaceContext.sidebarHidden &&
-			<>
-				<Box 
-					sx={{ 
-						display: 'flex',
-						alignItems: 'center',
-						gap: 1.5,
-						width: '100%'
-					}}
-				>
-					<Avatar 
-						width={32} 
-						height={32}
-						variant={"beam"} 
+	return (
+		<Box
+			sx={{
+				p: 1.5,
+				bgcolor: 'background.paper',
+				borderRadius: 2,
+				border: 1,
+				borderColor: 'divider',
+			}}
+		>
+			{isCollapsed ? (
+				<Box display="flex" justifyContent="center">
+					<Avatar
+						variant="beam"
 						name={user.publicKey}
+						size={40}
 						colors={['#159A9C', '#9C8714', '#1E293B', '#0F172A', '#0D9488']}
 					/>
-					<Typography 
-						sx={{ 
-							fontWeight: 600,
-							color: '#1E293B',
-							fontSize: '0.95rem'
-						}}
-					>
-						{user.firstname} {user.lastname}
-					</Typography>
 				</Box>
-			</>
-		}
-	</div>
+			) : (
+				<Box display="flex" alignItems="center" gap={1.5}>
+					<Avatar
+						variant="beam"
+						name={user.publicKey}
+						size={40}
+						colors={['#159A9C', '#9C8714', '#1E293B', '#0F172A', '#0D9488']}
+					/>
+					<Box flex={1} overflow="hidden">
+						<Typography variant="body2" fontWeight={600} noWrap>
+							{user.firstname} {user.lastname}
+						</Typography>
+						<Typography variant="caption" color="text.secondary" noWrap>
+							{user.email}
+						</Typography>
+					</Box>
+				</Box>
+			)}
+		</Box>
+	);
 }
 
+export function NodeStatusCard() {
+	const { status: nodeStatus, loading, error } = useLinkedNodeStatus();
+	const interfaceContext = useInterfaceContext();
+	const isCollapsed = interfaceContext.sidebarHidden;
 
-export function SidebarSeparator() {
-	return <div className={"w-full mb-8"}></div>
+	if (loading) {
+		return (
+			<Box px={1}>
+				<Skeleton variant="rectangular" height={60} sx={{ borderRadius: 2 }} />
+			</Box>
+		);
+	}
+
+	if (!nodeStatus || error) {
+		return (
+			<Box px={1}>
+				<Alert severity="warning" sx={{ py: 0.5 }}>
+					{!isCollapsed && 'Node offline'}
+				</Alert>
+			</Box>
+		);
+	}
+
+	if (isCollapsed) {
+		return (
+			<Box
+				sx={{
+					mx: 1,
+					p: 1,
+					bgcolor: 'success.lighter',
+					borderRadius: 2,
+					display: 'flex',
+					justifyContent: 'center',
+				}}
+			>
+				<StorageIcon sx={{ color: 'success.main', fontSize: 20 }} />
+			</Box>
+		);
+	}
+
+	return (
+		<Box
+			sx={{
+				mx: 1,
+				p: 1.5,
+				bgcolor: 'background.paper',
+				borderRadius: 2,
+				border: 1,
+				borderColor: 'divider',
+			}}
+		>
+			<Stack spacing={0.5}>
+				<Box display="flex" alignItems="center" gap={1}>
+					<StorageIcon sx={{ fontSize: 16, color: 'success.main' }} />
+					<Typography variant="caption" fontWeight={600} noWrap>
+						{nodeStatus.result.node_info.moniker}
+					</Typography>
+				</Box>
+				<Typography variant="caption" color="text.secondary" noWrap>
+					Chain: {nodeStatus.result.node_info.network}
+				</Typography>
+			</Stack>
+		</Box>
+	);
 }
