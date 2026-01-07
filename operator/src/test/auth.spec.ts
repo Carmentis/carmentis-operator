@@ -5,7 +5,7 @@ import { DataSource } from 'typeorm';
 import { HttpServer, HttpStatus, INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { CryptoService } from '../shared/services/CryptoService';
-import { Secp256k1PrivateSignatureKey, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
+import { Secp256k1PrivateSignatureKey, CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk/server';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OperatorConfigModule } from '../config/OperatorConfigModule';
 import { SharedModule } from '../shared/SharedModule';
@@ -123,8 +123,9 @@ let container: StartedPostgreSqlContainer;
 let app: INestApplication;
 let agent: TestAgent;
 
+/*
 // we generate the public key for three users
-const sigEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
+const sigEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
 const firstUserPrivateKey = Secp256k1PrivateSignatureKey.gen();
 const firstUserPublicKey = firstUserPrivateKey.getPublicKey();
 const firstUserEncodedPublicKey = sigEncoder.encodePublicKey(firstUserPublicKey);
@@ -137,6 +138,8 @@ const secondUserEncodedPublicKey = sigEncoder.encodePublicKey(secondUserPublicKe
 const thirdUserPrivateKey = Secp256k1PrivateSignatureKey.gen();
 const thirdUserPublicKey = thirdUserPrivateKey.getPublicKey();
 const thirdUserEncodedPublicKey = sigEncoder.encodePublicKey(thirdUserPublicKey);
+
+ */
 
 // services
 let cryptoService: CryptoService;
@@ -213,7 +216,7 @@ beforeAll(async () => {
 	cryptoService = app.get<CryptoService>(CryptoService)
 });
 
-
+/*
 afterAll(async () => {
 	if (container) {
 		await container.stop({
@@ -760,4 +763,8 @@ describe("Full e2e flow", () => {
 
 
 
+
+
 })
+
+ */

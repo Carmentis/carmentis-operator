@@ -1,17 +1,9 @@
-import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { OrganisationEntity } from '../../../../../shared/entities/OrganisationEntity';
 import { OrganisationService } from '../../../../../shared/services/OrganisationService';
-import { BadRequestException, ForbiddenException, Logger, NotFoundException, UseGuards } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { CurrentUser } from '../../../../decorators/CurrentUserDecorator';
 import { UserEntity } from '../../../../../shared/entities/UserEntity';
-import ChainService from '../../../../../shared/services/ChainService';
-import { TransactionType } from '../../../types/TransactionType';
-import { CMTSToken, StringSignatureEncoder, Transaction } from '@cmts-dev/carmentis-sdk/server';
-import { OrganisationChainStatusType } from '../../../types/OrganisationChainStatusType';
-import { GraphQLJwtAuthGuard } from '../../../../guards/GraphQLJwtAuthGuard';
-import { OrganisationByIdPipe } from '../../../../pipes/OrganisationByIdPipe';
-import { NodeEntity } from '../../../../../shared/entities/NodeEntity';
-import { OrganisationUpdateDto } from '../../../dto/OrganisationUpdateDto';
 import { JwtProtectedResolver } from '../JwtProtectedResolver';
 
 

@@ -44,6 +44,7 @@ function ChallengeLogin({challenge}: {challenge: string}) {
 
 
     function onChallengeResponse(answer: ChallengeResponse) {
+        console.log("Received challenge response: ", answer);
         verifyChallenge({
             variables: {
                 challenge: answer.challenge,
@@ -66,7 +67,13 @@ function ChallengeLogin({challenge}: {challenge: string}) {
         client.setServerUrl(operatorUrl);
         client.attachExtensionButton("extension-button")
         client.authenticationByPublicKey(challenge)
-            .then(onChallengeResponse)
+            .then(response => {
+                onChallengeResponse({
+                    challenge,
+                    publicKey: response.publicKey,
+                    signature: response.signature
+                })
+            })
             .catch(console.error);
     }, []);
 

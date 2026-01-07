@@ -1,7 +1,7 @@
 import { IsBoolean, IsDefined, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { CMTSToken, Hash, OperatorAnchorRequest, Optional } from '@cmts-dev/carmentis-sdk/server';
+import { CMTSToken, Hash, Optional } from '@cmts-dev/carmentis-sdk/server';
 
 export class ChannelDto {
 	@ApiProperty({ title: 'Name of the channel' })
@@ -169,7 +169,7 @@ export class AnchorDto  {
 	}
 }
 
-export class AnchorWithWalletDto extends AnchorDto implements OperatorAnchorRequest {
+export class AnchorWithWalletDto extends AnchorDto {
 	@ApiProperty({ description: 'Endorser', example: "Endorser" })
 	@IsString()
 	endorser: string;

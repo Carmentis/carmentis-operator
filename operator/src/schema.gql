@@ -26,7 +26,6 @@ type OrganisationEntity {
   city: String!
   countryCode: String!
   website: String!
-  walletSeed: String!
   createdAt: DateTime!
   lastUpdateAt: DateTime!
   version: Int!
@@ -37,6 +36,8 @@ type OrganisationEntity {
   hasTokenAccount: Boolean!
   isAnchoredOnChain: Boolean!
   publicSignatureKey: String!
+  privateSignatureKey: String!
+  walletSeed: String!
   chainStatus: OrganisationChainStatusType!
   transactions(limit: Int!, fromHistoryHash: String): [TransactionType!]!
 }
@@ -167,6 +168,7 @@ type Mutation {
   deleteNodeInOrganisation(organisationId: Int!, nodeId: Int!): Boolean!
   updateNodeInOrganisation(organisationId: Int!, nodeId: Int!, nodeAlias: String!, nodeRpcEndpoint: String!): NodeEntity!
   claimNodeInOrganisation(organisationId: Int!, nodeId: Int!): NodeEntity!
+  stakeNodeInOrganisation(organisationId: Int!, nodeId: Int!, amount: String!): NodeEntity!
   publishApplication(applicationId: Int!): Boolean!
   deleteApplicationInOrganisation(applicationId: Int!): Boolean!
   updateApplicationInOrganisation(applicationId: Int!, applicationUpdate: ApplicationUpdateDto!): ApplicationType!

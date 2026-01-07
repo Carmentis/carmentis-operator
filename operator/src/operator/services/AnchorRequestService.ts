@@ -4,7 +4,7 @@ import { ApplicationEntity } from '../../shared/entities/ApplicationEntity';
 import { Repository } from 'typeorm';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
 import { AnchorDto, AnchorWithWalletDto } from '../dto/AnchorDto';
-import { CMTSToken, EncoderFactory, Hash } from '@cmts-dev/carmentis-sdk/server';
+import { CMTSToken, EncoderFactory, Hash, Microblock, Utils } from '@cmts-dev/carmentis-sdk/server';
 import { randomBytes } from 'crypto';
 import { OrganisationEntity } from '../../shared/entities/OrganisationEntity';
 
@@ -23,7 +23,7 @@ export class AnchorRequestService {
 			anchorRequestId: anchorRequestId,
 			status: 'pending',
 			request,
-			organisationId: organisation.id,
+			localOrganisationId: organisation.id,
 			applicationId: application.id,
 			gasPriceInAtomic: gasPrice.getAmountAsAtomic(),
 		})
@@ -71,10 +71,23 @@ export class AnchorRequestService {
 			anchorRequestId: anchorRequestId,
 			status: 'completed',
 			request: anchorDto,
-			organisationId: organisation.getId(),
+			localOrganisationId: organisation.getId(),
 			applicationId: application.getId(),
 			virtualBlockchainId: virtualBlockId.encode(),
 			microBlockHash: microBlockHash.encode()
 		});
 	}
+
+	async saveMicroblock(anchorRequestId: string, mb: Microblock) {
+		const {microblockData: serializedMb} = mb.serialize();
+		await this.anchorRequestRepository.update({
+			anchorRequestId
+		}, {
+			hexEncodedBuiltMicroblock: Utils.binaryToHexa(serializedMb)
+		})
+	}
+
+
+
+
 }

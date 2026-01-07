@@ -5,11 +5,11 @@ import { ChallengeEntity } from '../entities/ChallengeEntity';
 import { bytesToHex } from '@noble/ciphers/utils';
 import { randomBytes } from 'crypto';
 import {
-	CryptoEncoderFactory,
 	EncoderFactory,
 	PublicSignatureKey,
-	StringSignatureEncoder,
+	CryptoEncoderFactory,
 } from '@cmts-dev/carmentis-sdk/server';
+import { base64 } from 'zod';
 
 const CHALLENGE_VALIDITY_INTERVAL_IN_MINUTES = 3;
 const CHALLENGE_VALIDITY_INTERVAL_IN_MILLISECONDS = CHALLENGE_VALIDITY_INTERVAL_IN_MINUTES * 60 * 1000;
@@ -30,8 +30,9 @@ export class ChallengeService {
 		const validUntil =  new Date(
 			new Date().getTime() + CHALLENGE_VALIDITY_INTERVAL_IN_MILLISECONDS
 		);
+		const b64 = EncoderFactory.bytesToBase64Encoder();
 		const challenge = this.challengeRepository.create({
-			challenge: bytesToHex(randomBytes(32)),
+			challenge: b64.encode(randomBytes(32)),
 			validUntil
 		});
 		return await this.challengeRepository.save(challenge); // Persist to the database and return the saved entity
@@ -62,9 +63,10 @@ export class ChallengeService {
 		// Verify the signature authenticity using the public key
 		const signatureEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
 		const pk = publicKey;
-		this.logger.debug(`Auth attempt with public key: ${signatureEncoder.encodePublicKey(pk)}`)
+		this.logger.debug(`Auth attempt with public key: ${await signatureEncoder.encodePublicKey(pk)}`)
+		const b64 = EncoderFactory.bytesToBase64Encoder();
 		return pk.verify(
-			signatureEncoder.decodeMessage(challenge),
+			b64.decode(challenge),
 			signature,
 		)
 	}

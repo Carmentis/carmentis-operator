@@ -47,11 +47,11 @@ function LinkedNodeSidebarItem() {
 			<Box display={"flex"} flexDirection={"row"} gap={1}>
 				<StorageIcon/>
 				<Typography>
-					{nodeStatus.getNodeName()}
+					{nodeStatus.result.node_info.moniker}
 				</Typography>
 			</Box>
 			<Typography variant={"body1"} color={"textSecondary"}>
-				You are connected to chain <Typography>{nodeStatus.getChainId()}.</Typography>
+				You are connected to chain <Typography>{nodeStatus.result.node_info.network}.</Typography>
 			</Typography>
 		</Card>
 	}

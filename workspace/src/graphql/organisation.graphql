@@ -22,6 +22,8 @@ query GetOrganisation($id: Int!) {
     id
     name
     publicSignatureKey
+    privateSignatureKey
+    walletSeed
     createdAt
     logoUrl
     published
@@ -294,8 +296,18 @@ mutation deleteNodeInOrganisation($organisationId: Int!, $nodeId: Int!) {
 
 mutation claimNodeInOrganisation($organisationId: Int!, $nodeId: Int!) {
     claimNodeInOrganisation(
-        organisationId: $organisationId, 
+        organisationId: $organisationId,
         nodeId: $nodeId
+    ) {
+        ...NodeFragment
+    }
+}
+
+mutation stakeNodeInOrganisation($organisationId: Int!, $nodeId: Int!, $amount: String!) {
+    stakeNodeInOrganisation(
+        organisationId: $organisationId,
+        nodeId: $nodeId,
+        amount: $amount
     ) {
         ...NodeFragment
     }

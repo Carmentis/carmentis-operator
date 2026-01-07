@@ -1,35 +1,29 @@
-import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Req } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Logger, Param, Post } from '@nestjs/common';
 import {
 	CarmentisError,
-	CMTSToken,
 	EncoderFactory,
-	MessageUnserializer,
-	MSG_ACTOR_KEY,
-	MSG_APPROVAL_HANDSHAKE,
-	MSG_APPROVAL_SIGNATURE,
-	WALLET_OP_MESSAGES,
+	WalletInteractiveAnchoringEncoder, WalletInteractiveAnchoringResponse, WalletInteractiveAnchoringResponseType,
 } from '@cmts-dev/carmentis-sdk/server';
 import { Public } from '../../shared/decorators/PublicDecorator';
-import { EnvService } from '../../shared/services/EnvService';
 import { ApplicationService } from '../../shared/services/ApplicationService';
 import { ApiKeyService } from '../../shared/services/ApiKeyService';
 import { AnchorDto, AnchorWithWalletDto } from '../dto/AnchorDto';
 import {
-	ApiAcceptedResponse,
 	ApiBody,
 	ApiCreatedResponse,
 	ApiExcludeEndpoint,
 	ApiForbiddenResponse,
 	ApiOperation,
-	ApiResponse, ApiSecurity,
+	ApiResponse,
+	ApiSecurity,
 } from '@nestjs/swagger';
 import { ApiKey } from '../decorators/ApiKeyDecorator';
 import { ApiKeyEntity } from '../../shared/entities/ApiKeyEntity';
 import { OperatorService } from '../services/OperatorService';
-import { randomBytes } from 'crypto';
 import { HelloResponseDto } from '../dto/HelloResponseDto';
 import { AnchorRequestResponseDto } from '../dto/AnchorRequestResponseDto';
 import { AnchorRequestStatusResponseDto } from '../dto/AnchorRequestStatusResponseDto';
+import { WalletInteractiveAnchoringRequestType } from '@cmts-dev/carmentis-sdk/client';
 
 
 /**
@@ -185,58 +179,53 @@ export class OperatorApiController{
 
 
 
-
-
-
-
 	@Public()
 	@ApiExcludeEndpoint()
 	@Post("/walletMessage")
 	async handleWalletMessage(
-		@Body("data") data : string
+		@Body("data") serializedRequest : string
 	) {
 
-		// we generate a unique session identifier to help debugging
-		const sessionId = randomBytes(8).toString("hex");
 
 		// parse the request
-		this.logger.debug(`[${sessionId}] Parsing request`)
+		this.logger.debug(`Parsing request`)
 		const encoder = EncoderFactory.defaultBytesToStringEncoder();
-		const serializer = new MessageUnserializer(WALLET_OP_MESSAGES);
-		let {type, object} = serializer.unserialize(encoder.decode(data));
+		const request = WalletInteractiveAnchoringEncoder.decodeRequest(encoder.decode(serializedRequest));
+		const type = request.type;
 
 
 		// handle the request
-		this.logger.debug(`[${sessionId}] Handling request type ${type}`)
-		let answer: Uint8Array;
+		this.logger.debug(`Handling request type ${type}`)
+		let response: WalletInteractiveAnchoringResponse;
 		switch(type) {
-			case MSG_APPROVAL_HANDSHAKE: {
-				this.logger.debug(`[${sessionId}] Entering approval handshake`)
-				answer = await this.operatorService.approvalHandshake(object);
+			case WalletInteractiveAnchoringRequestType.APPROVAL_HANDSHAKE: {
+				this.logger.debug(`Entering approval handshake`)
+				response = await this.operatorService.approvalHandshake(request);
 				break
 			}
-			case MSG_ACTOR_KEY: {
-				this.logger.debug(`[${sessionId}] Entering approval actor key`)
-				answer = await this.operatorService.handleActorKeys(object);
+			case WalletInteractiveAnchoringRequestType.ACTOR_KEY: {
+				this.logger.debug(`Entering approval actor key`)
+				response = await this.operatorService.handleActorKeys(request);
 				break;
 			}
-			case MSG_APPROVAL_SIGNATURE:
-				this.logger.debug(`[${sessionId}] Entering approval signature`)
-				answer = await this.operatorService.approvalSignature(
-					object,
-				);
+			case WalletInteractiveAnchoringRequestType.APPROVAL_SIGNATURE:
+				this.logger.debug(`Entering approval signature`)
+				response = await this.operatorService.approvalSignature(request);
 				break;
 			default:
 				const errorMessage = `Unknown request type: ${type}`
 				this.logger.error(errorMessage)
-				throw new BadRequestException(errorMessage);
+				response = {
+					type: WalletInteractiveAnchoringResponseType.ERROR,
+					errorMessage: errorMessage
+				}
 		}
 
 
-		this.logger.debug(`[${sessionId}] Request handled: answer: ${object}`)
+		this.logger.debug(`Request handled: answer: ${response}`)
 		return {
 			success: true,
-			data: encoder.encode(answer)
+			data: encoder.encode(WalletInteractiveAnchoringEncoder.encodeResponse(response))
 		}
 	}
 

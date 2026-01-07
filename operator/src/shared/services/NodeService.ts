@@ -73,6 +73,26 @@ export class NodeService {
 		return this.nodeRepository.save(node);
 	}
 
+	async stakeNodeById(organisation: OrganisationEntity, nodeId: number, amount: string): Promise<NodeEntity> {
+		const node = await this.nodeRepository.findOne({
+			where: {
+				id: nodeId,
+				organisation: { id: organisation.id }
+			}
+		});
+
+		if (!node) {
+			throw new NotFoundException(`Node with id ${nodeId} not found in organisation ${organisation.id}`);
+		}
+
+		// Import CMTSToken from SDK
+		const { CMTSToken } = await import('@cmts-dev/carmentis-sdk/server');
+		const stakeAmount = CMTSToken.parse(amount);
+
+		await this.chainService.stakeNode(organisation, node, stakeAmount);
+		return node;
+	}
+
 	async getOrganisationIdByNodeId(nodeId: number) {
 		const org = await OrganisationEntity.findOne({
 			where: {

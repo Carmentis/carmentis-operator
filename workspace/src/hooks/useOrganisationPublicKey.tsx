@@ -1,10 +1,13 @@
-import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/client';
+import { CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk/client';
 import { useOrganisation } from '@/contexts/organisation-store.context';
+import { useAsync } from 'react-use';
 
 export function useOrganisationPublicKey() {
 	const organisation = useOrganisation();
-	const publicKey = organisation.publicSignatureKey;
-	const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-	const decodedPublicKey = signatureEncoder.decodePublicKey(organisation.publicSignatureKey);
-	return { publicKey, decodedPublicKey }
+	return useAsync(async () => {
+		const publicKey = organisation.publicSignatureKey;
+		const signatureEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
+		const decodedPublicKey = await signatureEncoder.decodePublicKey(organisation.publicSignatureKey);
+		return { publicKey: decodedPublicKey, encodedPublicKey: publicKey }
+	}, [organisation])
 }

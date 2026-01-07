@@ -8,7 +8,7 @@ import { EnvService } from '../../../../shared/services/EnvService';
 import { Public } from '../../../../shared/decorators/PublicDecorator';
 import { ChallengeVerificationResponse } from '../../dto/ChallengeVerificationResponseDto';
 import { ChallengeEntity } from '../../../../shared/entities/ChallengeEntity';
-import { StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/server';
+import { CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk/server';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Throttle } from '@nestjs/throttler';
 import { ThrottlerGraphqlGuard } from '../../../guards/ThrottlerGraphqlGuard';
@@ -40,10 +40,10 @@ export class LoginResolver {
 		@Args('signature') signature: string
 	): Promise<ChallengeVerificationResponse> {
 		// parse the public key
-		const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-		const parsedPublicKey =  signatureEncoder.decodePublicKey(publicKey);
+		const signatureEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
+		const parsedPublicKey =  await signatureEncoder.decodePublicKey(publicKey);
 		const parsedSignature = signatureEncoder.decodeSignature(signature);
-		this.logger.debug(`Performing authentication for public key ${parsedPublicKey.getPublicKeyAsString()}`);
+		this.logger.debug(`Performing authentication for public key ${publicKey}`);
 
 		// check that at a user should corresponds
 		const user = await this.userService.findOneByPublicKey(publicKey);

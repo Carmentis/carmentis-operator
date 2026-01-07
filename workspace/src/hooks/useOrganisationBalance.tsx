@@ -1,8 +1,9 @@
 import useNodeEndpoint from './useNodeEndpoint';
 import { useOrganisation } from '../contexts/organisation-store.context';
 import useSWR from 'swr';
-import { BlockchainFacade, CMTSToken, Hash, Optional, StringSignatureEncoder } from '@cmts-dev/carmentis-sdk/client';
+import { ProviderFactory, CMTSToken, Hash, Optional, CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk/client';
 import useOrganisationAsync from '@/hooks/useOrganisationAsync';
+import useProvider from '@/hooks/useProvider';
 
 interface useOrganisationBalanceResponse {
 	balance: Optional<CMTSToken>,
@@ -12,23 +13,25 @@ interface useOrganisationBalanceResponse {
 }
 
 export default function useOrganisationBalance(): useOrganisationBalanceResponse {
-	const { data: endpoint, error: errorLoadingEndpoint } = useNodeEndpoint();
-	const {organisation, loading: loadingOrganisation} = useOrganisationAsync();
+	const { value: provider } = useProvider();
+	const {organisation} = useOrganisationAsync();
 	const { data, error, isLoading: isLoadingPublicationStatus } = useSWR(
-		['organisationHasAccount', organisation, endpoint?.getLinkedNode || undefined],
+		['organisationHasAccount', organisation, provider],
 		async () => {
-			if (!endpoint?.getLinkedNode || !organisation) return Optional.none() as Optional<CMTSToken>;
-			const publicKey = organisation.organisation.publicSignatureKey;
-			const signatureEncoder = StringSignatureEncoder.defaultStringSignatureEncoder();
-			const blockchain = BlockchainFacade.createFromNodeUrl(endpoint.getLinkedNode);
-			try {
-				const balance = await blockchain.getAccountBalanceFromPublicKey(
-					signatureEncoder.decodePublicKey(publicKey)
-				);
-				return Optional.of(balance)
-			} catch (e) {
-				return Optional.none() as Optional<CMTSToken>;
+			if (organisation && provider) {
+				const publicKey = organisation.organisation.publicSignatureKey;
+				const signatureEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
+				try {
+					const pk = await signatureEncoder.decodePublicKey(publicKey);
+					const orgId = await provider.getAccountIdFromPublicKey(pk);
+					const balance = await provider.getAccountState(orgId.toBytes());
+					return Optional.of(CMTSToken.createAtomic(balance.balance))
+				} catch (e) {
+					console.error(e);
+				}
 			}
+			return Optional.none() as Optional<CMTSToken>;
+
 		});
 
 	const balance: Optional<CMTSToken> = data || Optional.none() as Optional<CMTSToken>;
@@ -36,6 +39,6 @@ export default function useOrganisationBalance(): useOrganisationBalanceResponse
 		balance,
 		hasAccount: balance.isSome(),
 		loading: isLoadingPublicationStatus,
-		error: errorLoadingEndpoint
+		error: error
 	}
 }

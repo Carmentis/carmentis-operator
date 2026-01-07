@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { AnchorWithWalletDto } from '../dto/AnchorDto';
-import { CMTSToken, Optional } from '@cmts-dev/carmentis-sdk/server';
+import { CMTSToken, Microblock, Optional, Utils } from '@cmts-dev/carmentis-sdk/server';
 
 @Entity()
 export class AnchorRequestEntity {
@@ -17,7 +17,7 @@ export class AnchorRequestEntity {
 
 
 	@Column()
-	organisationId: number;
+	localOrganisationId: number;
 
 	@Column({nullable: true})
 	virtualBlockchainId?: string;
@@ -34,6 +34,9 @@ export class AnchorRequestEntity {
 
 	@Column({ type: 'json' })
 	request: AnchorWithWalletDto;
+
+	@Column({ nullable: true })
+	hexEncodedBuiltMicroblock: string;
 
 	@Column()
 	gasPriceInAtomic: number;
@@ -72,5 +75,10 @@ export class AnchorRequestEntity {
 
 	getGasPrice(): CMTSToken {
 		return CMTSToken.createAtomic(this.gasPriceInAtomic)
+	}
+
+	getBuiltMicroblock(): Optional<Microblock> {
+		if (this.hexEncodedBuiltMicroblock === undefined) return Optional.none();
+		return Optional.of(Microblock.loadFromSerializedMicroblock(Utils.binaryFromHexa(this.hexEncodedBuiltMicroblock)))
 	}
 }

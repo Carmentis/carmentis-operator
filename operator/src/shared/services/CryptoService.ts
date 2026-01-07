@@ -6,7 +6,7 @@ import {
 	PrivateSignatureKey,
 	PublicSignatureKey,
 	Secp256k1PrivateSignatureKey,
-	StringSignatureEncoder,
+	CryptoEncoderFactory,
 } from '@cmts-dev/carmentis-sdk/server';
 import { randomBytes } from 'crypto';
 
@@ -85,15 +85,4 @@ export class CryptoService implements OnModuleInit{
 			'--------------------------------------------------------------'
 		].join('\n'));
 	}
-
-	/**
-	 * Generates a random cryptographic key pair.
-	 * @returns An object containing the private key (sk) and public key (pk)
-	 */
-	randomKeyPair() : { sk: PrivateSignatureKey, pk: PublicSignatureKey } {
-		const sk = Secp256k1PrivateSignatureKey.gen();
-		const pk = sk.getPublicKey();
-		return { sk, pk };
-	}
-
 }

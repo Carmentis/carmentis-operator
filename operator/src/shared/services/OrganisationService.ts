@@ -18,7 +18,6 @@ import {
 	CryptoEncoderFactory, NodeConnectionRefusedError, NodeEndpointClosedWhileCatchingUpError,
 	ParsingError,
 	PrivateSignatureKey,
-	StringSignatureEncoder,
 	WalletCrypto,
 } from '@cmts-dev/carmentis-sdk/server';
 import { NodeEntity } from '../entities/NodeEntity';
@@ -126,8 +125,8 @@ export class OrganisationService {
 
 		// log the public key of the organization being created
 		const sigEncoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
-		const publicKey = wallet.getPrivateSignatureKey().getPublicKey();
-		const encodedPublicKey = sigEncoder.encodePublicKey(publicKey);
+		const publicKey = await wallet.getPrivateSignatureKey().getPublicKey();
+		const encodedPublicKey = await sigEncoder.encodePublicKey(publicKey);
 		item.walletSeed = wallet.encode();
 		this.logger.log(`Creating organization ${organisationName} with pk: ${encodedPublicKey}`);
 		const organisation = await this.organisationEntityRepository.save(item);
@@ -246,35 +245,6 @@ export class OrganisationService {
 		return organisation.published;
 	}
 
-	async findOrganisationFromApplicationVirtualBlockchainId(applicationId: string) {
-
-		const application = await this.applicationRepository
-			.createQueryBuilder('app')
-			.innerJoinAndSelect('app.organisation', 'organisation')
-			.where('app.virtualBlockchainId = :applicationId', { applicationId })
-			.getOne();
-
-		if (!application) {
-			throw new NotFoundException(`No application found with virtualBlockchainId: ${applicationId}`);
-		}
-
-		return application.organisation!;
-	}
-
-	async findOrganisationFromVirtualBlockchainId(organisationId: string) {
-
-		const organisation = await this.organisationEntityRepository
-			.createQueryBuilder('organisation')
-			.where('organisation.virtualBlockchainId = :organisationId', { organisationId })
-			.getOne();
-
-		if (!organisation) {
-			throw new NotFoundException(`No organisation found with virtualBlockchainId: ${organisationId}`);
-		}
-
-		return organisation;
-	}
-
 	async getOrganisationByApplicationId(applicationId: number) {
 		return this.organisationEntityRepository.findOneOrFail({
 			relations: ['applications'],
@@ -284,13 +254,6 @@ export class OrganisationService {
 				}
 			}
 		})
-		/*
-		return this.organisationEntityRepository.createQueryBuilder('organisation')
-			.innerJoin('organisation.applications', 'application')
-			.where('application.id = :applicationId', { applicationId })
-			.getOneOrFail();
-
-		 */
 	}
 
 
@@ -441,5 +404,27 @@ export class OrganisationService {
 				user: { publicKey: publicKey }
 			}
 		})
+	}
+
+	/**
+	 * Returns the encoded private signature key for an organisation.
+	 * @param organisationId - The organisation ID
+	 * @returns The encoded private signature key as a string
+	 */
+	async getEncodedPrivateSignatureKey(organisationId: number): Promise<string> {
+		const organisation = await this.findOne(organisationId);
+		const privateKey = await organisation.getPrivateSignatureKey();
+		const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
+		return encoder.encodePrivateKey(privateKey);
+	}
+
+	/**
+	 * Returns the wallet seed for an organisation.
+	 * @param organisationId - The organisation ID
+	 * @returns The encoded wallet seed as a string
+	 */
+	async getWalletSeed(organisationId: number): Promise<string> {
+		const organisation = await this.findOne(organisationId);
+		return organisation.walletSeed;
 	}
 }

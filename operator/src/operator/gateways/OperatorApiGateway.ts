@@ -7,10 +7,11 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import {
+	ClientBridgeEncoder, ClientBridgeMessageType,
 	EncoderFactory,
 	MessageSerializer,
 	MessageUnserializer,
-	SCHEMAS,
+	SCHEMAS, WalletRequestEncoder,
 	wiServer,
 } from '@cmts-dev/carmentis-sdk/server';
 import { Logger } from '@nestjs/common';
@@ -48,22 +49,40 @@ export class OperatorApiGateway implements OnGatewayConnection, OnGatewayDisconn
 	}
 
 	@SubscribeMessage("data")
-	handleRequest(client: Socket, data: any): any {
-		this.logger.debug(`-> socket message: ${client.id}`)
+	handleRequest(client: Socket, base64EncodedRequest: string): any {
+		this.logger.debug(`-> socket message: ${base64EncodedRequest}`)
 
 		// parse the message and process the request
-		const encoder = EncoderFactory.defaultBytesToStringEncoder();
+		const encoder = EncoderFactory.bytesToBase64Encoder();
+		const serializedRequest = encoder.decode(base64EncodedRequest);
+		const request = ClientBridgeEncoder.decode(serializedRequest);
+
+		try {
+			const answer = this.wi.handleRequest(client, request);
+
+			// encode and send the response
+			const response = ClientBridgeEncoder.encode(answer);
+			client.emit("data", encoder.encode(response));
+		} catch (e) {
+			this.logger.error(`Error during the request: ${e}`);
+			const serializedResponse = ClientBridgeEncoder.encode({
+				type: ClientBridgeMessageType.ERROR,
+				errorMessage: `Error during the request: ${e}`
+			});
+
+			client.emit("data", encoder.encode(serializedResponse));
+		}
+
+		/*
 		const schemaSerializer = new MessageUnserializer(SCHEMAS.WI_MESSAGES);
 		const binaryRequest = encoder.decode(data);
 		const {type, object} = schemaSerializer.unserialize(binaryRequest);
 		const answer = this.wi.handleRequest(client, type, object);
 
+		 */
 
-		// encode and send the response
-		const unserializer = new MessageSerializer(SCHEMAS.WI_MESSAGES);
-		const  binaryResponse = unserializer.serialize(answer.scheme, answer.message);
-		const response = encoder.encode(binaryResponse);
-		client.emit("data", response);
+
+
 	}
 
 

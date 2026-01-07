@@ -248,5 +248,24 @@ export class OrganizationMemberRestrictedOrganizationResolver extends JwtProtect
 		);
 	}
 
+	@Mutation(() => NodeEntity, { name: 'stakeNodeInOrganisation' })
+	async stakeNodeInOrganisation(
+		@CurrentUser() user: UserEntity,
+		@Args('organisationId', { type: () => Int }, OrganisationByIdPipe) organisation: OrganisationEntity,
+		@Args('nodeId', { type: () => Int }) nodeId: number,
+		@Args('amount', { type: () => String }) amount: string,
+	): Promise<NodeEntity> {
+		const userBelongsToOrganisation = await this.organisationService.checkUserBelongsToOrganisation(user, organisation);
+		if (!userBelongsToOrganisation) {
+			throw new UnauthorizedException('User does not belong to the organisation');
+		}
+
+		return this.nodeService.stakeNodeById(
+			organisation,
+			nodeId,
+			amount
+		);
+	}
+
 
 }

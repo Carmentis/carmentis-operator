@@ -111,35 +111,112 @@ export default function Home() {
 
 
 function OrganisationPublicKey() {
-	const { publicKey, decodedPublicKey } = useOrganisationPublicKey();
+	const organisation = useOrganisation();
+	const { value: orgPk, loading: loadingOrgPK } = useOrganisationPublicKey();
+	const notify = useToast();
+
+	const copyToClipboard = (text: string, label: string) => {
+		navigator.clipboard.writeText(text).then(() => {
+			notify.success(`${label} copied to clipboard`);
+		}).catch(() => {
+			notify.error('Failed to copy to clipboard');
+		});
+	};
+
 	return <>
 		<Box display={"flex"} flexDirection={"row"} justifyContent={"space-between"}>
 			<Typography variant="h6" fontWeight="500" mb={2} color="primary">
 				Organisation Keys
 			</Typography>
-			<Box display="flex" gap={2}>
-				<Button variant={"contained"}>Copy public key</Button>
-			</Box>
 		</Box>
 
-		<Box>
-			<Typography variant="body2" color="text.secondary" gutterBottom>
-				Organisation public key
-			</Typography>
-			<Typography
-				variant="body1"
-				fontFamily="monospace"
-				sx={{
-					p: 2,
-					bgcolor: 'rgba(255, 255, 255, 0.5)',
-					borderRadius: 1,
-					overflowX: 'auto',
-					whiteSpace: 'nowrap',
-					border: '1px solid rgba(255, 255, 255, 0.3)',
-				}}
-			>
-				{publicKey}
-			</Typography>
+		<Box display="flex" flexDirection="column" gap={3}>
+			<Box>
+				<Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+					<Typography variant="body2" color="text.secondary" gutterBottom>
+						Public Key
+					</Typography>
+					<Button
+						size="small"
+						variant="outlined"
+						onClick={() => copyToClipboard(organisation.publicSignatureKey, 'Public key')}
+					>
+						Copy
+					</Button>
+				</Box>
+				<Typography
+					variant="body1"
+					fontFamily="monospace"
+					sx={{
+						p: 2,
+						bgcolor: 'rgba(255, 255, 255, 0.5)',
+						borderRadius: 1,
+						overflowX: 'auto',
+						whiteSpace: 'nowrap',
+						border: '1px solid rgba(255, 255, 255, 0.3)',
+					}}
+				>
+					{organisation.publicSignatureKey}
+				</Typography>
+			</Box>
+
+			<Box>
+				<Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+					<Typography variant="body2" color="text.secondary" gutterBottom>
+						Private Key
+					</Typography>
+					<Button
+						size="small"
+						variant="outlined"
+						onClick={() => copyToClipboard(organisation.privateSignatureKey, 'Private key')}
+					>
+						Copy
+					</Button>
+				</Box>
+				<Typography
+					variant="body1"
+					fontFamily="monospace"
+					sx={{
+						p: 2,
+						bgcolor: 'rgba(255, 255, 255, 0.5)',
+						borderRadius: 1,
+						overflowX: 'auto',
+						whiteSpace: 'nowrap',
+						border: '1px solid rgba(255, 255, 255, 0.3)',
+					}}
+				>
+					{organisation.privateSignatureKey}
+				</Typography>
+			</Box>
+
+			<Box>
+				<Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+					<Typography variant="body2" color="text.secondary" gutterBottom>
+						Wallet Seed
+					</Typography>
+					<Button
+						size="small"
+						variant="outlined"
+						onClick={() => copyToClipboard(organisation.walletSeed, 'Wallet seed')}
+					>
+						Copy
+					</Button>
+				</Box>
+				<Typography
+					variant="body1"
+					fontFamily="monospace"
+					sx={{
+						p: 2,
+						bgcolor: 'rgba(255, 255, 255, 0.5)',
+						borderRadius: 1,
+						overflowX: 'auto',
+						whiteSpace: 'nowrap',
+						border: '1px solid rgba(255, 255, 255, 0.3)',
+					}}
+				>
+					{organisation.walletSeed}
+				</Typography>
+			</Box>
 		</Box>
 	</>
 }

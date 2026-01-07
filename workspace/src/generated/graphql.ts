@@ -103,6 +103,7 @@ export type Mutation = {
   publishOrganisation: Scalars['Boolean']['output'];
   removeUserFromOrganisation: Scalars['Boolean']['output'];
   setupFirstAdministrator: Scalars['Boolean']['output'];
+  stakeNodeInOrganisation: NodeEntity;
   updateApiKey: Scalars['Boolean']['output'];
   updateApplicationInOrganisation: ApplicationType;
   updateNodeInOrganisation: NodeEntity;
@@ -216,6 +217,13 @@ export type MutationSetupFirstAdministratorArgs = {
 };
 
 
+export type MutationStakeNodeInOrganisationArgs = {
+  amount: Scalars['String']['input'];
+  nodeId: Scalars['Int']['input'];
+  organisationId: Scalars['Int']['input'];
+};
+
+
 export type MutationUpdateApiKeyArgs = {
   activeUntil?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['Int']['input'];
@@ -285,6 +293,7 @@ export type OrganisationEntity = {
   logoUrl?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   nodes: Array<NodeEntity>;
+  privateSignatureKey: Scalars['String']['output'];
   publicSignatureKey: Scalars['String']['output'];
   published: Scalars['Boolean']['output'];
   publishedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -491,7 +500,7 @@ export type GetOrganisationQueryVariables = Exact<{
 }>;
 
 
-export type GetOrganisationQuery = { organisation: { id: number, name: string, publicSignatureKey: string, createdAt: any, logoUrl?: string | null, published: boolean, balance: string, isDraft: boolean, publishedAt?: any | null, city: string, website: string, countryCode: string, virtualBlockchainId?: string | null, version: number } };
+export type GetOrganisationQuery = { organisation: { id: number, name: string, publicSignatureKey: string, privateSignatureKey: string, walletSeed: string, createdAt: any, logoUrl?: string | null, published: boolean, balance: string, isDraft: boolean, publishedAt?: any | null, city: string, website: string, countryCode: string, virtualBlockchainId?: string | null, version: number } };
 
 export type GetOrganisationBalanceQueryVariables = Exact<{
   id: Scalars['Int']['input'];
@@ -744,6 +753,15 @@ export type ClaimNodeInOrganisationMutationVariables = Exact<{
 
 
 export type ClaimNodeInOrganisationMutation = { claimNodeInOrganisation: { id: number, nodeAlias: string, includedAt: any, virtualBlockchainId?: string | null, rpcEndpoint: string, isClaimable: boolean } };
+
+export type StakeNodeInOrganisationMutationVariables = Exact<{
+  organisationId: Scalars['Int']['input'];
+  nodeId: Scalars['Int']['input'];
+  amount: Scalars['String']['input'];
+}>;
+
+
+export type StakeNodeInOrganisationMutation = { stakeNodeInOrganisation: { id: number, nodeAlias: string, includedAt: any, virtualBlockchainId?: string | null, rpcEndpoint: string, isClaimable: boolean } };
 
 export type UserFragment = { publicKey: string, firstname: string, lastname: string, isAdmin: boolean };
 
@@ -1234,6 +1252,8 @@ export const GetOrganisationDocument = gql`
     id
     name
     publicSignatureKey
+    privateSignatureKey
+    walletSeed
     createdAt
     logoUrl
     published
@@ -2449,6 +2469,45 @@ export function useClaimNodeInOrganisationMutation(baseOptions?: Apollo.Mutation
 export type ClaimNodeInOrganisationMutationHookResult = ReturnType<typeof useClaimNodeInOrganisationMutation>;
 export type ClaimNodeInOrganisationMutationResult = Apollo.MutationResult<ClaimNodeInOrganisationMutation>;
 export type ClaimNodeInOrganisationMutationOptions = Apollo.BaseMutationOptions<ClaimNodeInOrganisationMutation, ClaimNodeInOrganisationMutationVariables>;
+export const StakeNodeInOrganisationDocument = gql`
+    mutation stakeNodeInOrganisation($organisationId: Int!, $nodeId: Int!, $amount: String!) {
+  stakeNodeInOrganisation(
+    organisationId: $organisationId
+    nodeId: $nodeId
+    amount: $amount
+  ) {
+    ...NodeFragment
+  }
+}
+    ${NodeFragmentFragmentDoc}`;
+export type StakeNodeInOrganisationMutationFn = Apollo.MutationFunction<StakeNodeInOrganisationMutation, StakeNodeInOrganisationMutationVariables>;
+
+/**
+ * __useStakeNodeInOrganisationMutation__
+ *
+ * To run a mutation, you first call `useStakeNodeInOrganisationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useStakeNodeInOrganisationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [stakeNodeInOrganisationMutation, { data, loading, error }] = useStakeNodeInOrganisationMutation({
+ *   variables: {
+ *      organisationId: // value for 'organisationId'
+ *      nodeId: // value for 'nodeId'
+ *      amount: // value for 'amount'
+ *   },
+ * });
+ */
+export function useStakeNodeInOrganisationMutation(baseOptions?: Apollo.MutationHookOptions<StakeNodeInOrganisationMutation, StakeNodeInOrganisationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<StakeNodeInOrganisationMutation, StakeNodeInOrganisationMutationVariables>(StakeNodeInOrganisationDocument, options);
+      }
+export type StakeNodeInOrganisationMutationHookResult = ReturnType<typeof useStakeNodeInOrganisationMutation>;
+export type StakeNodeInOrganisationMutationResult = Apollo.MutationResult<StakeNodeInOrganisationMutation>;
+export type StakeNodeInOrganisationMutationOptions = Apollo.BaseMutationOptions<StakeNodeInOrganisationMutation, StakeNodeInOrganisationMutationVariables>;
 export const GetCurrentUserDocument = gql`
     query getCurrentUser {
   getCurrentUser {

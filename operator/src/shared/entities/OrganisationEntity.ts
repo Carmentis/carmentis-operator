@@ -8,7 +8,6 @@ import {
 	PrivateSignatureKey,
 	PublicSignatureKey,
 	SignatureSchemeId,
-	StringSignatureEncoder,
 	WalletCrypto,
 } from '@cmts-dev/carmentis-sdk/server';
 import { NodeEntity } from './NodeEntity';
@@ -54,7 +53,6 @@ export class OrganisationEntity extends BaseEntity {
 	@Column({default: ''})
 	website: string;
 
-	@Field(type => String)
 	@EncryptedColumn()
 	walletSeed: string;
 
@@ -96,7 +94,7 @@ export class OrganisationEntity extends BaseEntity {
 		return WalletCrypto.parseFromString(this.walletSeed);
 	}
 
-	getPrivateSignatureKey(schemeId: SignatureSchemeId = SignatureSchemeId.SECP256K1): PrivateSignatureKey {
+	async getPrivateSignatureKey(schemeId: SignatureSchemeId = SignatureSchemeId.SECP256K1): Promise<PrivateSignatureKey> {
 		const wallet = this.getWallet();
 		return wallet
 			.getDefaultAccountCrypto()
@@ -104,8 +102,8 @@ export class OrganisationEntity extends BaseEntity {
 		//return wallet.getPrivateSignatureKey();
 	}
 
-	getPublicSignatureKey(schemeId: SignatureSchemeId = SignatureSchemeId.SECP256K1): PublicSignatureKey {
-		const privateKey = this.getPrivateSignatureKey(schemeId);
+	async getPublicSignatureKey(schemeId: SignatureSchemeId = SignatureSchemeId.SECP256K1): Promise<PublicSignatureKey> {
+		const privateKey = await this.getPrivateSignatureKey(schemeId);
 		return privateKey.getPublicKey();
 	}
 

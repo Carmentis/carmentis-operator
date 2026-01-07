@@ -1,16 +1,12 @@
-import { Args, Int, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Int, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { OrganisationEntity } from '../../../../../shared/entities/OrganisationEntity';
 import { ForbiddenException, UseGuards } from '@nestjs/common';
-import { OrganizationMemberRestrictedOrganizationGuard } from '../../../../guards/OrganizationMemberRestrictedOrganizationGuard';
-import { JwtProtectedResolver } from '../JwtProtectedResolver';
-import { OrganisationByIdPipe } from '../../../../pipes/OrganisationByIdPipe';
-import { Transaction } from '@cmts-dev/carmentis-sdk';
 import {
-	CMTSToken,
-	CryptoEncoderFactory,
-	SignatureSchemeId,
-	StringSignatureEncoder,
-} from '@cmts-dev/carmentis-sdk/server';
+	OrganizationMemberRestrictedOrganizationGuard,
+} from '../../../../guards/OrganizationMemberRestrictedOrganizationGuard';
+import { JwtProtectedResolver } from '../JwtProtectedResolver';
+import { AccountTransactions, Transaction } from '@cmts-dev/carmentis-sdk/server';
+import { CMTSToken, CryptoEncoderFactory, SignatureSchemeId } from '@cmts-dev/carmentis-sdk/server';
 import { CurrentUser } from '../../../../decorators/CurrentUserDecorator';
 import { UserEntity } from '../../../../../shared/entities/UserEntity';
 import ChainService from '../../../../../shared/services/ChainService';
@@ -35,7 +31,7 @@ export class OrganizationAdditionalFieldsResolver extends JwtProtectedResolver {
 		const isAuthorized = this.organisationService.isAuthorizedUser(user, organisation);
 		if (!isAuthorized) throw new ForbiddenException();
 		try {
-			const publicKey = organisation.getPublicSignatureKey();
+			const publicKey = await organisation.getPublicSignatureKey();
 			const balance = await this.chainService.getBalanceOfAccount(publicKey);
 			return balance.toString();
 		} catch (error) {
@@ -58,7 +54,7 @@ export class OrganizationAdditionalFieldsResolver extends JwtProtectedResolver {
 	async hasTokenAccount(
 		@Parent() organisation: OrganisationEntity,
 	) {
-		const publicKey = organisation.getPublicSignatureKey();
+		const publicKey = await organisation.getPublicSignatureKey();
 		return await this.chainService.checkAccountExistence(publicKey)
 	}
 
@@ -76,21 +72,43 @@ export class OrganizationAdditionalFieldsResolver extends JwtProtectedResolver {
 	 * @param organisation
 	 */
 	@ResolveField(() => String, { name: 'publicSignatureKey' })
-	getPublicSignatureKey(
+	async getPublicSignatureKey(
 		@Parent() organisation: OrganisationEntity,
 	) {
 		const usedSchemeId=  SignatureSchemeId.SECP256K1;
 		const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
 		return encoder.encodePublicKey(
-			organisation.getPublicSignatureKey(usedSchemeId)
+			await organisation.getPublicSignatureKey(usedSchemeId)
 		);
+	}
+
+	/**
+	 * Returns the private signature key of the organization.
+	 * @param organisation
+	 */
+	@ResolveField(() => String, { name: 'privateSignatureKey' })
+	async getPrivateSignatureKey(
+		@Parent() organisation: OrganisationEntity,
+	) {
+		return this.organisationService.getEncodedPrivateSignatureKey(organisation.id);
+	}
+
+	/**
+	 * Returns the wallet seed of the organization.
+	 * @param organisation
+	 */
+	@ResolveField(() => String, { name: 'walletSeed' })
+	async getWalletSeed(
+		@Parent() organisation: OrganisationEntity,
+	) {
+		return this.organisationService.getWalletSeed(organisation.id);
 	}
 
 	@ResolveField(() => OrganisationChainStatusType, { name: 'chainStatus' })
 	async getChainStatus(
 		@Parent() organisation: OrganisationEntity,
 	) {
-		const publicKey = organisation.getPublicSignatureKey();
+		const publicKey = await organisation.getPublicSignatureKey();
 		const hasTokenAccount = await this.chainService.checkAccountExistence(publicKey);
 		const hasEditedOrganization = organisation.isReadyToBePublished();
 		const isPublishedOnChain = await this.chainService.checkPublishedOnChain(organisation);
@@ -104,7 +122,7 @@ export class OrganizationAdditionalFieldsResolver extends JwtProtectedResolver {
 		@Args('fromHistoryHash', { nullable: true }) fromHistoryHash : string | undefined,
 	): Promise<TransactionType[]> {
 		try {
-			const publicKey = organisation.getPublicSignatureKey();
+			const publicKey = await organisation.getPublicSignatureKey();
 			const accountHistory = await this.chainService.getTransactionsHistory(
 				publicKey,
 				fromHistoryHash,
@@ -112,10 +130,11 @@ export class OrganizationAdditionalFieldsResolver extends JwtProtectedResolver {
 			);
 
 			// format the output
-			return accountHistory.getAllTransactions().map(entry => {
+			const transactions = AccountTransactions.createFromAbciResponse(accountHistory);
+			return transactions.getTransactions().map(entry => {
 				return {
 					height: entry.getHeight(),
-					label: this.formatTransactionLabel(entry),
+					label: entry.getTransactionTypeLabel(),
 					transferredAt: entry.transferredAt().toLocaleDateString(),
 					amount: entry.getAmount().toString(),
 					amountInAtomics: entry.getAmount().getAmountAsAtomic(),
@@ -128,15 +147,4 @@ export class OrganizationAdditionalFieldsResolver extends JwtProtectedResolver {
 			return []
 		}
 	}
-
-	private formatTransactionLabel(transaction: Transaction): string {
-		if (transaction.isPurchase()) return 'Purchase';
-		if (transaction.isSale()) return 'Sale';
-		if (transaction.isReceivedPayment()) return 'Received payment';
-		if (transaction.isSentPayment()) return 'Sent payment';
-		if (transaction.isEarnedFees()) return "Earned fees";
-		if (transaction.isPaidFees()) return "Paid fees";
-		return 'Unspecified';
-	}
-
 }
