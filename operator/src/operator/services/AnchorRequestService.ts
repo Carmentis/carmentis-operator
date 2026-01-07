@@ -19,14 +19,15 @@ export class AnchorRequestService {
 	async storeAnchorRequest(organisation: OrganisationEntity, application: ApplicationEntity, request: AnchorWithWalletDto, gasPrice: CMTSToken): Promise<AnchorRequestEntity> {
 		const anchorRequestId = this.generateRandomAnchorRequestId();
 
-		return this.anchorRequestRepository.save({
+		await this.anchorRequestRepository.save({
 			anchorRequestId: anchorRequestId,
 			status: 'pending',
 			request,
 			localOrganisationId: organisation.id,
 			applicationId: application.id,
 			gasPriceInAtomic: gasPrice.getAmountAsAtomic(),
-		})
+		});
+		return this.findAnchorRequestByAnchorRequestId(anchorRequestId);
 	}
 
 	/**

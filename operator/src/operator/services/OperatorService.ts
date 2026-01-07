@@ -47,6 +47,7 @@ export class OperatorService {
 		// store the request
 		const gasPrice = this.extractGasPrice(request);
 		const storedRequest = await this.anchorRequestService.storeAnchorRequest(organisation, application, request, gasPrice);
+		console.log(storedRequest)
 		const anchorRequestId = storedRequest.getAnchorRequestId();
 
 		return { anchorRequestId }
