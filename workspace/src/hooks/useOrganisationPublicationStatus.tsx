@@ -22,9 +22,9 @@ export default function useOrganisationPublicationStatus({
 			if (!endpoint?.getLinkedNode) return undefined;
 			if (typeof virtualBlockchainId !== 'string') return { published: false, pending: false, virtualBlockchainId: undefined  };
 			const vbId = Hash.from(virtualBlockchainId);
-			const provider = ProviderFactory.createFromNodeUrl(endpoint.getLinkedNode);
+			const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(endpoint.getLinkedNode);
 			try {
-				await provider.loadOrganization(vbId);
+				await provider.loadOrganizationVirtualBlockchain(vbId);
 				return { published: true, pending: false, virtualBlockchainId: vbId  };
 			} catch (e) {
 				return { published: false, pending: isPending, virtualBlockchainId: vbId  };
