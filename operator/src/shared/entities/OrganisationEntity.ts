@@ -29,9 +29,9 @@ export class OrganisationEntity extends BaseEntity {
 	})
 	logoUrl: string;
 
-	@Field(type => Boolean)
-	@Column({default: false})
-	published: boolean;
+	@Field(type => Date, { nullable: true })
+	@Column({nullable: true})
+	lastPublicationCheckTime: Date;
 
 	@Field(type => Date, { nullable: true })
 	@Column({nullable: true})
@@ -83,7 +83,11 @@ export class OrganisationEntity extends BaseEntity {
 	virtualBlockchainId: string;
 
 	isPublished(): boolean {
-		return this.published
+		return this.hasVirtualBlockchainId() && this.lastPublicationCheckTime !== null;
+	}
+
+	isPublicationPending(): boolean {
+		return this.hasVirtualBlockchainId() && this.lastPublicationCheckTime === null;
 	}
 
 	getVirtualBlockchainId(): Hash {

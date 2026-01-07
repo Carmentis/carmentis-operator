@@ -26,15 +26,18 @@ export default function OrganisationWarnings() {
   }
 
   const { hasTokenAccount, isPublishedOnChain, hasEditedOrganization } = data.organisation.chainStatus;
-  
+
   // Check if organization details are complete
   const isWebsiteEmpty = !organisation.website;
   const isCountryCodeEmpty = !organisation.countryCode;
   const isCityEmpty = !organisation.city;
   const hasIncompleteDetails = isWebsiteEmpty || isCountryCodeEmpty || isCityEmpty;
 
+  // Check if publication is pending (has virtualBlockchainId but no lastPublicationCheckTime)
+  const isPublicationPending = organisation.virtualBlockchainId && !organisation.lastPublicationCheckTime;
+
   // If all conditions are met, don't show any warnings
-  if (hasTokenAccount && isPublishedOnChain && !hasIncompleteDetails) {
+  if (hasTokenAccount && isPublishedOnChain && !hasIncompleteDetails && !isPublicationPending) {
     return null;
   }
 
@@ -48,7 +51,15 @@ export default function OrganisationWarnings() {
         />
       )}
 
-      {!isPublishedOnChain && (
+      {isPublicationPending && (
+        <WarningCard
+          title="Publication Pending Verification"
+          message="Your organization has been published but is awaiting verification on the blockchain. This may take a few moments."
+          severity="info"
+        />
+      )}
+
+      {!isPublishedOnChain && !isPublicationPending && (
         <WarningCard
           title="Organization Not Published"
           message="Your organization is not published on the blockchain. Publishing is required to claim nodes and publish applications."

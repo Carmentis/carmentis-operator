@@ -264,7 +264,10 @@ function ListOfOrganisations() {
 									<Typography variant={"body1"}>
 										This organisation has been created at {new Date(organisation.createdAt).toLocaleString()}.
 									</Typography>
-									<OrganisationPublicationStatusMessage virtualBlockchainId={organisation.virtualBlockchainId}/>
+									<OrganisationPublicationStatusMessage
+										virtualBlockchainId={organisation.virtualBlockchainId}
+										lastPublicationCheckTime={organisation.lastPublicationCheckTime}
+									/>
 									<Box mt={2} display={"flex"} gap={1}>
 										<Button variant={"contained"} onClick={() => onClick(organisation.id)}>Access</Button>
 										<Button onClick={() => navigation.navigateToOrganisationApplications(
@@ -297,14 +300,14 @@ function ListOfOrganisations() {
 }
 
 
-function OrganisationPublicationStatusMessage({virtualBlockchainId}: {virtualBlockchainId: string}) {
-	const {published, virtualBlockchainId: vbId, loading } =  useOrganisationPublicationStatus({virtualBlockchainId});
+function OrganisationPublicationStatusMessage({virtualBlockchainId, lastPublicationCheckTime}: {virtualBlockchainId: string, lastPublicationCheckTime?: Date | string | null}) {
+	const {published, pending, virtualBlockchainId: vbId, loading } =  useOrganisationPublicationStatus({virtualBlockchainId, lastPublicationCheckTime});
 	if (typeof published !== 'boolean' || loading) return <>Loading...</>
 	return <>
 		{
 			published &&
 			<Typography>
-				You organisation is published on the blockchain
+				Your organisation is published on the blockchain
 				at <Tooltip title={virtualBlockchainId}>
 				<Typography component={"span"} fontWeight={"bold"}>
 					{virtualBlockchainId.slice(0,20)}...{virtualBlockchainId.slice(-4)}.
@@ -313,9 +316,15 @@ function OrganisationPublicationStatusMessage({virtualBlockchainId}: {virtualBlo
 			</Typography>
 		}
 		{
-			!published &&
+			pending &&
+			<Typography color="warning.main">
+				Your organisation publication is pending verification on the blockchain.
+			</Typography>
+		}
+		{
+			!published && !pending &&
 			<Typography>
-				You organisation is currently not published on the blockchain.
+				Your organisation is currently not published on the blockchain.
 			</Typography>
 		}
 		</>

@@ -65,7 +65,6 @@ export default class ChainService {
 		const organisationPrivateKey = await this.getOrganizationPrivateKeyByOrganization(organisationEntity);
 		const organizationPublicKey = await organisationPrivateKey.getPublicKey();
 		const accountId = await this.provider.getAccountIdByPublicKey(organizationPublicKey);
-		const isAlreadyPublished = organisationEntity.published;
 		const organisationId = organisationEntity.virtualBlockchainId;
 		const orgDescSection: Section = {
 			type: SectionType.ORG_DESCRIPTION,
@@ -74,7 +73,7 @@ export default class ChainService {
 			website: organisationEntity.website,
 			countryCode: organisationEntity.countryCode
 		}
-		if (isAlreadyPublished) {
+		if (organisationId) {
 			this.logger.log(`Organisation already published on chain, updating it`)
 			const orgVB = await this.provider.loadOrganizationVirtualBlockchain(Hash.from(organisationId));
 			const mb = await orgVB.createMicroblock();
@@ -333,10 +332,12 @@ export default class ChainService {
 
 
 
+		// Update lastPublicationCheckTime to record the check
+		organization.lastPublicationCheckTime = new Date();
+
 		// if no organization is fetched, the organization is currently not published on chain
 		if (fetchedOrganization === undefined) {
 			organization.virtualBlockchainId = undefined;
-			organization.published = false;
 			organization.publishedAt = undefined;
 			return;
 		} else {
@@ -344,7 +345,6 @@ export default class ChainService {
 			// Since we do not know when the organization has been published, we set it to now.
 			const orgDesc = await fetchedOrganization.getDescription();
 			organization.virtualBlockchainId = fetchedOrganizationHash.encode();
-			organization.published = true;
 			organization.isDraft = false;
 			organization.publishedAt = new Date();
 			organization.name = orgDesc.name;

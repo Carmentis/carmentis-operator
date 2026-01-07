@@ -1,22 +1,24 @@
 import { Chip, useTheme, alpha } from "@mui/material";
 import PublishIcon from '@mui/icons-material/Publish';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import useOrganisationPublicationStatus from '@/hooks/useOrganisationPublicationStatus';
 import { useOrganisation } from '@/contexts/organisation-store.context';
 
 export default function OrganisationPublicationStatusChip() {
-	const { virtualBlockchainId } = useOrganisation();
-	const {published, loading} = useOrganisationPublicationStatus({ virtualBlockchainId });
-	if (loading || typeof published !== 'boolean') return <ChipRenderer label={"Loading..."}/>
-	return  <ChipRenderer label={published ? "Published" : "Not published"}/>
+	const { virtualBlockchainId, lastPublicationCheckTime } = useOrganisation();
+	const {published, pending, loading} = useOrganisationPublicationStatus({ virtualBlockchainId, lastPublicationCheckTime });
+	if (loading || typeof published !== 'boolean') return <ChipRenderer label={"Loading..."} icon={<PublishIcon />}/>
+	if (pending) return <ChipRenderer label={"Pending verification"} icon={<HourglassEmptyIcon />}/>
+	return  <ChipRenderer label={published ? "Published" : "Not published"} icon={<PublishIcon />}/>
 }
 
-function ChipRenderer({label}: {label: string}) {
+function ChipRenderer({label, icon}: {label: string, icon: React.ReactElement}) {
 	const theme = useTheme();
 	return <Chip
 		label={label}
 		color="primary"
 		size="small"
-		icon={<PublishIcon />}
+		icon={icon}
 		sx={{
 			borderRadius: '16px',
 			background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.8)})`,

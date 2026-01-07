@@ -211,8 +211,8 @@ export class OrganisationService {
 				organisation.virtualBlockchainId = microBlockHash.encode();
 			}
 
-			// update the organisation
-			organisation.published = true;
+			// update the organisation - set lastPublicationCheckTime to null (pending verification)
+			organisation.lastPublicationCheckTime = null;
 			organisation.isDraft = false;
 			organisation.publishedAt = new Date();
 			return await this.updateOrganisation(organisation, organisation);
@@ -242,7 +242,7 @@ export class OrganisationService {
 		if (!organisation) {
 			throw new NotFoundException(`Organisation with id ${organisationId} not found`);
 		}
-		return organisation.published;
+		return organisation.isPublished();
 	}
 
 	async getOrganisationByApplicationId(applicationId: number) {
@@ -281,7 +281,7 @@ export class OrganisationService {
 	 * @return {Promise<void>} A promise that resolves when the organisation entity is successfully updated.
 	 */
 	async erasePublicationInformation(organisation: OrganisationEntity) {
-		organisation.published = false;
+		organisation.lastPublicationCheckTime = null;
 		organisation.version = 0;
 		organisation.virtualBlockchainId = null;
 		organisation.publishedAt = null;

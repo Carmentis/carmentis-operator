@@ -20,7 +20,7 @@ type OrganisationEntity {
   id: Int!
   name: String!
   logoUrl: String
-  published: Boolean!
+  lastPublicationCheckTime: DateTime
   publishedAt: DateTime
   isDraft: Boolean!
   city: String!

@@ -289,13 +289,13 @@ export type OrganisationEntity = {
   id: Scalars['Int']['output'];
   isAnchoredOnChain: Scalars['Boolean']['output'];
   isDraft: Scalars['Boolean']['output'];
+  lastPublicationCheckTime?: Maybe<Scalars['DateTime']['output']>;
   lastUpdateAt: Scalars['DateTime']['output'];
   logoUrl?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   nodes: Array<NodeEntity>;
   privateSignatureKey: Scalars['String']['output'];
   publicSignatureKey: Scalars['String']['output'];
-  published: Scalars['Boolean']['output'];
   publishedAt?: Maybe<Scalars['DateTime']['output']>;
   transactions: Array<TransactionType>;
   users: Array<UserEntity>;
@@ -500,7 +500,7 @@ export type GetOrganisationQueryVariables = Exact<{
 }>;
 
 
-export type GetOrganisationQuery = { organisation: { id: number, name: string, publicSignatureKey: string, privateSignatureKey: string, walletSeed: string, createdAt: any, logoUrl?: string | null, published: boolean, balance: string, isDraft: boolean, publishedAt?: any | null, city: string, website: string, countryCode: string, virtualBlockchainId?: string | null, version: number } };
+export type GetOrganisationQuery = { organisation: { id: number, name: string, publicSignatureKey: string, privateSignatureKey: string, walletSeed: string, createdAt: any, logoUrl?: string | null, lastPublicationCheckTime?: any | null, balance: string, isDraft: boolean, publishedAt?: any | null, city: string, website: string, countryCode: string, virtualBlockchainId?: string | null, version: number } };
 
 export type GetOrganisationBalanceQueryVariables = Exact<{
   id: Scalars['Int']['input'];
@@ -1256,7 +1256,7 @@ export const GetOrganisationDocument = gql`
     walletSeed
     createdAt
     logoUrl
-    published
+    lastPublicationCheckTime
     balance
     isDraft
     publishedAt

@@ -26,7 +26,7 @@ query GetOrganisation($id: Int!) {
     walletSeed
     createdAt
     logoUrl
-    published
+    lastPublicationCheckTime
     balance
     isDraft
     publishedAt
