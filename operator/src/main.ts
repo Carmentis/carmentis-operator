@@ -7,8 +7,12 @@ import getPort, { portNumbers } from 'get-port';
 import { OperatorConfigService } from './config/services/operator-config.service';
 import { AllExceptionsFilter } from './operator/filters/AllExceptionsFilter';
 
+import {Logger as CarmentisSdkLogger} from '@cmts-dev/carmentis-sdk/server';
 
 async function bootstrap() {
+
+	CarmentisSdkLogger.enableLogsSync();
+
 	const logger = new Logger();
 
 	// create the application and load the configuration

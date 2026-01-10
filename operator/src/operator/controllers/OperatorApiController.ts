@@ -3,6 +3,7 @@ import {
 	CarmentisError,
 	EncoderFactory,
 	WalletInteractiveAnchoringEncoder, WalletInteractiveAnchoringResponse, WalletInteractiveAnchoringResponseType,
+	WalletInteractiveAnchoringValidation
 } from '@cmts-dev/carmentis-sdk/server';
 import { Public } from '../../shared/decorators/PublicDecorator';
 import { ApplicationService } from '../../shared/services/ApplicationService';
@@ -113,10 +114,11 @@ export class OperatorApiController{
 			return this.operatorService.createAnchorWithWalletSession(organisation, application, anchorDto);
 
 		} catch (e) {
+			this.logger.error("An error occurred while processing anchoring with wallet request: ", e)
 			if (CarmentisError.isCarmentisError(e)) {
 				throw e
 			} else {
-				this.logger.error("An error occurred while processing anchoring with wallet request: ", e)
+
 				throw e;
 			}
 		}
@@ -146,9 +148,13 @@ export class OperatorApiController{
 		const application = await this.apiKeyService.findApplicationByApiKey(key);
 		const organisation = await this.applicationService.getOrganisationByApplicationId(application.id);
 		const anchorRequest = await this.operatorService.anchor(application, organisation, anchorDto);
+		throw new Error("Method not implemented.")
+		/*
 		return {
 			anchorRequestId: anchorRequest.anchorRequestId
 		}
+
+		 */
 	}
 
 
@@ -181,52 +187,64 @@ export class OperatorApiController{
 
 	@Public()
 	@ApiExcludeEndpoint()
-	@Post("/walletMessage")
+	@Post("/protocols/wiap/v1")
 	async handleWalletMessage(
-		@Body("data") serializedRequest : string
-	) {
-
-
+		@Body("data") unverifiedRequest : object
+	): Promise<WalletInteractiveAnchoringResponse> {
 		// parse the request
-		this.logger.debug(`Parsing request`)
-		const encoder = EncoderFactory.defaultBytesToStringEncoder();
-		const request = WalletInteractiveAnchoringEncoder.decodeRequest(encoder.decode(serializedRequest));
+		this.logger.debug(`Handling request:`, unverifiedRequest)
+		//const encoder = EncoderFactory.bytesToBase64Encoder();
+		const request = WalletInteractiveAnchoringValidation.validateRequest(unverifiedRequest);
 		const type = request.type;
 
 
 		// handle the request
-		this.logger.debug(`Handling request type ${type}`)
-		let response: WalletInteractiveAnchoringResponse;
-		switch(type) {
-			case WalletInteractiveAnchoringRequestType.APPROVAL_HANDSHAKE: {
-				this.logger.debug(`Entering approval handshake`)
-				response = await this.operatorService.approvalHandshake(request);
-				break
-			}
-			case WalletInteractiveAnchoringRequestType.ACTOR_KEY: {
-				this.logger.debug(`Entering approval actor key`)
-				response = await this.operatorService.handleActorKeys(request);
-				break;
-			}
-			case WalletInteractiveAnchoringRequestType.APPROVAL_SIGNATURE:
-				this.logger.debug(`Entering approval signature`)
-				response = await this.operatorService.approvalSignature(request);
-				break;
-			default:
-				const errorMessage = `Unknown request type: ${type}`
-				this.logger.error(errorMessage)
-				response = {
-					type: WalletInteractiveAnchoringResponseType.ERROR,
-					errorMessage: errorMessage
+		try {
+			this.logger.debug(`Handling request type ${type}`)
+			let response: WalletInteractiveAnchoringResponse;
+			switch(type) {
+				case WalletInteractiveAnchoringRequestType.APPROVAL_HANDSHAKE: {
+					this.logger.debug(`Entering approval handshake`)
+					response = await this.operatorService.approvalHandshake(request);
+					break
 				}
-		}
+				case WalletInteractiveAnchoringRequestType.ACTOR_KEY: {
+					this.logger.debug(`Entering approval actor key`)
+					response = await this.operatorService.handleActorKeys(request);
+					break;
+				}
+				case WalletInteractiveAnchoringRequestType.APPROVAL_SIGNATURE:
+					this.logger.debug(`Entering approval signature`)
+					response = await this.operatorService.approvalSignature(request);
+					break;
+				default:
+					const errorMessage = `Unknown request type: ${type}`
+					this.logger.error(errorMessage)
+					response = {
+						type: WalletInteractiveAnchoringResponseType.ERROR,
+						errorMessage: errorMessage
+					}
+			}
 
 
-		this.logger.debug(`Request handled: answer: ${response}`)
-		return {
-			success: true,
-			data: encoder.encode(WalletInteractiveAnchoringEncoder.encodeResponse(response))
+			this.logger.debug(`Request handled: answer: ${response.type}`)
+			return response
+		} catch(e) {
+			if (e instanceof Error) {
+				this.logger.error(`An error occured during wallet request handler: ${e}`);
+				this.logger.debug(e.stack)
+			} else if (typeof e === 'string') {
+				this.logger.error(`An error occured during wallet request handler: ${e}`);
+			} else {
+				this.logger.error(`An error occured during wallet request handler: ${e}`);
+			}
+
+			return {
+				type: WalletInteractiveAnchoringResponseType.ERROR,
+				errorMessage: `${e}`
+			}
 		}
+
 	}
 
 

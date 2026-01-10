@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ApplicationEntity } from '../../shared/entities/ApplicationEntity';
 import { Repository } from 'typeorm';
@@ -10,6 +10,8 @@ import { OrganisationEntity } from '../../shared/entities/OrganisationEntity';
 
 @Injectable()
 export class AnchorRequestService {
+
+	private logger = new Logger(AnchorRequestService.name)
 	constructor(
 		@InjectRepository(AnchorRequestEntity)
 		private readonly anchorRequestRepository: Repository<AnchorRequestEntity>,
@@ -37,9 +39,11 @@ export class AnchorRequestService {
 	 * @return {Promise<AnchorRequestEntity>} A promise that resolves to the AnchorRequestEntity matching the given ID, or rejects if no match is found.
 	 */
 	async findAnchorRequestByAnchorRequestId(anchorRequestID: string): Promise<AnchorRequestEntity> {
-		return this.anchorRequestRepository.findOneByOrFail({
+		const storedAnchorRequest = await this.anchorRequestRepository.findOneByOrFail({
 			anchorRequestId: anchorRequestID,
 		})
+		this.logger.log(`Anchor request found for id ${anchorRequestID}:`)
+		return storedAnchorRequest;
 	}
 
 	/**
@@ -55,7 +59,6 @@ export class AnchorRequestService {
 			anchorRequestId
 		}, {
 			status: 'completed',
-			virtualBlockchainId: vbId.encode(),
 			microBlockHash: mbHash.encode()
 		})
 	}
@@ -89,6 +92,11 @@ export class AnchorRequestService {
 	}
 
 
-
-
+	async saveGenesisSeed(anchorRequestId: any, genesisSeed: Hash) {
+		await this.anchorRequestRepository.update({
+			anchorRequestId
+		}, {
+			hexEncodedGenesisSeed: Utils.binaryToHexa(genesisSeed.toBytes())
+		})
+	}
 }

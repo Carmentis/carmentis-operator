@@ -244,6 +244,7 @@ export default class ChainService {
 			cometPublicKey: cometPublicKey
 		}
 		mb.addSections([vnCreationSection, vnRpcEndpointDeclarationSection, vnCometBFTPublicKeyDeclarationSection]);
+		// TODO: add gas
 		await mb.seal(organisationPrivateKey, { feesPayerAccount: accountId });
 		const microblockHash = await provider.publishMicroblock(mb);
 		return microblockHash;
