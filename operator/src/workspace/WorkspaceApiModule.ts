@@ -42,7 +42,7 @@ const WORKSPACE_IMPORTS = [
 			const options: JwtModuleOptions = {
 				global: true,
 				secret,
-				signOptions: { expiresIn: configService.getJwtTokenValidity() },
+				signOptions: { expiresIn: configService.getJwtTokenValidity() as any },
 			}
 			return options;
 		},

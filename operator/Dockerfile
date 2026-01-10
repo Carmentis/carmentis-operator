@@ -1,5 +1,5 @@
 # Étape 1 : Builder
-FROM node:24-alpine AS builder
+FROM node:22-alpine AS builder
 
 # On est dans le workspace operator
 WORKDIR /app
