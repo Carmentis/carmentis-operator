@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtModuleAsyncOptions, JwtModuleOptions } from '@nestjs/jwt';
 
 import { SharedModule } from '../shared/SharedModule';
 import { UnrestrictedOrganisationResolver } from './graphql/resolvers/jwt-protected/organization/UnrestrictedOrganisationResolver';
@@ -39,11 +39,12 @@ const WORKSPACE_IMPORTS = [
 		useFactory: async (configService: OperatorConfigService, envService: EnvService) => {
 			const secret = await envService.getOrCreateJwtSecret();
 			await envService.storeJwtSecret(secret);
-			return {
+			const options: JwtModuleOptions = {
 				global: true,
 				secret,
 				signOptions: { expiresIn: configService.getJwtTokenValidity() },
 			}
+			return options;
 		},
 	}),
 ];
