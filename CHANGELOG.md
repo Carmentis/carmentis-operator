@@ -1,3 +1,22 @@
+# [1.1.0](https://github.com/Carmentis/carmentis-operator/compare/v1.0.3...v1.1.0) (2026-01-10)
+
+
+### Bug Fixes
+
+* delete the outdated challenges by batch ([abb87d7](https://github.com/Carmentis/carmentis-operator/commit/abb87d73db1b3c087ac40bd6f15235395f6bc123))
+* update JWT module options with explicit typing in WorkspaceApiModule ([a59e502](https://github.com/Carmentis/carmentis-operator/commit/a59e502fa1b7aac14e1061c75fa3de6daaefb9fb))
+
+
+### Features
+
+* add OrganisationDetails, OrganisationKeys, and PageSkeleton components ([fedc968](https://github.com/Carmentis/carmentis-operator/commit/fedc968b3099d6e8169a21cbcd3db489f23e49ae))
+* addition of limiter for public requests ([4077375](https://github.com/Carmentis/carmentis-operator/commit/40773752873c491dda7af31ea04a70bdc9e6631d))
+* enable staking for nodes and support wallet-related operations ([da0fbdb](https://github.com/Carmentis/carmentis-operator/commit/da0fbdbdc4c649762fa6738eee69d9c8c6273958))
+* enhance UI/UX with updated themes and global styles ([29e1ce0](https://github.com/Carmentis/carmentis-operator/commit/29e1ce0fe74e47ad2d91df41251674142d3c3bf3))
+* improve anchoring with wallet functionality and add enhanced logging ([10b7500](https://github.com/Carmentis/carmentis-operator/commit/10b75003b5fbe95876a8359f5045906cc2168f44))
+* migrations are now supported for the operator ([9994d15](https://github.com/Carmentis/carmentis-operator/commit/9994d152448c8137ed2ce525ac6e661676e41557))
+* modularize workspace with reusable components for organisations and users ([be8ad22](https://github.com/Carmentis/carmentis-operator/commit/be8ad22bae3bdbe645e60712749b40117099c97f))
+
 ## [1.0.3](https://github.com/Carmentis/carmentis-operator/compare/v1.0.2...v1.0.3) (2025-10-02)
 
 
