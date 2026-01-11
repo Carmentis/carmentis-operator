@@ -82,7 +82,7 @@ export function OrganisationDetails() {
 		}
 	};
 
-	const hasTokenAccount = tokenAccountData?.hasPublishedAccountOnChain;
+	const hasTokenAccount = tokenAccountData?.organisation?.hasTokenAccount;
 	const canPublish = !isModified && organisation.isDraft && hasTokenAccount;
 	const showPublishButton = !isModified && organisation.isDraft;
 
