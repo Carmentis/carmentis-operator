@@ -14,7 +14,8 @@ export function getDatabaseConfig(config: OperatorConfigService): DataSourceOpti
 
 	// we specify common parameters values
 	const runningInDev = config.isRunningInDevMode();
-	const synchronize = runningInDev;
+	// TODO(synchronize)
+	const synchronize = true;
 	const migrationsRun = false;
 	const migrations = ['src/**/migrations/**.ts'];
 
