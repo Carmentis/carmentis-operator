@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/Carmentis/carmentis-operator/compare/v1.1.2...v1.1.3) (2026-01-11)
+
+
+### Bug Fixes
+
+* remove empty state logic from OrganisationsList component to allow orgnization creation ([a7ab3b0](https://github.com/Carmentis/carmentis-operator/commit/a7ab3b0d553c83739106cdd7b98c229b4939dd28))
+
 ## [1.1.2](https://github.com/Carmentis/carmentis-operator/compare/v1.1.1...v1.1.2) (2026-01-11)
 
 
