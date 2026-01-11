@@ -47,36 +47,16 @@ export function OrganisationsList({ organisations, loading }: OrganisationsListP
 				Your Organisations
 			</Typography>
 
-			{organisations.length === 0 ? (
-				<Box
-					sx={{
-						p: 8,
-						textAlign: 'center',
-						bgcolor: 'background.paper',
-						borderRadius: 2,
-						border: 1,
-						borderColor: 'divider',
-					}}
-				>
-					<Typography variant="h6" color="text.secondary" gutterBottom>
-						No organisations yet
-					</Typography>
-					<Typography variant="body2" color="text.secondary">
-						Create your first organisation to get started
-					</Typography>
-				</Box>
-			) : (
-				<Box
-					display="grid"
-					gridTemplateColumns="repeat(auto-fill, minmax(320px, 1fr))"
-					gap={2}
-				>
-					<CreateOrganisationCard />
-					{organisations.map((org) => (
-						<OrganisationCard key={org.id} organisation={org} />
-					))}
-				</Box>
-			)}
+			<Box
+				display="grid"
+				gridTemplateColumns="repeat(auto-fill, minmax(320px, 1fr))"
+				gap={2}
+			>
+				<CreateOrganisationCard />
+				{organisations.map((org) => (
+					<OrganisationCard key={org.id} organisation={org} />
+				))}
+			</Box>
 		</Stack>
 	);
 }
