@@ -17,6 +17,7 @@ export function getDatabaseConfig(config: OperatorConfigService): DataSourceOpti
 	// TODO(synchronize)
 	const synchronize = true;
 	const migrationsRun = false;
+
 	const migrations = ['src/**/migrations/**.ts'];
 
 	// log config
