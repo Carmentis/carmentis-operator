@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/Carmentis/carmentis-operator/compare/v1.1.1...v1.1.2) (2026-01-11)
+
+
+### Bug Fixes
+
+* no migration by default in start script ([11a56e5](https://github.com/Carmentis/carmentis-operator/commit/11a56e50c2b8532803605c3295a6282126b5fb33))
+
 ## [1.1.1](https://github.com/Carmentis/carmentis-operator/compare/v1.1.0...v1.1.1) (2026-01-11)
 
 
