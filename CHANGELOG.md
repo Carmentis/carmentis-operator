@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/Carmentis/carmentis-operator/compare/v1.1.0...v1.1.1) (2026-01-11)
+
+
+### Bug Fixes
+
+* need to publish ([d195821](https://github.com/Carmentis/carmentis-operator/commit/d19582152f36b5f0d8d210c806e0e9e110f345d2))
+
 # [1.1.0](https://github.com/Carmentis/carmentis-operator/compare/v1.0.3...v1.1.0) (2026-01-10)
 
 
