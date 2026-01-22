@@ -2,7 +2,7 @@ import {
 	ExceptionFilter,
 	Catch,
 	ArgumentsHost,
-	HttpException,
+	HttpException, BadRequestException,
 } from '@nestjs/common';
 
 @Catch()
@@ -26,9 +26,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
 		if (exception instanceof HttpException) {
 
 		} else {
-			response.status(500).json({
-				message: `Internal Server Error: ${exception instanceof Error ? exception.message : 'Unknown error'}`,
-			});
+			const errorMessage = exception instanceof Error ? exception.message : 'Unknown error';
+			if (response.status) {
+				console.error("Unknown error:", exception);
+				console.log(response.status)
+				response.status(500).json({
+					message: errorMessage,
+				});
+			} else {
+				throw new BadRequestException(errorMessage);
+			}
+
 		}
 
 	}

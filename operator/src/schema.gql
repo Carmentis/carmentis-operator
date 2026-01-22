@@ -169,6 +169,7 @@ type Mutation {
   updateNodeInOrganisation(organisationId: Int!, nodeId: Int!, nodeAlias: String!, nodeRpcEndpoint: String!): NodeEntity!
   claimNodeInOrganisation(organisationId: Int!, nodeId: Int!): NodeEntity!
   stakeNodeInOrganisation(organisationId: Int!, nodeId: Int!, amount: String!): NodeEntity!
+  cancelStakeNodeInOrganisation(organisationId: Int!, nodeId: Int!, amount: String!): NodeEntity!
   publishApplication(applicationId: Int!): Boolean!
   deleteApplicationInOrganisation(applicationId: Int!): Boolean!
   updateApplicationInOrganisation(applicationId: Int!, applicationUpdate: ApplicationUpdateDto!): ApplicationType!

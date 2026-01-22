@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@apollo/client": "^3.13.6",
-    "@cmts-dev/carmentis-sdk": "^1.14.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@heroicons/react": "^2.2.0",

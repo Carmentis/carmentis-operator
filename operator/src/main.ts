@@ -11,7 +11,6 @@ import {Logger as CarmentisSdkLogger} from '@cmts-dev/carmentis-sdk/server';
 
 async function bootstrap() {
 
-	CarmentisSdkLogger.enableLogsSync();
 
 	const logger = new Logger();
 

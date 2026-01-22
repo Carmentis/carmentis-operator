@@ -32,7 +32,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 	if (graphQLErrors) {
 		for (const err of graphQLErrors) {
 
-			if ('code' in err && err.code === 'FORBIDDEN') {
+			if ('code' in err && err.code === 'UNAUTHENTICATED') {
 				if (typeof window !== 'undefined') {
 					window.location = '/'
 				}

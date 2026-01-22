@@ -12,6 +12,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { useOrganisation } from '@/contexts/organisation-store.context';
 import OrganisationPublicationStatusChip from '@/app/home/organisation/[organisationId]/OrganisationPublicationStatusChip';
 import { useDeleteOrganisationMutation, useForceChainSyncMutation } from '@/generated/graphql';
+import useOrganizationBreakdown from '@/hooks/useOrganizationBreakdown';
 
 interface NavTab {
 	label: string;
@@ -24,6 +25,7 @@ export function OrganisationHeader() {
 	const organisation = useOrganisation();
 	const router = useRouter();
 	const pathname = usePathname();
+	const {value: breakdown} = useOrganizationBreakdown();
 
 	const tabs: NavTab[] = [
 		{
@@ -86,7 +88,7 @@ export function OrganisationHeader() {
 					<OrganisationPublicationStatusChip />
 					<Chip
 						icon={<PaidIcon />}
-						label={organisation.balance}
+						label={breakdown ? breakdown.getSpendable().toString() : 'Loading...'}
 						size="small"
 						color="primary"
 					/>

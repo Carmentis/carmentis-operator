@@ -366,7 +366,7 @@ export class OperatorService {
 	}
 
 	private async getGasFromMicroblockAndSigningSchemeId(mb: Microblock, signingSchemeId: SignatureSchemeId) {
-		const protocolVariables = await this.provider.getProtocolVariables();
+		const protocolVariables = await this.provider.getProtocolState();
 		const feesCalculationVersion = protocolVariables.getFeesCalculationVersion();
 		const feesFormula = FeesCalculationFormulaFactory.getFeesCalculationFormulaByVersion(feesCalculationVersion);
 		const gas = await feesFormula.computeFees(signingSchemeId, mb);

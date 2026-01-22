@@ -86,6 +86,7 @@ export type ChallengeVerificationResponse = {
 
 export type Mutation = {
   addUserInOrganisation: Scalars['Boolean']['output'];
+  cancelStakeNodeInOrganisation: NodeEntity;
   changeOrganisationKeyPair: Scalars['Boolean']['output'];
   claimNodeInOrganisation: NodeEntity;
   createApiKey: RevealedApiKeyType;
@@ -116,6 +117,13 @@ export type Mutation = {
 export type MutationAddUserInOrganisationArgs = {
   organisationId: Scalars['Int']['input'];
   userPublicKey: Scalars['String']['input'];
+};
+
+
+export type MutationCancelStakeNodeInOrganisationArgs = {
+  amount: Scalars['String']['input'];
+  nodeId: Scalars['Int']['input'];
+  organisationId: Scalars['Int']['input'];
 };
 
 
@@ -762,6 +770,15 @@ export type StakeNodeInOrganisationMutationVariables = Exact<{
 
 
 export type StakeNodeInOrganisationMutation = { stakeNodeInOrganisation: { id: number, nodeAlias: string, includedAt: any, virtualBlockchainId?: string | null, rpcEndpoint: string, isClaimable: boolean } };
+
+export type CancelStakeNodeInOrganisationMutationVariables = Exact<{
+  organisationId: Scalars['Int']['input'];
+  nodeId: Scalars['Int']['input'];
+  amount: Scalars['String']['input'];
+}>;
+
+
+export type CancelStakeNodeInOrganisationMutation = { cancelStakeNodeInOrganisation: { id: number } };
 
 export type UserFragment = { publicKey: string, firstname: string, lastname: string, isAdmin: boolean };
 
@@ -2508,6 +2525,45 @@ export function useStakeNodeInOrganisationMutation(baseOptions?: Apollo.Mutation
 export type StakeNodeInOrganisationMutationHookResult = ReturnType<typeof useStakeNodeInOrganisationMutation>;
 export type StakeNodeInOrganisationMutationResult = Apollo.MutationResult<StakeNodeInOrganisationMutation>;
 export type StakeNodeInOrganisationMutationOptions = Apollo.BaseMutationOptions<StakeNodeInOrganisationMutation, StakeNodeInOrganisationMutationVariables>;
+export const CancelStakeNodeInOrganisationDocument = gql`
+    mutation cancelStakeNodeInOrganisation($organisationId: Int!, $nodeId: Int!, $amount: String!) {
+  cancelStakeNodeInOrganisation(
+    organisationId: $organisationId
+    nodeId: $nodeId
+    amount: $amount
+  ) {
+    id
+  }
+}
+    `;
+export type CancelStakeNodeInOrganisationMutationFn = Apollo.MutationFunction<CancelStakeNodeInOrganisationMutation, CancelStakeNodeInOrganisationMutationVariables>;
+
+/**
+ * __useCancelStakeNodeInOrganisationMutation__
+ *
+ * To run a mutation, you first call `useCancelStakeNodeInOrganisationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCancelStakeNodeInOrganisationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [cancelStakeNodeInOrganisationMutation, { data, loading, error }] = useCancelStakeNodeInOrganisationMutation({
+ *   variables: {
+ *      organisationId: // value for 'organisationId'
+ *      nodeId: // value for 'nodeId'
+ *      amount: // value for 'amount'
+ *   },
+ * });
+ */
+export function useCancelStakeNodeInOrganisationMutation(baseOptions?: Apollo.MutationHookOptions<CancelStakeNodeInOrganisationMutation, CancelStakeNodeInOrganisationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CancelStakeNodeInOrganisationMutation, CancelStakeNodeInOrganisationMutationVariables>(CancelStakeNodeInOrganisationDocument, options);
+      }
+export type CancelStakeNodeInOrganisationMutationHookResult = ReturnType<typeof useCancelStakeNodeInOrganisationMutation>;
+export type CancelStakeNodeInOrganisationMutationResult = Apollo.MutationResult<CancelStakeNodeInOrganisationMutation>;
+export type CancelStakeNodeInOrganisationMutationOptions = Apollo.BaseMutationOptions<CancelStakeNodeInOrganisationMutation, CancelStakeNodeInOrganisationMutationVariables>;
 export const GetCurrentUserDocument = gql`
     query getCurrentUser {
   getCurrentUser {

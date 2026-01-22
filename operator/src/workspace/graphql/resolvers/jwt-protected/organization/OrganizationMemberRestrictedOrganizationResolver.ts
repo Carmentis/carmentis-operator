@@ -131,6 +131,14 @@ export class OrganizationMemberRestrictedOrganizationResolver extends JwtProtect
 			throw new NotFoundException('Organisation not found');
 		}
 		await this.organisationService.publishOrganisation(id);
+
+		// Automatically sync to verify publication on chain
+		try {
+			await this.organisationService.synchronizeOrganizationWithApplicationsAndNodesFromChain(organisation);
+		} catch (e) {
+			this.logger.warn("Failed to sync after publication:", e);
+		}
+
 		return true
 	}
 
@@ -261,6 +269,25 @@ export class OrganizationMemberRestrictedOrganizationResolver extends JwtProtect
 		}
 
 		return this.nodeService.stakeNodeById(
+			organisation,
+			nodeId,
+			amount
+		);
+	}
+
+	@Mutation(() => NodeEntity, { name: 'cancelStakeNodeInOrganisation' })
+	async cancelStakeNodeInOrganisation(
+		@CurrentUser() user: UserEntity,
+		@Args('organisationId', { type: () => Int }, OrganisationByIdPipe) organisation: OrganisationEntity,
+		@Args('nodeId', { type: () => Int }) nodeId: number,
+		@Args('amount', { type: () => String }) amount: string,
+	): Promise<NodeEntity> {
+		const userBelongsToOrganisation = await this.organisationService.checkUserBelongsToOrganisation(user, organisation);
+		if (!userBelongsToOrganisation) {
+			throw new UnauthorizedException('User does not belong to the organisation');
+		}
+
+		return this.nodeService.cancelStakeNodeById(
 			organisation,
 			nodeId,
 			amount

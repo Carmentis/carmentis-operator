@@ -21,6 +21,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import KeyIcon from '@mui/icons-material/Key';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import PaidIcon from '@mui/icons-material/Paid';
+import useOrganizationBreakdown from '@/hooks/useOrganizationBreakdown';
 
 export default function TransactionsHistoryPage() {
 	const organisation = useOrganisation();
@@ -204,19 +205,53 @@ function NoAccountFound() {
 }
 
 function OrganisationBalance() {
-	return (
-		<Card>
-			<Box display="flex" alignItems="center" gap={2}>
-				<AccountBalanceIcon color="primary" />
-				<Box>
-					<Typography variant="subtitle1" fontWeight="500" gutterBottom>
-						Current Balance
-					</Typography>
-					<Typography variant="h5" fontWeight="bold">
-						<OrganisationAccountBalance />
-					</Typography>
-				</Box>
+	const {value: breakdown, loading} = useOrganizationBreakdown();
+
+	if (loading || !breakdown) {
+		return (
+			<Box display="flex" gap={2}>
+				{[1, 2, 3, 4].map((i) => (
+					<Card key={i} sx={{ flex: 1, minWidth: 0 }}>
+						<Box p={2}>
+							<Skeleton height={20} width={100} />
+							<Skeleton height={40} width={150} style={{ marginTop: 8 }} />
+						</Box>
+					</Card>
+				))}
 			</Box>
-		</Card>
+		);
+	}
+
+	const spendable = breakdown.getSpendable();
+	const staked = breakdown.getStaked();
+	const vested = breakdown.getVested();
+	const escrowed = CMTSToken.createAtomic(breakdown.getBreakdown().escrowed);
+
+	const balanceCards = [
+		{ label: 'Spendable', amount: spendable, color: 'primary.main' },
+		{ label: 'Staked', amount: staked, color: 'primary.main' },
+		{ label: 'Vested', amount: vested, color: 'primary.main' },
+		{ label: 'Escrowed', amount: escrowed, color: 'primary.main' },
+	];
+
+	return (
+		<Box display="flex" gap={2}>
+			{balanceCards.map(({ label, amount, color }) => (
+				<Card key={label} sx={{ flex: 1, minWidth: 0 }}>
+					<Box p={2}>
+						<Typography variant="body2" color="text.secondary" gutterBottom>
+							{label}
+						</Typography>
+						<Typography
+							variant="h5"
+							fontWeight="600"
+							sx={{ color }}
+						>
+							{amount.toString()}
+						</Typography>
+					</Box>
+				</Card>
+			))}
+		</Box>
 	);
 }

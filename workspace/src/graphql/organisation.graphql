@@ -312,3 +312,9 @@ mutation stakeNodeInOrganisation($organisationId: Int!, $nodeId: Int!, $amount: 
         ...NodeFragment
     }
 }
+
+mutation cancelStakeNodeInOrganisation($organisationId: Int!, $nodeId: Int!, $amount: String!) {
+  cancelStakeNodeInOrganisation(organisationId: $organisationId, nodeId: $nodeId, amount: $amount) {
+      id
+  }
+}

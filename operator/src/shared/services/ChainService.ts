@@ -12,6 +12,7 @@ import {
 	SectionType,
 	SignatureSchemeId, Utils,
 	ValidatorNodeCometbftPublicKeyDeclarationSection, ValidatorNodeCreationSection, ValidatorNodeRpcEndpointSection,
+	ValidatorNodeVb,
 	VirtualBlockchainType,
 } from '@cmts-dev/carmentis-sdk/server';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
@@ -153,7 +154,7 @@ export default class ChainService {
 	}
 
 	async updateGasInMicroblock(mb: Microblock, usedSigSchemeId: SignatureSchemeId) {
-		const protocolVariables = await this.provider.getProtocolVariables();
+		const protocolVariables = await this.provider.getProtocolState();
 		const feesCalculationFormulaVersion = protocolVariables.getFeesCalculationVersion();
 		const feesCalculationFormula = FeesCalculationFormulaFactory.getFeesCalculationFormulaByVersion(feesCalculationFormulaVersion);
 		mb.setGas(await feesCalculationFormula.computeFees(usedSigSchemeId, mb))
@@ -223,7 +224,7 @@ export default class ChainService {
 		const organisationPrivateKey = await organisation.getPrivateSignatureKey();
 		const nodeRpcEndpoint = node.rpcEndpoint;
 		const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(this.nodeUrl);
-		const nodeStatus = await provider.getNodeStatus(this.nodeUrl);
+		const nodeStatus = await provider.getNodeStatus(node.rpcEndpoint);
 		const { type: cometPublicKeyType, value: cometPublicKey } = nodeStatus.result.validator_info.pub_key;
 
 
@@ -244,7 +245,7 @@ export default class ChainService {
 			cometPublicKey: cometPublicKey
 		}
 		mb.addSections([vnCreationSection, vnRpcEndpointDeclarationSection, vnCometBFTPublicKeyDeclarationSection]);
-		// TODO: add gas
+		await this.updateGasInMicroblock(mb, organisationPrivateKey.getSignatureSchemeId());
 		await mb.seal(organisationPrivateKey, { feesPayerAccount: accountId });
 		const microblockHash = await provider.publishMicroblock(mb);
 		return microblockHash;
@@ -256,27 +257,82 @@ export default class ChainService {
 			throw new BadRequestException('Cannot stake node for an unpublished organization');
 		}
 
-		// we abort the staking process if the node has not been claimed yet
-		if (!node.virtualBlockchainId) {
-			throw new BadRequestException('Cannot stake a node that has not been claimed yet');
+		// we first search for the node public key
+		const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(node.rpcEndpoint);
+		const nodeStatus = await provider.getNodeStatus(node.rpcEndpoint);
+		const cometbftPublicKey = nodeStatus.result.validator_info.pub_key.value;
+
+		const accountId = await this.fetchAccountIdByOrganization(organisation);
+		const organisationPrivateKey = await organisation.getPrivateSignatureKey();
+
+		// we search the validator node id from teh cometbft public key
+		if (await this.isDeclaredValidatorNodeByCometbftPublicKey(cometbftPublicKey))  {
+			const nodeAddress = await provider.getValidatorNodeIdByCometbftPublicKey(cometbftPublicKey);
+
+
+			// create the blockchain client
+			const accountVb = await this.provider.loadAccountVirtualBlockchain(Hash.from(accountId));
+			const mb = await accountVb.createMicroblock();
+
+			this.logger.debug(`Creating staking request for node: validator node address=${Hash.from(nodeAddress).encode()}, amount=${amount.toString()}`);
+
+
+			mb.addSection({
+				type: SectionType.ACCOUNT_STAKE,
+				amount: amount.getAmountAsAtomic(),
+				objectType: VirtualBlockchainType.NODE_VIRTUAL_BLOCKCHAIN, // TODO: ensure it is correct type
+				objectIdentifier: nodeAddress
+			})
+
+			await this.updateGasInMicroblock(mb, organisationPrivateKey.getSignatureSchemeId());
+			await mb.seal(organisationPrivateKey, { feesPayerAccount: accountId });
+			const microblockHash = await this.provider.publishMicroblock(mb);
+			return microblockHash;
+		} else {
+			throw new BadRequestException("The node should be declared first.")
 		}
+
+	}
+
+	async isDeclaredValidatorNodeByCometbftPublicKey(cometbftPublicKey: string) {
+		try {
+			await this.provider.getValidatorNodeIdByCometbftPublicKey(cometbftPublicKey);
+			return true;
+		} catch (e) {
+			this.logger.error("Obtained error to identity if validator node is declared: ", e);
+			return false;
+		}
+	}
+
+	async cancelStakeNode(organisation: OrganisationEntity, node: NodeEntity, amount: string) {
+		// we abort the unstaking process if the organization is not published yet
+		if (!organisation.isPublished()) {
+			throw new BadRequestException('Cannot unstake node for an unpublished organization');
+		}
+
+		// we first search for the node public key
+		const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(node.rpcEndpoint);
+		const nodeStatus = await provider.getNodeStatus(node.rpcEndpoint);
+		const cometbftPublicKey = nodeStatus.result.validator_info.pub_key.value;
+
+		// we search the validator node id from teh cometbft public key
+		const nodeAddress = await provider.getValidatorNodeIdByCometbftPublicKey(cometbftPublicKey);
+
 
 		// create the blockchain client
 		const accountId = await this.fetchAccountIdByOrganization(organisation);
 		const organisationPrivateKey = await organisation.getPrivateSignatureKey();
 		const accountVb = await this.provider.loadAccountVirtualBlockchain(Hash.from(accountId));
 		const mb = await accountVb.createMicroblock();
-		const nodeId = Hash.from(node.virtualBlockchainId);
 
-
-		this.logger.debug(`Creating staking request for node: nodeId=${nodeId.encode()}, amount=${amount.toString()}`);
-
+		const unstackedAmount = CMTSToken.createCMTS(parseInt(amount));
+		this.logger.log(`Creating unstaking request for ${unstackedAmount.toString()} node: validator node id=${Hash.from(nodeAddress).encode()}`);
 
 		mb.addSection({
-			type: SectionType.ACCOUNT_STAKE,
-			amount: amount.getAmountAsAtomic(),
-			objectType: VirtualBlockchainType.NODE_VIRTUAL_BLOCKCHAIN, // TODO: ensure it is correct type
-			objectIdentifier: nodeId.toBytes()
+			type: SectionType.ACCOUNT_UNSTAKE,
+			amount: unstackedAmount.getAmountAsAtomic(),
+			objectType: VirtualBlockchainType.NODE_VIRTUAL_BLOCKCHAIN,
+			objectIdentifier: nodeAddress
 		})
 
 		await this.updateGasInMicroblock(mb, organisationPrivateKey.getSignatureSchemeId());
