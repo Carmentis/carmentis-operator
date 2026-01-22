@@ -1,3 +1,16 @@
+# [1.2.0](https://github.com/Carmentis/carmentis-operator/compare/v1.1.3...v1.2.0) (2026-01-22)
+
+
+### Bug Fixes
+
+* **sdk:** addition of the SDK ([e12c351](https://github.com/Carmentis/carmentis-operator/commit/e12c351577354635de45fea8955f9900576c73c8))
+* update hasTokenAccount logic to use nested organisation field to allow organizatino publication ([c8b61b1](https://github.com/Carmentis/carmentis-operator/commit/c8b61b1b7b4012e4f8e7dbb54feb33dd5472fc29))
+
+
+### Features
+
+* staking/unstaking ([8e7c143](https://github.com/Carmentis/carmentis-operator/commit/8e7c14398a6dd56425e1ee5b25fc48ec11e70940))
+
 ## [1.1.3](https://github.com/Carmentis/carmentis-operator/compare/v1.1.2...v1.1.3) (2026-01-11)
 
 
