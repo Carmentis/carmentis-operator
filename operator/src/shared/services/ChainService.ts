@@ -20,7 +20,39 @@ import { OrganisationEntity } from '../entities/OrganisationEntity';
 import { NodeEntity } from '../entities/NodeEntity';
 import { OperatorConfigService } from '../../config/services/operator-config.service';
 import { ObjectType } from '@nestjs/graphql';
+import { createCache, Cache } from 'cache-manager';
 
+
+function MyCache(keyPrefix: string, ttl: number = 10000) {
+	return function (
+		target: any,
+		propertyKey: string,
+		descriptor: PropertyDescriptor
+	) {
+		const originalMethod = descriptor.value;
+
+		descriptor.value = async function (...args: any[]) {
+			// Récupérer l'instance du cache depuis 'this'
+			const cache: Cache = (this as any).cache;
+
+			if (!cache) {
+				// Si pas de cache disponible, exécuter la méthode normalement
+				return originalMethod.apply(this, args);
+			}
+
+			// Créer une clé unique basée sur le préfixe et les arguments
+			const cacheKey = `${keyPrefix}-${JSON.stringify(args)}`;
+
+			return cache.wrap(
+				cacheKey,
+				async () => originalMethod.apply(this, args),
+				{ ttl }
+			);
+		};
+
+		return descriptor;
+	};
+}
 
 /**
  * ChainService is a service class designed to handle functionalities
@@ -39,6 +71,7 @@ export default class ChainService {
 	private logger: Logger;
 	private nodeUrl: string;
 	private provider : Provider;
+	private cache: Cache;
 	constructor(
 		private readonly config: OperatorConfigService
 	) {
@@ -46,6 +79,7 @@ export default class ChainService {
 		this.logger = new Logger(ChainService.name);
 		this.logger.log(`Linking operator with node located at ${this.nodeUrl}`)
 		this.provider = ProviderFactory.createInMemoryProviderWithExternalProvider(this.nodeUrl);
+		this.cache = createCache();
 	}
 
 
@@ -57,10 +91,10 @@ export default class ChainService {
 		const countryCode = organisationEntity.countryCode;
 		const city = organisationEntity.city;
 		if (typeof countryCode !== 'string' || countryCode.trim().length === 0) {
-			throw "Empty country code."
+			throw new BadRequestException("Empty country code.")
 		}
 		if (typeof city !== 'string' || city.trim().length === 0) {
-			throw "Empty city.";
+			throw new BadRequestException("Empty city.");
 		}
 
 		const organisationPrivateKey = await this.getOrganizationPrivateKeyByOrganization(organisationEntity);
@@ -148,7 +182,6 @@ export default class ChainService {
 			]);
 			await this.updateGasInMicroblock(mb, organisationPrivateKey.getSignatureSchemeId())
 			await mb.seal(organisationPrivateKey, { feesPayerAccount: accountId });
-			console.log(mb.toString())
 			return await this.provider.publishMicroblock(mb);
 		}
 	}
@@ -161,6 +194,7 @@ export default class ChainService {
 	}
 
 
+	@MyCache("check-account-existence")
 	async checkAccountExistence(publicSignatureKey: PublicSignatureKey) {
 		//const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(this.nodeUrl);=
 		try {
@@ -183,9 +217,9 @@ export default class ChainService {
 		return await this.provider.getAccountHistory(accountId, accountState.lastHistoryHash, limit);
 	}
 
+	@MyCache("get-balance-of-account")
 	async getBalanceOfAccount(publicSignatureKey: PublicSignatureKey) {
 		try {
-			this.logger.debug("Getting balance of account");
 			const accountId = await this.provider.getAccountIdByPublicKey(publicSignatureKey);
 			const accountState = await this.provider.getAccountState(accountId);
 			return accountState.balance;
@@ -194,11 +228,12 @@ export default class ChainService {
 		}
 	}
 
+	@MyCache("check-published-on-chain")
 	async checkPublishedOnChain(organisation: OrganisationEntity) {
-		this.logger.debug("Checking organisation published on chain");
-
 		// if the organisation do not have virtual blockchain id, it has not been published
 		if (!organisation.virtualBlockchainId) return false;
+
+		this.logger.debug("Checking organisation published on chain");
 
 		// otherwise, check if the organisation is published on the blockchain
 		try {
@@ -209,6 +244,7 @@ export default class ChainService {
 		} catch (e) {
 			return false;
 		}
+
 	}
 
 
