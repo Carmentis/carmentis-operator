@@ -17,14 +17,14 @@ fi
 # Build de l'image Docker
 if [ "$COMMAND" == "build" ]; then
   echo "🔨 Building Docker image $IMAGE_NAME:$VERSION ..."
-  docker build -t $IMAGE_NAME:${VERSION} -t $IMAGE_NAME:nightly .
+  docker build -t $IMAGE_NAME:${VERSION} -t $IMAGE_NAME:latest .
   echo "✅ Build terminé !"
 
 # Publish (push) de l'image Docker
 elif [ "$COMMAND" == "publish" ]; then
   echo "🚀 Publishing Docker image $IMAGE_NAME:$VERSION ..."
   docker push $IMAGE_NAME:${VERSION}
-  docker push $IMAGE_NAME:nightly
+  docker push $IMAGE_NAME:latest
   echo "✅ Publish terminé !"
 
 else
