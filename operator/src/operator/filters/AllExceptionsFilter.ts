@@ -11,33 +11,35 @@ export class AllExceptionsFilter implements ExceptionFilter {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse();
 
-		// Si l'exception est une HttpException, on peut récupérer la stack
+		let status = 500;
+		let errorResponse: any = {
+			message: 'Internal server error',
+		};
+
+		// Logger la stack côté serveur uniquement
 		if (exception instanceof HttpException) {
 			console.error("HttpException", exception.stack);
+			status = exception.getStatus();
+			const exceptionResponse = exception.getResponse();
+
+			// Extraire le message proprement
+			errorResponse = typeof exceptionResponse === 'object'
+				? exceptionResponse
+				: { message: exceptionResponse };
 		} else if (exception instanceof Error) {
-			// Pour les autres erreurs standards
 			console.error("Error:", exception.stack);
+			errorResponse = {
+				message: exception.message || 'Internal server error',
+			};
 		} else {
-			// Si ce n'est pas une Error (cas très rare)
 			console.error('Exception inconnue :', exception);
 		}
 
-		// Réponse générique (optionnelle)
-		if (exception instanceof HttpException) {
-
+		// Retourner uniquement une erreur propre à l'utilisateur (sans stack trace)
+		if (response.status) {
+			response.status(status).json(errorResponse);
 		} else {
-			const errorMessage = exception instanceof Error ? exception.message : 'Unknown error';
-			if (response.status) {
-				console.error("Unknown error:", exception);
-				console.log(response.status)
-				response.status(500).json({
-					message: errorMessage,
-				});
-			} else {
-				throw new BadRequestException(errorMessage);
-			}
-
+			throw new BadRequestException(errorResponse);
 		}
-
 	}
 }
