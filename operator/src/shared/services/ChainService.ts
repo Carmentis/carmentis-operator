@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import {
-	ApplicationDescriptionSection,
+	ApplicationDescriptionSection, BalanceAvailability,
 	CMTSToken,
 	CryptoEncoderFactory, FeesCalculationFormulaFactory,
 	Hash,
@@ -224,8 +224,15 @@ export default class ChainService {
 			const accountState = await this.provider.getAccountState(accountId);
 			return accountState.balance;
 		} catch {
-			return CMTSToken.zero();
+			return 0;
 		}
+	}
+
+	@MyCache("get-breakdown-of-account")
+	async getBreakdownOfAccount(publicSignatureKey: PublicSignatureKey) {
+		const accountId = await this.provider.getAccountIdByPublicKey(publicSignatureKey);
+		const accountState = await this.provider.getAccountState(accountId);
+		return BalanceAvailability.createFromAccountStateAbciResponse(accountState)
 	}
 
 	@MyCache("check-published-on-chain")
@@ -531,5 +538,23 @@ export default class ChainService {
 		const organizationPublicKey = await organisationPrivateKey.getPublicKey();
 		const accountId = await this.provider.getAccountIdByPublicKey(organizationPublicKey);
 		return accountId;
+	}
+
+	async getBreakdownOfAccountByVbId(vbId: string) {
+		const accountState = await this.provider.getAccountState(Hash.fromHex(vbId).toBytes())
+		return BalanceAvailability.createFromAccountStateAbciResponse(accountState)
+	}
+
+	getProvider() {
+		return this.provider;
+	}
+
+	/**
+	 * Since a microblock does not change, the memory cache can be extended.
+	 * @param hash
+	 */
+	@MyCache("get-microblock-by-hash", 60000)
+	async getMicroblockByHash(hash: Hash) {
+		return this.provider.loadMicroblockByMicroblockHash(hash);
 	}
 }

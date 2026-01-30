@@ -18,7 +18,7 @@ export class AnchorRequestService {
 	) {}
 
 
-	async storeAnchorRequest(organisation: OrganisationEntity, application: ApplicationEntity, request: AnchorWithWalletDto, gasPrice: CMTSToken): Promise<AnchorRequestEntity> {
+	async storeAnchorRequest(organisation: OrganisationEntity, application: ApplicationEntity, request: AnchorWithWalletDto): Promise<AnchorRequestEntity> {
 		const anchorRequestId = this.generateRandomAnchorRequestId();
 
 		await this.anchorRequestRepository.save({
@@ -27,7 +27,6 @@ export class AnchorRequestService {
 			request,
 			localOrganisationId: organisation.id,
 			applicationId: application.id,
-			gasPriceInAtomic: gasPrice.getAmountAsAtomic(),
 		});
 		return this.findAnchorRequestByAnchorRequestId(anchorRequestId);
 	}
@@ -54,12 +53,13 @@ export class AnchorRequestService {
 	 * @param {Hash} mbHash - The microblock hash.
 	 * @return {Promise<void>} A promise that resolves when the operation is complete.
 	 */
-	async markAnchorRequestAsPublished(anchorRequestId: string, vbId: Hash, mbHash: Hash) {
+	markAnchorRequestAsPublished(anchorRequestId: string, vbId: Hash, mbHash: Hash) {
 		this.anchorRequestRepository.update({
 			anchorRequestId
 		}, {
 			status: 'completed',
-			microBlockHash: mbHash.encode()
+			publishedMicroBlockHash: mbHash.encode(),
+			publishedAt: Date.now(),
 		})
 	}
 
@@ -78,7 +78,8 @@ export class AnchorRequestService {
 			localOrganisationId: organisation.getId(),
 			applicationId: application.getId(),
 			virtualBlockchainId: virtualBlockId.encode(),
-			microBlockHash: microBlockHash.encode()
+			publishedMicroBlockHash: microBlockHash.encode(),
+			publishedAt: Date.now(),
 		});
 	}
 
@@ -98,5 +99,17 @@ export class AnchorRequestService {
 		}, {
 			hexEncodedGenesisSeed: Utils.binaryToHexa(genesisSeed.toBytes())
 		})
+	}
+
+	async getAllAnchorRequests() {
+		return await this.anchorRequestRepository.find();
+	}
+
+	async getAnchorRequestByAnchorRequestId(anchorRequestId: string) {
+		return await this.anchorRequestRepository.findOneBy({anchorRequestId});
+	}
+
+	async deleteAnchorRequestByAnchorRequestId(anchorRequestId: string) {
+		return await this.anchorRequestRepository.delete({anchorRequestId});
 	}
 }

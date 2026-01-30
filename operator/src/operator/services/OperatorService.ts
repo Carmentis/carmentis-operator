@@ -43,8 +43,7 @@ export class OperatorService {
 		this.logger.debug("Initiating session to anchor with a wallet.")
 
 		// store the request
-		const gasPrice = this.extractGasPrice(request);
-		const storedRequest = await this.anchorRequestService.storeAnchorRequest(organisation, application, request, gasPrice);
+		const storedRequest = await this.anchorRequestService.storeAnchorRequest(organisation, application, request);
 		const anchorRequestId = storedRequest.getAnchorRequestId();
 
 		return { anchorRequestId }
@@ -374,42 +373,46 @@ export class OperatorService {
 	}
 
 	async anchor(application: ApplicationEntity, organisation: OrganisationEntity, anchorDto: AnchorDto) {
-		// TODO(fix): there is no anchor request entity in direct anchoring (no endorser)
-		throw new Error("Method not implemented.");
-		/*
-		// perform the anchoring
-		const nodeUrl = this.envService.nodeUrl;
+
+		// we first recover the crypto wallet for the organization
 		const wallet = organisation.getWallet().getDefaultAccountCrypto();
-		const vb = await this.loadApplicationLedger(application, anchorDto.virtualBlockchainId);
-		const mbBuilder = await WalletRequestBasedApplicationLedgerMicroblockBuilder.createFromVirtualBlockchain(vb);
+
+		// we then load the application ledger if it is provided, otherwise we create a new application ledger
+		let applicationLedgerVb = ApplicationLedgerVb.createApplicationLedgerVirtualBlockchain(this.provider);
+		let isCreatingNewApplicationLedger = true;
+		if (anchorDto.virtualBlockchainId) {
+			applicationLedgerVb = await this.provider.loadApplicationLedgerVirtualBlockchain(Hash.fromHex(anchorDto.virtualBlockchainId));
+			isCreatingNewApplicationLedger = false;
+		}
+
+		const orgVb = await this.provider.loadOrganizationVirtualBlockchain(Hash.fromHex(organisation.virtualBlockchainId));
+		const accountId = orgVb.getAccountId();
+
+		// we construct the microblock builder
+		const applicationId = Hash.fromHex(application.virtualBlockchainId);
+		const mbBuilder = await WalletRequestBasedApplicationLedgerMicroblockBuilder.createFromVirtualBlockchain(applicationId, applicationLedgerVb);
 		const mb = await mbBuilder.createMicroblockFromStateUpdateRequest(wallet, {
 			...anchorDto,
-			applicationId: application.virtualBlockchainId
 		})
 		const organizationPrivateKey = await organisation.getPrivateSignatureKey();
-		mb.setGasPrice(CMTSToken.createAtomic(anchorDto.gasPriceInAtomic))
+		mb.setGasPrice(CMTSToken.createAtomic(1)) // TODO: use a source to define the gas price instead of constant
 		mb.setGas(await this.getGasFromMicroblockAndSigningSchemeId(mb, organizationPrivateKey.getSignatureSchemeId()))
 		await mb.seal(organizationPrivateKey, {
-			feesPayerAccount: (await this.getAccountIdFromOrganization(organisation)).toBytes()
+			feesPayerAccount: accountId.toBytes()
 		});
 		const mbHash = await this.provider.publishMicroblock(mb);
 
+		// compute the vb id
+		const vbId = isCreatingNewApplicationLedger ? mbHash : applicationLedgerVb.getIdentifier();
+
+
 		// create a new anchor request entry to save the interaction
 		return this.anchorRequestService.createAndSaveCompletedAnchorRequest(
-			Hash.from(vb.getId()),
+			vbId,
 			mbHash,
 			anchorDto,
 			organisation,
 			application
-		)
-
-		 */
-	}
-
-	private extractGasPrice(anchorDto: AnchorDto) {
-		const gasPriceInAtomic = anchorDto.gasPriceInAtomic;
-		return gasPriceInAtomic !== undefined ?
-			CMTSToken.oneCMTS() :
-			CMTSToken.createAtomic(gasPriceInAtomic);
+		);
 	}
 }

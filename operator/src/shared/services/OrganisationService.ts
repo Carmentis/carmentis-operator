@@ -427,4 +427,11 @@ export class OrganisationService {
 		const organisation = await this.findOne(organisationId);
 		return organisation.walletSeed;
 	}
+
+	/**
+	 * Returns all organisations.
+	 */
+	async getAllOrganizations() {
+		return await this.organisationEntityRepository.find();
+	}
 }

@@ -22,8 +22,19 @@ export class AnchorRequestEntity {
 	@Column()
 	status: 'pending' | 'completed' | 'failed' = 'pending';
 
+
+	/**
+	 * This field is the timestamp when the anchor request was created
+	 */
 	@Column({ default: () => 'CURRENT_TIMESTAMP' })
 	createdAt: Date;
+
+
+	/**
+	 * This field is the timestamp when the microblock is published
+	 */
+	@Column({ nullable: true })
+	publishedAt: Date;
 
 
 
@@ -31,7 +42,10 @@ export class AnchorRequestEntity {
 	localOrganisationId: number;
 
 	@Column({nullable: true})
-	microBlockHash?: string;
+	publishedMicroBlockHash?: string;
+
+	@Column({nullable: true})
+	virtualBlockchainId?: string;
 
 	/**
 	 * This application id refers to the local id of the application, not the hash of the application on the chain.
@@ -48,9 +62,6 @@ export class AnchorRequestEntity {
 
 	@Column({nullable: true})
 	hexEncodedGenesisSeed?: string;
-
-	@Column()
-	gasPriceInAtomic: number;
 
 	getAnchorRequestId(): string {
 		return this.anchorRequestId;
@@ -69,7 +80,7 @@ export class AnchorRequestEntity {
 	}
 
 	getMicroBlockHash(): Optional<string> {
-		return Optional.of(this.microBlockHash);
+		return Optional.of(this.publishedMicroBlockHash);
 	}
 
 	isFailed(): boolean {
@@ -78,10 +89,6 @@ export class AnchorRequestEntity {
 
 	getStatus() {
 		return this.status
-	}
-
-	getGasPrice(): CMTSToken {
-		return CMTSToken.createAtomic(this.gasPriceInAtomic)
 	}
 
 	getBuiltMicroblock(): Optional<Microblock> {
