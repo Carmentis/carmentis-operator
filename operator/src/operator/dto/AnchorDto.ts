@@ -17,15 +17,6 @@ export class ActorDto {
 	@ApiProperty({ title: 'Name of the actor.', example: "Endorser" })
 	@IsString()
 	name: string;
-
-	@ApiProperty({
-		title: 'Public key of the actor.',
-		description: "This field is used to indicate that a public key should be associated to a specific actor",
-		nullable: true
-	})
-	@IsString()
-	@IsOptional()
-	publicKey: string;
 }
 
 export class ChannelAssignationDto {
@@ -143,17 +134,6 @@ export class AnchorDto  {
 	})
 	@IsString()
 	author: string
-
-	@ApiProperty({
-		description: 'Gas price used to perform the transaction. Gas price should be atomic. When omitted, one CMTS is used as a gas price. For more information, see CMTSToken.',
-		example: CMTSToken.oneCMTS().getAmountAsAtomic(),
-		type: Number,
-		title: "Gas price (in atomic).",
-		nullable: true
-	})
-	@IsPositive({ message: 'Gas price must be positive.' })
-	gasPriceInAtomic?: number;
-
 
 
 	isVirtualBlockchainIdDefined(): boolean {
