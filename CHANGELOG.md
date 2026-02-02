@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/Carmentis/carmentis-operator/compare/v1.2.0...v1.2.1) (2026-01-29)
+
+
+### Bug Fixes
+
+* packages audit and upgrades ([faaa87c](https://github.com/Carmentis/carmentis-operator/commit/faaa87c4f26f396d442710b25da9be6f25d58f11))
+
 # [1.2.0](https://github.com/Carmentis/carmentis-operator/compare/v1.1.3...v1.2.0) (2026-01-22)
 
 
