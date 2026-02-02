@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/Carmentis/carmentis-operator/compare/v1.2.1...v1.2.2) (2026-02-02)
+
+
+### Bug Fixes
+
+* **docker:** change tags of the published images ([8d95229](https://github.com/Carmentis/carmentis-operator/commit/8d95229b04338897d15439e542da881fa9e233e3))
+
 ## [1.2.1](https://github.com/Carmentis/carmentis-operator/compare/v1.2.0...v1.2.1) (2026-01-29)
 
 
