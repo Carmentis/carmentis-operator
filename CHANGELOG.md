@@ -1,3 +1,16 @@
+# [1.3.0](https://github.com/Carmentis/carmentis-operator/compare/v1.2.3...v1.3.0) (2026-02-02)
+
+
+### Bug Fixes
+
+* bump version to 1.2.3 in package dependencies ([373d002](https://github.com/Carmentis/carmentis-operator/commit/373d0027616b520c065de0f0acaed52ca362ec43))
+* upgrade SDK to 1.18.4 and update dependencies ([a51bc2d](https://github.com/Carmentis/carmentis-operator/commit/a51bc2d6e7f510914634f9e62b4d0f28014ad7c3))
+
+
+### Features
+
+* **chain-service:** add caching mechanism and improve error handling ([bec67cd](https://github.com/Carmentis/carmentis-operator/commit/bec67cd6b4c068d55d1c063505983974e902c849))
+
 ## [1.2.3](https://github.com/Carmentis/carmentis-operator/compare/v1.2.2...v1.2.3) (2026-02-02)
 
 
