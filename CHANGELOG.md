@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/Carmentis/carmentis-operator/compare/v1.3.0...v1.4.0) (2026-02-17)
+
+
+### Features
+
+* **chain-service:** add caching mechanism and improve error handling ([1a33600](https://github.com/Carmentis/carmentis-operator/commit/1a3360072553983228b1c02d16f0d61159e0a76a))
+
 # [1.3.0](https://github.com/Carmentis/carmentis-operator/compare/v1.2.3...v1.3.0) (2026-02-02)
 
 
