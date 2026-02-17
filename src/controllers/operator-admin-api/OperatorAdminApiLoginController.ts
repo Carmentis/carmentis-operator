@@ -99,7 +99,6 @@ export class OperatorAdminApiLoginController {
 			this.logger.debug(`Verifying challenge for public key: ${verifyChallengeDto.publicKey}`);
 
 			// Step 1: Verify challenge authenticity and validity using MAC
-			console.log(verifyChallengeDto)
 			const expiresAt = new Date(verifyChallengeDto.expiresAt);
 			this.challengeService.verifyChallenge(
 				verifyChallengeDto.challenge,

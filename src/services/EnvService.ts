@@ -106,26 +106,30 @@ export class EnvService implements OnModuleInit {
 		return this._adminTokenFile;
 	}
 
-	async getOrCreateJwtSecret() {
+	async getOrCreateJwtSecret(): Promise<string> {
 		// Initialize JWT token
 		let specifiedJwtToken = this.operatorConfig.getJwtSecret();
-		if (specifiedJwtToken) {
+		if (specifiedJwtToken && specifiedJwtToken.trim().length > 0) {
 			this.logger.log("JWT secret specified in the configuration");
-		} else {
-			this.logger.log(`JWT secret not specified in the configuration: looking at ${this._jwtSecretFile}`);
-			try {
-				specifiedJwtToken = await fs.readFile(this._jwtSecretFile, 'utf8');
-			} catch (error) {
-				this.logger.warn(`Unable to read JWT token from file: ${error}`)
-				this.logger.log(`Generating new JWT token at ${this._jwtSecretFile}`)
-				specifiedJwtToken = randomBytes(32).toString('hex');
-			}
+			return specifiedJwtToken;
 		}
-		return specifiedJwtToken;
+
+		this.logger.log(`JWT secret not specified in the configuration: looking at ${this._jwtSecretFile}`);
+		try {
+			specifiedJwtToken = await fs.readFile(this._jwtSecretFile, 'utf8');
+			this.logger.log("JWT secret loaded from file");
+			return specifiedJwtToken;
+		} catch (error) {
+			this.logger.warn(`Unable to read JWT token from file: ${error?.message}`)
+			this.logger.log(`Generating new JWT token at ${this._jwtSecretFile}`)
+			specifiedJwtToken = randomBytes(32).toString('hex');
+			await this.storeJwtSecret(specifiedJwtToken);
+			return specifiedJwtToken;
+		}
 	}
 
-	async storeJwtSecret(secret: string) {
-		this.logger.log(`Exporting JWT token at ${this._jwtSecretFile}`);
+	private async storeJwtSecret(secret: string) {
+		this.logger.log(`Storing JWT token at ${this._jwtSecretFile}`);
 		await fs.writeFile(this._jwtSecretFile, secret, 'utf8');
 	}
 }

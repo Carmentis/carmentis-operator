@@ -38,10 +38,12 @@ import { OperatorConfigService } from './config/services/operator-config.service
 	imports: [
 		OperatorConfigModule,
 		JwtModule.registerAsync({
-			useFactory: (config: OperatorConfigService) => ({
-				secret: config.getJwtSecret(),
+			imports: [OperatorConfigModule],
+			useFactory: async (envService: EnvService, config: OperatorConfigService) => ({
+				secret: await envService.getOrCreateJwtSecret(),
 				signOptions: { expiresIn: config.getJwtTokenValidity() },
 			}),
+			inject: [EnvService, OperatorConfigService],
 		}),
 		TypeOrmModule.forFeature([
 			AnchorRequestEntity,

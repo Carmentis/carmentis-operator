@@ -65,9 +65,9 @@ export abstract class AbstractOperatorConfig {
 
 
 	/**
-	 * Returns the JWT secret to use.
+	 * Returns the JWT secret to use from config (if provided).
 	 */
-	getJwtSecret(): string {
+	getJwtSecret(): string | undefined {
 		return this.config.operator.admin.jwt.secret;
 	}
 
