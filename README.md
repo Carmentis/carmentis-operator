@@ -1,101 +1,134 @@
-# Operator
+# Operator Server API
 
-The **Operator** is a crucial middleware that allows seamless communication with a wallet. Beyond this, it provides a
-user-friendly interface for organisations and applications, simplifying complex blockchain interactions and
-facilitating accessible blockchain-related services.
+The **Operator** is the server-side API designed for managing the workspace's APIs. It also includes a `socket.io`
+handler enabling real-time communication to transmit data between an external wallet (e.g., an Android wallet) and an
+application that needs wallet interactions, such as authentication or transaction approval.
 
-This repository contains everything you need to deploy and launch the Operator using `docker-compose`. Below, you'll
-find step-by-step instructions to get started.
+## Features
 
----
+- **API Server**: Manages and exposes the workspace API endpoints.
+- **Real-Time Communication**: Utilizes `socket.io` to enable seamless interaction between external wallets and your
+  application.
+- **Blockchain Interaction**: Facilitates publishing data to a blockchain network via a configured node.
 
-## Run the Operator
+## Environment Variables
 
-To launch the Operator, follow these steps:
+The Operator can be configured using the following environment variables:
 
-1. Use the following `docker-compose.yml` file to define and launch the services:
+- **`PORT`**: Defines the port the server will use to listen for requests.
+- **`JWT_SECRET`**: Secret key used to sign JWT tokens for authentication.
+- **`NODE_URL`**: URL of a blockchain node, useful for operations such as publishing data on-chain.
+- **`OPERATOR_DATABASE_URL`**: URL of the database used by the Operator.
+- **`OPERATOR_DATABASE_PORT`**: Port number of the database.
+- **`OPERATOR_DATABASE_USERNAME`**: Username for authenticating with the database.
+- **`OPERATOR_DATABASE_PASSWORD`**: Password for authenticating with the database.
+- **`OPERATOR_DATABASE_NAME`**: Name of the database.
+- **`ENABLE_PUBLIC_ACCOUNT_CREATION`**: Enable the public account creation (default at `0`).
+- **`MAX_ORACLES_IN_ORGANISATION`**: Maximum number of oracles by organisation (default at `30`).
+- **`MAX_ORACLES_IN_APPLICATIONS`**: Maximum number of applications by organisation (default at `30`).
+- **`MAX_ORGANISATIONS_IN_WHICH_USER_IS_ADMIN`**: Maximum number of organisations in which a user is involved as administrator (default at `10`).
 
-   ```yaml
-   version: "3.9"
+## Installation
 
-   services:
-
-     # PostgreSQL Database Service
-     db:
-       image: postgres:15 # Use the latest stable PostgreSQL image
-       container_name: db-operator-carmentis
-       restart: always
-       environment:
-         POSTGRES_USER: postgres
-         POSTGRES_PASSWORD: admin
-         POSTGRES_DB: postgres
-       networks:
-         - carmentis-network
-       ports:
-         - "5432:5432" # Default PostgreSQL port
-       volumes:
-         - db_data:/var/lib/postgresql/data
-
-     # Backend Service (Nest.js API)
-     back.operator:
-       image: ghcr.io/carmentis/operator/back:latest
-       build:
-         context: ./operator
-         dockerfile: Dockerfile
-       environment:
-        - OPERATOR_DATABASE_NAME=postgres             
-        - OPERATOR_DATABASE_USERNAME=postgres         
-        - OPERATOR_DATABASE_PASSWORD=admin            
-        - OPERATOR_DATABASE_HOST=db                   
-        - OPERATOR_DATABASE_PORT=5432
-        - DB_ENCRYPTION_KEY=toto
-        - NODE_URL=<node_url>
-        - PORT=4002
-       container_name: back-operator-carmentis
-       restart: always
-       tty: true
-       depends_on:
-         - db
-       networks:
-         - carmentis-network
-       ports:
-         - "4002:4002" # Maps container port 4002 to host port 4002
-       env_file:
-         - .env
-
-     # Frontend Service (Next.js Workspace)
-     front.operator:
-       image: ghcr.io/carmentis/operator/front:latest
-       build:
-         context: ./workspace
-         dockerfile: Dockerfile
-       environment:
-        - OPERATOR_URL=<operator_url>
-        - PORT=4003
-       container_name: front-operator-carmentis
-       tty: true
-       depends_on:
-         - back.operator
-       networks:
-         - carmentis-network
-       ports:
-         - "4003:4003" # Maps container port 4003 to host port 4003
-
-   volumes:
-     db_data:
-
-   networks:
-     carmentis-network:
-       driver: bridge
-   ```
-
-2. Run the services using the following command:
+1. Clone the repository or navigate to the appropriate directory containing the Operator.
+2. Install the necessary dependencies using npm:
 
    ```bash
-   docker-compose up --build
+   npm install
    ```
 
-   The `--build` flag ensures Docker rebuilds the images before launching the containers. Once launched:
+## Usage
 
-    - **Frontend**: Access the user interface at [http://localhost:4003](http://localhost:4003).
-    - **Backend (API)**: Access the backend API at [http://localhost:4002](http://localhost:4002).
+To start the Operator, you can use the following commands based on your environment:
+
+- **Production**:
+  ```bash
+  npm run start
+  ```
+
+- **Development**:
+  ```bash
+  npm run start:dev
+  ```
+
+## Launching the Operator
+
+There are three ways to launch the Operator:
+
+1. **Manually (like any other Nest.js project)**:
+   Follow the steps in the installation section, then use the appropriate command from the [Usage](#usage) section to
+   launch the server in production or development.
+
+2. **Build and launch with the provided Dockerfile**:
+   a. Build the Docker image:
+   ```bash
+   docker build -t operator-back .
+   ```
+   b. Run the image:
+   ```bash
+   docker run --rm --name operator-back \
+   --env PORT=4002 \
+   --env JWT_SECRET=toto \
+   --env NODE_URL=http://localhost:3500 \
+   --env OPERATOR_DATABASE_URL=your_database_url \
+   --env OPERATOR_DATABASE_PORT=5432 \
+   --env OPERATOR_DATABASE_USERNAME=your_database_username \
+   --env OPERATOR_DATABASE_PASSWORD=your_database_password \
+   --env OPERATOR_DATABASE_NAME=your_database_name \
+   --env ENABLE_PUBLIC_ACCOUNT_CREATION=0\
+   --network host operator-back
+   ```
+
+3. **Use the published image**:
+   Run the following command to use the pre-built image available on GitHub Container Registry:
+   ```bash
+   docker run --rm --name carmentis-operator-back \
+   --env PORT=4002 \
+   --env JWT_SECRET=toto \
+   --env NODE_URL=http://localhost:3500 \
+   --env OPERATOR_DATABASE_URL=your_database_url \
+   --env OPERATOR_DATABASE_PORT=5432 \
+   --env OPERATOR_DATABASE_USERNAME=your_database_username \
+   --env OPERATOR_DATABASE_PASSWORD=your_database_password \
+   --env OPERATOR_DATABASE_NAME=your_database_name \
+   --env ENABLE_PUBLIC_ACCOUNT_CREATION=0\
+   --network host ghcr.io/carmentis/operator/back
+   ```
+
+   Ensure that a PostgreSQL database is running and accessible before launching the server.
+
+## Launching a PostgreSQL Server with Docker
+
+To run a PostgreSQL server using Docker, you can use the following command:
+
+```bash
+docker run --rm --name postgres -e POSTGRES_USER=your_username \
+-e POSTGRES_PASSWORD=your_password -e POSTGRES_DB=your_database_name \
+-p 5432:5432 postgres
+```
+
+Replace `your_username`, `your_password`, and `your_database_name` with the corresponding values that match your
+environment configuration.
+
+## Socket.io Integration
+
+The Operator's `socket.io` handler enables interaction with external wallets to facilitate various operations,
+including:
+
+- Wallet authentication.
+- Approving and signing transactions.
+
+## Example Use Case
+
+An external wallet (e.g., on Android) connects to the Operator for authentication or transaction approval. The
+application communicates with the Operator over `socket.io`, and the Operator interacts with the blockchain via the
+provided `NODE_URL`.
+
+## Contributing
+
+Contributions to improve or extend the Operator are welcome. Please make sure to follow the project's coding standards
+and submit a pull request.
+
+## License
+
+See `LICENSE` file for details.

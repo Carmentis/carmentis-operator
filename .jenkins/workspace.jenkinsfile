@@ -1,8 +1,0 @@
-@Library('helper-building-scripts')_
-
-buildAndPushDockerImage(
-    GIT_REPO_URL: 'https://github.com/carmentis/carmentis-operator.git',
-    PROJECT_DIR: './workspace',
-    DOCKER_IMAGE_NAME: 'operator/front',
-    GIT_REPO_BRANCH: 'main'
-)
