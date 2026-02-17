@@ -26,6 +26,11 @@ import { OperatorAdminApiLoginController } from './controllers/operator-admin-ap
 import { ChallengeService } from './services/ChallengeService';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { OperatorAdminApiUserController } from './controllers/operator-admin-api/OperatorAdminApiUserController';
+import {
+	OperatorAdminApiApplicationController
+} from './controllers/operator-admin-api/OperatorAdminApiApplicationController';
+import { OperatorAdminApiWalletController } from './controllers/operator-admin-api/OperatorAdminApiWalletController';
+import { OperatorAdminApiApiKeyController } from './controllers/operator-admin-api/OperatorAdminApiApiKeyController';
 
 @Module({
 	imports: [
@@ -43,10 +48,13 @@ import { OperatorAdminApiUserController } from './controllers/operator-admin-api
 
 	],
 	controllers: [
+		OperatorAdminApiApiKeyController,
 		OperatorApiController,
 		OperatorHealthApiController,
 		OperatorAdminApiLoginController,
 		OperatorAdminApiUserController,
+		OperatorAdminApiApplicationController,
+		OperatorAdminApiWalletController,
 	],
 	providers: [
 		OperatorApiGateway,

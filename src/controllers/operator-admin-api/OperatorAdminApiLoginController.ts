@@ -24,7 +24,7 @@ import { OPERATOR_ADMIN_API_PREFIX } from './OperatorAdminApiController';
  * Controller for handling operator admin authentication via challenge-response mechanism
  * Provides stateless authentication using MAC (Message Authentication Code) for challenge validation
  */
-@ApiTags('Admin Authentication using Wallet Challenge-Response Mechanism', ' ')
+@ApiTags('Admin Authentication using Wallet Challenge-Response Mechanism')
 @Controller(`${OPERATOR_ADMIN_API_PREFIX}/login/wallet`)
 export class OperatorAdminApiLoginController {
 	private logger = new Logger(OperatorAdminApiLoginController.name);
