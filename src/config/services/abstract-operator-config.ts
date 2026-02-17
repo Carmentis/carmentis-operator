@@ -74,7 +74,7 @@ export abstract class AbstractOperatorConfig {
 	/**
 	 * Returns the JWT token validity duration.
 	 */
-	getJwtTokenValidity(): string {
+	getJwtTokenValidity(): number {
 		return this.config.operator.admin.jwt.tokenValidity;
 	}
 

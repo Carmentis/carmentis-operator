@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
 
 /**
  * Request DTO for challenge verification endpoint
@@ -7,6 +8,7 @@ export class VerifyChallengeDto {
 	@ApiProperty({ description: 'The challenge string received from login endpoint', example: '3f4a8b2c1d...' })
 	challenge: string;
 
+	@IsString()
 	@ApiProperty({ description: 'Public key of the user attempting to authenticate', example: '0x1234abcd...' })
 	publicKey: string;
 

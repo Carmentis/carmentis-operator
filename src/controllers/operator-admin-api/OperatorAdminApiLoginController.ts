@@ -43,7 +43,7 @@ export class OperatorAdminApiLoginController {
 	 * @returns Challenge object containing the challenge string, MAC, and expiration time
 	 */
 	@Public()
-	@Post('/login')
+	@Post('/challenge')
 	@ApiOperation({
 		summary: 'Generate authentication challenge',
 		description: 'Creates a new challenge with MAC authentication for stateless challenge-response authentication. The challenge expires after 5 minutes.',
@@ -99,6 +99,7 @@ export class OperatorAdminApiLoginController {
 			this.logger.debug(`Verifying challenge for public key: ${verifyChallengeDto.publicKey}`);
 
 			// Step 1: Verify challenge authenticity and validity using MAC
+			console.log(verifyChallengeDto)
 			const expiresAt = new Date(verifyChallengeDto.expiresAt);
 			this.challengeService.verifyChallenge(
 				verifyChallengeDto.challenge,
@@ -141,6 +142,7 @@ export class OperatorAdminApiLoginController {
 				expiresAt: tokenExpiresAt.toISOString(),
 			};
 		} catch (error) {
+			console.error(error)
 			this.logger.error(`Challenge verification failed: ${error.message}`);
 			throw new UnauthorizedException(error.message);
 		}

@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Logger, Post } from '@nestjs/common';
 import { OPERATOR_ADMIN_API_PREFIX } from './OperatorAdminApiController';
 import { UserEntity } from '../../entities/UserEntity';
 import { Public } from '../../decorators/PublicDecorator';
@@ -7,8 +7,9 @@ import { SetupFirstUserDto } from '../../dto/SetupFirstUserDto';
 import { UserService } from '../../services/UserService';
 
 @Controller(`${OPERATOR_ADMIN_API_PREFIX}/setup`)
-export class OperatorAdminApiSetup {
+export class OperatorAdminApiSetupController {
 
+	private logger = new Logger(OperatorAdminApiSetupController.name);
 	constructor(private readonly userService: UserService) {}
 
 	@Public()
@@ -25,6 +26,8 @@ export class OperatorAdminApiSetup {
 		if (await this.isInitialized()) {
 			throw new BadRequestException('Server is already initialized');
 		}
+
+		this.logger.debug(`Setting up first user with public key: ${setupDto.publicKey}`);
 
 		const user = await this.userService.createUser(
 			setupDto.publicKey,

@@ -31,12 +31,17 @@ import {
 } from './controllers/operator-admin-api/OperatorAdminApiApplicationController';
 import { OperatorAdminApiWalletController } from './controllers/operator-admin-api/OperatorAdminApiWalletController';
 import { OperatorAdminApiApiKeyController } from './controllers/operator-admin-api/OperatorAdminApiApiKeyController';
+import { OperatorAdminApiSetupController } from './controllers/operator-admin-api/OperatorAdminApiSetupController';
+import { OperatorConfigService } from './config/services/operator-config.service';
 
 @Module({
 	imports: [
 		OperatorConfigModule,
-		JwtModule.register({
-
+		JwtModule.registerAsync({
+			useFactory: (config: OperatorConfigService) => ({
+				secret: config.getJwtSecret(),
+				signOptions: { expiresIn: config.getJwtTokenValidity() },
+			}),
 		}),
 		TypeOrmModule.forFeature([
 			AnchorRequestEntity,
@@ -48,6 +53,7 @@ import { OperatorAdminApiApiKeyController } from './controllers/operator-admin-a
 
 	],
 	controllers: [
+		OperatorAdminApiSetupController,
 		OperatorAdminApiApiKeyController,
 		OperatorApiController,
 		OperatorHealthApiController,

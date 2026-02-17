@@ -13,8 +13,8 @@ export const ConfigSchema = z.object({
 			jwt: z.object({
 				secret: z.string().optional()
 					.describe("Secret key used for signing JWT tokens to authenticate users on the Workspace API."),
-				tokenValidity: z.string().default("8h")
-					.describe("Validity duration of the generated JWT tokens (e.g., '8h')."),
+				tokenValidity: z.number().default(3600)
+					.describe("Validity duration in seconds of the generated JWT tokens (e.g., 3600 for a day)."),
 			}).prefault({})
 				.describe("JWT authentication configuration."),
 		}).prefault({})
