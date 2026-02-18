@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createHmac, randomBytes } from 'crypto';
 import { EnvService } from './EnvService';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 export interface ChallengeData {
 	challenge: string;
@@ -17,9 +18,15 @@ export class ChallengeService {
 	private logger = new Logger(ChallengeService.name);
 	private readonly CHALLENGE_VALIDITY_MS = 5 * 60 * 1000; // 5 minutes
 
-	private readonly hmacSecret: string;
-	constructor(private readonly envService: EnvService) {
+	private hmacSecret: string;
+	constructor() {
 		this.logger.log('Generating new HMAC secret for challenge verification...');
+		this.hmacSecret = randomBytes(32).toString('hex');
+	}
+
+	@Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+	async renewHmacSecret() {
+		this.logger.log('Renewing HMAC secret for challenge verification...');
 		this.hmacSecret = randomBytes(32).toString('hex');
 	}
 

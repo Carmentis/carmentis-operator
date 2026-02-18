@@ -1,11 +1,13 @@
-import { IsHexadecimal, IsISO8601, IsString } from 'class-validator';
+import { IsHexadecimal, IsISO8601, IsOptional, IsString } from 'class-validator';
 
 export class ApiKeyCreationDto {
 	@IsString()
 	name: string;
 
+
+	@IsOptional()
 	@IsISO8601()
-	activeUntil: string;
+	activeUntil?: string;
 
 	@IsHexadecimal()
 	applicationVbId: string;

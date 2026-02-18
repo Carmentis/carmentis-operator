@@ -17,7 +17,7 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 		super(repo);
 	}
 
-	async createKey( name: string, application: ApplicationEntity, activeUntil: Date ) {
+	async createKey( name: string, application: ApplicationEntity, activeUntil: Date | undefined ) {
 		// we start by creating the key
 		const secret = randomBytes(32).toString('hex');
 		const key = this.repo.create({
@@ -99,10 +99,14 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 
 
 		// check conditions on the validity of the key
-		return !!existingKey && // the key should exist
+		const isCorrectAndValidKey = !!existingKey && // the key should exist
 			existingKey.isActive && // the key should be active
-			existingKey.activeUntil > new Date() && // the key should still be active
-			existingKey.apiKey == apiKey // the keys should match
+			existingKey.apiKey == apiKey // the keys should match;
+
+		if (!isCorrectAndValidKey) return false;
+
+		// the key should still be active
+		return existingKey.activeUntil === undefined || existingKey.activeUntil > new Date()
 	}
 
 	async deleteKeyById(id: number) {

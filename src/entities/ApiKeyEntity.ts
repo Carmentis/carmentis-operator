@@ -27,7 +27,7 @@ export class ApiKeyEntity extends BaseEntity {
 
 
 	@Column({ nullable: true })
-	activeUntil: Date;
+	activeUntil?: Date;
 
 
 	@Column({default: true})

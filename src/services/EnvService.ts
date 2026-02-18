@@ -12,8 +12,6 @@ import { randomBytes } from 'crypto';
  */
 @Injectable()
 export class EnvService implements OnModuleInit {
-	/** Path to the file containing the administrator creation token */
-	private _adminTokenFile: string;
 	/** Path to the file containing the JWT secret */
 	private _jwtSecretFile: string;
 	/** Logger instance for this service */
@@ -24,8 +22,6 @@ export class EnvService implements OnModuleInit {
 	constructor(
 		private readonly operatorConfig: OperatorConfigService,
 	) {
-		// Get the blockchain node URL
-		this._adminTokenFile = this.operatorConfig.getAdminTokenPath();
 		this._jwtSecretFile = this.operatorConfig.getJwtStoragePath();
 
 		// create home directory if not exists
@@ -40,16 +36,6 @@ export class EnvService implements OnModuleInit {
 	 * Currently empty but can be used for additional initialization logic.
 	 */
 	async onModuleInit() {
-		// Initialize admin token file path
-		const adminTokenPath = this.operatorConfig.getAdminTokenPath();
-		if (typeof adminTokenPath === 'string') {
-			this._adminTokenFile = adminTokenPath;
-			this.logger.log(`Admin token file provided: ${this._adminTokenFile}`);
-		} else {
-			this._adminTokenFile = path.join(process.cwd(), './admin-token.txt');
-			this.logger.log(`No admin token file provided (default: ${this._adminTokenFile}).`);
-		}
-
 		// Initialize database encryption key
 		const databaseEncryptionConfig = this.operatorConfig.getDatabaseEncryptionConfig();
 		const specifiedEncryptionKey = databaseEncryptionConfig.encryptionKey;
@@ -95,15 +81,6 @@ export class EnvService implements OnModuleInit {
 	 */
 	get dbEncryptionKey(): Buffer {
 		return this._dbEncryptionKey;
-	}
-
-
-	/**
-	 * Gets the path to the file containing the administrator creation token.
-	 * @returns The file path as a string
-	 */
-	get adminTokenFile(): string {
-		return this._adminTokenFile;
 	}
 
 	async getOrCreateJwtSecret(): Promise<string> {
