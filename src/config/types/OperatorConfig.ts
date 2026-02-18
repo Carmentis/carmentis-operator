@@ -66,7 +66,11 @@ export const ConfigSchema = z.object({
 				database: z.string()
 					.describe("Path to the SQLite database file (relative to paths.home)."),
 			}).optional().describe("SQLite database configuration."),
-		}).describe("Database configuration."),
+		}).describe("Database configuration.").prefault({
+			sqlite: {
+				database: "operator.db"
+			}
+		}),
 
 		protocols: z.object({
 			wap: z.object({
