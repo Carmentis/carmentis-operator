@@ -2,11 +2,12 @@ import {
 	ExceptionFilter,
 	Catch,
 	ArgumentsHost,
-	HttpException, BadRequestException,
+	HttpException, BadRequestException, Logger,
 } from '@nestjs/common';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
+	private logger = new Logger(AllExceptionsFilter.name);
 	catch(exception: unknown, host: ArgumentsHost) {
 		const ctx = host.switchToHttp();
 		const response = ctx.getResponse();
@@ -18,7 +19,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
 		// Logger la stack côté serveur uniquement
 		if (exception instanceof HttpException) {
-			console.error("HttpException", exception.stack);
+			this.logger.error(exception.message);
 			status = exception.getStatus();
 			const exceptionResponse = exception.getResponse();
 

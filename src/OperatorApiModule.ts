@@ -35,6 +35,7 @@ import { OperatorAdminApiApiKeyController } from './controllers/operator-admin-a
 import { OperatorAdminApiSetupController } from './controllers/operator-admin-api/OperatorAdminApiSetupController';
 import { OperatorConfigService } from './config/services/operator-config.service';
 import { WalletService } from './services/WalletService';
+import { JwtTokenBearerGuard } from './guards/JwtTokenBearerGuard';
 
 @Module({
 	imports: [
@@ -42,7 +43,7 @@ import { WalletService } from './services/WalletService';
 		JwtModule.registerAsync({
 			imports: [OperatorConfigModule],
 			useFactory: async (envService: EnvService, config: OperatorConfigService) => ({
-				apiKey: await envService.getOrCreateJwtSecret(),
+				secret: await envService.getOrCreateJwtSecret(),
 				signOptions: { expiresIn: config.getJwtTokenValidity() },
 			}),
 			inject: [EnvService, OperatorConfigService],
@@ -83,6 +84,10 @@ import { WalletService } from './services/WalletService';
 		{
 			provide: APP_GUARD,
 			useClass: ApiKeyGuard,
+		},
+		{
+			provide: APP_GUARD,
+			useClass: JwtTokenBearerGuard,
 		},
 		{
 			provide: APP_INTERCEPTOR,
