@@ -61,9 +61,21 @@ export class OperatorConfigService extends AbstractOperatorConfig {
         }
 
         // if we reach this point, we have not found a valid config file.
-        // we throw an error.
-        const formattedSearchedCandidates = candidatesConfigFilePaths.join(', ');
-        throw new Error(`Failed to load config file from any of the following paths: ${formattedSearchedCandidates}`);
+        // we finally attempt to create an empty configuration.
+        try {
+            this.logger.log("No configuration found: Attempting to create default config")
+            const defaultConfig = ConfigSchema.parse({
+                operator: {}
+            });
+            return defaultConfig;
+        } catch (e) {
+            if (e instanceof Error) {
+                this.logger.error(`Failed to create default config: ${e.message}`);
+            }
+            const formattedSearchedCandidates = candidatesConfigFilePaths.join(', ');
+            throw new Error(`Failed to load config file from any of the following paths: ${formattedSearchedCandidates}`);
+
+        }
     }
 
 
