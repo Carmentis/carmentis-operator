@@ -7,20 +7,25 @@ import { WalletEntity } from '../entities/WalletEntity';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 
 @Injectable()
-export class ApiKeyService {
+export class ApiKeyService  {
 	private logger = new Logger(ApiKeyService.name);
 	constructor(
 		@InjectRepository(ApiKeyEntity)
 		private readonly repo: Repository<ApiKeyEntity>,
-	) {}
+	) {
+	}
 
-	async createKey( body: Partial<ApiKeyEntity> & { applicationId: number } ) {
+	async createKey( name: string, application: ApplicationEntity, activeUntil: Date ) {
 		const secret = randomBytes(32).toString('hex');
-		const key = this.repo.create(body);
-		key.key = secret;
-		key.isActive = true;
+		const key = this.repo.create({
+			activeUntil,
+			application,
+			name,
+			key: secret,
+			isActive: true,
+		});
 		const keyEntity = await this.repo.save(key);
-		const formattedKey = this.formatKey(keyEntity.id, body.applicationId, secret);
+		const formattedKey = this.formatKey(keyEntity.id, application.vbId, secret);
 		return { keyEntity, formattedKey };
 	}
 
@@ -49,8 +54,8 @@ export class ApiKeyService {
 	 * @param key - The secret key
 	 * @private
 	 */
-	private formatKey(id: number, applicationId: number, key: string): string {
-		return `cmts:${id}:${applicationId}:${key}`;
+	private formatKey(id: number, applicationVbId: string, key: string): string {
+		return `cmts:${id}:${applicationVbId}:${key}`;
 	}
 
 

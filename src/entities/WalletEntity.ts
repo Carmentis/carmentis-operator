@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { EncryptedColumn } from '../decorators/EncryptionDecorator';
 import { ApplicationEntity } from './ApplicationEntity';
 import { Provider, ProviderFactory } from '@cmts-dev/carmentis-sdk/server';
@@ -11,6 +11,12 @@ export class WalletEntity extends BaseEntity {
 
 	@EncryptedColumn()
 	seed: string;
+
+	@Column()
+	name: string;
+
+	@CreateDateColumn()
+	createdAt: Date;
 
 	@Column()
 	rpcEndpoint: string;

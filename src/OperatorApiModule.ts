@@ -8,8 +8,9 @@ import { WalletAnchoringRequestService } from './services/wallet-anchoring-reque
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AnchorRequestEntity } from './entities/AnchorRequestEntity';
 import { AnchorRequestService } from './services/AnchorRequestService';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ApiKeyGuard } from './guards/ApiKeyGuard';
+import { CrudRequestInterceptor } from '@dataui/crud';
 import { OperatorConfigModule } from './config/OperatorConfigModule';
 import { OperatorHealthApiController } from './controllers/operator-api/OperatorHealthApiController';
 import { EncryptionService } from './services/EncryptionService';
@@ -33,6 +34,7 @@ import { OperatorAdminApiWalletController } from './controllers/operator-admin-a
 import { OperatorAdminApiApiKeyController } from './controllers/operator-admin-api/OperatorAdminApiApiKeyController';
 import { OperatorAdminApiSetupController } from './controllers/operator-admin-api/OperatorAdminApiSetupController';
 import { OperatorConfigService } from './config/services/operator-config.service';
+import { WalletService } from './services/WalletService';
 
 @Module({
 	imports: [
@@ -74,12 +76,17 @@ import { OperatorConfigService } from './config/services/operator-config.service
 		ApiKeyService,
 		UserService,
 		ApplicationService,
+		WalletService,
 		ChainService,
 		AnchorRequestService,
 		ChallengeService,
 		{
 			provide: APP_GUARD,
 			useClass: ApiKeyGuard,
+		},
+		{
+			provide: APP_INTERCEPTOR,
+			useClass: CrudRequestInterceptor,
 		}
 	],
 })

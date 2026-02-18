@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('user')
 export class UserEntity extends BaseEntity {
@@ -8,4 +8,7 @@ export class UserEntity extends BaseEntity {
 
 	@Column()
 	pseudo: string;
+
+	@CreateDateColumn()
+	createdAt: Date;
 }

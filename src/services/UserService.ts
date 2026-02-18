@@ -4,13 +4,15 @@ import { DeleteResult, Repository } from 'typeorm';
 import { UserEntity } from '../entities/UserEntity';
 import CreateUserDto from '../workspace/dto/create-user.dto';
 import CreateNotWhitelistedUserDto from '../workspace/dto/create-user-public.dto';
+import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 
 @Injectable()
-export class UserService {
+export class UserService extends TypeOrmCrudService<UserEntity> {
 	constructor(
 		@InjectRepository(UserEntity)
 		private readonly userEntityRepository: Repository<UserEntity>,
 	) {
+		super(userEntityRepository);
 	}
 
 	// Find one item by public key

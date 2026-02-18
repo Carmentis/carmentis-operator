@@ -1,4 +1,4 @@
-import { BaseEntity, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import { WalletEntity } from './WalletEntity';
 import { AnchorRequestEntity } from './AnchorRequestEntity';
 import { ApiKeyEntity } from './ApiKeyEntity';
@@ -9,7 +9,13 @@ export class ApplicationEntity extends BaseEntity {
 	@PrimaryColumn()
 	vbId: string;
 
-	@ManyToOne(() => WalletEntity, wallet => wallet.applications, { onDelete: 'CASCADE' })
+	@Column()
+	name: string;
+
+	@CreateDateColumn()
+	createdAt: Date;
+
+	@ManyToOne(() => WalletEntity, wallet => wallet.applications, { onDelete: 'CASCADE', nullable: false })
 	wallet: WalletEntity;
 
 	@OneToMany(() => AnchorRequestEntity, anchorRequest => anchorRequest.application, { cascade: true })
