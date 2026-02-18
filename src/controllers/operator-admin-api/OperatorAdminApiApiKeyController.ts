@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { OPERATOR_ADMIN_API_PREFIX } from './OperatorAdminApiController';
 import { Crud, CrudController, CrudOptions } from '@dataui/crud';
 import { ApiKeyEntity } from '../../entities/ApiKeyEntity';
@@ -14,6 +14,14 @@ import { ApplicationEntity } from '../../entities/ApplicationEntity';
 	routes: {
 		only: ['getOneBase', 'getManyBase', 'deleteOneBase'],
 	},
+	query: {
+		join: {
+			application: {
+				eager: true,
+				allow: ["vbId", "name"]
+			},
+		},
+	}
 } as CrudOptions)
 @Controller(`${OPERATOR_ADMIN_API_PREFIX}/apiKey`)
 export class OperatorAdminApiApiKeyController  {
@@ -36,4 +44,10 @@ export class OperatorAdminApiApiKeyController  {
 		);
 		return apiKey;
 	}
+
+	@Patch('/:id/toggle')
+	async toggle(@Param('id', ParseIntPipe) id: number) {
+		await this.service.toggleActivityForApiKeyById(id);
+	}
+
 }

@@ -15,9 +15,8 @@ export class ApiKeyEntity extends BaseEntity {
 	@Column()
 	name: string;
 
-	@Exclude()
 	@EncryptedColumn()
-	key: string;
+	apiKey: string;
 
 	@ManyToOne(() => ApplicationEntity, app => app.apiKeys, { onDelete: "CASCADE" })
 	application: ApplicationEntity;

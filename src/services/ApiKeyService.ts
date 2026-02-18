@@ -5,28 +5,34 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'crypto';
 import { WalletEntity } from '../entities/WalletEntity';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
+import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 
 @Injectable()
-export class ApiKeyService  {
+export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 	private logger = new Logger(ApiKeyService.name);
 	constructor(
 		@InjectRepository(ApiKeyEntity)
-		private readonly repo: Repository<ApiKeyEntity>,
+		public readonly repo: Repository<ApiKeyEntity>,
 	) {
+		super(repo);
 	}
 
 	async createKey( name: string, application: ApplicationEntity, activeUntil: Date ) {
+		// we start by creating the key
 		const secret = randomBytes(32).toString('hex');
 		const key = this.repo.create({
 			activeUntil,
 			application,
 			name,
-			key: secret,
+			apiKey: secret,
 			isActive: true,
 		});
 		const keyEntity = await this.repo.save(key);
+
+		// once the id is defined, we construct the api key
 		const formattedKey = this.formatKey(keyEntity.id, application.vbId, secret);
-		return { keyEntity, formattedKey };
+		await this.repo.update({ id: keyEntity.id }, { apiKey: formattedKey })
+		return ApiKeyEntity.findOneBy({ id: keyEntity.id })
 	}
 
 	async findApplicationByApiKey(apiKey: ApiKeyEntity) {
@@ -74,19 +80,19 @@ export class ApiKeyService  {
 
 	async exists(apiKey: string) {
 		// search the key
-		const {id, key} = this.parseKey(apiKey);
+		const {id} = this.parseKey(apiKey);
 		const existingKey = await this.repo.findOne({
 			where: { id },
 		});
 
 		// check conditions on the validity of the key
 		return !!existingKey && // the key should exist
-			existingKey.key === key // the keys should match
+			existingKey.apiKey === apiKey // the keys should match
 	}
 
 	async isActiveKey(apiKey: string) {
 		// search the key
-		const {id, key} = this.parseKey(apiKey);
+		const {id} = this.parseKey(apiKey);
 		const existingKey = await this.repo.findOne({
 			where: { id },
 		});
@@ -96,7 +102,7 @@ export class ApiKeyService  {
 		return !!existingKey && // the key should exist
 			existingKey.isActive && // the key should be active
 			existingKey.activeUntil > new Date() && // the key should still be active
-			existingKey.key === key // the keys should match
+			existingKey.apiKey == apiKey // the keys should match
 	}
 
 	async deleteKeyById(id: number) {
@@ -126,5 +132,12 @@ export class ApiKeyService  {
 		} catch (e) {
 			throw new Error("Provided key has an invalid format. Expected format: cmts:<id>:<applicationVbId>:<key>")
 		}
+	}
+
+	async toggleActivityForApiKeyById(id: number) {
+		const currentKey = await ApiKeyEntity.findOneBy({ id })
+		const currentState = 	currentKey.isActive;
+		const newState = !currentState;
+		return await ApiKeyEntity.update({ id }, { isActive: newState })
 	}
 }

@@ -42,7 +42,7 @@ import { WalletService } from './services/WalletService';
 		JwtModule.registerAsync({
 			imports: [OperatorConfigModule],
 			useFactory: async (envService: EnvService, config: OperatorConfigService) => ({
-				secret: await envService.getOrCreateJwtSecret(),
+				apiKey: await envService.getOrCreateJwtSecret(),
 				signOptions: { expiresIn: config.getJwtTokenValidity() },
 			}),
 			inject: [EnvService, OperatorConfigService],

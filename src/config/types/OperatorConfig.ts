@@ -28,7 +28,7 @@ export const ConfigSchema = z.object({
 		cors: z.object({
 			origin: z.string().default('*')
 				.describe("Allowed origins for CORS requests (e.g., '*')."),
-			methods: z.string().default('GET,POST,PUT,DELETE,OPTIONS')
+			methods: z.string().default('GET,POST,PUT,DELETE,OPTIONS,PATCH')
 				.describe("Allowed HTTP methods for CORS requests."),
 		}).prefault({}).describe("CORS configuration."),
 
