@@ -1,3 +1,11 @@
+## [1.5.2](https://github.com/Carmentis/carmentis-operator/compare/v1.5.1...v1.5.2) (2026-02-19)
+
+
+### Bug Fixes
+
+* **ci:** no output for semantic release ([c25e108](https://github.com/Carmentis/carmentis-operator/commit/c25e10800076a509993c354af7866c104aa6db6f))
+* missing cache in the ci ([ce0fbcf](https://github.com/Carmentis/carmentis-operator/commit/ce0fbcfd488fc73a6bd52e48255b5d3d9db2ee7d))
+
 ## [1.5.1](https://github.com/Carmentis/carmentis-operator/compare/v1.5.0...v1.5.1) (2026-02-19)
 
 
