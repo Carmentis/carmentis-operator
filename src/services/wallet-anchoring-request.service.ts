@@ -393,7 +393,12 @@ export class WalletAnchoringRequestService {
 			...anchorDto,
 		})
 		const organizationPrivateKey = await accountCrypto.getPrivateSignatureKey(SignatureSchemeId.SECP256K1);
-		mb.setGasPrice(CMTSToken.createAtomic(1)) // TODO: use a source to define the gas price instead of constant
+
+		// define the gas price
+		const usedGasPriceInAtomics = typeof anchorDto.gasPriceInAtomics === 'number' ? anchorDto.gasPriceInAtomics : 1;
+		mb.setGasPrice(CMTSToken.createAtomic(usedGasPriceInAtomics));
+
+
 		mb.setGas(await this.getGasFromMicroblockAndSigningSchemeId(provider, mb, organizationPrivateKey.getSignatureSchemeId()))
 		await mb.seal(organizationPrivateKey, {
 			feesPayerAccount: accountId.toBytes()

@@ -1,4 +1,13 @@
-import { IsBoolean, IsDefined, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
+import {
+	IsBoolean,
+	IsDefined,
+	IsInt,
+	IsNumber,
+	IsOptional,
+	IsPositive,
+	IsString,
+	ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { CMTSToken, Hash, Optional } from '@cmts-dev/carmentis-sdk/server';
@@ -81,6 +90,22 @@ export class AnchorDto  {
 	@IsString()
 	@IsOptional()
 	virtualBlockchainId?: string;
+
+
+	@ApiProperty({ description: 'Number of days to keep the chain data on the Carmentis blockchain.' })
+	@IsOptional()
+	@IsNumber()
+	@IsInt()
+	@IsPositive()
+	chainStorageInDays?: number;
+
+
+	@ApiProperty({ description: 'Gas price to use for the anchoring transaction.' })
+	@IsOptional()
+	@IsNumber()
+	@IsPositive()
+	@IsInt()
+	gasPriceInAtomics?: number;
 
 	@ApiProperty({ type: [ChannelDto], description: 'List of created channels.' })
 	@ValidateNested({ each: true })
