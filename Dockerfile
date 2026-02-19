@@ -1,38 +1,19 @@
-# Build stage
-FROM node:22-alpine AS builder
-
+FROM node:22-slim AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+COPY . /app
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-COPY pnpm-*.yaml ./
+FROM base AS prod-deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
-# Install all dependencies (including devDependencies for build)
-RUN pnpm install
-
-# Copy source code
-COPY ./src .
-
-# Build the application
+FROM base AS build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm run build
 
-# Production stage
-FROM node:22-alpine AS production
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-COPY pnpm-*.yaml ./
-
-# Install only production dependencies
-RUN pnpm install --prod
-
-# Copy built application from builder stage
-COPY --from=builder /app/dist ./dist
-
-# Expose port (adjust if needed)
+FROM base
+COPY --from=prod-deps /app/node_modules /app/node_modules
+COPY --from=build /app/dist /app/dist
 EXPOSE 3000
-
-# Start the application
-CMD ["node", "dist/main.js"]
+CMD [ "pnpm", "start:prod" ]
