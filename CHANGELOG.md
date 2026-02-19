@@ -1,3 +1,11 @@
+## [1.5.4](https://github.com/Carmentis/carmentis-operator/compare/v1.5.3...v1.5.4) (2026-02-19)
+
+
+### Bug Fixes
+
+* add chainStorageInDays and gasPriceInAtomics to AnchorDto, update gas price logic ([0d6d9f3](https://github.com/Carmentis/carmentis-operator/commit/0d6d9f3f389e9be1059958e71fa6ed101737fc65))
+* default operator storage updated ([30b48a8](https://github.com/Carmentis/carmentis-operator/commit/30b48a8fc9d346072ee21c141f356036284639fa))
+
 ## [1.5.3](https://github.com/Carmentis/carmentis-operator/compare/v1.5.2...v1.5.3) (2026-02-19)
 
 
