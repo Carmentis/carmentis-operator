@@ -164,14 +164,6 @@ export class AnchorDto  {
 	isVirtualBlockchainIdDefined(): boolean {
 		return this.virtualBlockchainId !== undefined;
 	}
-
-	getVirtualBlockchainId(): Optional<Hash> {
-		if (this.isVirtualBlockchainIdDefined()) {
-			return Optional.of(Hash.from(this.virtualBlockchainId));
-		} else {
-			return Optional.none();
-		}
-	}
 }
 
 export class AnchorWithWalletDto extends AnchorDto {
