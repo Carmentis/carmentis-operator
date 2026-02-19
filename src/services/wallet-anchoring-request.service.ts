@@ -89,7 +89,7 @@ export class WalletAnchoringRequestService {
 
 			await this.anchorRequestService.saveMicroblock(anchorRequestId, mb);
 			const { microblockData: serializedMb } = mb.serialize();
-			console.log(`Microblock during approval handshake:`, mb.toString())
+			this.logger.debug(`Microblock during approval handshake: ${mb.toString()}`)
 
 			return {
 				type: WalletInteractiveAnchoringResponseType.APPROVAL_DATA,
