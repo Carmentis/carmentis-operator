@@ -1,3 +1,10 @@
+## [1.5.3](https://github.com/Carmentis/carmentis-operator/compare/v1.5.2...v1.5.3) (2026-02-19)
+
+
+### Bug Fixes
+
+* **ci:** pnpm not found in Dockerfile and optimization ([1d7660c](https://github.com/Carmentis/carmentis-operator/commit/1d7660c1e79eb17342661c9b5ad8c1b2eed800a6))
+
 ## [1.5.2](https://github.com/Carmentis/carmentis-operator/compare/v1.5.1...v1.5.2) (2026-02-19)
 
 
