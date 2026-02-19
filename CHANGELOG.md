@@ -1,3 +1,27 @@
+# [1.5.0](https://github.com/Carmentis/carmentis-operator/compare/v1.4.0...v1.5.0) (2026-02-19)
+
+
+### Bug Fixes
+
+* add missing dependencies to pnpm-lock.yaml ([8bb5dfe](https://github.com/Carmentis/carmentis-operator/commit/8bb5dfebf129fc1903fdc71fc25fd3ff874ad0bb))
+* **ci:** node version is 20 instead of 22 or higher ([3f32a11](https://github.com/Carmentis/carmentis-operator/commit/3f32a11934e687cd61ebb0cde0652dab557fc28c))
+* invalid nodejs setup with invalid cache ([dfaf28c](https://github.com/Carmentis/carmentis-operator/commit/dfaf28c3b0d902a21d433dd1f30c0a2d4d6e43f0))
+* missing packages in the pnpm config ([ab8e0c1](https://github.com/Carmentis/carmentis-operator/commit/ab8e0c1147c64e88873afec9776e809d82cdcb62))
+* override dependencies error in ci ([002cfd7](https://github.com/Carmentis/carmentis-operator/commit/002cfd7cf02b3e49a0e261792a5de7e0335b1127))
+
+
+### Features
+
+* **api-key:** extend API key management with toggle functionality and improve structure ([e57de60](https://github.com/Carmentis/carmentis-operator/commit/e57de6003fa1c723cf975ce95bdf80db6e1028ac))
+* **api-key:** improve DTO validation, logging, and optional fields handling ([283cd5f](https://github.com/Carmentis/carmentis-operator/commit/283cd5ff42aa5e46b8b5fb6d5d2db0fad3c9261d))
+* **auth:** add JwtTokenBearerGuard and improve exception handling ([9fd57a8](https://github.com/Carmentis/carmentis-operator/commit/9fd57a804fa79f78a8726b46e4c1af93fcecfbb5))
+* **auth:** improve challenge verification, JWT handling, and setup process ([61d7a63](https://github.com/Carmentis/carmentis-operator/commit/61d7a63a39ff479d1a967129abec7dae217093db))
+* **config:** add default SQLite configuration to OperatorConfig ([776bf81](https://github.com/Carmentis/carmentis-operator/commit/776bf81e3d0f97a71d604b5d6cc0b1cfa5218bd9))
+* **dto:** add validation DTOs for API Key and Application creation ([f6a51e1](https://github.com/Carmentis/carmentis-operator/commit/f6a51e165ba00a5ef213daea56909ef299471de1))
+* **env-service:** enhance JWT secret handling and integrate with operator config ([9d31b72](https://github.com/Carmentis/carmentis-operator/commit/9d31b72e38327c0b268474edeaa4113aa5c4072c))
+* **operator-admin-api:** add CRUD controllers for Application, Wallet, and API Key management ([0d91dee](https://github.com/Carmentis/carmentis-operator/commit/0d91deefbcb3d2e8bf7bdde3000aa2ef4207b341))
+* zero-config feature ([2a63ee3](https://github.com/Carmentis/carmentis-operator/commit/2a63ee3a771571aeb29aa4077656dbe73b9bc60a))
+
 # [1.4.0](https://github.com/Carmentis/carmentis-operator/compare/v1.3.0...v1.4.0) (2026-02-17)
 
 
