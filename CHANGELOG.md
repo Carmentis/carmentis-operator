@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/Carmentis/carmentis-operator/compare/v1.5.0...v1.5.1) (2026-02-19)
+
+
+### Bug Fixes
+
+* usage of logger instead of console ([cbdfb7e](https://github.com/Carmentis/carmentis-operator/commit/cbdfb7ea411d34f825479c7b11f6f1f7944efb1d))
+
 # [1.5.0](https://github.com/Carmentis/carmentis-operator/compare/v1.4.0...v1.5.0) (2026-02-19)
 
 
