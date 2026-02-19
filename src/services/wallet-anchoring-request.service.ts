@@ -14,7 +14,6 @@ import {
 	Hash,
 	Microblock,
 	Provider,
-	ProviderFactory,
 	SectionType,
 	SeedEncoder,
 	SignatureSchemeId,
