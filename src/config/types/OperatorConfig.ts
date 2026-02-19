@@ -80,7 +80,7 @@ export const ConfigSchema = z.object({
 		}).prefault({}).describe("Protocols configuration."),
 
 		paths: z.object({
-			home: z.string().default(process.cwd())
+			home: z.string().default(join(process.cwd(), 'operator'))
 				.describe("Base directory for all relative paths."),
 			init_token: z.string().default("admin-token.txt")
 				.describe("Path to the initialization token file used for first-time setup."),
