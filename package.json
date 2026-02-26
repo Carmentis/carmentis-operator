@@ -31,7 +31,7 @@
     "@as-integrations/express5": "^1.1.2",
     "@automapper/classes": "^8.8.1",
     "@automapper/core": "^8.8.1",
-    "@cmts-dev/carmentis-sdk": "^1.18.4",
+    "@cmts-dev/carmentis-sdk": "^1.20",
     "@dataui/crud": "^5.3.4",
     "@dataui/crud-typeorm": "^5.3.4",
     "@iarna/toml": "^2.2.5",

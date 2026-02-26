@@ -361,11 +361,19 @@ export class WalletAnchoringRequestService {
 	}
 
 	private async getGasFromMicroblockAndSigningSchemeId(provider: Provider, mb: Microblock, signingSchemeId: SignatureSchemeId) {
+		/*
 		const protocolVariables = await provider.getProtocolState();
 		const feesCalculationVersion = protocolVariables.getFeesCalculationVersion();
 		const feesFormula = FeesCalculationFormulaFactory.getFeesCalculationFormulaByVersion(feesCalculationVersion);
 		const gas = await feesFormula.computeFees(signingSchemeId, mb);
 		return gas
+
+		 */
+		const fees = await provider.computeMicroblockFees(
+			mb,
+			{ signatureSchemeId: signingSchemeId }
+		);
+		return fees;
 	}
 
 	async anchor(application: ApplicationEntity, anchorDto: AnchorDto) {
