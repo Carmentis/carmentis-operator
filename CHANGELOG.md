@@ -1,3 +1,10 @@
+## [1.5.5](https://github.com/Carmentis/carmentis-operator/compare/v1.5.4...v1.5.5) (2026-02-26)
+
+
+### Bug Fixes
+
+* update @cmts-dev/carmentis-sdk to v1.20, adjust gas computation logic in wallet anchoring service ([c8fb4b8](https://github.com/Carmentis/carmentis-operator/commit/c8fb4b8edec647633a3227cc0b0a22a4bd91c841))
+
 ## [1.5.4](https://github.com/Carmentis/carmentis-operator/compare/v1.5.3...v1.5.4) (2026-02-19)
 
 
