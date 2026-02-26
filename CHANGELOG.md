@@ -1,3 +1,10 @@
+## [1.5.7](https://github.com/Carmentis/carmentis-operator/compare/v1.5.6...v1.5.7) (2026-02-26)
+
+
+### Bug Fixes
+
+* upgrade to sdk 1.20.1 ([1443589](https://github.com/Carmentis/carmentis-operator/commit/1443589c7f3a3936912f6a047b8e460164171932))
+
 ## [1.5.6](https://github.com/Carmentis/carmentis-operator/compare/v1.5.5...v1.5.6) (2026-02-26)
 
 
