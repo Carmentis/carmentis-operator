@@ -36,10 +36,13 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 	}
 
 	async findApplicationByApiKey(apiKey: ApiKeyEntity) {
-		return ApplicationEntity.findOneBy({
-			apiKeys: {
-				id: apiKey.id
-			}
+		return ApplicationEntity.findOne({
+			where: {
+				apiKeys: {
+					id: apiKey.id
+				},
+			},
+			relations: ['wallet']
 		})
 	}
 
