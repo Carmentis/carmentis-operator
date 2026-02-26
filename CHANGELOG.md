@@ -1,3 +1,10 @@
+## [1.5.6](https://github.com/Carmentis/carmentis-operator/compare/v1.5.5...v1.5.6) (2026-02-26)
+
+
+### Bug Fixes
+
+* include wallet relation in findApplicationByApiKey query ([8687685](https://github.com/Carmentis/carmentis-operator/commit/8687685d2de398f517e9a062f6c831aa56cbaeda))
+
 ## [1.5.5](https://github.com/Carmentis/carmentis-operator/compare/v1.5.4...v1.5.5) (2026-02-26)
 
 
