@@ -1,3 +1,10 @@
+## [1.5.11](https://github.com/Carmentis/carmentis-operator/compare/v1.5.10...v1.5.11) (2026-03-09)
+
+
+### Bug Fixes
+
+* set default for chainStorageInDays and adjust expirationDay calculation logic ([3adc405](https://github.com/Carmentis/carmentis-operator/commit/3adc405e7f0ee7a89505a0baae60392a0a5cf534))
+
 ## [1.5.10](https://github.com/Carmentis/carmentis-operator/compare/v1.5.9...v1.5.10) (2026-03-09)
 
 
