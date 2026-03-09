@@ -21,7 +21,12 @@ export class ApplicationService extends TypeOrmCrudService<ApplicationEntity> {
 
 
 	async findApplicationByVbId(applicationVbId: string) {
-		return ApplicationEntity.findOneBy({vbId: applicationVbId});
+		return ApplicationEntity.findOne({
+			where: {
+				vbId: applicationVbId
+			},
+			relations: ['wallet']
+		});
 	}
 
 }
