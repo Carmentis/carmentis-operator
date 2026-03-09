@@ -37,8 +37,11 @@ export class AnchorRequestService {
 	 * @return {Promise<AnchorRequestEntity>} A promise that resolves to the AnchorRequestEntity matching the given ID, or rejects if no match is found.
 	 */
 	async findAnchorRequestByAnchorRequestId(anchorRequestID: string): Promise<AnchorRequestEntity> {
-		const storedAnchorRequest = await this.anchorRequestRepository.findOneByOrFail({
-			anchorRequestId: anchorRequestID,
+		const storedAnchorRequest = await this.anchorRequestRepository.findOneOrFail({
+			where: {
+				anchorRequestId: anchorRequestID,
+			},
+			relations: ['application']
 		})
 		this.logger.log(`Anchor request found for id ${anchorRequestID}:`)
 		return storedAnchorRequest;
