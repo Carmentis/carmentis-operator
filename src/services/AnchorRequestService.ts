@@ -26,7 +26,7 @@ export class AnchorRequestService {
 			status: 'pending',
 			request,
 			application,
-			expirationDay: request.chainStorageInDays ?? 10
+			expirationDay: Utils.addDaysToTimestamp(Utils.getTimestampInSeconds(), request.chainStorageInDays ?? 10)
 		});
 		return this.findAnchorRequestByAnchorRequestId(anchorRequestId);
 	}

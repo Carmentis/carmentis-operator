@@ -97,7 +97,7 @@ export class AnchorDto  {
 	@IsNumber()
 	@IsInt()
 	@IsPositive()
-	chainStorageInDays?: number;
+	chainStorageInDays?: number = 10;
 
 
 	@ApiProperty({ description: 'Gas price to use for the anchoring transaction.' })
