@@ -1,3 +1,11 @@
+## [1.5.8](https://github.com/Carmentis/carmentis-operator/compare/v1.5.7...v1.5.8) (2026-03-09)
+
+
+### Bug Fixes
+
+* update pnpm-lock.yaml to align dependencies with latest versions ([11dae58](https://github.com/Carmentis/carmentis-operator/commit/11dae58e72d30d1da94d8aa0427887b3447b0fdc))
+* update pnpm-lock.yaml with latest dependency versions ([4d91a6c](https://github.com/Carmentis/carmentis-operator/commit/4d91a6c33dbe2e6fac5551cfe1b32947a10de870))
+
 ## [1.5.7](https://github.com/Carmentis/carmentis-operator/compare/v1.5.6...v1.5.7) (2026-02-26)
 
 
