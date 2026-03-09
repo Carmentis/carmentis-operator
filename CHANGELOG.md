@@ -1,3 +1,10 @@
+## [1.5.9](https://github.com/Carmentis/carmentis-operator/compare/v1.5.8...v1.5.9) (2026-03-09)
+
+
+### Bug Fixes
+
+* include wallet relation in findApplicationByVbId query ([a5c5a96](https://github.com/Carmentis/carmentis-operator/commit/a5c5a966a99e11da047a515e39678b0e92da5d93))
+
 ## [1.5.8](https://github.com/Carmentis/carmentis-operator/compare/v1.5.7...v1.5.8) (2026-03-09)
 
 
