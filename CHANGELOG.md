@@ -1,3 +1,11 @@
+## [1.5.10](https://github.com/Carmentis/carmentis-operator/compare/v1.5.9...v1.5.10) (2026-03-09)
+
+
+### Bug Fixes
+
+* add expirationDay to anchor requests and update microblock creation logic ([bd595b9](https://github.com/Carmentis/carmentis-operator/commit/bd595b9d745f20ed7db9f0f85fd35014e4a68100))
+* remove unnecessary await in wallet anchoring service ([5406f22](https://github.com/Carmentis/carmentis-operator/commit/5406f223e70396902ddb04ccbcb772df4cf22ebc))
+
 ## [1.5.9](https://github.com/Carmentis/carmentis-operator/compare/v1.5.8...v1.5.9) (2026-03-09)
 
 
