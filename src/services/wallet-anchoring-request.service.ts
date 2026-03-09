@@ -201,7 +201,7 @@ export class WalletAnchoringRequestService {
 		const storedAnchorRequest = await this.anchorRequestService.findAnchorRequestByAnchorRequestId(anchorRequestId);
 		if (!storedAnchorRequest.hexEncodedGenesisSeed) {
 			// in this case, we use the genesis seed generated automatically in the mb and store it in the anchor request
-			const genesisSeed = await mb.getPreviousHash();
+			const genesisSeed = mb.getPreviousHash();
 			await this.anchorRequestService.saveGenesisSeed(anchorRequestId, genesisSeed);
 			this.logger.debug(`Generated genesis seed for anchor request id ${anchorRequestId}: ${genesisSeed.encode()}`)
 		} else {
