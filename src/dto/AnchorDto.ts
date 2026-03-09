@@ -175,4 +175,6 @@ export class AnchorWithWalletDto extends AnchorDto {
 	@IsString()
 	approvalMessage: string;
 
+
+
 }

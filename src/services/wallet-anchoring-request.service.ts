@@ -16,7 +16,7 @@ import {
 	Provider,
 	SectionType,
 	SeedEncoder,
-	SignatureSchemeId,
+	SignatureSchemeId, VirtualBlockchainType,
 	WalletCrypto,
 	WalletInteractiveAnchoringRequestActorKey,
 	WalletInteractiveAnchoringRequestApprovalHandshake,
@@ -197,8 +197,8 @@ export class WalletAnchoringRequestService {
 		// harder case: the application ledger is empty, meaning that we have to generate the genesis seed
 		// and then create a microblock extending the application ledger.
 		// Be aware that a genesis might already be generated and stored in the anchor request (which explains why we expect the anchor request id)
-		const mb = await applicationLedgerVb.createMicroblock();
 		const storedAnchorRequest = await this.anchorRequestService.findAnchorRequestByAnchorRequestId(anchorRequestId);
+		const mb = Microblock.createGenesisMicroblock(VirtualBlockchainType.APP_LEDGER_VIRTUAL_BLOCKCHAIN, storedAnchorRequest.expirationDay ?? 10);
 		if (!storedAnchorRequest.hexEncodedGenesisSeed) {
 			// in this case, we use the genesis seed generated automatically in the mb and store it in the anchor request
 			const genesisSeed = mb.getPreviousHash();
@@ -351,6 +351,8 @@ export class WalletAnchoringRequestService {
 		} else {
 			this.logger.debug(`Creating application ledger for application ${application.vbId}...`)
 			appLedgerVb = ApplicationLedgerVb.createApplicationLedgerVirtualBlockchain(provider);
+			const expirationDay = 10;
+			const mb = await appLedgerVb.createMicroblock();
 		}
 		return appLedgerVb;
 	}

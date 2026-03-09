@@ -56,6 +56,9 @@ export class AnchorRequestEntity {
 	@Column({nullable: true})
 	hexEncodedGenesisSeed?: string;
 
+	@Column({nullable: true})
+	expirationDay: number;
+
 	getAnchorRequestId(): string {
 		return this.anchorRequestId;
 	}
