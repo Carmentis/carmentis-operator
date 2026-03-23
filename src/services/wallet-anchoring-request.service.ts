@@ -84,6 +84,14 @@ export class WalletAnchoringRequestService {
 				...storedRequest.request,
 			})
 
+			// ensure endorser is subscribed
+			if (!applicationLedger.actorIsSubscribed(endorser)) {
+				throw new ActorNotSubscribedError(
+					applicationLedger.getActorIdFromActorName(endorser),
+					endorser
+				);
+			}
+
 			this.logger.debug(`Endorser ${endorser} subscribed.`);
 			this.logger.log("Sending approval data to the wallet")
 
