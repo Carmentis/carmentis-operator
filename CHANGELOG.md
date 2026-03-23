@@ -1,3 +1,10 @@
+## [1.5.12](https://github.com/Carmentis/carmentis-operator/compare/v1.5.11...v1.5.12) (2026-03-23)
+
+
+### Bug Fixes
+
+* endorser subscription not checked (or not explictly because I can bypass endorser subscripition verification) ([367608a](https://github.com/Carmentis/carmentis-operator/commit/367608a7e5aed044df7760264b51be06438beb39))
+
 ## [1.5.11](https://github.com/Carmentis/carmentis-operator/compare/v1.5.10...v1.5.11) (2026-03-09)
 
 
