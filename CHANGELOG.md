@@ -1,3 +1,10 @@
+## [1.5.14](https://github.com/Carmentis/carmentis-operator/compare/v1.5.13...v1.5.14) (2026-03-25)
+
+
+### Bug Fixes
+
+* handle null activeUntil in API key validation ([3de0cba](https://github.com/Carmentis/carmentis-operator/commit/3de0cbabcd17ba10ccc812c70bcdb13134ebcaf9))
+
 ## [1.5.13](https://github.com/Carmentis/carmentis-operator/compare/v1.5.12...v1.5.13) (2026-03-25)
 
 
