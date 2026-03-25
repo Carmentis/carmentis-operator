@@ -109,7 +109,9 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 		if (!isCorrectAndValidKey) return false;
 
 		// the key should still be active
-		return existingKey.activeUntil === undefined || existingKey.activeUntil > new Date()
+		if (existingKey.activeUntil === null) return true;
+		const activeUntil = existingKey.activeUntil;
+		return activeUntil > new Date()
 	}
 
 	async deleteKeyById(id: number) {
