@@ -1,3 +1,11 @@
+## [1.5.13](https://github.com/Carmentis/carmentis-operator/compare/v1.5.12...v1.5.13) (2026-03-25)
+
+
+### Bug Fixes
+
+* add debug logging for API key status in ApiKeyGuard ([e66b0d0](https://github.com/Carmentis/carmentis-operator/commit/e66b0d0d017253f8a8d81b872351bc3d7cffbb14))
+* extend ApiKeyGuard to support x-api-key header verification ([985a5f0](https://github.com/Carmentis/carmentis-operator/commit/985a5f042d20e12ce5afc0212bbb4dd833799b2d))
+
 ## [1.5.12](https://github.com/Carmentis/carmentis-operator/compare/v1.5.11...v1.5.12) (2026-03-23)
 
 
