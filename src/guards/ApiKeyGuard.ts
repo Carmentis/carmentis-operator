@@ -51,11 +51,26 @@ export class ApiKeyGuard implements CanActivate {
 	private extractApiKeyFromHeader(request: Request): string | undefined {
 		const headers = request.headers;
 		if (!headers) return undefined;
+
+		// search in authorization
 		const authorization = headers['authorization'];
-		if (!authorization) return undefined;
-		const tokens = authorization.split(' ');
-		if (tokens.length !== 2) return undefined;
-		const [type,key] = tokens;
-		return type === 'Bearer' ? key : undefined;
+		if (authorization) {
+			const tokens = authorization.split(' ');
+			if (tokens.length !== 2) return undefined;
+			const [type,key] = tokens;
+			return type === 'Bearer' ? key : undefined;
+		}
+
+		// search in x-api-key header
+		const apiKeyHeader = headers['x-api-key']
+		if (apiKeyHeader) {
+			const apiKey = typeof apiKeyHeader === 'string' ? apiKeyHeader : apiKeyHeader[0];
+			const trimedApiKey = apiKey.trim();
+			const isEmpty = trimedApiKey.length === 0;
+			return isEmpty ? undefined : trimedApiKey
+		}
+
+		return undefined
+
 	}
 }
