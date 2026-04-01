@@ -104,11 +104,16 @@ export class AnchorRequestService {
 	}
 
 	async getAllAnchorRequests() {
-		return await this.anchorRequestRepository.find();
+		return await this.anchorRequestRepository.find({
+			relations: ['application']
+		});
 	}
 
 	async getAnchorRequestByAnchorRequestId(anchorRequestId: string) {
-		return await this.anchorRequestRepository.findOneBy({anchorRequestId});
+		return await this.anchorRequestRepository.findOne({
+			where: {anchorRequestId},
+			relations: ['application']
+		});
 	}
 
 	async deleteAnchorRequestByAnchorRequestId(anchorRequestId: string) {
