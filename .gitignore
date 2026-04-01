@@ -3,7 +3,8 @@ config.toml
 !example-config.toml
 doc-config.md
 config.md
-
+*.db
+*.sqlite
 # compiled output
 /dist
 /node_modules
