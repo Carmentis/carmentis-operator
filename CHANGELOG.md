@@ -1,3 +1,10 @@
+## [1.5.15](https://github.com/Carmentis/carmentis-operator/compare/v1.5.14...v1.5.15) (2026-04-01)
+
+
+### Bug Fixes
+
+* include application relation in anchor request queries ([a75e466](https://github.com/Carmentis/carmentis-operator/commit/a75e466711f9390439363650e47983bb9e031f66))
+
 ## [1.5.14](https://github.com/Carmentis/carmentis-operator/compare/v1.5.13...v1.5.14) (2026-03-25)
 
 
