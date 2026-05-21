@@ -8,6 +8,7 @@ import {
 	WalletInteractiveAnchoringResponse,
 	WalletInteractiveAnchoringResponseType,
 	WalletInteractiveAnchoringValidation,
+	WalletInteractiveAnchoringRequest,
 } from '@cmts-dev/carmentis-sdk-core';
 import { Public } from '../../decorators/PublicDecorator';
 import { ApiKeyService } from '../../services/ApiKeyService';
@@ -31,9 +32,6 @@ import { WalletInteractiveAnchoringRequestType } from '@cmts-dev/carmentis-sdk-c
 import ChainService from '../../services/ChainService';
 import { AnchorRequestService } from '../../services/AnchorRequestService';
 import { AnchorRequestEntity } from '../../entities/AnchorRequestEntity';
-import {
-	WalletInteractiveAnchoringRequest
-} from '../../../../carmentis-sdk-core/src/type/valibot/walletOperatorMessages/Schemas';
 
 /**
  * Controller for handling operator-related API requests.
