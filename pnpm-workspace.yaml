@@ -11,3 +11,5 @@ onlyBuiltDependencies:
   - protobufjs
   - sqlite3
   - ssh2
+
+minimumReleaseAge: 0
