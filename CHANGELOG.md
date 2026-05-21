@@ -1,3 +1,11 @@
+## [1.5.16](https://github.com/Carmentis/carmentis-operator/compare/v1.5.15...v1.5.16) (2026-05-21)
+
+
+### Bug Fixes
+
+* bad import path ([3a03914](https://github.com/Carmentis/carmentis-operator/commit/3a039147165003c495c6519a09093587ce77def0))
+* updated to use carmentis-sdk-core ([b4af383](https://github.com/Carmentis/carmentis-operator/commit/b4af383823012c3ae9f5e69a4e324de4da9221a3))
+
 ## [1.5.15](https://github.com/Carmentis/carmentis-operator/compare/v1.5.14...v1.5.15) (2026-04-01)
 
 
