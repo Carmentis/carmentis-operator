@@ -1,3 +1,10 @@
+## [1.5.17](https://github.com/Carmentis/carmentis-operator/compare/v1.5.16...v1.5.17) (2026-05-21)
+
+
+### Bug Fixes
+
+* minimumReleaseAge ([deefd63](https://github.com/Carmentis/carmentis-operator/commit/deefd639b565d2c4dae652ad17dd679c2c2b8f23))
+
 ## [1.5.16](https://github.com/Carmentis/carmentis-operator/compare/v1.5.15...v1.5.16) (2026-05-21)
 
 
