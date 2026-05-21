@@ -1,7 +1,6 @@
 packages:
   - .
-ignoredBuiltDependencies:
-  - '@apollo/protobufjs'
+minimumReleaseAge: 0
 
 onlyBuiltDependencies:
   - '@nestjs/core'
@@ -11,5 +10,5 @@ onlyBuiltDependencies:
   - protobufjs
   - sqlite3
   - ssh2
-
-minimumReleaseAge: 0
+  - unrs-resolver
+  - '@apollo/protobufjs'
