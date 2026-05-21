@@ -1,24 +1,11 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import {
-	ApplicationDescriptionSection, BalanceAvailability,
-	CMTSToken,
-	CryptoEncoderFactory, FeesCalculationFormulaFactory,
+	BalanceAvailability,
 	Hash,
-	Microblock, OrganizationVb,
-	Provider,
-	ProviderFactory,
-	PublicSignatureKey,
-	Section,
-	SectionType,
-	SignatureSchemeId, Utils,
-	ValidatorNodeCometbftPublicKeyDeclarationSection, ValidatorNodeCreationSection, ValidatorNodeRpcEndpointSection,
-	ValidatorNodeVb,
-	VirtualBlockchainType,
-} from '@cmts-dev/carmentis-sdk/server';
+} from '@cmts-dev/carmentis-sdk-core';
 import { OperatorConfigService } from '../config/services/operator-config.service';
 import { createCache, Cache } from 'cache-manager';
 import { WalletEntity } from '../entities/WalletEntity';
-
 
 function MyCache(keyPrefix: string, ttl: number = 10000) {
 	return function (

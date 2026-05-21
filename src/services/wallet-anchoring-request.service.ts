@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { AnchorDto, AnchorWithWalletDto } from '../dto/AnchorDto';
-import { EnvService } from './EnvService';
 import { AnchorRequestService } from './AnchorRequestService';
 import { ApplicationService } from './ApplicationService';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
@@ -10,13 +9,13 @@ import {
 	CMTSToken,
 	CryptoEncoderFactory,
 	EncoderFactory,
-	FeesCalculationFormulaFactory,
 	Hash,
 	Microblock,
 	Provider,
 	SectionType,
 	SeedEncoder,
-	SignatureSchemeId, VirtualBlockchainType,
+	SignatureSchemeId,
+	VirtualBlockchainType,
 	WalletCrypto,
 	WalletInteractiveAnchoringRequestActorKey,
 	WalletInteractiveAnchoringRequestApprovalHandshake,
@@ -24,7 +23,7 @@ import {
 	WalletInteractiveAnchoringResponse,
 	WalletInteractiveAnchoringResponseType,
 	WalletRequestBasedApplicationLedgerMicroblockBuilder,
-} from '@cmts-dev/carmentis-sdk/server';
+} from '@cmts-dev/carmentis-sdk-core';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 
 
@@ -38,7 +37,6 @@ export class WalletAnchoringRequestService {
 
 	private logger = new Logger(WalletAnchoringRequestService.name);
 
-
 	async createAnchorWithWalletSession(application: ApplicationEntity, request: AnchorWithWalletDto) {
 		this.logger.debug("Initiating session to anchor with a wallet.")
 
@@ -48,7 +46,6 @@ export class WalletAnchoringRequestService {
 
 		return { anchorRequestId }
 	};
-
 
 	/**
 	 * This method is called when the wallet wants to proceed with the approval, starting with the handshake.
@@ -125,8 +122,6 @@ export class WalletAnchoringRequestService {
 				throw e
 			}
 		}
-
-
 	}
 
 	/**
@@ -176,7 +171,6 @@ export class WalletAnchoringRequestService {
 			...storedRequest.request,
 		})
 
-
 		const { microblockData: serializedMb } = mb.serialize();
 		await this.anchorRequestService.saveMicroblock(anchorRequestId, mb);
 
@@ -185,7 +179,6 @@ export class WalletAnchoringRequestService {
 			type: WalletInteractiveAnchoringResponseType.APPROVAL_DATA,
 			b64SerializedMicroblock: b64.encode(serializedMb)
 		}
-
 	}
 
 	private async getWalletRequestBasedApplicationLedgerMicroblockBuilder(
@@ -232,7 +225,6 @@ export class WalletAnchoringRequestService {
 		return mbBuilder;
 	}
 
-
 	/**
 	 * This method is called when the wallet sends the signature of the micro-block for approval.
 	 *
@@ -249,13 +241,11 @@ export class WalletAnchoringRequestService {
 		const signature = b64.decode(req.b64Signature);
 		if (!(signature instanceof Uint8Array)) throw new BadRequestException("Missing signature");
 
-
 		try {
 			// load the stored anchor request from the database
 			this.logger.debug("Recovering anchor request id")
 			const storedRequest = await this.loadAnchorRequestFromDataId(anchorRequestId);
 			const mb = storedRequest.getBuiltMicroblock().unwrap();
-
 
 			// load the organization private signature key=
 			const { application } = await this.loadApplicationFromAnchorRequest(storedRequest);
@@ -265,7 +255,6 @@ export class WalletAnchoringRequestService {
 			const organizationVbId = await this.loadOrganizationVbIdFromApplication(provider, application);
 			const accountId = await this.loadAccountIdFromOrganizationVbId(provider, organizationVbId);
 			const organisationPrivateKey = await accountCrypto.getPrivateSignatureKey(SignatureSchemeId.SECP256K1);
-
 
 			// we finish the construction of the microblock
 			this.logger.debug("Loading application ledger and endorser public key for verification")
@@ -278,20 +267,22 @@ export class WalletAnchoringRequestService {
 
 			// add the signature of the endorser to the micro-block
 			mb.addSection({
-				type: SectionType.SIGNATURE,
+				type: SectionType.AUXILIARY_SIGNATURE,
+				tag: "endorser",
 				signature: signature,
 				schemeId: endorserPk.getSignatureSchemeId(),
 			})
 			const isVerified = await mb.verify(endorserPk, { includeGas: false, verifiedSignatureIndex: 1 });
 			if (!isVerified) this.logger.warn("The signature of the endorser is not valid.")
 
-			// we compute the gas
-			const gas = await this.getGasFromMicroblockAndSigningSchemeId(provider, mb, organisationPrivateKey.getSignatureSchemeId());
-			mb.setGas(gas);
-
-			await mb.seal(organisationPrivateKey, {
-				feesPayerAccount: accountId.toBytes()
-			})
+			// set the gas and seal the micro-block
+			await mb.setGasAndSeal(
+				provider,
+				organisationPrivateKey,
+				{
+					feesPayerAccount: accountId.toBytes()
+				}
+			);
 
 			// publish the micro-block
 			const mbHash = mb.getHash();
@@ -300,8 +291,7 @@ export class WalletAnchoringRequestService {
 			this.logger.debug(`Publishing micro-block ${mbHash.encode()} located at height ${mb.getHeight()} on virtual blockchain ${vbHash.encode()}`);
 			await provider.publishMicroblock(mb);
 
-
-			// mark the stored request has completed
+			// mark the stored request as published
 			await this.anchorRequestService.markAnchorRequestAsPublished(
 				storedRequest.getAnchorRequestId(),
 				vbHash,
@@ -320,7 +310,6 @@ export class WalletAnchoringRequestService {
 			throw e
 		}
 	}
-
 
 	private async loadAnchorRequestFromDataId(dataId: string) {
 		// load the initial anchor request and halts if the request is not pending
@@ -348,8 +337,6 @@ export class WalletAnchoringRequestService {
 
 	}
 
-
-
 	private async loadApplicationLedger(provider: Provider, application: ApplicationEntity, anchorRequest: AnchorRequestEntity): Promise<ApplicationLedgerVb> {
 		const appLedgerVbId = anchorRequest.request.virtualBlockchainId;
 		let appLedgerVb: ApplicationLedgerVb;
@@ -365,25 +352,8 @@ export class WalletAnchoringRequestService {
 		return appLedgerVb;
 	}
 
-
 	async getAnchorRequestFromAnchorRequestId(anchorRequestId: string) {
 		return this.anchorRequestService.findAnchorRequestByAnchorRequestId(anchorRequestId);
-	}
-
-	private async getGasFromMicroblockAndSigningSchemeId(provider: Provider, mb: Microblock, signingSchemeId: SignatureSchemeId) {
-		/*
-		const protocolVariables = await provider.getProtocolState();
-		const feesCalculationVersion = protocolVariables.getFeesCalculationVersion();
-		const feesFormula = FeesCalculationFormulaFactory.getFeesCalculationFormulaByVersion(feesCalculationVersion);
-		const gas = await feesFormula.computeFees(signingSchemeId, mb);
-		return gas
-
-		 */
-		const fees = await provider.computeMicroblockFees(
-			mb,
-			{ signatureSchemeId: signingSchemeId }
-		);
-		return fees;
 	}
 
 	async anchor(application: ApplicationEntity, anchorDto: AnchorDto) {
@@ -416,11 +386,13 @@ export class WalletAnchoringRequestService {
 		const usedGasPriceInAtomics = typeof anchorDto.gasPriceInAtomics === 'number' ? anchorDto.gasPriceInAtomics : 1;
 		mb.setGasPrice(CMTSToken.createAtomic(usedGasPriceInAtomics));
 
-
-		mb.setGas(await this.getGasFromMicroblockAndSigningSchemeId(provider, mb, organizationPrivateKey.getSignatureSchemeId()))
-		await mb.seal(organizationPrivateKey, {
-			feesPayerAccount: accountId.toBytes()
-		});
+		await mb.setGasAndSeal(
+			provider,
+			organizationPrivateKey,
+			{
+				feesPayerAccount: accountId.toBytes()
+			}
+		);
 		const mbHash = await provider.publishMicroblock(mb);
 
 		// compute the vb id
@@ -446,5 +418,4 @@ export class WalletAnchoringRequestService {
 		const orgVb = await provider.loadOrganizationVirtualBlockchain(organizationId);
 		return orgVb.getAccountId();
 	}
-
 }

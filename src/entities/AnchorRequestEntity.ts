@@ -8,7 +8,7 @@ import {
 	Microblock,
 	Optional,
 	Utils,
-} from '@cmts-dev/carmentis-sdk/server';
+} from '@cmts-dev/carmentis-sdk-core';
 import { Logger } from '@nestjs/common';
 import { ApplicationEntity } from './ApplicationEntity';
 

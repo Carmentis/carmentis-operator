@@ -8,9 +8,8 @@ import {
 	WalletInteractiveAnchoringResponse,
 	WalletInteractiveAnchoringResponseType,
 	WalletInteractiveAnchoringValidation,
-} from '@cmts-dev/carmentis-sdk/server';
+} from '@cmts-dev/carmentis-sdk-core';
 import { Public } from '../../decorators/PublicDecorator';
-import { ApplicationService } from '../../services/ApplicationService';
 import { ApiKeyService } from '../../services/ApiKeyService';
 import { AnchorDto, AnchorWithWalletDto } from '../../dto/AnchorDto';
 import {
@@ -28,12 +27,13 @@ import { WalletAnchoringRequestService } from '../../services/wallet-anchoring-r
 import { HelloResponseDto } from '../../dto/HelloResponseDto';
 import { AnchorRequestResponseDto } from '../../dto/AnchorRequestResponseDto';
 import { AnchorRequestStatusResponseDto } from '../../dto/AnchorRequestStatusResponseDto';
-import { WalletInteractiveAnchoringRequestType } from '@cmts-dev/carmentis-sdk/server';
+import { WalletInteractiveAnchoringRequestType } from '@cmts-dev/carmentis-sdk-core';
 import ChainService from '../../services/ChainService';
 import { AnchorRequestService } from '../../services/AnchorRequestService';
 import { AnchorRequestEntity } from '../../entities/AnchorRequestEntity';
-import { WalletEntity } from '../../entities/WalletEntity';
-
+import {
+	WalletInteractiveAnchoringRequest
+} from '../../../../carmentis-sdk-core/src/type/valibot/walletOperatorMessages/Schemas';
 
 /**
  * Controller for handling operator-related API requests.
@@ -49,11 +49,6 @@ export class OperatorApiController{
 		private readonly chainService: ChainService,
 		private readonly anchorService: AnchorRequestService
 	) {}
-
-
-
-
-
 
 	/**
 	 * Handles the '/hello' endpoint request.
@@ -77,8 +72,6 @@ export class OperatorApiController{
 		return { message: 'Hello world!' };
 	}
 
-
-
 	@Public()
 	@Get('/public/hello')
 	@ApiOperation({
@@ -96,8 +89,6 @@ export class OperatorApiController{
 	async publicHello() {
 		return { message: 'Hello world!' };
 	}
-
-
 
 	@ApiOperation({
 		summary: 'Initiate an anchor request',
@@ -128,12 +119,6 @@ export class OperatorApiController{
 		}
 	}
 
-
-
-
-
-
-
 	@ApiOperation({
 		summary: 'Initiate an anchor request',
 		description: 'This endpoint is used by the server to initiate an anchoring request that should be accepted by a wallet.'
@@ -153,10 +138,6 @@ export class OperatorApiController{
 		const anchorRequest = await this.operatorService.anchor(application, anchorDto);
 		return { anchorRequestId: anchorRequest.anchorRequestId }
 	}
-
-
-
-
 
 	@ApiOperation({
 		summary: 'Returns the status of an anchor request',
@@ -180,9 +161,6 @@ export class OperatorApiController{
 			microBlockHash: request.getMicroBlockHash().unwrapOr(undefined),
 		}
 	}
-
-
-
 
 	@ApiSecurity('api-key')
 	@Get(`/anchorRequest`)
@@ -223,7 +201,6 @@ export class OperatorApiController{
 		return { affected: anchorRequest.affected };
 	}
 
-
 	@ApiSecurity('api-key')
 	@Get(`/microblock/hash/:microblockHash`)
 	async getMicroblock(
@@ -235,7 +212,7 @@ export class OperatorApiController{
 		return {
 			header: {
 				hash: mb.getHash().encode(),
-				gas: this.formatCMTSTokenInJson(mb.getGas()),
+				gas: mb.getGas(),
 				timestamp: mb.getTimestamp(),
 				height: mb.getHeight(),
 				gasPrice: this.formatCMTSTokenInJson(mb.getGasPrice()),
@@ -287,7 +264,7 @@ export class OperatorApiController{
 	private formatMicroblockHeaderInJSON(mb: Microblock) {
 		return  {
 			hash: mb.getHash().encode(),
-			gas: this.formatCMTSTokenInJson(mb.getGas()),
+			gas: mb.getGas(),
 			timestamp: mb.getTimestamp(),
 			height: mb.getHeight(),
 			gasPrice: this.formatCMTSTokenInJson(mb.getGasPrice()),
@@ -301,7 +278,6 @@ export class OperatorApiController{
 		}
 	}
 
-
 	@ApiSecurity('api-key')
 	@Get(`/account/vb/:vbId/tokens`)
 	async getBalanceByVbId(
@@ -312,7 +288,6 @@ export class OperatorApiController{
 		const balance = await this.chainService.getBreakdownOfAccountByVbId(wallet, vbId);
 		return this.createTokensResponseFromBreakdown(balance);
 	}
-
 
 	/**
 	 * Creates a response object that contains token balances formatted as both human-readable strings and atomic values.
@@ -333,7 +308,6 @@ export class OperatorApiController{
 		};
 	}
 
-
 	@ApiSecurity('api-key')
 	@Get(`/record/vb/:vbId/height/:height`)
 	async getRecordForVbIdAtHeight(
@@ -347,8 +321,6 @@ export class OperatorApiController{
 		return vb.getRecord(height);
 	}
 
-
-
 	@Public()
 	@ApiExcludeEndpoint()
 	@Post("/protocols/wiap/v1")
@@ -358,9 +330,8 @@ export class OperatorApiController{
 		// parse the request
 		this.logger.debug(`Handling request:`, unverifiedRequest)
 		//const encoder = EncoderFactory.bytesToBase64Encoder();
-		const request = WalletInteractiveAnchoringValidation.validateRequest(unverifiedRequest);
+		const request: WalletInteractiveAnchoringRequest = WalletInteractiveAnchoringValidation.validateRequest(unverifiedRequest);
 		const type = request.type;
-
 
 		// handle the request
 		try {
@@ -390,7 +361,6 @@ export class OperatorApiController{
 					}
 			}
 
-
 			this.logger.debug(`Request handled: answer: ${response.type}`)
 			return response
 		} catch(e) {
@@ -416,6 +386,4 @@ export class OperatorApiController{
 			atomics: token.getAmountAsAtomic(),
 		}
 	}
-
-
 }

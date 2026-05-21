@@ -1,5 +1,4 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { OperatorApiGateway } from './gateways/OperatorApiGateway';
 import { CorsMiddleware } from './middlewares/CorsMiddleware';
 import { OperatorApiController } from './controllers/operator-api/OperatorApiController';
 import { CryptoService } from './services/CryptoService';
@@ -68,8 +67,7 @@ import { JwtTokenBearerGuard } from './guards/JwtTokenBearerGuard';
 		OperatorAdminApiWalletController,
 	],
 	providers: [
-		OperatorApiGateway,
-		CryptoService,
+        CryptoService,
 		EnvService,
 		WalletAnchoringRequestService,
 		EncryptionService,

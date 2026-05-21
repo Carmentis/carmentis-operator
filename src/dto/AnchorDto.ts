@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { CMTSToken, Hash, Optional } from '@cmts-dev/carmentis-sdk/server';
+import { CMTSToken, Hash, Optional } from '@cmts-dev/carmentis-sdk-core';
 
 export class ChannelDto {
 	@ApiProperty({ title: 'Name of the channel' })

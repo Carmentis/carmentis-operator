@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
 import { AnchorDto, AnchorWithWalletDto } from '../dto/AnchorDto';
-import { CMTSToken, EncoderFactory, Hash, Microblock, Utils } from '@cmts-dev/carmentis-sdk/server';
+import { CMTSToken, EncoderFactory, Hash, Microblock, Utils } from '@cmts-dev/carmentis-sdk-core';
 import { randomBytes } from 'crypto';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 

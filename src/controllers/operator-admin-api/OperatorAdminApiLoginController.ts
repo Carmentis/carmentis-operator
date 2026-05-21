@@ -17,7 +17,7 @@ import { ChallengeResponseDto } from '../../dto/ChallengeResponseDto';
 import { VerifyChallengeDto } from '../../dto/VerifyChallengeDto';
 import { JwtTokenResponseDto } from '../../dto/JwtTokenResponseDto';
 import { JwtService } from '@nestjs/jwt';
-import { CryptoEncoderFactory, PublicSignatureKey } from '@cmts-dev/carmentis-sdk/server';
+import { CryptoEncoderFactory, PublicSignatureKey } from '@cmts-dev/carmentis-sdk-core';
 import { OPERATOR_ADMIN_API_PREFIX } from './OperatorAdminApiController';
 
 /**
