@@ -1,3 +1,10 @@
+## [1.5.18](https://github.com/Carmentis/carmentis-operator/compare/v1.5.17...v1.5.18) (2026-05-26)
+
+
+### Bug Fixes
+
+* comment out endorser signature verification due to missing implementation steps ([7dc26d5](https://github.com/Carmentis/carmentis-operator/commit/7dc26d5ef7dc5ccceaf1dae8417a3b0bc56f510d))
+
 ## [1.5.17](https://github.com/Carmentis/carmentis-operator/compare/v1.5.16...v1.5.17) (2026-05-21)
 
 
