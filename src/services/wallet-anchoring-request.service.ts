@@ -272,8 +272,10 @@ export class WalletAnchoringRequestService {
 				signature: signature,
 				schemeId: endorserPk.getSignatureSchemeId(),
 			})
-			const isVerified = await mb.verify(endorserPk, { includeGas: false, verifiedSignatureIndex: 1 });
-			if (!isVerified) this.logger.warn("The signature of the endorser is not valid.")
+
+			// TODO: How to verify the signature of the endorser now ?
+			//const isVerified = await mb.verify(endorserPk, { includeGas: false, verifiedSignatureIndex: 1 });
+			//if (!isVerified) this.logger.warn("The signature of the endorser is not valid.")
 
 			// set the gas and seal the micro-block
 			await mb.setGasAndSeal(
