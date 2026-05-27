@@ -11,7 +11,7 @@ import {
 	EncoderFactory,
 	Hash,
 	Microblock,
-	Provider,
+	Provider, SectionLabel,
 	SectionType,
 	SeedEncoder,
 	SignatureSchemeId,
@@ -245,7 +245,7 @@ export class WalletAnchoringRequestService {
 			// load the stored anchor request from the database
 			this.logger.debug("Recovering anchor request id")
 			const storedRequest = await this.loadAnchorRequestFromDataId(anchorRequestId);
-			const mb = storedRequest.getBuiltMicroblock().unwrap();
+			const mb: Microblock = storedRequest.getBuiltMicroblock().unwrap();
 
 			// load the organization private signature key=
 			const { application } = await this.loadApplicationFromAnchorRequest(storedRequest);
@@ -292,7 +292,11 @@ export class WalletAnchoringRequestService {
 			const mbHash = mb.getHash();
 			const vbHash = appLedgerVb.getHeight() == 1 ? mbHash : appLedgerVb.getIdentifier();
 
+			// log information about the published microblock
 			this.logger.debug(`Publishing micro-block ${mbHash.encode()} located at height ${mb.getHeight()} on virtual blockchain ${vbHash.encode()}`);
+			for (const section of mb.getAllSections()) {
+				this.logger.debug(`- ${SectionLabel.getSectionLabelFromSection(section)}`)
+			}
 			await provider.publishMicroblock(mb);
 
 			// mark the stored request as published
@@ -399,6 +403,11 @@ export class WalletAnchoringRequestService {
 				feesPayerAccount: accountId.toBytes()
 			}
 		);
+
+		this.logger.debug("Publishing microblock")
+		for (const section of mb.getAllSections()) {
+			this.logger.debug(`- ${SectionLabel.getSectionLabelFromSection(section)}`)
+		}
 		const mbHash = await provider.publishMicroblock(mb);
 
 		// compute the vb id
