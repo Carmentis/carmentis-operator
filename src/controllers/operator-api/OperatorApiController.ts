@@ -106,6 +106,7 @@ export class OperatorApiController{
 		try {
 			const application = await this.apiKeyService.findApplicationByApiKey(key);
 			return this.operatorService.createAnchorWithWalletSession(application, anchorDto);
+			this.logAnchorRequest(anchorDto)
 		} catch (e) {
 			this.logger.error("An error occurred while processing anchoring with wallet request: ", e)
 			if (CarmentisError.isCarmentisError(e)) {
@@ -132,9 +133,21 @@ export class OperatorApiController{
 		@ApiKey() key: ApiKeyEntity,
 	): Promise<AnchorRequestResponseDto> {
 		// find application and organization associated with the provided api key
+		this.logAnchorRequest(anchorDto)
 		const application = await this.apiKeyService.findApplicationByApiKey(key);
 		const anchorRequest = await this.operatorService.anchor(application, anchorDto);
 		return { anchorRequestId: anchorRequest.anchorRequestId }
+	}
+
+	logAnchorRequest(request: AnchorDto | AnchorWithWalletDto) {
+		this.logger.log("-------------------------------------")
+		this.logger.log("A new anchor request id has been created:")
+		this.logger.log(`Gas price: ${request.gasPriceInAtomics}`)
+		this.logger.log(`Author : ${request.author}`)
+		this.logger.log(`Endorser: ${'endorser' in request ? request.endorser : '___ (no endorser)'}`)
+		this.logger.log(`Actors: ${request.actors.map(actor => actor.name).join(', ')}`)
+		this.logger.log(`Channels: ${request.channels.map(channel => channel.name).join(', ')}`)
+		this.logger.log("-------------------------------------")
 	}
 
 	@ApiOperation({
