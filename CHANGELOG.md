@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/Carmentis/carmentis-operator/compare/v1.7.0...v1.8.0) (2026-05-27)
+
+
+### Features
+
+* log the publication of the microblock structure ([7e13f9c](https://github.com/Carmentis/carmentis-operator/commit/7e13f9c7fc6c08452fd351f0fca5e3b333bf469e))
+
 # [1.7.0](https://github.com/Carmentis/carmentis-operator/compare/v1.6.0...v1.7.0) (2026-05-27)
 
 
