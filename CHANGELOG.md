@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/Carmentis/carmentis-operator/compare/v1.6.0...v1.7.0) (2026-05-27)
+
+
+### Features
+
+* addition of logs for the received request ([b1b5364](https://github.com/Carmentis/carmentis-operator/commit/b1b53647e9dcc55f5a7f29574ab7ca0efe9e9219))
+
 # [1.6.0](https://github.com/Carmentis/carmentis-operator/compare/v1.5.19...v1.6.0) (2026-05-27)
 
 
