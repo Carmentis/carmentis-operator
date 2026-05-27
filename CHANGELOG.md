@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/Carmentis/carmentis-operator/compare/v1.5.19...v1.6.0) (2026-05-27)
+
+
+### Features
+
+* Addition of logs to detail the set gas price ([d7f1efa](https://github.com/Carmentis/carmentis-operator/commit/d7f1efaa35b919fc4c8511938726a472ebb2bd13))
+
 ## [1.5.19](https://github.com/Carmentis/carmentis-operator/compare/v1.5.18...v1.5.19) (2026-05-27)
 
 
