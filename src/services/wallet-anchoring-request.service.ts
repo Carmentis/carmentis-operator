@@ -277,6 +277,9 @@ export class WalletAnchoringRequestService {
 			if (!isVerified) this.logger.warn("The signature of the endorser is not valid.")
 
 			// set the gas and seal the micro-block
+			const gasPrice = CMTSToken.createAtomic(storedRequest.request.gasPriceInAtomics);
+			this.logger.log(`Set gas price for the microblock to be published to ${gasPrice.toString()}`)
+			await mb.setGasPrice(gasPrice)
 			await mb.setGasAndSeal(
 				provider,
 				organisationPrivateKey,
@@ -385,7 +388,9 @@ export class WalletAnchoringRequestService {
 
 		// define the gas price
 		const usedGasPriceInAtomics = typeof anchorDto.gasPriceInAtomics === 'number' ? anchorDto.gasPriceInAtomics : 1;
-		mb.setGasPrice(CMTSToken.createAtomic(usedGasPriceInAtomics));
+		const gasPrice = CMTSToken.createAtomic(usedGasPriceInAtomics);
+		this.logger.log(`Set gas price for the microblock to be published to ${gasPrice.toString()}`)
+		mb.setGasPrice(gasPrice);
 
 		await mb.setGasAndSeal(
 			provider,
