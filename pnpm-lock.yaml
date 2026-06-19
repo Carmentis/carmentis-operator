@@ -18,8 +18,8 @@ importers:
         specifier: ^8.8.1
         version: 8.8.1
       '@cmts-dev/carmentis-sdk-core':
-        specifier: ^1.2.21
-        version: 1.2.21(typescript@5.9.3)
+        specifier: ^1.2.26
+        version: 1.2.26(typescript@5.9.3)
       '@dataui/crud':
         specifier: ^5.3.4
         version: 5.3.4(class-transformer@0.5.1)(class-validator@0.15.1)
@@ -545,8 +545,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@cmts-dev/carmentis-sdk-core@1.2.21':
-    resolution: {integrity: sha512-NdtIQ4oOTMoIPuLu058If+d7mT8RQ6P4a5WHVUz0sUt7UynKxsu4ZCcS9MES1O0Tg48tJTyJ9vbvffKLkr78CA==}
+  '@cmts-dev/carmentis-sdk-core@1.2.26':
+    resolution: {integrity: sha512-z8lTAlkkUva8js57CTp63oQS75JTSL33+zlQGgORhOeVqKQcRxtXDaMuGjW2o+RI+0S2zYDfuyvNoDdyVmevXg==}
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -2062,6 +2062,10 @@ packages:
 
   body-parser@2.2.2:
     resolution: {integrity: sha512-oP5VkATKlNwcgvxi0vM0p/D3n2C3EReYVX+DNYs5TjZFn/oQt2j+4sVJtSMr18pdRr8wjTcBl6LoV+FUwzPmNA==}
+    engines: {node: '>=18'}
+
+  body-parser@2.3.0:
+    resolution: {integrity: sha512-2cGmJupaNgg+QUwVLAucDuWuoMZ6EX9iHDRswZ5lsNYEmwPaRknMPCLZz07yTzVq/83p4o/wzbDZbBrTvGGTIw==}
     engines: {node: '>=18'}
 
   bottleneck@2.19.5:
@@ -5548,7 +5552,7 @@ snapshots:
       '@apollo/utils.withrequired': 3.0.0
       '@graphql-tools/schema': 10.0.33(graphql@16.14.0)
       async-retry: 1.3.3
-      body-parser: 2.2.2
+      body-parser: 2.3.0
       content-type: 1.0.5
       cors: 2.8.6
       finalhandler: 2.1.1
@@ -5842,7 +5846,7 @@ snapshots:
   '@cbor-extract/cbor-extract-win32-x64@2.2.2':
     optional: true
 
-  '@cmts-dev/carmentis-sdk-core@1.2.21(typescript@5.9.3)':
+  '@cmts-dev/carmentis-sdk-core@1.2.26(typescript@5.9.3)':
     dependencies:
       '@logtape/logtape': 1.3.10
       '@noble/ciphers': 1.3.0
@@ -7605,6 +7609,20 @@ snapshots:
     dependencies:
       bytes: 3.1.2
       content-type: 1.0.5
+      debug: 4.4.3
+      http-errors: 2.0.1
+      iconv-lite: 0.7.2
+      on-finished: 2.4.1
+      qs: 6.15.2
+      raw-body: 3.0.2
+      type-is: 2.1.0
+    transitivePeerDependencies:
+      - supports-color
+
+  body-parser@2.3.0:
+    dependencies:
+      bytes: 3.1.2
+      content-type: 2.0.0
       debug: 4.4.3
       http-errors: 2.0.1
       iconv-lite: 0.7.2
