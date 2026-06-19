@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/Carmentis/carmentis-operator/compare/v1.8.0...v1.8.1) (2026-06-19)
+
+
+### Bug Fixes
+
+* update of the broken sdk ([935ed59](https://github.com/Carmentis/carmentis-operator/commit/935ed59acf4310bd00e311212430d4f0508378b9))
+
 # [1.8.0](https://github.com/Carmentis/carmentis-operator/compare/v1.7.0...v1.8.0) (2026-05-27)
 
 
