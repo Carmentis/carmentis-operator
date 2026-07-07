@@ -18,8 +18,8 @@ importers:
         specifier: ^8.8.1
         version: 8.8.1
       '@cmts-dev/carmentis-sdk-core':
-        specifier: ^1.2.27
-        version: 1.2.27(typescript@5.9.3)
+        specifier: ^1.3.0
+        version: 1.3.0(typescript@5.9.3)
       '@dataui/crud':
         specifier: ^5.3.4
         version: 5.3.4(class-transformer@0.5.1)(class-validator@0.15.1)
@@ -29,6 +29,9 @@ importers:
       '@iarna/toml':
         specifier: ^2.2.5
         version: 2.2.5
+      '@logtape/logtape':
+        specifier: ^2.2.3
+        version: 2.2.3
       '@nestjs/common':
         specifier: ^11.1.24
         version: 11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -545,8 +548,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@cmts-dev/carmentis-sdk-core@1.2.27':
-    resolution: {integrity: sha512-r/UeXo5TqJDmha1nQEmDQo2f2N0gAvYsKeyQtWqVVC4m5O+2pKh2ZKM/D0VCCwhvXpTLb+ldJAraoJwVeITk8Q==}
+  '@cmts-dev/carmentis-sdk-core@1.3.0':
+    resolution: {integrity: sha512-ATwifDWNafPwU9Qmdc8zAru0DSemsgEGMZFu34izulf9LaMQyVbMMwbgXpgIM0yiielrRINcZl4sCSYLRxlotw==}
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -613,20 +616,20 @@ packages:
   '@gar/promisify@1.1.3':
     resolution: {integrity: sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==}
 
-  '@graphql-tools/merge@9.1.9':
-    resolution: {integrity: sha512-iHUWNjRHeQRYdgIMIuChThOwoKzA9vrzYeslgfBo5eUYEyHGZCoDPjAavssoYXLwstYt1dZj2J22jSzc2DrN0Q==}
+  '@graphql-tools/merge@9.1.10':
+    resolution: {integrity: sha512-CsUCcPXv/HMWpPZ/xoOioSWFuAaAsGGPIdqQbjDv9X1sHGs0muQRW5FK7vUBN4OH/D7aPqpiHvKmRsrHz+ScuQ==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
 
-  '@graphql-tools/schema@10.0.33':
-    resolution: {integrity: sha512-O6P3RIftO0jafnSsFAqpjurUuUxJ43s/AdPVLQsBkI6y4Ic/tKm4C1Qm1KKQsCDTOxXPJClh/v3g7k7yLKCFBQ==}
+  '@graphql-tools/schema@10.0.34':
+    resolution: {integrity: sha512-wGCiUuwqDtlXtDvQ00CI+4u0pd3yd/xGGYOiwc9L63KJZwSXdrUv8ajpJ5lMalawc0mpjcCB0ljEQSeUhajuag==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
 
-  '@graphql-tools/utils@11.1.0':
-    resolution: {integrity: sha512-PtFVG4r8Z2LEBSaPYQMusBiB3o6kjLVJyjCLbnWem/SpSuM21v6LTmgpkXfYU1qpBV2UGsFyuEnSJInl8fR1Ag==}
+  '@graphql-tools/utils@11.1.1':
+    resolution: {integrity: sha512-MuWwacINZZV6mX1ZSk6CcV4XVQLsbKBG/hLd0QPhe4GHxjqr2ATjKsnnwlB0TKI+QQvj2U8ewu8WeAzz9kC2Xg==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
@@ -943,6 +946,9 @@ packages:
 
   '@logtape/logtape@1.3.10':
     resolution: {integrity: sha512-hmOY/+BPMOTXuc1szR3NWJJ4aulyHmWpP+JeYDuXnNcFwl25nJN4HKrcADAJt8sNkiMdk21isgD+nb3lL5c1uQ==}
+
+  '@logtape/logtape@2.2.3':
+    resolution: {integrity: sha512-NIPzXBJneBv7Ar6sFBbEo5L8zZr2lopQnlVeT881y68qGNcJBy/Y8s8uAwUaVhobB8GIiMluOY7j3bOsaaIhQQ==}
 
   '@lukeed/csprng@1.1.0':
     resolution: {integrity: sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA==}
@@ -4376,6 +4382,10 @@ packages:
     resolution: {integrity: sha512-Rzq0KEyX/w/tEybncDgdkZrJgVUsUMk3xjh3t5bv3S1HTAtg+uOYt72+ZfwiQwKdysThkTBdL/rTi6HDmX9Ddw==}
     engines: {node: '>=0.6'}
 
+  qs@6.15.3:
+    resolution: {integrity: sha512-O9gl3zCl5h5blw1KGUzQKhA5oUXSl8rwUIM5o0S3nCXMliSvy5Dzx7/DJcI+SwgICv+IneSZwhBh1oSyEHA71A==}
+    engines: {node: '>=0.6'}
+
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
@@ -4598,6 +4608,10 @@ packages:
 
   side-channel@1.1.0:
     resolution: {integrity: sha512-ZX99e6tRweoUXqR+VBrslhda51Nh5MTQwou5tnUDgbtyM0dBgmhEDtWGP/xbKn6hqfPRHujUNwz5fy/wbbhnpw==}
+    engines: {node: '>= 0.4'}
+
+  side-channel@1.1.1:
+    resolution: {integrity: sha512-6x6dK6zJdpTzF4sQeNYxwtvBzf6Eg4GtlesS94HOvTudUeyK2WXAaIfmDgsyslYrRBeFIlsi54AYsFGUuhmvrQ==}
     engines: {node: '>= 0.4'}
 
   signal-exit@3.0.7:
@@ -5550,7 +5564,7 @@ snapshots:
       '@apollo/utils.logger': 3.0.0
       '@apollo/utils.usagereporting': 2.1.0(graphql@16.14.0)
       '@apollo/utils.withrequired': 3.0.0
-      '@graphql-tools/schema': 10.0.33(graphql@16.14.0)
+      '@graphql-tools/schema': 10.0.34(graphql@16.14.0)
       async-retry: 1.3.3
       body-parser: 2.3.0
       content-type: 1.0.5
@@ -5846,7 +5860,7 @@ snapshots:
   '@cbor-extract/cbor-extract-win32-x64@2.2.2':
     optional: true
 
-  '@cmts-dev/carmentis-sdk-core@1.2.27(typescript@5.9.3)':
+  '@cmts-dev/carmentis-sdk-core@1.3.0(typescript@5.9.3)':
     dependencies:
       '@logtape/logtape': 1.3.10
       '@noble/ciphers': 1.3.0
@@ -5937,20 +5951,20 @@ snapshots:
   '@gar/promisify@1.1.3':
     optional: true
 
-  '@graphql-tools/merge@9.1.9(graphql@16.14.0)':
+  '@graphql-tools/merge@9.1.10(graphql@16.14.0)':
     dependencies:
-      '@graphql-tools/utils': 11.1.0(graphql@16.14.0)
+      '@graphql-tools/utils': 11.1.1(graphql@16.14.0)
       graphql: 16.14.0
       tslib: 2.8.1
 
-  '@graphql-tools/schema@10.0.33(graphql@16.14.0)':
+  '@graphql-tools/schema@10.0.34(graphql@16.14.0)':
     dependencies:
-      '@graphql-tools/merge': 9.1.9(graphql@16.14.0)
-      '@graphql-tools/utils': 11.1.0(graphql@16.14.0)
+      '@graphql-tools/merge': 9.1.10(graphql@16.14.0)
+      '@graphql-tools/utils': 11.1.1(graphql@16.14.0)
       graphql: 16.14.0
       tslib: 2.8.1
 
-  '@graphql-tools/utils@11.1.0(graphql@16.14.0)':
+  '@graphql-tools/utils@11.1.1(graphql@16.14.0)':
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.14.0)
       '@whatwg-node/promise-helpers': 1.3.2
@@ -6376,6 +6390,8 @@ snapshots:
       - supports-color
 
   '@logtape/logtape@1.3.10': {}
+
+  '@logtape/logtape@2.2.3': {}
 
   '@lukeed/csprng@1.1.0': {}
 
@@ -7627,7 +7643,7 @@ snapshots:
       http-errors: 2.0.1
       iconv-lite: 0.7.2
       on-finished: 2.4.1
-      qs: 6.15.2
+      qs: 6.15.3
       raw-body: 3.0.2
       type-is: 2.1.0
     transitivePeerDependencies:
@@ -10098,6 +10114,11 @@ snapshots:
     dependencies:
       side-channel: 1.1.0
 
+  qs@6.15.3:
+    dependencies:
+      es-define-property: 1.0.1
+      side-channel: 1.1.1
+
   queue-microtask@1.2.3: {}
 
   ramda@0.27.2: {}
@@ -10405,6 +10426,14 @@ snapshots:
       side-channel-map: 1.0.1
 
   side-channel@1.1.0:
+    dependencies:
+      es-errors: 1.3.0
+      object-inspect: 1.13.4
+      side-channel-list: 1.0.1
+      side-channel-map: 1.0.1
+      side-channel-weakmap: 1.0.2
+
+  side-channel@1.1.1:
     dependencies:
       es-errors: 1.3.0
       object-inspect: 1.13.4
