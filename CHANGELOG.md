@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/Carmentis/carmentis-operator/compare/v1.8.1...v1.9.0) (2026-07-09)
+
+
+### Features
+
+* bump @cmts-dev/carmentis-sdk-core to 1.4.2 ([a136549](https://github.com/Carmentis/carmentis-operator/commit/a13654956c260ab8a8080d4881db86ddc0e8662c))
+
 ## [1.8.1](https://github.com/Carmentis/carmentis-operator/compare/v1.8.0...v1.8.1) (2026-06-19)
 
 
