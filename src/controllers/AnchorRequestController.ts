@@ -16,6 +16,11 @@ export class AnchorRequestController {
 	) {}
 
 
+	/**
+	 * Returns the status of an anchor request.
+	 *
+	 * @param anchorRequestId
+	 */
 	@ApiOperation({
 		summary: 'Returns the status of an anchor request',
 		description: 'This endpoint is used to track the publication status of an anchor request.'
@@ -33,6 +38,11 @@ export class AnchorRequestController {
 		return await this.operatorService.getAnchorRequestFromAnchorRequestId(anchorRequestId);
 	}
 
+
+	/**
+	 * Cancels an anchor request.
+	 * @param anchorRequestId
+	 */
 	@ApiOperation({
 		summary: 'Cancel an anchor request',
 		description: 'This endpoint is used to cancel an anchor request.'
@@ -45,6 +55,12 @@ export class AnchorRequestController {
 		return this.anchorService.cancelAnchorRequestByAnchorRequestId(anchorRequestId);
 	}
 
+
+	/**
+	 * Returns all anchor requests.
+	 *
+	 * @param getAllElementsDto
+	 */
 	@ApiOperation({
 		summary: 'Returns all anchor requests',
 		description: 'This endpoint is used to get all anchor requests.'
@@ -62,6 +78,12 @@ export class AnchorRequestController {
 		return await Promise.all(anchorRequest.map(async ar => await this.formatAnchorRequestInJSON(ar)));
 	}
 
+
+	/**
+	 * Returns an anchor request.
+	 *
+	 * @param anchorRequestId
+	 */
 	@ApiSecurity('api-key')
 	@Get(`:anchorRequestId`)
 	async getAnchorRequestById(
@@ -83,6 +105,12 @@ export class AnchorRequestController {
 		}
 	}
 
+
+	/**
+	 * Deletes an anchor request.
+	 *
+	 * @param anchorRequestId
+	 */
 	@ApiSecurity('api-key')
 	@Delete(`:anchorRequestId`)
 	async deleteAnchorRequestById(
