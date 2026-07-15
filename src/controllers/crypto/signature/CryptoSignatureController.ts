@@ -1,21 +1,20 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import {
-	BinaryEncoding,
-	BinaryMessageSignatureVerificationDto, JsonCanonicalizationMethod,
-	JsonMessageSignatureVerificationDto,
-} from '../../../dto/signature/SignatureVerificationRequestDto';
 import { CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk-core';
 import { match, P } from 'ts-pattern';
 import { InvalidArgumentError } from 'commander';
 import { canonicalize } from "json-canonicalize";
 import { BinaryEncodingUtils } from '../../../utils/BinaryEncodingUtils';
+import { BinaryMessageSignatureVerificationRequestDto } from '../../../dto/signature/BinaryMessageSignatureVerificationRequestDto';
+import { JsonMessageSignatureVerificationRequestDto } from '../../../dto/signature/JsonMessageSignatureVerificationRequestDto';
+import { JsonCanonicalizationMethod } from '../../../dto/signature/JsonCanonicalizationMethod';
+import { BinaryEncoding } from '../../../dto/signature/BinaryEncoding';
 
 @Controller('/api/crypto/signature')
 export class CryptoSignatureController {
 
 	@Post('verify/binary')
 	async verifyBinarySignature(
-		@Body() params: BinaryMessageSignatureVerificationDto
+		@Body() params: BinaryMessageSignatureVerificationRequestDto
 	) {
 		const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
 		const publicKey = await encoder.decodePublicKey(params.publicKey);
@@ -28,7 +27,7 @@ export class CryptoSignatureController {
 
 	@Post('verify/json')
 	async verifyJsonSignature(
-		@Body() params: JsonMessageSignatureVerificationDto
+		@Body() params: JsonMessageSignatureVerificationRequestDto
 	) {
 		const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
 		const publicKey = await encoder.decodePublicKey(params.publicKey);

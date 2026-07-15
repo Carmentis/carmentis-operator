@@ -1,5 +1,5 @@
-import { BinaryEncoding } from '../dto/signature/SignatureVerificationRequestDto';
 import { match } from 'ts-pattern';
+import { BinaryEncoding } from '../dto/signature/BinaryEncoding';
 
 export class BinaryEncodingUtils {
 	static decode(message: string, encoding: BinaryEncoding): Uint8Array {

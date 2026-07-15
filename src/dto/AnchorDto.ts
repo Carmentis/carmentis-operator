@@ -12,18 +12,38 @@ import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { CMTSToken, Hash, Optional } from '@cmts-dev/carmentis-sdk-core';
 
+/**
+ * Represents a channel in which data can be organized and visibility controlled.
+ * Channels allow selective disclosure of data to different actors.
+ */
 export class ChannelDto {
-	@ApiProperty({ title: 'Name of the channel' })
+	@ApiProperty({
+		title: 'Name of the channel',
+		description: 'Unique identifier for this channel within the virtual blockchain',
+		example: 'Public_Data'
+	})
 	@IsString()
 	name: string;
 
-	@ApiProperty({ title: "Channel visibility", description: 'Indicates whether the channel is public or private' })
+	@ApiProperty({
+		title: "Channel visibility",
+		description: 'Indicates whether the channel is public (visible to all) or private (visible only to authorized actors)',
+		example: true
+	})
 	@IsBoolean()
 	public: boolean;
 }
 
+/**
+ * Represents an actor (participant) in a virtual blockchain transaction.
+ * Actors can have different roles and permissions within the blockchain.
+ */
 export class ActorDto {
-	@ApiProperty({ title: 'Name of the actor.', example: "Endorser" })
+	@ApiProperty({
+		title: 'Name of the actor',
+		description: 'Identifier for this actor within the virtual blockchain. Used in authorizations and endorsements',
+		example: "Endorser"
+	})
 	@IsString()
 	name: string;
 }
@@ -83,76 +103,122 @@ export class MaskableFieldDto {
 	maskedParts: MaskableFieldPartDto[];
 }
 
+/**
+ * Request DTO for anchoring data to a Carmentis virtual blockchain.
+ * Contains all necessary information to create a transaction with optional wallet approval.
+ *
+ * @example
+ * {
+ *   "applicationId": "app123",
+ *   "channels": [{ "name": "Public", "public": true }],
+ *   "actors": [{ "name": "Endorser" }],
+ *   "data": { "invoice": "INV-001", "amount": "1000" },
+ *   "author": "MyApplication"
+ * }
+ */
 export class AnchorDto  {
 	@ApiProperty({
-		description: 'Identifier of the application virtual blockchain. Application should be published online first before calling this endpoint.'
+		description: 'Identifier of the application virtual blockchain. The application must be published online before calling this endpoint',
+		example: 'app123'
 	})
 	@IsString()
 	applicationId: string;
 
 	@ApiProperty({
-		description: 'Identifier of the virtual blockchain in which the data will be anchored. When omitted, a new virtual blockchain is created.'
+		description: 'Identifier of the target virtual blockchain. If omitted, a new virtual blockchain is created for this anchor request',
+		example: 'vb456',
+		required: false
 	})
 	@IsString()
 	@IsOptional()
 	virtualBlockchainId?: string;
 
-
-	@ApiProperty({ description: 'Number of days to keep the chain data on the Carmentis blockchain.' })
+	@ApiProperty({
+		description: 'Retention period in days for the anchored data on the Carmentis blockchain. After this period, data may be archived or removed',
+		default: 10,
+		example: 30,
+		required: false
+	})
 	@IsOptional()
 	@IsNumber()
 	@IsInt()
 	@IsPositive()
 	chainStorageInDays?: number = 10;
 
-
-	@ApiProperty({ description: 'Gas price to use for the anchoring transaction.' })
+	@ApiProperty({
+		description: 'Gas price in atomic units (1 CMTS = 10^18 atomics) to use for the anchoring transaction. Must be within the API key limits (gasMinAtomics - gasMaxAtomics)',
+		example: 100000000000000000,
+		required: false
+	})
 	@IsOptional()
 	@IsNumber()
 	@IsPositive()
 	@IsInt()
 	gasPriceInAtomics?: number;
 
-	@ApiProperty({ type: [ChannelDto], description: 'List of created channels.' })
+	@ApiProperty({
+		type: [ChannelDto],
+		description: 'List of channels to create in this virtual blockchain. Each channel controls data visibility to different actors',
+		example: [{ name: 'Public', public: true }, { name: 'Private', public: false }]
+	})
 	@ValidateNested({ each: true })
 	@Type(() => ChannelDto)
 	channels: ChannelDto[];
 
 	@ApiProperty({
 		type: [ActorDto],
-		title: "List of actors to create.",
-		description: 'This field contains all actors that need to be created to be used in transactions.',
+		title: "List of actors to create",
+		description: 'All participants/actors that need to be created and used in this transaction',
+		example: [{ name: 'Endorser' }, { name: 'Witness' }]
 	})
 	@ValidateNested({ each: true })
 	@Type(() => ActorDto)
 	actors: ActorDto[];
 
 	@ApiProperty({
-		title: "Data being anchored on chain.",
-		description: 'This field contains all your own business-related data being anchored in the blockchain.',
+		title: "Data being anchored on chain",
+		description: 'Your business-related data to be anchored. This is the actual payload being recorded on the blockchain',
 		type: Object,
-		example: { "field1": "value1" }
+		example: { "invoice_id": "INV-001", "amount": 1000, "customer": "ACME Corp" }
 	})
 	@IsDefined()
 	data: Object;
 
-	@ApiProperty({ type: [ChannelAssignationDto], description: 'List of channel assignations.' })
+	@ApiProperty({
+		type: [ChannelAssignationDto],
+		description: 'Assignment of data fields to specific channels. Controls which actors can see which data',
+		example: [{ channelName: 'Public', fieldPath: 'invoice_id' }]
+	})
 	@ValidateNested({ each: true })
 	@Type(() => ChannelAssignationDto)
 	channelAssignations: ChannelAssignationDto[];
 
-	@ApiProperty({ type: [ActorAssignationDto], description: 'List of actor assignations' })
+	@ApiProperty({
+		type: [ActorAssignationDto],
+		description: 'Assignment of channel visibility to specific actors',
+		example: [{ channelName: 'Public', actorName: 'Endorser' }]
+	})
 	@ValidateNested({ each: true })
 	@Type(() => ActorAssignationDto)
 	actorAssignations: ActorAssignationDto[];
 
-	@ApiProperty({ type: [HashableFieldDto], description: 'List of hashable fields.', default: [], example: [] })
+	@ApiProperty({
+		type: [HashableFieldDto],
+		description: 'Fields whose values should be hashed for zero-knowledge proofs',
+		default: [],
+		example: [{ fieldPath: 'ssn' }]
+	})
 	@ValidateNested({ each: true })
 	@Type(() => HashableFieldDto)
 	@IsOptional()
 	hashableFields: HashableFieldDto[];
 
-	@ApiProperty({ type: [MaskableFieldDto], description: 'List of maskable fields.', default: [], example: []  })
+	@ApiProperty({
+		type: [MaskableFieldDto],
+		description: 'Fields that support masking (redaction) of specific parts. Useful for PII and sensitive data',
+		default: [],
+		example: [{ fieldPath: 'credit_card', maskedParts: [{ position: 0, length: 12, replacementString: '****' }] }]
+	})
 	@ValidateNested({ each: true })
 	@Type(() => MaskableFieldDto)
 	@IsOptional()
@@ -160,7 +226,7 @@ export class AnchorDto  {
 
 	@ApiProperty({
 		title: "Author",
-		description: 'The author of a transaction corresponds to the actor having initiated the transaction (mostly your application server).',
+		description: 'The actor who initiated this transaction. Usually your application server or user identity',
 		example: "MyApplication"
 	})
 	@IsString()
@@ -172,15 +238,22 @@ export class AnchorDto  {
 	}
 }
 
+/**
+ * Extended anchor DTO for transactions requiring wallet approval.
+ * Includes additional fields for user confirmation and endorsement flows.
+ */
 export class AnchorWithWalletDto extends AnchorDto {
-	@ApiProperty({ description: 'Endorser', example: "Endorser" })
+	@ApiProperty({
+		description: 'The actor who endorses/approves this transaction. Often a human user or trusted service',
+		example: "Endorser"
+	})
 	@IsString()
 	endorser: string;
 
-	@ApiProperty({ description: 'Message displayed on the wallet.', example: 'This message is shown on the wallet.' })
+	@ApiProperty({
+		description: 'User-facing message displayed on the wallet during approval. Helps users understand what they are approving',
+		example: 'Please approve the anchoring of invoice INV-001 for $1000'
+	})
 	@IsString()
 	approvalMessage: string;
-
-
-
 }

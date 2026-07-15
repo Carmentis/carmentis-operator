@@ -1,5 +1,6 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { BinaryEncoding } from '../signature/SignatureVerificationRequestDto';
+
+import { BinaryEncoding } from '../signature/BinaryEncoding';
 
 /**
  * Allows to ask an actor request public key.

@@ -1,3 +1,3 @@
-import { BinaryMessageSignatureVerificationDto } from '../signature/SignatureVerificationRequestDto';
+import { BinaryMessageSignatureVerificationRequestDto } from '../signature/BinaryMessageSignatureVerificationRequestDto';
 
-export class WalletBinarySignatureVerificationRequestDto extends BinaryMessageSignatureVerificationDto {}
+export class WalletBinarySignatureVerificationRequestDto extends BinaryMessageSignatureVerificationRequestDto {}
