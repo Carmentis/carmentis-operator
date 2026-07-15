@@ -90,67 +90,6 @@ export class OperatorApiController{
 		return { message: 'Hello world!' };
 	}
 
-	@ApiOperation({
-		summary: 'Initiate an anchor request',
-		description: 'This endpoint is used by the server to initiate an anchoring request that should be accepted by a wallet.'
-	})
-	@ApiBody({ type: AnchorWithWalletDto })
-	@ApiCreatedResponse({
-		description: 'Anchoring session created',
-		type: AnchorRequestResponseDto
-	})
-	@ApiSecurity('api-key')
-	@Post('/anchorWithWallet')
-	async anchorWithWallet(
-		@Body() anchorDto: AnchorWithWalletDto,
-		@ApiKey() key: ApiKeyEntity,
-	): Promise<AnchorRequestResponseDto> {
-		try {
-			const application = await this.apiKeyService.findApplicationByApiKey(key);
-			return this.operatorService.createAnchorWithWalletSession(application, anchorDto);
-			this.logAnchorRequest(anchorDto)
-		} catch (e) {
-			this.logger.error("An error occurred while processing anchoring with wallet request: ", e)
-			if (CarmentisError.isCarmentisError(e)) {
-				throw e
-			} else {
-
-				throw e;
-			}
-		}
-	}
-
-	@ApiOperation({
-		summary: 'Initiate an anchor request',
-		description: 'This endpoint is used by the server to initiate an anchoring request that should be accepted by a wallet.'
-	})
-	@ApiCreatedResponse({
-		description: 'The anchoring request has been accepted.',
-		type: AnchorRequestResponseDto
-	})
-	@ApiSecurity('api-key')
-	@Post('/anchor')
-	async anchor(
-		@Body() anchorDto: AnchorDto,
-		@ApiKey() key: ApiKeyEntity,
-	): Promise<AnchorRequestResponseDto> {
-		// find application and organization associated with the provided api key
-		this.logAnchorRequest(anchorDto)
-		const application = await this.apiKeyService.findApplicationByApiKey(key);
-		const anchorRequest = await this.operatorService.anchor(application, anchorDto);
-		return { anchorRequestId: anchorRequest.anchorRequestId }
-	}
-
-	logAnchorRequest(request: AnchorDto | AnchorWithWalletDto) {
-		this.logger.log("-------------------------------------")
-		this.logger.log("A new anchor request id has been created:")
-		this.logger.log(`Gas price: ${request.gasPriceInAtomics}`)
-		this.logger.log(`Author : ${request.author}`)
-		this.logger.log(`Endorser: ${'endorser' in request ? request.endorser : '___ (no endorser)'}`)
-		this.logger.log(`Actors: ${request.actors.map(actor => actor.name).join(', ')}`)
-		this.logger.log(`Channels: ${request.channels.map(channel => channel.name).join(', ')}`)
-		this.logger.log("-------------------------------------")
-	}
 
 	@ApiOperation({
 		summary: 'Returns the status of an anchor request',
@@ -214,124 +153,7 @@ export class OperatorApiController{
 		return { affected: anchorRequest.affected };
 	}
 
-	/*
-	@ApiSecurity('api-key')
-	@Get(`/microblock/hash/:microblockHash`)
-	async getMicroblock(
-		@ApiKey() key: ApiKeyEntity,
-		@Param('microblockHash') microblockHash: string,
-	) {
-		const wallet = await this.apiKeyService.findWalletByApiKey(key);
-		const mb = await this.chainService.getMicroblockByHash(wallet, Hash.from(microblockHash));
-		return {
-			header: {
-				hash: mb.getHash().encode(),
-				gas: mb.getGas(),
-				timestamp: mb.getTimestamp(),
-				height: mb.getHeight(),
-				gasPrice: this.formatCMTSTokenInJson(mb.getGasPrice()),
-				previousHash: mb.getPreviousHash().encode(),
-			},
-			body: {
-				sections: mb.getAllSections(),
-			}
-		}
-	}
 
-	@ApiSecurity('api-key')
-	@Get(`/microblock/hash/:microblockHash`)
-	async getMicroblockByHash(
-		@Param('microblockHash') microblockHash: string,
-		@ApiKey() key: ApiKeyEntity,
-	) {
-		const wallet = await this.apiKeyService.findWalletByApiKey(key);
-		const provider = wallet.getProvider();
-		const mb = await provider.loadMicroblockByMicroblockHash(Hash.from(microblockHash));
-		return {
-			header: this.formatMicroblockHeaderInJSON(mb),
-			body: this.formatMicroblockBodyInJSON(mb),
-		}
-	}
-
-	@ApiSecurity('api-key')
-	@Get(`/microblock/hash/:microblockHash/header`)
-	async getMicroblockHeaderByHash(
-		@ApiKey() key: ApiKeyEntity,
-		@Param('microblockHash') microblockHash: string,
-	) {
-		const wallet = await this.apiKeyService.findWalletByApiKey(key);
-		const mb = await this.chainService.getMicroblockByHash(wallet, Hash.from(microblockHash));
-		return this.formatMicroblockHeaderInJSON(mb);
-	}
-
-	@ApiSecurity('api-key')
-	@Get(`/microblock/hash/:microblockHash/body`)
-	async getMicroblockBodyByHash(
-		@ApiKey() key: ApiKeyEntity,
-		@Param('microblockHash') microblockHash: string,
-	) {
-		const wallet = await this.apiKeyService.findWalletByApiKey(key);
-		const mb = await this.chainService.getMicroblockByHash(wallet, Hash.from(microblockHash));
-		return this.formatMicroblockBodyInJSON(mb);
-	}
-
-	private formatMicroblockHeaderInJSON(mb: Microblock) {
-		return  {
-			hash: mb.getHash().encode(),
-			gas: mb.getGas(),
-			timestamp: mb.getTimestamp(),
-			height: mb.getHeight(),
-			gasPrice: this.formatCMTSTokenInJson(mb.getGasPrice()),
-			previousHash: mb.getPreviousHash().encode(),
-		}
-	}
-
-	private formatMicroblockBodyInJSON(mb: Microblock) {
-		return {
-			sections: mb.getAllSections(),
-		}
-	}
-
-	@ApiSecurity('api-key')
-	@Get(`/account/vb/:vbId/tokens`)
-	async getBalanceByVbId(
-		@ApiKey() key: ApiKeyEntity,
-		@Param('vbId') vbId: string,
-	) {
-		const wallet = await this.apiKeyService.findWalletByApiKey(key);
-		const balance = await this.chainService.getBreakdownOfAccountByVbId(wallet, vbId);
-		return this.createTokensResponseFromBreakdown(balance);
-	}
-
-
-	private createTokensResponseFromBreakdown(balance: BalanceAvailability) {
-		const spendable=  balance.getSpendable();
-		const staked = balance.getStaked();
-		const vested = balance.getVested();
-		return {
-			spendable: this.formatCMTSTokenInJson(spendable),
-			staked: this.formatCMTSTokenInJson(staked),
-			vested: this.formatCMTSTokenInJson(vested),
-		};
-	}
-	
-	 */
-
-	@ApiSecurity('api-key')
-	@Get(`/record/vb/:vbId/height/:height`)
-	async getRecordForVbIdAtHeight(
-		@ApiKey() key: ApiKeyEntity,
-		@Param('vbId') vbId: string,
-		@Param('height', ParseIntPipe) height: number,
-	) {
-		const wallet = await this.apiKeyService.findWalletByApiKey(key);
-		const rawVbId = Buffer.from(vbId, 'hex')
-		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, rawVbId)
-		const actorCrypto = await WalletUtils.getActorCryptoFromWallet(wallet, vbSeed);
-		const provider = wallet.getProvider();
-		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.from(vbId))
-		return vb.getRecord(height, actorCrypto);
-	}
 
 	@Public()
 	@ApiExcludeEndpoint()
@@ -392,10 +214,5 @@ export class OperatorApiController{
 		}
 	}
 
-	private formatCMTSTokenInJson(token: CMTSToken) {
-		return  {
-			formatted: token.toString(),
-			atomics: token.getAmountAsAtomic(),
-		}
-	}
+
 }

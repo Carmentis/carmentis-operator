@@ -9,8 +9,8 @@ import { ActorPublicKeyRequestDto } from '../../dto/wallet/ActorPublicKeyRequest
 import { WalletUtils } from '../../utils/WalletUtils';
 import { VbUtils } from '../../utils/VbUtils';
 
-@Controller('/api/wallet')
-export class WalletSignatureController {
+@Controller('/api/crypto/wallet')
+export class WalletCryptoController {
 	constructor(public service: WalletService) {}
 
 	@Get(':walletId/signature/sign')

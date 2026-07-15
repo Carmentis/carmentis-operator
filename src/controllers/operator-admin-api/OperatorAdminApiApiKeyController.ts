@@ -35,15 +35,23 @@ export class OperatorAdminApiApiKeyController  {
 	async createApiKey(
 		@Body() body: ApiKeyCreationDto
 	) {
-		this.logger.log('Creating API key for application with VB ID:', body.applicationVbId);
-		const application = await ApplicationEntity.findOneByOrFail({
-			vbId: body.applicationVbId
-		});
+		let application: ApplicationEntity | undefined;
+		if (body.applicationVbId) {
+			this.logger.log('Creating API key for application with VB ID:', body.applicationVbId);
+			application = await ApplicationEntity.findOneByOrFail({
+				vbId: body.applicationVbId
+			});
+		} else {
+			this.logger.log('Creating API key without linked application');
+		}
 		const activeUntil = body.activeUntil ? new Date(body.activeUntil) : undefined;
 		const apiKey = await this.service.createKey(
 			body.name,
 			application,
-			activeUntil
+			activeUntil,
+			body.endpointRegex,
+			body.gasMinAtomics,
+			body.gasMaxAtomics
 		);
 		return apiKey;
 	}

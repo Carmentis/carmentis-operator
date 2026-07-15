@@ -34,6 +34,12 @@ export class WalletEntity extends BaseEntity {
 	@Column()
 	rpcEndpoint: string;
 
+	@Column()
+	indexerEndpoint: string;
+
+	@Column({nullable: true})
+	allowedEndpointsRegex?: string;
+
 	@OneToMany(() => ApplicationEntity, app => app.wallet, { cascade: true })
 	applications: ApplicationEntity[];
 

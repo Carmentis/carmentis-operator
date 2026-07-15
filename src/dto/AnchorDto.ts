@@ -85,6 +85,12 @@ export class MaskableFieldDto {
 
 export class AnchorDto  {
 	@ApiProperty({
+		description: 'Identifier of the application virtual blockchain. Application should be published online first before calling this endpoint.'
+	})
+	@IsString()
+	applicationId: string;
+
+	@ApiProperty({
 		description: 'Identifier of the virtual blockchain in which the data will be anchored. When omitted, a new virtual blockchain is created.'
 	})
 	@IsString()

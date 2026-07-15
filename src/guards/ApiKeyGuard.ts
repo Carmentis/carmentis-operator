@@ -38,11 +38,22 @@ export class ApiKeyGuard implements CanActivate {
 		const isActive =
 			key !== undefined &&
 			await this.apiKeyService.isActiveKey(key);
-		
+
 		// attach the api key to the request
 		if (isActive && key) {
 			this.logger.debug("API key is active")
 			const apiKey = await this.apiKeyService.findOneByKey(key);
+
+			// validate endpoint regex if defined
+			if (apiKey.endpointRegex) {
+				const endpoint = request.path;
+				const regex = new RegExp(apiKey.endpointRegex);
+				if (!regex.test(endpoint)) {
+					this.logger.debug(`Endpoint ${endpoint} does not match allowed regex pattern`);
+					return false;
+				}
+			}
+
 			request.apiKey = apiKey;
 		} else {
 			this.logger.debug("API key is invalid or inactive")

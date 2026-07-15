@@ -17,7 +17,14 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 		super(repo);
 	}
 
-	async createKey( name: string, application: ApplicationEntity, activeUntil: Date | undefined ) {
+	async createKey(
+		name: string,
+		application: ApplicationEntity | undefined,
+		activeUntil: Date | undefined,
+		endpointRegex?: string,
+		gasMinAtomics?: number,
+		gasMaxAtomics?: number
+	) {
 		// we start by creating the key
 		const secret = randomBytes(32).toString('hex');
 		const key = this.repo.create({
@@ -26,11 +33,15 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 			name,
 			apiKey: secret,
 			isActive: true,
+			endpointRegex,
+			gasMinAtomics: gasMinAtomics ?? 0,
+			gasMaxAtomics: gasMaxAtomics ?? 1000000,
 		});
 		const keyEntity = await this.repo.save(key);
 
 		// once the id is defined, we construct the api key
-		const formattedKey = this.formatKey(keyEntity.id, application.vbId, secret);
+		const applicationVbId = application?.vbId ?? '';
+		const formattedKey = this.formatKey(keyEntity.id, applicationVbId, secret);
 		await this.repo.update({ id: keyEntity.id }, { apiKey: formattedKey })
 		return ApiKeyEntity.findOneBy({ id: keyEntity.id })
 	}
@@ -43,16 +54,6 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 				},
 			},
 			relations: ['wallet']
-		})
-	}
-
-	async findWalletByApiKey(apiKey: ApiKeyEntity): Promise<WalletEntity> {
-		return WalletEntity.findOneBy({
-			applications: {
-				apiKeys: {
-					id: apiKey.id
-				}
-			}
 		})
 	}
 

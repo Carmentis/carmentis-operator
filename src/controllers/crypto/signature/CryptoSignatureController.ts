@@ -11,9 +11,8 @@ import { canonicalize } from "json-canonicalize";
 import { BinaryEncodingUtils } from '../../../utils/BinaryEncodingUtils';
 
 @Controller('/api/crypto/signature')
-export class SignatureController {
+export class CryptoSignatureController {
 
-	@Post('verify')
 	@Post('verify/binary')
 	async verifyBinarySignature(
 		@Body() params: BinaryMessageSignatureVerificationDto

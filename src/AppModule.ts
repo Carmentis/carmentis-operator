@@ -5,8 +5,8 @@ import { OperatorConfigModule } from './config/OperatorConfigModule';
 import DataSourceOptions from './database/DataSourceOptions';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { SignatureController } from './controllers/crypto/signature/SignatureController';
-import { WalletSignatureController } from './controllers/wallet/WalletSignatureController';
+import { CryptoSignatureController } from './controllers/crypto/signature/CryptoSignatureController';
+import { WalletCryptoController } from './controllers/wallet/WalletCryptoController';
 import { JwtModule } from '@nestjs/jwt';
 import { EnvService } from './services/EnvService';
 import { OperatorConfigService } from './config/services/operator-config.service';
@@ -43,6 +43,8 @@ import { EncryptionServiceProxy } from './shared/transformers/EncryptionServiceP
 import { CorsMiddleware } from './middlewares/CorsMiddleware';
 import { CryptoController } from './controllers/crypto/signature/CryptoController';
 import { VerifiableCredentialController } from './controllers/VerifiableCredentialController';
+import { WalletAnchoringController } from './controllers/wallet/WalletAnchoringController';
+import { WalletRecordController } from './controllers/wallet/WalletRecordController';
 
 @Module({
 	imports: [
@@ -114,10 +116,12 @@ import { VerifiableCredentialController } from './controllers/VerifiableCredenti
 		OperatorAdminApiWalletController,
 
 		// additional controllers
+		WalletRecordController,
+		WalletAnchoringController,
 		VerifiableCredentialController,
 		CryptoController,
-		SignatureController,
-		WalletSignatureController
+		CryptoSignatureController,
+		WalletCryptoController
 	]
 })
 export class AppModule implements NestModule {
