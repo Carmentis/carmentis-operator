@@ -87,9 +87,11 @@ export class AnchorRequestService {
 		return storedAnchorRequest;
 	}
 
-	async getAllAnchorRequests() {
+	async getAllAnchorRequests(offset?: number, limit?: number) {
 		return await this.anchorRequestRepository.find({
-			relations: ['application']
+			relations: ['application'],
+			skip: offset,
+			take: limit
 		});
 	}
 

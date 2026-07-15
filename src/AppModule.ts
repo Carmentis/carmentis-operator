@@ -17,8 +17,6 @@ import { WalletEntity } from './entities/WalletEntity';
 import { ApplicationEntity } from './entities/ApplicationEntity';
 import { OperatorAdminApiSetupController } from './controllers/operator-admin-api/OperatorAdminApiSetupController';
 import { OperatorAdminApiApiKeyController } from './controllers/operator-admin-api/OperatorAdminApiApiKeyController';
-import { OperatorApiController } from './controllers/operator-api/OperatorApiController';
-import { OperatorHealthApiController } from './controllers/operator-api/OperatorHealthApiController';
 import { OperatorAdminApiLoginController } from './controllers/operator-admin-api/OperatorAdminApiLoginController';
 import { OperatorAdminApiUserController } from './controllers/operator-admin-api/OperatorAdminApiUserController';
 import {
@@ -45,6 +43,9 @@ import { CryptoController } from './controllers/crypto/signature/CryptoControlle
 import { VerifiableCredentialController } from './controllers/VerifiableCredentialController';
 import { WalletAnchoringController } from './controllers/wallet/WalletAnchoringController';
 import { WalletRecordController } from './controllers/wallet/WalletRecordController';
+import { HealthController } from './controllers/HealthController';
+import { ProtocolWiapV1Controller } from './controllers/ProtocolWiapV1Controller';
+import { AnchorRequestController } from './controllers/AnchorRequestController';
 
 @Module({
 	imports: [
@@ -108,14 +109,15 @@ import { WalletRecordController } from './controllers/wallet/WalletRecordControl
 		// admin controllers
 		OperatorAdminApiSetupController,
 		OperatorAdminApiApiKeyController,
-		OperatorApiController,
-		OperatorHealthApiController,
 		OperatorAdminApiLoginController,
 		OperatorAdminApiUserController,
 		OperatorAdminApiApplicationController,
 		OperatorAdminApiWalletController,
 
 		// additional controllers
+		ProtocolWiapV1Controller,
+		AnchorRequestController,
+		HealthController,
 		WalletRecordController,
 		WalletAnchoringController,
 		VerifiableCredentialController,
