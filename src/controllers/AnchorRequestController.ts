@@ -1,11 +1,5 @@
 import { Body, Controller, Delete, Get, Logger, Param, Post } from '@nestjs/common';
-import { Public } from '../decorators/PublicDecorator';
-import { ApiExcludeEndpoint, ApiOperation, ApiResponse, ApiSecurity } from '@nestjs/swagger';
-import {
-	WalletInteractiveAnchoringRequest, WalletInteractiveAnchoringRequestType,
-	WalletInteractiveAnchoringResponse, WalletInteractiveAnchoringResponseType,
-	WalletInteractiveAnchoringValidation,
-} from '@cmts-dev/carmentis-sdk-core';
+import { ApiOperation, ApiResponse, ApiSecurity } from '@nestjs/swagger';
 import { WalletAnchoringRequestService } from '../services/wallet-anchoring-request.service';
 import { AnchorRequestService } from '../services/AnchorRequestService';
 import { AnchorRequestStatusResponseDto } from '../dto/AnchorRequestStatusResponseDto';
@@ -35,14 +29,8 @@ export class AnchorRequestController {
 	@Get(':anchorRequestId/status')
 	async getAnchorRequestStatus(
 		@Param('anchorRequestId') anchorRequestId: string,
-	): Promise<AnchorRequestStatusResponseDto> {
-		const request = await this.operatorService.getAnchorRequestFromAnchorRequestId(anchorRequestId);
-		return {
-			published: request.isCompleted(),
-			status: request.getStatus(),
-			virtualBlockchainId: request.getVirtualBlockchainId().unwrapOr(undefined),
-			microBlockHash: request.getMicroBlockHash().unwrapOr(undefined),
-		}
+	) {
+		return await this.operatorService.getAnchorRequestFromAnchorRequestId(anchorRequestId);
 	}
 
 	@ApiOperation({
@@ -88,9 +76,9 @@ export class AnchorRequestController {
 			anchorRequestId: ar.anchorRequestId,
 			status: ar.getStatus(),
 			applicationVbId: ar.application.vbId,
-			publishedMicroblockHash: ar.submittedMicroblockHash,
+			submittedMicroblockHash: ar.submittedMicroblockHash,
 			createdAt: ar.createdAt,
-			publishedAt: ar.submittedAt,
+			submittedAt: ar.submittedAt,
 			virtualBlockchainId: ar.virtualBlockchainId
 		}
 	}
