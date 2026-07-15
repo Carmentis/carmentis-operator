@@ -137,9 +137,9 @@ export class OperatorApiController{
 			anchorRequestId: ar.anchorRequestId,
 			status: ar.getStatus(),
 			applicationVbId: ar.application.vbId,
-			publishedMicroblockHash: ar.publishedMicroBlockHash,
+			publishedMicroblockHash: ar.submittedMicroblockHash,
 			createdAt: ar.createdAt,
-			publishedAt: ar.publishedAt,
+			publishedAt: ar.submittedAt,
 			virtualBlockchainId: ar.virtualBlockchainId
 		}
 	}
@@ -163,7 +163,6 @@ export class OperatorApiController{
 	): Promise<WalletInteractiveAnchoringResponse> {
 		// parse the request
 		this.logger.debug(`Handling request:`, unverifiedRequest)
-		//const encoder = EncoderFactory.bytesToBase64Encoder();
 		const request: WalletInteractiveAnchoringRequest = WalletInteractiveAnchoringValidation.validateRequest(unverifiedRequest);
 		const type = request.type;
 

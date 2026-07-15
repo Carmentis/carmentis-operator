@@ -18,8 +18,6 @@ export class WalletAnchoringController {
 	constructor(
 		private readonly apiKeyService: ApiKeyService,
 		private readonly operatorService: WalletAnchoringRequestService,
-		private readonly chainService: ChainService,
-		private readonly anchorService: AnchorRequestService
 	) {}
 
 
@@ -39,11 +37,11 @@ export class WalletAnchoringController {
 		@ApiKey() key: ApiKeyEntity,
 	): Promise<AnchorRequestResponseDto> {
 		try {
+			this.logAnchorRequest(anchorDto)
 			this.validateIfApiKeyAllowingPublicationToApplication(key, anchorDto.applicationId)
 			this.validateGasPrice(key, anchorDto.gasPriceInAtomics);
 			const application = await this.apiKeyService.findApplicationByApiKey(key);
-			return this.operatorService.createAnchorWithWalletSession(application, anchorDto);
-			this.logAnchorRequest(anchorDto)
+			return this.operatorService.createAnchorRequestWithWallet(application, anchorDto);
 		} catch (e) {
 			this.logger.error("An error occurred while processing anchoring with wallet request: ", e)
 			if (CarmentisError.isCarmentisError(e)) {
@@ -83,8 +81,8 @@ export class WalletAnchoringController {
 		this.validateGasPrice(key, anchorDto.gasPriceInAtomics);
 		this.logAnchorRequest(anchorDto)
 		const application = await this.apiKeyService.findApplicationByApiKey(key);
-		const anchorRequest = await this.operatorService.anchor(application, anchorDto);
-		return { anchorRequestId: anchorRequest.anchorRequestId }
+		const anchorRequestId = await this.operatorService.anchor(application, anchorDto);
+		return { anchorRequestId: anchorRequestId }
 	}
 
 

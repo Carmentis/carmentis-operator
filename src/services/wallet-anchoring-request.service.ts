@@ -25,6 +25,7 @@ import {
 	WalletRequestBasedApplicationLedgerMicroblockBuilder,
 } from '@cmts-dev/carmentis-sdk-core';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
+import { WalletUtils } from '../utils/WalletUtils';
 
 
 @Injectable()
@@ -37,13 +38,9 @@ export class WalletAnchoringRequestService {
 
 	private logger = new Logger(WalletAnchoringRequestService.name);
 
-	async createAnchorWithWalletSession(application: ApplicationEntity, request: AnchorWithWalletDto) {
+	async createAnchorRequestWithWallet(application: ApplicationEntity, request: AnchorWithWalletDto) {
 		this.logger.debug("Initiating session to anchor with a wallet.")
-
-		// store the request
-		const storedRequest = await this.anchorRequestService.storeAnchorRequest(application, request);
-		const anchorRequestId = storedRequest.getAnchorRequestId();
-
+		const anchorRequestId = await this.anchorRequestService.createAnchorRequest(application, request);
 		return { anchorRequestId }
 	};
 
@@ -69,7 +66,7 @@ export class WalletAnchoringRequestService {
 		);
 
 		// we enable the draft mode to be able to work with the current microblock
-		const endorser = storedRequest.request.endorser;
+		const endorser = storedRequest.receivedAnchorRequest.endorser;
 		const b64 = EncoderFactory.bytesToBase64Encoder();
 		try {
 			const mbBuilder = await this.getWalletRequestBasedApplicationLedgerMicroblockBuilder(
@@ -78,7 +75,7 @@ export class WalletAnchoringRequestService {
 				anchorRequestId
 			)
 			const mb = await mbBuilder.createMicroblockFromStateUpdateRequest(accountCrypto, {
-				...storedRequest.request,
+				...storedRequest.receivedAnchorRequest,
 			})
 
 			// ensure endorser is subscribed
@@ -158,7 +155,7 @@ export class WalletAnchoringRequestService {
 		const provider = wallet.getProvider();
 
 		// recover the application ledger and attempt to generate the microblock
-		const endorser = storedRequest.request.endorser;
+		const endorser = storedRequest.receivedAnchorRequest.endorser;
 		this.logger.debug(`Subscribing actor ${endorser} on the application ledger...`);
 		let applicationLedger = await this.loadApplicationLedger(provider, application, storedRequest);
 		const mbBuilder = await this.getWalletRequestBasedApplicationLedgerMicroblockBuilder(
@@ -168,7 +165,7 @@ export class WalletAnchoringRequestService {
 		)
 		await mbBuilder.subscribeActor(endorser, decodedActorPublicSignatureKey, decodedActorPublicEncryptionKey)
 		const mb = await mbBuilder.createMicroblockFromStateUpdateRequest(accountCrypto, {
-			...storedRequest.request,
+			...storedRequest.receivedAnchorRequest,
 		})
 
 		const { microblockData: serializedMb } = mb.serialize();
@@ -198,9 +195,9 @@ export class WalletAnchoringRequestService {
 		// harder case: the application ledger is empty, meaning that we have to generate the genesis seed
 		// and then create a microblock extending the application ledger.
 		// Be aware that a genesis might already be generated and stored in the anchor request (which explains why we expect the anchor request id)
-		const storedAnchorRequest = await this.anchorRequestService.findAnchorRequestByAnchorRequestId(anchorRequestId);
-		const mb = Microblock.createGenesisMicroblock(VirtualBlockchainType.APP_LEDGER_VIRTUAL_BLOCKCHAIN, storedAnchorRequest.expirationDay ?? 10);
-		if (!storedAnchorRequest.hexEncodedGenesisSeed) {
+		const storedAnchorRequest = await this.anchorRequestService.findOneByAnchorRequestId(anchorRequestId);
+		const mb = Microblock.createGenesisMicroblock(VirtualBlockchainType.APP_LEDGER_VIRTUAL_BLOCKCHAIN, storedAnchorRequest.expirationInDays ?? 10);
+		if (!storedAnchorRequest.generatedGenesisSeed) {
 			// in this case, we use the genesis seed generated automatically in the mb and store it in the anchor request
 			const genesisSeed = mb.getPreviousHash();
 			await this.anchorRequestService.saveGenesisSeed(anchorRequestId, genesisSeed);
@@ -234,35 +231,38 @@ export class WalletAnchoringRequestService {
 	async approvalSignature(req: WalletInteractiveAnchoringRequestApprovalSignature): Promise<WalletInteractiveAnchoringResponse> {
 		// check the request id is valid
 		const anchorRequestId = req.anchorRequestId;
+		const b64 = EncoderFactory.bytesToBase64Encoder();
 		this.logger.debug(`Proceeding to approval signature with anchor request id = ${anchorRequestId}`)
 
-		// parse the signature
-		const b64 = EncoderFactory.bytesToBase64Encoder();
-		const signature = b64.decode(req.b64Signature);
-		if (!(signature instanceof Uint8Array)) throw new BadRequestException("Missing signature");
-
 		try {
+
+			// parse the signature
+			const signature = b64.decode(req.b64Signature);
+			if (!(signature instanceof Uint8Array)) throw new BadRequestException("Missing signature");
+
 			// load the stored anchor request from the database
 			this.logger.debug("Recovering anchor request id")
-			const storedRequest = await this.loadAnchorRequestFromDataId(anchorRequestId);
-			const mb: Microblock = storedRequest.getBuiltMicroblock().unwrap();
+			const anchorRequestEntity = await this.loadAnchorRequestFromDataId(anchorRequestId);
+			const receivedAnchorRequest = anchorRequestEntity.receivedAnchorRequest;
+			if (!receivedAnchorRequest) throw new BadRequestException("Missing anchor request");
+			const mb: Microblock = anchorRequestEntity.getBuiltMicroblock().unwrap();
 
 			// load the organization private signature key=
-			const { application } = await this.loadApplicationFromAnchorRequest(storedRequest);
-			const accountCrypto = await this.loadAccountCryptoFromApplication(application);
+			const { application } = await this.loadApplicationFromAnchorRequest(anchorRequestEntity);
 			const wallet = await this.loadWalletEntityFromApplication(application);
+			const organizationPrivateKey = await WalletUtils.getPrivateSignatureKeyFromWallet(wallet);
+
 			const provider = wallet.getProvider();
 			const organizationVbId = await this.loadOrganizationVbIdFromApplication(provider, application);
 			const accountId = await this.loadAccountIdFromOrganizationVbId(provider, organizationVbId);
-			const organisationPrivateKey = await accountCrypto.getPrivateSignatureKey(SignatureSchemeId.SECP256K1);
 
 			// we finish the construction of the microblock
 			this.logger.debug("Loading application ledger and endorser public key for verification")
-			const appLedgerVb = await this.loadApplicationLedger(provider, application, storedRequest);
+			const appLedgerVb = await this.loadApplicationLedger(provider, application, anchorRequestEntity);
 			appLedgerVb.enableDraftMode();
 			await appLedgerVb.appendMicroBlock(mb);
 			const endorserPk = await appLedgerVb.getPublicSignatureKeyByActorId(
-				appLedgerVb.getActorIdFromActorName(storedRequest.request.endorser)
+				appLedgerVb.getActorIdFromActorName(anchorRequestEntity.receivedAnchorRequest.endorser)
 			);
 
 			// add the signature of the endorser to the micro-block
@@ -277,12 +277,12 @@ export class WalletAnchoringRequestService {
 			if (!isVerified) this.logger.warn("The signature of the endorser is not valid.")
 
 			// set the gas and seal the micro-block
-			const gasPrice = CMTSToken.createAtomic(storedRequest.request.gasPriceInAtomics);
+			const gasPrice = CMTSToken.createAtomic(anchorRequestEntity.receivedAnchorRequest.gasPriceInAtomics);
 			this.logger.log(`Set gas price for the microblock to be published to ${gasPrice.toString()}`)
-			await mb.setGasPrice(gasPrice)
+			mb.setGasPrice(gasPrice)
 			await mb.setGasAndSeal(
 				provider,
-				organisationPrivateKey,
+				organizationPrivateKey,
 				{
 					feesPayerAccount: accountId.toBytes()
 				}
@@ -293,21 +293,17 @@ export class WalletAnchoringRequestService {
 			const vbHash = appLedgerVb.getHeight() == 1 ? mbHash : appLedgerVb.getIdentifier();
 
 			// log information about the published microblock
-			this.logger.debug(`Publishing micro-block ${mbHash.encode()} located at height ${mb.getHeight()} on virtual blockchain ${vbHash.encode()}`);
-			for (const section of mb.getAllSections()) {
-				this.logger.debug(`- ${SectionLabel.getSectionLabelFromSection(section)}`)
-			}
+			this.logger.log(`Publishing microblock ${mbHash.encode()} at height ${mb.getHeight()} on virtual blockchain ${vbHash.encode()}`);
 			await provider.publishMicroblock(mb);
 
 			// mark the stored request as published
-			await this.anchorRequestService.markAnchorRequestAsPublished(
-				storedRequest.getAnchorRequestId(),
+			await this.anchorRequestService.addSubmittedMicroblockToAnchorRequest(
+				anchorRequestEntity.getAnchorRequestId(),
 				vbHash,
-				mbHash,
+				mb,
 			);
 
 			// send the answer to the wallet
-			const b64 = EncoderFactory.bytesToBase64Encoder();
 			return {
 				type: WalletInteractiveAnchoringResponseType.APPROVAL_SIGNATURE,
 				b64MbHash: b64.encode(vbHash.toBytes()),
@@ -321,7 +317,7 @@ export class WalletAnchoringRequestService {
 
 	private async loadAnchorRequestFromDataId(dataId: string) {
 		// load the initial anchor request and halts if the request is not pending
-		const storedRequest = await this.anchorRequestService.findAnchorRequestByAnchorRequestId(dataId);
+		const storedRequest = await this.anchorRequestService.findOneByAnchorRequestId(dataId);
 		if (!storedRequest.isPending()) throw new Error("Anchor request is not valid anymore.")
 		return storedRequest;
 	}
@@ -346,7 +342,7 @@ export class WalletAnchoringRequestService {
 	}
 
 	private async loadApplicationLedger(provider: Provider, application: ApplicationEntity, anchorRequest: AnchorRequestEntity): Promise<ApplicationLedgerVb> {
-		const appLedgerVbId = anchorRequest.request.virtualBlockchainId;
+		const appLedgerVbId = anchorRequest.receivedAnchorRequest.virtualBlockchainId;
 		let appLedgerVb: ApplicationLedgerVb;
 		if (appLedgerVbId) {
 			this.logger.debug(`Loading application ledger ${appLedgerVbId} associated with application ${application.vbId}...`)
@@ -361,7 +357,7 @@ export class WalletAnchoringRequestService {
 	}
 
 	async getAnchorRequestFromAnchorRequestId(anchorRequestId: string) {
-		return this.anchorRequestService.findAnchorRequestByAnchorRequestId(anchorRequestId);
+		return this.anchorRequestService.findOneByAnchorRequestId(anchorRequestId);
 	}
 
 	async anchor(application: ApplicationEntity, anchorDto: AnchorDto) {
@@ -395,7 +391,6 @@ export class WalletAnchoringRequestService {
 		const gasPrice = CMTSToken.createAtomic(usedGasPriceInAtomics);
 		this.logger.log(`Set gas price for the microblock to be published to ${gasPrice.toString()}`)
 		mb.setGasPrice(gasPrice);
-
 		await mb.setGasAndSeal(
 			provider,
 			organizationPrivateKey,
@@ -404,23 +399,33 @@ export class WalletAnchoringRequestService {
 			}
 		);
 
+		// publish the microblock
 		this.logger.debug("Publishing microblock")
-		for (const section of mb.getAllSections()) {
-			this.logger.debug(`- ${SectionLabel.getSectionLabelFromSection(section)}`)
-		}
 		const mbHash = await provider.publishMicroblock(mb);
-
-		// compute the vb id
 		const vbId = isCreatingNewApplicationLedger ? mbHash : applicationLedgerVb.getIdentifier();
 
 
+
 		// create a new anchor request entry to save the interaction
-		return this.anchorRequestService.createAndSaveCompletedAnchorRequest(
+		const anchorRequestId = await this.anchorRequestService.createAnchorRequest(application, anchorDto);
+		await this.anchorRequestService.addSubmittedMicroblockToAnchorRequest(
+			anchorRequestId,
+			vbId,
+			mb
+		);
+
+		// return the anchor request id
+		return anchorRequestId;
+
+		/*
+		return this.anchorRequestService.createSubmittedAnchorRequest(
 			vbId,
 			mbHash,
 			anchorDto,
 			application
 		);
+
+		 */
 	}
 
 	async loadOrganizationVbIdFromApplication(provider: Provider, application: ApplicationEntity) {

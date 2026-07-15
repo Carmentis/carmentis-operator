@@ -10,16 +10,6 @@ import { SdJwtVerifiableCredentialHandler } from '../utils/vc/SdJwtVerifiableCre
 export class VerifiableCredentialController {
 
 	private logger = new Logger();
-	private readonly verifiableCredentialHandlers: Map<VerifiableCredentialFormat, IVerifiableCredentialHandler> = new Map([
-		[VerifiableCredentialFormat.SD_JWT_VC, new SdJwtVerifiableCredentialHandler()]
-	]);
-
-	private getExploredFormatsFormRequest(verificationRequest: SdJwtVerifiableCredentialVerificationRequestDto) {
-		if (verificationRequest.allowedFormats) {
-			return verificationRequest.allowedFormats;
-		}
-		return Array.from(this.verifiableCredentialHandlers.keys());
-	}
 
 	@Post('/vc/sdjwt/verify')
 	async verifyVerifiableCredential(
