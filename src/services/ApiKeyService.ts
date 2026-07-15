@@ -65,7 +65,7 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 	 * @private
 	 */
 	private formatKey(id: number, applicationVbId: string, key: string): string {
-		return `cmts:${id}:${applicationVbId}:${key}`;
+		return `cmts:${id}:${key}`;
 	}
 
 
@@ -130,13 +130,12 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 	 */
 	private parseKey( apiKey: string ) {
 		try {
-			const [header, id, applicationId, key] = apiKey.split(':');
-			if (header !== 'cmts' || !id || !applicationId || !key) {
+			const [header, id, key] = apiKey.split(':');
+			if (header !== 'cmts' || !id  || !key) {
 				throw new Error("Invalid format");
 			}
 			return {
 				id: parseInt(id, 10),
-				applicationVbId: applicationId,
 				key
 			}
 		} catch (e) {
