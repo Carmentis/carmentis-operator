@@ -46,6 +46,7 @@ import { WalletRecordController } from './controllers/wallet/WalletRecordControl
 import { HealthController } from './controllers/HealthController';
 import { ProtocolWiapV1Controller } from './controllers/ProtocolWiapV1Controller';
 import { AnchorRequestController } from './controllers/AnchorRequestController';
+import { ChainController } from './controllers/ChainController';
 
 @Module({
 	imports: [
@@ -115,6 +116,7 @@ import { AnchorRequestController } from './controllers/AnchorRequestController';
 		OperatorAdminApiWalletController,
 
 		// additional controllers
+		ChainController,
 		ProtocolWiapV1Controller,
 		AnchorRequestController,
 		HealthController,

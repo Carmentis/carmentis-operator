@@ -1,4 +1,4 @@
-import { EncoderFactory, Microblock } from '@cmts-dev/carmentis-sdk-core';
+import { EncoderFactory, Hash, Microblock } from '@cmts-dev/carmentis-sdk-core';
 
 export class MicroblockUtils {
 	static encodeMicroblock(microblock: Microblock): string {
@@ -11,5 +11,9 @@ export class MicroblockUtils {
 		const hexDecoder = EncoderFactory.bytesToHexEncoder();
 		const microblockData = hexDecoder.decode(encodedMicroblock);
 		return Microblock.loadFromSerializedMicroblock(microblockData);
+	}
+
+	static decodeMicroblockHash(microblocHash: string) {
+		return Hash.fromHex(microblocHash)
 	}
 }

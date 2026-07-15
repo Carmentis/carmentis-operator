@@ -5,6 +5,8 @@ import { AnchorRequestService } from '../services/AnchorRequestService';
 import { AnchorRequestStatusResponseDto } from '../dto/AnchorRequestStatusResponseDto';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
 import { GetAllElementsDto } from '../dto/GetAllElementsDto';
+import { WalletService } from '../services/WalletService';
+import { MicroblockUtils } from '../utils/MicroblockUtils';
 
 @Controller('/api/anchorRequest')
 export class AnchorRequestController {
@@ -12,7 +14,8 @@ export class AnchorRequestController {
 	private logger = new Logger();
 	constructor(
 		private readonly operatorService: WalletAnchoringRequestService,
-		private readonly anchorService: AnchorRequestService
+		private readonly anchorService: AnchorRequestService,
+		private readonly walletService: WalletService,
 	) {}
 
 
@@ -118,5 +121,33 @@ export class AnchorRequestController {
 	) {
 		const anchorRequest = await this.anchorService.deleteAnchorRequestByAnchorRequestId(anchorRequestId);
 		return { affected: anchorRequest.affected };
+	}
+
+
+	/**
+	 * Checks if a microblock is published on the blockchain.
+	 */
+	@ApiOperation({
+		summary: 'Checks if a microblock is published on the blockchain.',
+	})
+	@ApiSecurity('api-key')
+	@Get(':anchorRequestId/published')
+	async isPublishedOnChain(
+		@Param('anchorRequestId') anchorRequestId: string,
+	) {
+		// TODO: return false if not submitted
+		const anchorRequest = await this.anchorService.getAnchorRequestByAnchorRequestId(anchorRequestId);
+		const applicationId = anchorRequest.application.vbId;
+		const wallet = await this.walletService.getWalletByApplicationId(applicationId);
+		const provider = wallet.getProvider();
+		try {
+			await provider.loadMicroblockByMicroblockHash(
+				MicroblockUtils.decodeMicroblockHash(anchorRequest.submittedMicroblockHash)
+			);
+			return { isPublished: true };
+		} catch (e) {
+			return { isPublished: false };
+		}
+
 	}
 }
