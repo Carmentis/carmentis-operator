@@ -32,6 +32,8 @@ import { WalletInteractiveAnchoringRequestType } from '@cmts-dev/carmentis-sdk-c
 import ChainService from '../../services/ChainService';
 import { AnchorRequestService } from '../../services/AnchorRequestService';
 import { AnchorRequestEntity } from '../../entities/AnchorRequestEntity';
+import { WalletUtils } from '../../utils/WalletUtils';
+import { VbUtils } from '../../utils/VbUtils';
 
 /**
  * Controller for handling operator-related API requests.
@@ -212,6 +214,7 @@ export class OperatorApiController{
 		return { affected: anchorRequest.affected };
 	}
 
+	/*
 	@ApiSecurity('api-key')
 	@Get(`/microblock/hash/:microblockHash`)
 	async getMicroblock(
@@ -300,14 +303,7 @@ export class OperatorApiController{
 		return this.createTokensResponseFromBreakdown(balance);
 	}
 
-	/**
-	 * Creates a response object that contains token balances formatted as both human-readable strings and atomic values.
-	 *
-	 * @param {BalanceAvailability} balance - The balance breakdown object containing spendable, staked, and vested amounts.
-	 * @return {Object} An object containing the token balances formatted in two ways:
-	 *                  - `formatted`: Human-readable string representations of spendable, staked, and vested balances.
-	 *                  - `atomics`: Atomic (raw numerical) representations of spendable, staked, and vested balances.
-	 */
+
 	private createTokensResponseFromBreakdown(balance: BalanceAvailability) {
 		const spendable=  balance.getSpendable();
 		const staked = balance.getStaked();
@@ -318,6 +314,8 @@ export class OperatorApiController{
 			vested: this.formatCMTSTokenInJson(vested),
 		};
 	}
+	
+	 */
 
 	@ApiSecurity('api-key')
 	@Get(`/record/vb/:vbId/height/:height`)
@@ -327,9 +325,12 @@ export class OperatorApiController{
 		@Param('height', ParseIntPipe) height: number,
 	) {
 		const wallet = await this.apiKeyService.findWalletByApiKey(key);
+		const rawVbId = Buffer.from(vbId, 'hex')
+		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, rawVbId)
+		const actorCrypto = await WalletUtils.getActorCryptoFromWallet(wallet, vbSeed);
 		const provider = wallet.getProvider();
 		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.from(vbId))
-		return vb.getRecord(height);
+		return vb.getRecord(height, actorCrypto);
 	}
 
 	@Public()

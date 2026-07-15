@@ -38,59 +38,14 @@ import { JwtTokenBearerGuard } from './guards/JwtTokenBearerGuard';
 
 @Module({
 	imports: [
-		OperatorConfigModule,
-		JwtModule.registerAsync({
-			imports: [OperatorConfigModule],
-			useFactory: async (envService: EnvService, config: OperatorConfigService) => ({
-				secret: await envService.getOrCreateJwtSecret(),
-				signOptions: { expiresIn: config.getJwtTokenValidity() },
-			}),
-			inject: [EnvService, OperatorConfigService],
-		}),
-		TypeOrmModule.forFeature([
-			AnchorRequestEntity,
-			UserEntity,
-			ApiKeyEntity,
-			WalletEntity,
-			ApplicationEntity,
-		]),
+
 
 	],
 	controllers: [
-		OperatorAdminApiSetupController,
-		OperatorAdminApiApiKeyController,
-		OperatorApiController,
-		OperatorHealthApiController,
-		OperatorAdminApiLoginController,
-		OperatorAdminApiUserController,
-		OperatorAdminApiApplicationController,
-		OperatorAdminApiWalletController,
+
 	],
 	providers: [
-        CryptoService,
-		EnvService,
-		WalletAnchoringRequestService,
-		EncryptionService,
-		CryptoService,
-		ApiKeyService,
-		UserService,
-		ApplicationService,
-		WalletService,
-		ChainService,
-		AnchorRequestService,
-		ChallengeService,
-		{
-			provide: APP_GUARD,
-			useClass: ApiKeyGuard,
-		},
-		{
-			provide: APP_GUARD,
-			useClass: JwtTokenBearerGuard,
-		},
-		{
-			provide: APP_INTERCEPTOR,
-			useClass: CrudRequestInterceptor,
-		}
+
 	],
 })
 export class OperatorApiModule implements NestModule {
