@@ -34,8 +34,6 @@ import ChainService from './services/ChainService';
 import { AnchorRequestService } from './services/AnchorRequestService';
 import { ChallengeService } from './services/ChallengeService';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { ApiKeyGuard } from './guards/ApiKeyGuard';
-import { JwtTokenBearerGuard } from './guards/JwtTokenBearerGuard';
 import { CrudRequestInterceptor } from '@dataui/crud';
 import { EncryptionServiceProxy } from './shared/transformers/EncryptionServiceProxy';
 import { CorsMiddleware } from './middlewares/CorsMiddleware';
@@ -48,17 +46,18 @@ import { ProtocolWiapV1Controller } from './controllers/ProtocolWiapV1Controller
 import { AnchorRequestController } from './controllers/AnchorRequestController';
 import { ChainController } from './controllers/ChainController';
 import { WalletProofController } from './controllers/wallet/WalletProofController';
+import { AuthGuard } from './guards/AuthGuard';
 
 @Module({
 	imports: [
 		OperatorConfigModule,
 		JwtModule.registerAsync({
 			imports: [OperatorConfigModule],
+			inject: [EnvService, OperatorConfigService],
 			useFactory: async (envService: EnvService, config: OperatorConfigService) => ({
 				secret: await envService.getOrCreateJwtSecret(),
 				signOptions: { expiresIn: config.getJwtTokenValidity() },
 			}),
-			inject: [EnvService, OperatorConfigService],
 		}),
 		TypeOrmModule.forFeature([
 			AnchorRequestEntity,
@@ -91,17 +90,10 @@ import { WalletProofController } from './controllers/wallet/WalletProofControlle
 		ChainService,
 		AnchorRequestService,
 		ChallengeService,
-		/*
 		{
 			provide: APP_GUARD,
-			useClass: ApiKeyGuard,
+			useClass: AuthGuard,
 		},
-		{
-			provide: APP_GUARD,
-			useClass: JwtTokenBearerGuard,
-		},
-
-		 */
 		{
 			provide: APP_INTERCEPTOR,
 			useClass: CrudRequestInterceptor,

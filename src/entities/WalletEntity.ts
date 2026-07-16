@@ -21,7 +21,6 @@ export class WalletEntity extends BaseEntity {
 	@Column()
 	publicKeyEncryptionSchemeId: number = PublicKeyEncryptionSchemeId.ML_KEM_768_AES_256_GCM
 
-	@Exclude()
 	@EncryptedColumn()
 	seed: string;
 

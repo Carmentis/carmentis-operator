@@ -29,9 +29,9 @@ export class ApiKeyGuard implements CanActivate {
 		if (isPublic) return true;
 
 
-		// this guard only works for request to /api/**
-		const path = request.url;
-		if (!path.startsWith('/api/')) return true;
+		// this guard works for all requests, not only /api/**
+		//const path = request.url;
+		//if (!path.startsWith('/api/')) return true;
 
 		// check the validity of the key
 		const key = this.extractApiKeyFromHeader(request);
@@ -52,6 +52,8 @@ export class ApiKeyGuard implements CanActivate {
 					this.logger.debug(`Endpoint ${endpoint} does not match allowed regex pattern`);
 					return false;
 				}
+			} else {
+				this.logger.debug("Endpoint regex is not defined: All routes enabled")
 			}
 
 			request.apiKey = apiKey;
@@ -59,6 +61,7 @@ export class ApiKeyGuard implements CanActivate {
 			this.logger.debug("API key is invalid or inactive")
 		}
 
+		this.logger.debug(`API key verification result: ${isActive}`)
 		return isActive
 	}
 
@@ -76,12 +79,15 @@ export class ApiKeyGuard implements CanActivate {
 		}
 
 		// search in x-api-key header
-		const apiKeyHeader = headers['x-api-key']
-		if (apiKeyHeader) {
-			const apiKey = typeof apiKeyHeader === 'string' ? apiKeyHeader : apiKeyHeader[0];
-			const trimedApiKey = apiKey.trim();
-			const isEmpty = trimedApiKey.length === 0;
-			return isEmpty ? undefined : trimedApiKey
+		const supportedHeaders = ['x-api-key', 'X-API-KEY']
+		for (const header of supportedHeaders) {
+			const apiKeyHeader = headers[header]
+			if (apiKeyHeader) {
+				const apiKey = typeof apiKeyHeader === 'string' ? apiKeyHeader : apiKeyHeader[0];
+				const trimedApiKey = apiKey.trim();
+				const isEmpty = trimedApiKey.length === 0;
+				return isEmpty ? undefined : trimedApiKey
+			}
 		}
 
 		return undefined

@@ -9,7 +9,7 @@ import { WalletService } from '../../services/WalletService';
 		type: WalletEntity,
 	},
 	params: {
-		publicKey: {
+		walletId: {
 			field: 'walletId',
 			type: 'number',
 			primary: true,
