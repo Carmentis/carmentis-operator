@@ -47,6 +47,7 @@ import { HealthController } from './controllers/HealthController';
 import { ProtocolWiapV1Controller } from './controllers/ProtocolWiapV1Controller';
 import { AnchorRequestController } from './controllers/AnchorRequestController';
 import { ChainController } from './controllers/ChainController';
+import { WalletProofController } from './controllers/wallet/WalletProofController';
 
 @Module({
 	imports: [
@@ -120,6 +121,7 @@ import { ChainController } from './controllers/ChainController';
 		ProtocolWiapV1Controller,
 		AnchorRequestController,
 		HealthController,
+		WalletProofController,
 		WalletRecordController,
 		WalletAnchoringController,
 		VerifiableCredentialController,
