@@ -9,10 +9,10 @@ import {
 	SdJwtVerifiableCredentialVerificationRequestDto,
 	SdJwtVerifiablePresentationVerificationRequestDto,
 } from '../../dto/vc/SdJwtVerifiableCredentialVerificationRequestDto';
-import { CredentialVerificationResultDto } from '../../dto/vc/CredentialVerificationResultDto';
+import { SdJwtCredentialVerificationResultDto } from '../../dto/vc/SdJwtCredentialVerificationResultDto';
 import { IVerifiablePresentationHandler } from './IVerifiablePresentationHandler';
 
-export interface SdJwtVerifiableCredentialVerificationResponseDto extends CredentialVerificationResultDto {
+export interface SdJwtVerifiableCredentialVerificationResponseDto extends SdJwtCredentialVerificationResultDto {
 	parsedCredential: object;
 	claims: object;
 }

@@ -5,7 +5,11 @@ import {
 	SdJwtVerifiableCredentialVerificationRequestDto, SdJwtVerifiablePresentationVerificationRequestDto,
 } from '../dto/vc/SdJwtVerifiableCredentialVerificationRequestDto';
 import { IVerifiableCredentialHandler } from '../utils/vc/IVerifiableCredentialHandler';
-import { SdJwtVerifiableCredentialHandler } from '../utils/vc/SdJwtVerifiableCredentialHandler';
+import {
+	SdJwtVerifiableCredentialHandler,
+	SdJwtVerifiableCredentialVerificationResponseDto,
+} from '../utils/vc/SdJwtVerifiableCredentialHandler';
+import { SdJwtCredentialVerificationResultDto } from '../dto/vc/SdJwtCredentialVerificationResultDto';
 
 @ApiTags('Verifiable Credentials')
 @Controller('/api')
@@ -19,24 +23,19 @@ export class VerifiableCredentialController {
 	})
 	@ApiResponse({
 		status: 200,
-		description: 'The credential has been verified.',
-		schema: {
-			properties: {
-				success: { type: 'boolean' },
-				error: { type: 'string' }
-			}
-		}
+		description: 'The credential verification result.',
+		type: SdJwtCredentialVerificationResultDto
 	})
 	@Post('/vc/sdjwt/verify')
 	async verifyVerifiableCredential(
 		@Body() verificationRequest: SdJwtVerifiableCredentialVerificationRequestDto
-	) {
+	): Promise<SdJwtCredentialVerificationResultDto> {
 		try {
 			const handler = new SdJwtVerifiableCredentialHandler();
 			return await handler.verifyCredentialRequest(verificationRequest);
 		} catch (error) {
 			this.logger.error(`Error verifying credential: ${error}`);
-			return { success: false, error: error.message };
+			return { success: false, errors: [error.message] };
 		}
 	}
 
@@ -46,24 +45,19 @@ export class VerifiableCredentialController {
 	})
 	@ApiResponse({
 		status: 200,
-		description: 'The presentation has been verified.',
-		schema: {
-			properties: {
-				success: { type: 'boolean' },
-				error: { type: 'string' }
-			}
-		}
+		description: 'The presentation verification result.',
+		type: SdJwtCredentialVerificationResultDto
 	})
 	@Post('/vp/sdjwt/verify')
 	async verifyVerifiablePresentation(
 		@Body() verificationRequest: SdJwtVerifiablePresentationVerificationRequestDto
-	) {
+	): Promise<SdJwtCredentialVerificationResultDto> {
 		try {
 			const handler = new SdJwtVerifiableCredentialHandler();
 			return await handler.verifyPresentationRequest(verificationRequest);
 		} catch (error) {
 			this.logger.error(`Error verifying credential: ${error}`);
-			return { success: false, error: error.message };
+			return { success: false, errors: [error.message] };
 		}
 	}
 

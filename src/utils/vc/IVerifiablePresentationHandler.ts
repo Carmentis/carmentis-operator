@@ -1,6 +1,6 @@
 import { SdJwtVerifiablePresentationVerificationRequestDto } from '../../dto/vc/SdJwtVerifiableCredentialVerificationRequestDto';
-import { CredentialVerificationResultDto } from '../../dto/vc/CredentialVerificationResultDto';
+import { SdJwtCredentialVerificationResultDto } from '../../dto/vc/SdJwtCredentialVerificationResultDto';
 
 export interface IVerifiablePresentationHandler {
-	verifyPresentationRequest(request: SdJwtVerifiablePresentationVerificationRequestDto): Promise<CredentialVerificationResultDto>;
+	verifyPresentationRequest(request: SdJwtVerifiablePresentationVerificationRequestDto): Promise<SdJwtCredentialVerificationResultDto>;
 }
