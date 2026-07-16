@@ -11,6 +11,8 @@ import { AnchorRequestResponseDto } from '../../dto/AnchorRequestResponseDto';
 import { ApiKey } from '../../decorators/ApiKeyDecorator';
 import { ApiKeyEntity } from '../../entities/ApiKeyEntity';
 import { CarmentisError } from '@cmts-dev/carmentis-sdk-core';
+import { ApplicationService } from '../../services/ApplicationService';
+import { InvalidArgumentError } from 'commander';
 
 @Controller('/api')
 export class WalletAnchoringController {
@@ -18,6 +20,7 @@ export class WalletAnchoringController {
 	constructor(
 		private readonly apiKeyService: ApiKeyService,
 		private readonly operatorService: WalletAnchoringRequestService,
+		private readonly applicationService: ApplicationService,
 	) {}
 
 
@@ -38,9 +41,11 @@ export class WalletAnchoringController {
 	): Promise<AnchorRequestResponseDto> {
 		try {
 			this.logAnchorRequest(anchorDto)
-			this.validateIfApiKeyAllowingPublicationToApplication(key, anchorDto.applicationId)
+
+			const applicationId = anchorDto.applicationId;
+			this.validateIfApiKeyAllowingPublicationToApplication(key, applicationId)
 			this.validateGasPrice(key, anchorDto.gasPriceInAtomics);
-			const application = await this.apiKeyService.findApplicationByApiKey(key);
+			const application = await this.applicationService.findApplicationByVbId(applicationId);
 			return this.operatorService.createAnchorRequestWithWallet(application, anchorDto);
 		} catch (e) {
 			this.logger.error("An error occurred while processing anchoring with wallet request: ", e)
@@ -76,11 +81,12 @@ export class WalletAnchoringController {
 		@Body() anchorDto: AnchorDto,
 		@ApiKey() key: ApiKeyEntity,
 	): Promise<AnchorRequestResponseDto> {
-		// find application and organization associated with the provided api key
-		this.validateIfApiKeyAllowingPublicationToApplication(key, anchorDto.applicationId)
+		// find application and organization
+		const applicationId = anchorDto.applicationId;
+		this.validateIfApiKeyAllowingPublicationToApplication(key, applicationId)
 		this.validateGasPrice(key, anchorDto.gasPriceInAtomics);
 		this.logAnchorRequest(anchorDto)
-		const application = await this.apiKeyService.findApplicationByApiKey(key);
+		const application = await this.applicationService.findApplicationByVbId(applicationId);
 		const anchorRequestId = await this.operatorService.anchor(application, anchorDto);
 		return { anchorRequestId: anchorRequestId }
 	}
@@ -96,7 +102,6 @@ export class WalletAnchoringController {
 		this.logger.log(`Channels: ${request.channels.map(channel => channel.name).join(', ')}`)
 		this.logger.log("-------------------------------------")
 	}
-
 
 	private validateGasPrice(apiKey: ApiKeyEntity, gasPriceInAtomics: number) {
 		if (gasPriceInAtomics < apiKey.gasMinAtomics) {
