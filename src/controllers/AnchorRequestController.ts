@@ -7,6 +7,7 @@ import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
 import { GetAllElementsDto } from '../dto/GetAllElementsDto';
 import { WalletService } from '../services/WalletService';
 import { MicroblockUtils } from '../utils/MicroblockUtils';
+import { AnchorRequestStatus } from '../utils/AnchorRequestStatus';
 
 @ApiTags('Anchor Request')
 @Controller('/api/anchorRequest')
@@ -157,8 +158,11 @@ export class AnchorRequestController {
 	async isPublishedOnChain(
 		@Param('anchorRequestId') anchorRequestId: string,
 	) {
-		// TODO: return false if not submitted
+		// return false if not submitted
 		const anchorRequest = await this.anchorService.getAnchorRequestByAnchorRequestId(anchorRequestId);
+		if (anchorRequest.status !== AnchorRequestStatus.SUBMITTED)
+			return { isPublished: false };
+
 		const applicationId = anchorRequest.application.vbId;
 		const wallet = await this.walletService.getWalletByApplicationId(applicationId);
 		const provider = wallet.getProvider();
