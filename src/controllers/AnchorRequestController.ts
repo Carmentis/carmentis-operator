@@ -39,8 +39,13 @@ export class AnchorRequestController {
 	@Get(':anchorRequestId/status')
 	async getAnchorRequestStatus(
 		@Param('anchorRequestId') anchorRequestId: string,
-	) {
-		return await this.operatorService.getAnchorRequestFromAnchorRequestId(anchorRequestId);
+	): Promise<AnchorRequestStatusResponseDto> {
+		const request = await this.operatorService.getAnchorRequestFromAnchorRequestId(anchorRequestId);
+		return {
+			status: request.status,
+			virtualBlockchainId: request.virtualBlockchainId,
+			microBlockHash: request.submittedMicroblockHash
+		}
 	}
 
 
