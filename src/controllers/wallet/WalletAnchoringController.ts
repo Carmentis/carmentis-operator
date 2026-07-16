@@ -1,4 +1,4 @@
-import { ApiBody, ApiCreatedResponse, ApiOperation, ApiResponse, ApiSecurity } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { AnchorRequestStatusResponseDto } from '../../dto/AnchorRequestStatusResponseDto';
 import { Body, Controller, Delete, Get, Logger, Param, Post } from '@nestjs/common';
 import { AnchorRequestEntity } from '../../entities/AnchorRequestEntity';
@@ -14,6 +14,7 @@ import { CarmentisError } from '@cmts-dev/carmentis-sdk-core';
 import { ApplicationService } from '../../services/ApplicationService';
 import { InvalidArgumentError } from 'commander';
 
+@ApiTags('Wallet Anchoring')
 @Controller('/api')
 export class WalletAnchoringController {
 	private logger = new Logger();
@@ -25,12 +26,12 @@ export class WalletAnchoringController {
 
 
 	@ApiOperation({
-		summary: 'Initiate an anchor request',
-		description: 'This endpoint is used by the server to initiate an anchoring request that should be accepted by a wallet.'
+		summary: 'Initiate an anchor request with wallet',
+		description: 'Initiates an anchoring request that should be accepted by a wallet. This endpoint allows anchoring with explicit wallet approval.'
 	})
 	@ApiBody({ type: AnchorWithWalletDto })
 	@ApiCreatedResponse({
-		description: 'Anchoring session created',
+		description: 'The anchoring session has been created successfully.',
 		type: AnchorRequestResponseDto
 	})
 	@ApiSecurity('api-key')
@@ -69,10 +70,11 @@ export class WalletAnchoringController {
 
 	@ApiOperation({
 		summary: 'Initiate an anchor request',
-		description: 'This endpoint is used by the server to initiate an anchoring request that should be accepted by a wallet.'
+		description: 'Initiates an anchoring request for an application. This endpoint is used to create an anchor request without explicit wallet approval.'
 	})
+	@ApiBody({ type: AnchorDto })
 	@ApiCreatedResponse({
-		description: 'The anchoring request has been accepted.',
+		description: 'The anchoring request has been created successfully.',
 		type: AnchorRequestResponseDto
 	})
 	@ApiSecurity('api-key')

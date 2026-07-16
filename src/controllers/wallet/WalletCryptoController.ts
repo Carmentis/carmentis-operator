@@ -1,4 +1,5 @@
 import { Body, Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WalletService } from '../../services/WalletService';
 import { WalletEntity } from '../../entities/WalletEntity';
 import { CryptoEncoderFactory, Hash, ProviderFactory, SeedEncoder, WalletCrypto } from '@cmts-dev/carmentis-sdk-core';
@@ -9,10 +10,24 @@ import { ActorPublicKeyRequestDto } from '../../dto/wallet/ActorPublicKeyRequest
 import { WalletUtils } from '../../utils/WalletUtils';
 import { VbUtils } from '../../utils/VbUtils';
 
+@ApiTags('Wallet Crypto')
 @Controller('/api/crypto/wallet')
 export class WalletCryptoController {
 	constructor(public service: WalletService) {}
 
+	@ApiOperation({
+		summary: 'Sign a binary message with wallet signature key',
+		description: 'Signs a binary message using the wallet\'s private signature key.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The message has been signed.',
+		schema: {
+			properties: {
+				signature: { type: 'string' }
+			}
+		}
+	})
 	@Get(':walletId/signature/sign')
 	async sign(
 		@Param('walletId') walletId: number,
@@ -27,6 +42,19 @@ export class WalletCryptoController {
 		return { signature: signature };
 	}
 
+	@ApiOperation({
+		summary: 'Verify a binary message signature',
+		description: 'Verifies that a signature was created by the wallet\'s private signature key.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The signature has been verified.',
+		schema: {
+			properties: {
+				verified: { type: 'boolean' }
+			}
+		}
+	})
 	@Get(':walletId/signature/verify')
 	async verify(
 		@Param('walletId') walletId: number,
@@ -43,8 +71,23 @@ export class WalletCryptoController {
 		return { verified: result }
 	}
 
-
-
+	@ApiOperation({
+		summary: 'Get wallet public signature key',
+		description: 'Retrieves the public signature key associated with the wallet.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The public signature key has been retrieved.',
+		schema: {
+			properties: {
+				signature: {
+					properties: {
+						pk: { type: 'string' }
+					}
+				}
+			}
+		}
+	})
 	@Get(':walletId/signature/pk')
 	async getPublicSignatureKey(
 		@Param('walletId') walletId: number,
@@ -57,6 +100,23 @@ export class WalletCryptoController {
 		return { signature: { pk: await encoder.encodePublicKey(pk) } }
 	}
 
+	@ApiOperation({
+		summary: 'Get wallet public encryption key',
+		description: 'Retrieves the public encryption key associated with the wallet.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The public encryption key has been retrieved.',
+		schema: {
+			properties: {
+				pke: {
+					properties: {
+						pk: { type: 'string' }
+					}
+				}
+			}
+		}
+	})
 	@Get(':walletId/pke/pk')
 	async getPublicEncryptionKey(
 		@Param('walletId') walletId: number
@@ -69,6 +129,23 @@ export class WalletCryptoController {
 		return { pke: { pk: await encoder.encodePublicEncryptionKey(pk) } }
 	}
 
+	@ApiOperation({
+		summary: 'Get actor public signature key',
+		description: 'Retrieves the public signature key for an actor in a virtual blockchain associated with the wallet.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The actor\'s public signature key has been retrieved.',
+		schema: {
+			properties: {
+				signature: {
+					properties: {
+						pk: { type: 'string' }
+					}
+				}
+			}
+		}
+	})
 	@Get(':walletId/actor/signature/pk')
 	async getActorPublicSignatureKey(
 		@Param('walletId') walletId: number,
@@ -84,6 +161,23 @@ export class WalletCryptoController {
 		return { signature: { pk: await encoder.encodePublicKey(pk) } }
 	}
 
+	@ApiOperation({
+		summary: 'Get actor public encryption key',
+		description: 'Retrieves the public encryption key for an actor in a virtual blockchain associated with the wallet.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The actor\'s public encryption key has been retrieved.',
+		schema: {
+			properties: {
+				pke: {
+					properties: {
+						pk: { type: 'string' }
+					}
+				}
+			}
+		}
+	})
 	@Get(':walletId/actor/pke/pk')
 	async getActorPublicEncryptionKey(
 		@Param('walletId') walletId: number,

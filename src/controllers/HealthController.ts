@@ -1,15 +1,27 @@
-import { ApiForbiddenResponse, ApiOperation, ApiResponse, ApiSecurity } from '@nestjs/swagger';
+import { ApiForbiddenResponse, ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { AnchorRequestStatusResponseDto } from '../dto/AnchorRequestStatusResponseDto';
 import { Controller, Get, Param } from '@nestjs/common';
 import { HelloResponseDto } from '../dto/HelloResponseDto';
 import { Public } from '../decorators/PublicDecorator';
 
+@ApiTags('Health')
 @Controller('/api')
 export class HealthController {
 
-	/**
-	 * Health endpoint.
-	 */
+	@ApiOperation({
+		summary: 'Health check endpoint',
+		description: 'Basic health check to confirm the server is running.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'Server is healthy.',
+		schema: {
+			properties: {
+				status: { type: 'string', example: 'ok' }
+			}
+		}
+	})
+	@Public()
 	@Get('/health')
 	health() {
 		return {

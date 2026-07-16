@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Logger, Param, ParseIntPipe } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiKeyService } from '../../services/ApiKeyService';
 import { WalletAnchoringRequestService } from '../../services/wallet-anchoring-request.service';
 import ChainService from '../../services/ChainService';
@@ -9,6 +10,7 @@ import { GetVirtualBlockchainRecordRequestDto } from '../../dto/wallet/GetVirtua
 import { Hash } from '@cmts-dev/carmentis-sdk-core';
 import { WalletService } from '../../services/WalletService';
 
+@ApiTags('Wallet Record')
 @Controller('/api/wallet')
 export class WalletRecordController {
 
@@ -17,7 +19,14 @@ export class WalletRecordController {
 		private readonly walletService: WalletService,
 	) {}
 
-
+	@ApiOperation({
+		summary: 'Get a record from a virtual blockchain',
+		description: 'Retrieves a record from a specific virtual blockchain at a given block height.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The record has been successfully retrieved.'
+	})
 	@Get('/:walletId/record')
 	async getRecord(
 		@Param('walletId', ParseIntPipe) walletId: number,

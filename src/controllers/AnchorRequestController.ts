@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Logger, Param, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiSecurity } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { WalletAnchoringRequestService } from '../services/wallet-anchoring-request.service';
 import { AnchorRequestService } from '../services/AnchorRequestService';
 import { AnchorRequestStatusResponseDto } from '../dto/AnchorRequestStatusResponseDto';
@@ -8,6 +8,7 @@ import { GetAllElementsDto } from '../dto/GetAllElementsDto';
 import { WalletService } from '../services/WalletService';
 import { MicroblockUtils } from '../utils/MicroblockUtils';
 
+@ApiTags('Anchor Request')
 @Controller('/api/anchorRequest')
 export class AnchorRequestController {
 
@@ -87,6 +88,14 @@ export class AnchorRequestController {
 	 *
 	 * @param anchorRequestId
 	 */
+	@ApiOperation({
+		summary: 'Get an anchor request by ID',
+		description: 'Retrieves detailed information about a specific anchor request.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The anchor request details.'
+	})
 	@ApiSecurity('api-key')
 	@Get(`:anchorRequestId`)
 	async getAnchorRequestById(
@@ -114,6 +123,19 @@ export class AnchorRequestController {
 	 *
 	 * @param anchorRequestId
 	 */
+	@ApiOperation({
+		summary: 'Delete an anchor request',
+		description: 'Deletes a specific anchor request by its ID.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The anchor request has been deleted.',
+		schema: {
+			properties: {
+				affected: { type: 'number' }
+			}
+		}
+	})
 	@ApiSecurity('api-key')
 	@Delete(`:anchorRequestId`)
 	async deleteAnchorRequestById(

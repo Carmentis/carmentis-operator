@@ -1,4 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk-core';
 import { match, P } from 'ts-pattern';
 import { InvalidArgumentError } from 'commander';
@@ -9,9 +10,23 @@ import { JsonMessageSignatureVerificationRequestDto } from '../../../dto/signatu
 import { JsonCanonicalizationMethod } from '../../../dto/signature/JsonCanonicalizationMethod';
 import { BinaryEncoding } from '../../../dto/signature/BinaryEncoding';
 
+@ApiTags('Crypto Signature')
 @Controller('/api/crypto/signature')
 export class CryptoSignatureController {
 
+	@ApiOperation({
+		summary: 'Verify a binary message signature',
+		description: 'Verifies the authenticity of a signature for a binary message using a public key.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The signature has been verified.',
+		schema: {
+			properties: {
+				verified: { type: 'boolean' }
+			}
+		}
+	})
 	@Post('verify/binary')
 	async verifyBinarySignature(
 		@Body() params: BinaryMessageSignatureVerificationRequestDto
@@ -25,6 +40,19 @@ export class CryptoSignatureController {
 		return { verified: result }
 	}
 
+	@ApiOperation({
+		summary: 'Verify a JSON message signature',
+		description: 'Verifies the authenticity of a signature for a JSON message using a public key with canonical JSON encoding.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The signature has been verified.',
+		schema: {
+			properties: {
+				verified: { type: 'boolean' }
+			}
+		}
+	})
 	@Post('verify/json')
 	async verifyJsonSignature(
 		@Body() params: JsonMessageSignatureVerificationRequestDto

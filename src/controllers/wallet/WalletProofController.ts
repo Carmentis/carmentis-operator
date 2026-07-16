@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Logger, Param, ParseIntPipe } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WalletService } from '../../services/WalletService';
 import { GetVirtualBlockchainRecordRequestDto } from '../../dto/wallet/GetVirtualBlockchainRecordRequestDto';
 import { VbUtils } from '../../utils/VbUtils';
@@ -8,6 +9,7 @@ import {
 	GetVirtualBlockchainAuthenticityProofRequestDto
 } from '../../dto/wallet/GetVirtualBlockchainAuthenticityProofRequestDto';
 
+@ApiTags('Wallet Proof')
 @Controller('/api/wallet')
 export class WalletProofController {
 
@@ -16,7 +18,14 @@ export class WalletProofController {
 		private readonly walletService: WalletService,
 	) {}
 
-
+	@ApiOperation({
+		summary: 'Get authenticity proof for a virtual blockchain',
+		description: 'Retrieves the authenticity proof for a specific virtual blockchain associated with a wallet.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The authenticity proof has been successfully retrieved.'
+	})
 	@Get('/:walletId/proof/authenticity')
 	async getRecord(
 		@Param('walletId', ParseIntPipe) walletId: number,
