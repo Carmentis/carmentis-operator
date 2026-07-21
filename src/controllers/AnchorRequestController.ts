@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Logger, Param, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { WalletAnchoringRequestService } from '../services/wallet-anchoring-request.service';
 import { AnchorRequestService } from '../services/AnchorRequestService';
@@ -8,6 +8,13 @@ import { GetAllElementsDto } from '../dto/GetAllElementsDto';
 import { WalletService } from '../services/WalletService';
 import { MicroblockUtils } from '../utils/MicroblockUtils';
 import { AnchorRequestStatus } from '../utils/AnchorRequestStatus';
+import { GetAuthenticityProofRequestDto } from '../dto/wallet/GetVirtualBlockchainAuthenticityProofRequestDto';
+import { VbUtils } from '../utils/VbUtils';
+import { WalletUtils } from '../utils/WalletUtils';
+import { Hash } from '@cmts-dev/carmentis-sdk-core';
+import { UserService } from '../services/UserService';
+import { ApiKey } from '../decorators/ApiKeyDecorator';
+import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 
 @ApiTags('Anchor Request')
 @Controller('/api/anchorRequest')
@@ -18,6 +25,7 @@ export class AnchorRequestController {
 		private readonly operatorService: WalletAnchoringRequestService,
 		private readonly anchorService: AnchorRequestService,
 		private readonly walletService: WalletService,
+		private readonly userService: UserService,
 	) {}
 
 
@@ -44,7 +52,7 @@ export class AnchorRequestController {
 		return {
 			status: request.status,
 			virtualBlockchainId: request.virtualBlockchainId,
-			microBlockHash: request.submittedMicroblockHash
+			submittedMicroblockHash: request.submittedMicroblockHash
 		}
 	}
 
@@ -89,6 +97,56 @@ export class AnchorRequestController {
 	}
 
 
+
+	@ApiOperation({
+		summary: 'Get authenticity proof for a virtual blockchain',
+		description: 'Retrieves the authenticity proof for a specific virtual blockchain associated with a wallet.'
+	})
+	@ApiResponse({
+		status: 200,
+		description: 'The authenticity proof has been successfully retrieved.'
+	})
+	@Get(':anchorRequestId/proof/authenticity')
+	async getRecord(
+		@ApiKey() apiKey: ApiKeyEntity,
+		@Param('anchorRequestId') anchorRequestId: string,
+		@Body() request: GetAuthenticityProofRequestDto
+	) {
+		// fetch the wallet from the api key
+		console.log(apiKey);
+		const wallet = apiKey.wallet;
+		if (!wallet) {
+			throw new BadRequestException('Cannot produce a proof for an api key not associated with a wallet.');
+		}
+
+		// fetch the virtual blockchain id from the anchor request
+		const anchorRequest = await this.anchorService.findOneByAnchorRequestId(anchorRequestId);
+		if (
+			anchorRequest.status !== AnchorRequestStatus.SUBMITTED ||
+			!anchorRequest.virtualBlockchainId
+		) {
+			throw new BadRequestException('Cannot produce a proof for an anchor request that is not submitted.');
+		}
+
+		const vbId = anchorRequest.virtualBlockchainId;
+
+		const author = !!request && request.proofAuthor ?
+			request.proofAuthor :
+			wallet.name;
+
+		this.logger.log(`Returning authenticity proof for vb ${vbId} with author ${author}`)
+		const rawVbId = Buffer.from(vbId, 'hex')
+		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, rawVbId)
+		const actorCrypto = await WalletUtils.getActorCryptoFromWallet(wallet, vbSeed);
+		const provider = wallet.getProvider();
+		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.from(vbId))
+		this.logger.log(`Returning authenticity proof for vb ${vbId} with author ${author}`)
+		return await vb.exportProof({
+			author
+		}, actorCrypto);
+	}
+
+
 	/**
 	 * Returns an anchor request.
 	 *
@@ -107,8 +165,22 @@ export class AnchorRequestController {
 	async getAnchorRequestById(
 		@Param('anchorRequestId') anchorRequestId: string,
 	) {
-		const anchorRequest = await this.anchorService.getAnchorRequestByAnchorRequestId(anchorRequestId);
-		return await this.formatAnchorRequestInJSON(anchorRequest);
+		return await AnchorRequestEntity.findOne({
+			where: {
+				anchorRequestId
+			},
+			select: [
+				'anchorRequestId',
+				'submittedMicroblockHash',
+				'virtualBlockchainId',
+				'createdAt',
+				'virtualBlockchainExpiration',
+				'submittedMicroblockHeight',
+				'generatedGenesisSeed',
+				'receivedAnchorRequest',
+				'status'
+			]
+		})
 	}
 
 	private async formatAnchorRequestInJSON(ar: AnchorRequestEntity) {
@@ -119,7 +191,7 @@ export class AnchorRequestController {
 			submittedMicroblockHash: ar.submittedMicroblockHash,
 			createdAt: ar.createdAt,
 			submittedAt: ar.submittedAt,
-			virtualBlockchainId: ar.virtualBlockchainId
+			virtualBlockchainId: ar.virtualBlockchainId,
 		}
 	}
 

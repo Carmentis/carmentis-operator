@@ -33,7 +33,7 @@ export class WalletCryptoController {
 		@Param('walletId') walletId: number,
 		@Body() params: WalletBinarySignatureRequestDto,
 	) {
-		const wallet = await this.service.findOneBy({ walletId })
+		const wallet = await this.service.getOneById(walletId)
 		if (!wallet) throw new NotFoundException('Wallet not found');
 		const sk = await WalletUtils.getPrivateSignatureKeyFromWallet(wallet);
 		const message = BinaryEncodingUtils.decode(params.message, params.messageEncoding);
@@ -60,7 +60,7 @@ export class WalletCryptoController {
 		@Param('walletId') walletId: number,
 		@Body() params: WalletBinarySignatureVerificationRequestDto,
 	) {
-		const wallet = await this.service.findOneBy({ walletId })
+		const wallet = await this.service.findOneBy({ id: walletId })
 		if (!wallet) throw new NotFoundException('Wallet not found');
 		const sk = await WalletUtils.getPrivateSignatureKeyFromWallet(wallet);
 		const pk = await sk.getPublicKey();
@@ -92,7 +92,7 @@ export class WalletCryptoController {
 	async getPublicSignatureKey(
 		@Param('walletId') walletId: number,
 	) {
-		const wallet = await this.service.findOneBy({ walletId })
+		const wallet = await this.service.getOneById(walletId)
 		if (!wallet) throw new NotFoundException('Wallet not found');
 		const sk = await WalletUtils.getPrivateSignatureKeyFromWallet(wallet);
 		const pk = await sk.getPublicKey();
@@ -121,7 +121,7 @@ export class WalletCryptoController {
 	async getPublicEncryptionKey(
 		@Param('walletId') walletId: number
 	) {
-		const wallet = await this.service.findOneBy({ walletId })
+		const wallet = await this.service.getOneById(walletId)
 		if (!wallet) throw new NotFoundException('Wallet not found');
 		const sk = await WalletUtils.getPrivateDecryptionKeyFromWallet(wallet);
 		const pk = await sk.getPublicKey();
@@ -151,7 +151,7 @@ export class WalletCryptoController {
 		@Param('walletId') walletId: number,
 		@Body() params: ActorPublicKeyRequestDto
 	) {
-		const wallet = await this.service.findOneBy({ walletId })
+		const wallet = await this.service.getOneById(walletId)
 		if (!wallet) throw new NotFoundException('Wallet not found');
 		const vbId = BinaryEncodingUtils.decode(params.vbId, params.vbIdEncoding);
 		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, vbId)
@@ -183,7 +183,7 @@ export class WalletCryptoController {
 		@Param('walletId') walletId: number,
 		@Body() params: ActorPublicKeyRequestDto
 	) {
-		const wallet = await this.service.findOneBy({ walletId })
+		const wallet = await this.service.getOneById(walletId)
 		if (!wallet) throw new NotFoundException('Wallet not found');
 		const vbId = BinaryEncodingUtils.decode(params.vbId, params.vbIdEncoding);
 		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, vbId)

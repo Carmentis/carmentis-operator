@@ -40,7 +40,7 @@ export class OperatorAdminApiApplicationController {
 	async createApplication(
 		@Body() body: ApplicationCreationDto
 	) {
-		const wallet  = await WalletEntity.findOneBy({ walletId: body.walletId });
+		const wallet  = await WalletEntity.findOneBy({ id: body.walletId });
 		return await ApplicationEntity.save({
 			vbId: body.vbId,
 			name: body.name,

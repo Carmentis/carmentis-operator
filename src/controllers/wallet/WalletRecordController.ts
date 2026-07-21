@@ -35,7 +35,7 @@ export class WalletRecordController {
 		const vbId = request.vbId;
 		const height = request.height;
 		this.logger.log(`Accessing record for vb ${vbId} at height ${height}`)
-		const wallet = await this.walletService.findOneBy({ walletId });
+		const wallet = await this.walletService.getOneById(walletId)
 		const rawVbId = Buffer.from(vbId, 'hex')
 		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, rawVbId)
 		const actorCrypto = await WalletUtils.getActorCryptoFromWallet(wallet, vbSeed);

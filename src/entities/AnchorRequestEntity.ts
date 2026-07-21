@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import { AnchorDto, AnchorWithWalletDto } from '../dto/AnchorDto';
 import { EncoderFactory, Hash, IllegalStateError, Microblock, Optional, Utils } from '@cmts-dev/carmentis-sdk-core';
 import { Logger } from '@nestjs/common';
@@ -6,7 +6,7 @@ import { ApplicationEntity } from './ApplicationEntity';
 import { AnchorRequestStatus } from '../utils/AnchorRequestStatus';
 
 @Entity()
-export class AnchorRequestEntity {
+export class AnchorRequestEntity extends BaseEntity {
 
 	private logger = new Logger();
 
@@ -95,7 +95,7 @@ export class AnchorRequestEntity {
 	 * After this delay, nodes are allowed to forget the microblock.
 	 */
 	@Column({nullable: true})
-	expirationInDays: number;
+	virtualBlockchainExpiration?: number | undefined | null;
 
 	getAnchorRequestId(): string {
 		return this.anchorRequestId;
@@ -127,7 +127,6 @@ export class AnchorRequestEntity {
 
 	getBuiltMicroblock(): Optional<Microblock> {
 		if (this.microblockAwaitingForSignatureFromEndorser === undefined) return Optional.none();
-		this.logger.debug(`Loading built microblock from hex encoded string: ${this.microblockAwaitingForSignatureFromEndorser}`)
 		return Optional.of(Microblock.loadFromSerializedMicroblock(Utils.binaryFromHexa(this.microblockAwaitingForSignatureFromEndorser)))
 	}
 

@@ -1,6 +1,7 @@
 import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { ApplicationEntity } from './ApplicationEntity';
+import { WalletEntity } from './WalletEntity';
 import { EncryptedColumn } from '../decorators/EncryptionDecorator';
 
 /**
@@ -21,6 +22,9 @@ export class ApiKeyEntity extends BaseEntity {
 
 	@ManyToOne(() => ApplicationEntity, app => app.apiKeys, { onDelete: "CASCADE", nullable: true })
 	application?: ApplicationEntity;
+
+	@ManyToOne(() => WalletEntity, wallet => wallet.apiKeys, { onDelete: "CASCADE", nullable: true })
+	wallet?: WalletEntity;
 
 
 	@CreateDateColumn()

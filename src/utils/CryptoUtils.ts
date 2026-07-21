@@ -1,4 +1,9 @@
-import { CryptoEncoderFactory, PublicSignatureKey } from '@cmts-dev/carmentis-sdk-core';
+import {
+	AbstractPublicEncryptionKey,
+	CryptoEncoderFactory,
+	PublicEncryptionKey,
+	PublicSignatureKey,
+} from '@cmts-dev/carmentis-sdk-core';
 import { Verifier } from '@sd-jwt/core';
 import { importJWK, base64url } from 'jose';
 
@@ -35,5 +40,15 @@ export class CryptoUtils {
 			const sig = Buffer.from(signature, 'base64url');
 			return await publicKey.verify(message, sig);
 		};
+	}
+
+	static async encodePublicSignatureKey(publicSignatureKey: PublicSignatureKey) {
+		const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
+		return encoder.encodePublicKey(publicSignatureKey);
+	}
+
+	static async encodePublicEncryptionKey(publicEncryptionKey: AbstractPublicEncryptionKey) {
+		const encoder = CryptoEncoderFactory.defaultStringPublicKeyEncryptionEncoder();
+		return encoder.encodePublicEncryptionKey(publicEncryptionKey);
 	}
 }

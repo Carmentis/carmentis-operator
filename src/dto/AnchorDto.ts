@@ -118,11 +118,15 @@ export class MaskableFieldDto {
  */
 export class AnchorDto  {
 	@ApiProperty({
-		description: 'Identifier of the application virtual blockchain. The application must be published online before calling this endpoint',
-		example: 'app123'
+		description: 'Identifier of the application virtual blockchain. ' +
+			'The application must be published online before calling this endpoint.' +
+			'When omitted, either a wallet or an application must be associated with the API key.',
+		example: 'app123',
+		required: false,
 	})
+	@IsOptional()
 	@IsString()
-	applicationId: string;
+	applicationId?: string;
 
 	@ApiProperty({
 		description: 'Identifier of the target virtual blockchain. If omitted, a new virtual blockchain is created for this anchor request',
@@ -134,27 +138,25 @@ export class AnchorDto  {
 	virtualBlockchainId?: string;
 
 	@ApiProperty({
-		description: 'Retention period in days for the anchored data on the Carmentis blockchain. After this period, data may be archived or removed',
-		default: 10,
-		example: 30,
+		description: 'Retention period in days for the anchored data on the Carmentis blockchain. After this period, data may be archived or removed. Required only for the first microblock of the virtual blockchain.',
+		example: 360,
 		required: false
 	})
-	@IsOptional()
 	@IsNumber()
+	@IsOptional()
 	@IsInt()
 	@IsPositive()
-	chainStorageInDays?: number = 10;
+	chainStorageInDays?: number;
 
 	@ApiProperty({
-		description: 'Gas price in atomic units (1 CMTS = 10^18 atomics) to use for the anchoring transaction. Must be within the API key limits (gasMinAtomics - gasMaxAtomics)',
-		example: 100000000000000000,
+		description: 'Gas price in atomic units to use for the anchoring transaction. If limits are defined, gas price must be within the API key limits (gasMinAtomics - gasMaxAtomics)',
+		example: 1000000000,
 		required: false
 	})
-	@IsOptional()
 	@IsNumber()
 	@IsPositive()
 	@IsInt()
-	gasPriceInAtomics?: number;
+	gasPriceInAtomics: number;
 
 	@ApiProperty({
 		type: [ChannelDto],
@@ -231,11 +233,6 @@ export class AnchorDto  {
 	})
 	@IsString()
 	author: string
-
-
-	isVirtualBlockchainIdDefined(): boolean {
-		return this.virtualBlockchainId !== undefined;
-	}
 }
 
 /**

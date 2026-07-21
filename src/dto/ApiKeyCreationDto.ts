@@ -42,6 +42,14 @@ export class ApiKeyCreationDto {
 	applicationVbId?: string;
 
 	@ApiPropertyOptional({
+		description: 'ID of the wallet this key is associated with. If omitted, the key is not tied to any specific wallet',
+		example: 1
+	})
+	@IsOptional()
+	@IsNumber()
+	walletId?: number;
+
+	@ApiPropertyOptional({
 		description: 'Regular expression pattern to restrict which API endpoints this key can access. If omitted, all endpoints are allowed. Example: "^/api/(anchor|wallet)/.*" restricts to anchor and wallet endpoints',
 		example: '^/api/anchor.*'
 	})

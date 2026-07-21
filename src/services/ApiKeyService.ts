@@ -23,13 +23,15 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 		activeUntil: Date | undefined,
 		endpointRegex?: string,
 		gasMinAtomics?: number,
-		gasMaxAtomics?: number
+		gasMaxAtomics?: number,
+		wallet?: WalletEntity
 	) {
 		// we start by creating the key
 		const secret = randomBytes(32).toString('hex');
 		const key = this.repo.create({
 			activeUntil,
 			application,
+			wallet,
 			name,
 			apiKey: secret,
 			isActive: true,
@@ -70,10 +72,13 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 
 
 	async findOneByKey(key: string) {
-		const {id} = this.parseKey(key);
-		return this.repo.findOne({
+		const {id, key: secret} = this.parseKey(key);
+		const apiKey = await ApiKeyEntity.findOne({
 			where: { id },
+			relations: ['wallet', 'application']
 		})
+		if (apiKey.apiKey !== key) throw new Error('Invalid API key');
+		return apiKey;
 	}
 
 	async updateKey(id: number, updateKey: Partial<ApiKeyEntity>) {

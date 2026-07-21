@@ -31,9 +31,9 @@ export class WalletProofController {
 		@Param('walletId', ParseIntPipe) walletId: number,
 		@Body() request: GetVirtualBlockchainAuthenticityProofRequestDto
 	) {
-		const vbId = request.vbId;
+		const vbId = request.virtualBlockchainId;
 		this.logger.log(`Returning authenticity proof for vb ${vbId}`)
-		const wallet = await this.walletService.findOneBy({ walletId });
+		const wallet = await this.walletService.getOneById(walletId)
 		const rawVbId = Buffer.from(vbId, 'hex')
 		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, rawVbId)
 		const actorCrypto = await WalletUtils.getActorCryptoFromWallet(wallet, vbSeed);
@@ -44,6 +44,5 @@ export class WalletProofController {
 			author
 		}, actorCrypto)
 		return proof;
-
 	}
 }

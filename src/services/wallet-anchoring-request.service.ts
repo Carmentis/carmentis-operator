@@ -11,7 +11,7 @@ import {
 	EncoderFactory,
 	Hash,
 	Microblock,
-	Provider, SectionLabel,
+	Provider,
 	SectionType,
 	SeedEncoder,
 	SignatureSchemeId,
@@ -26,6 +26,7 @@ import {
 } from '@cmts-dev/carmentis-sdk-core';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { WalletUtils } from '../utils/WalletUtils';
+import { AnchorRequestStatus } from '../utils/AnchorRequestStatus';
 
 
 @Injectable()
@@ -195,16 +196,25 @@ export class WalletAnchoringRequestService {
 		// harder case: the application ledger is empty, meaning that we have to generate the genesis seed
 		// and then create a microblock extending the application ledger.
 		// Be aware that a genesis might already be generated and stored in the anchor request (which explains why we expect the anchor request id)
-		const storedAnchorRequest = await this.anchorRequestService.findOneByAnchorRequestId(anchorRequestId);
-		const mb = Microblock.createGenesisMicroblock(VirtualBlockchainType.APP_LEDGER_VIRTUAL_BLOCKCHAIN, storedAnchorRequest.expirationInDays ?? 10);
-		if (!storedAnchorRequest.generatedGenesisSeed) {
+		// We must first ensure that the expiration duration is provided
+		const anchorRequest = await this.anchorRequestService.findOneByAnchorRequestId(anchorRequestId);
+		const virtualBlockchainExpiration = anchorRequest.virtualBlockchainExpiration;
+		if (!virtualBlockchainExpiration) {
+			throw new Error(`Expiration duration not provided for anchor request id ${anchorRequestId}`);
+		}
+
+		const mb = Microblock.createGenesisMicroblock(
+			VirtualBlockchainType.APP_LEDGER_VIRTUAL_BLOCKCHAIN,
+			virtualBlockchainExpiration
+		);
+		if (!anchorRequest.generatedGenesisSeed) {
 			// in this case, we use the genesis seed generated automatically in the mb and store it in the anchor request
 			const genesisSeed = mb.getPreviousHash();
 			await this.anchorRequestService.saveGenesisSeed(anchorRequestId, genesisSeed);
 			this.logger.debug(`Generated genesis seed for anchor request id ${anchorRequestId}: ${genesisSeed.encode()}`)
 		} else {
 			// in this case, we use the genesis seed stored in the anchor request
-			const genesisSeed = storedAnchorRequest.getStoredGenesisSeed();
+			const genesisSeed = anchorRequest.getStoredGenesisSeed();
 			mb.setPreviousHash(genesisSeed);
 			this.logger.debug(`Using genesis seed stored in anchor request id ${anchorRequestId}: ${genesisSeed.encode()}`)
 		}
@@ -306,8 +316,8 @@ export class WalletAnchoringRequestService {
 			// send the answer to the wallet
 			return {
 				type: WalletInteractiveAnchoringResponseType.APPROVAL_SIGNATURE,
-				b64MbHash: b64.encode(vbHash.toBytes()),
-				b64VbHash: b64.encode(mbHash.toBytes()),
+				b64MbHash: b64.encode(mbHash.toBytes()),
+				b64VbHash: b64.encode(vbHash.toBytes()),
 				height: appLedgerVb.getHeight(),
 			}
 		} catch (e) {
@@ -318,7 +328,9 @@ export class WalletAnchoringRequestService {
 	private async loadAnchorRequestFromDataId(dataId: string) {
 		// load the initial anchor request and halts if the request is not pending
 		const storedRequest = await this.anchorRequestService.findOneByAnchorRequestId(dataId);
-		if (!storedRequest.isPending()) throw new Error("Anchor request is not valid anymore.")
+		const status = storedRequest.status;
+		const isStillCallable = status === AnchorRequestStatus.CREATED || status === AnchorRequestStatus.INITIATED;
+		if (!isStillCallable) throw new Error("Anchor request is not valid anymore.")
 		return storedRequest;
 	}
 

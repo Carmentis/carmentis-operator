@@ -1,6 +1,7 @@
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { EncryptedColumn } from '../decorators/EncryptionDecorator';
 import { ApplicationEntity } from './ApplicationEntity';
+import { ApiKeyEntity } from './ApiKeyEntity';
 import {
 	Provider,
 	ProviderFactory,
@@ -13,7 +14,7 @@ import { Exclude } from 'class-transformer';
 export class WalletEntity extends BaseEntity {
 
 	@PrimaryGeneratedColumn()
-	walletId: number;
+	id: number;
 
 	@Column()
 	signatureSchemeId: number = SignatureSchemeId.SECP256K1;
@@ -42,6 +43,8 @@ export class WalletEntity extends BaseEntity {
 	@OneToMany(() => ApplicationEntity, app => app.wallet, { cascade: true })
 	applications: ApplicationEntity[];
 
+	@OneToMany(() => ApiKeyEntity, apiKey => apiKey.wallet)
+	apiKeys: ApiKeyEntity[];
 
 	getProvider(): Provider {
 		return ProviderFactory.createInMemoryProviderWithExternalProvider(this.rpcEndpoint);

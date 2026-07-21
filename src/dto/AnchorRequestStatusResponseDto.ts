@@ -8,5 +8,5 @@ export class AnchorRequestStatusResponseDto	{
 	virtualBlockchainId?: string;
 
 	@ApiProperty({ description: 'The micro block hash (only if published).' })
-	microBlockHash?: string;
+	submittedMicroblockHash?: string;
 }

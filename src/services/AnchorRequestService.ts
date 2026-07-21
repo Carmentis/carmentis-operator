@@ -34,14 +34,19 @@ export class AnchorRequestService {
 	 */
 	async createAnchorRequest(application: ApplicationEntity, request: AnchorDto) {
 		const anchorRequestId = this.generateRandomAnchorRequestId();
-		const expirationInDays = Utils.addDaysToTimestamp(Utils.getTimestampInSeconds(), request.chainStorageInDays);
-		await this.anchorRequestRepository.save({
-			anchorRequestId: anchorRequestId,
-			status: AnchorRequestStatus.CREATED,
-			request,
-			application,
-			expirationInDays: expirationInDays,
-		});
+		const anchorRequestEntity = AnchorRequestEntity.create()
+		anchorRequestEntity.anchorRequestId = anchorRequestId;
+		anchorRequestEntity.status = AnchorRequestStatus.CREATED;
+		anchorRequestEntity.receivedAnchorRequest = request as any
+		anchorRequestEntity.application = application
+		// if virtual blockchain expiration provided
+		if (request.chainStorageInDays) {
+			anchorRequestEntity.virtualBlockchainExpiration = Utils.addDaysToTimestamp(
+				Utils.getTimestampInSeconds(),
+				request.chainStorageInDays
+			)
+		}
+		await anchorRequestEntity.save();
 		return anchorRequestId;
 	}
 
@@ -59,6 +64,7 @@ export class AnchorRequestService {
 		anchorRequest.submittedMicroblock = MicroblockUtils.encodeMicroblock(submittedMicroblock);
 		anchorRequest.status = AnchorRequestStatus.SUBMITTED;
 		anchorRequest.submittedMicroblockHeight = submittedMicroblock.getHeight();
+		anchorRequest.submittedMicroblockHash = submittedMicroblock.getHash().encode();
 		anchorRequest.submittedAt = Date.now();
 		anchorRequest.virtualBlockchainId = vbId.encode();
 		await this.anchorRequestRepository.save(anchorRequest);
@@ -120,67 +126,6 @@ export class AnchorRequestService {
 		return this.findOneByAnchorRequestId(anchorRequestId);
 	}
 
-
-	/**
-	 * Marks an anchor request as published by updating its status and associated details.
-	 *
-	 * @param {string} anchorRequestId - The unique identifier of the anchor request to be marked as published.
-	 * @param {Hash} vbId - The virtual blockchain identifier.
-	 * @param {Hash} mbHash - The microblock hash.
-	 * @param submittedMicroblock
-	 * @return {Promise<void>} A promise that resolves when the operation is complete.
-	 */
-	async markAnchorRequestAsSubmitted(
-		anchorRequestId: string,
-		vbId: Hash,
-		mbHash: Hash,
-		submittedMicroblock: Microblock
-	) {
-		// encode the microblock
-		const hexEncoder = EncoderFactory.bytesToHexEncoder();
-		const {microblockData} = submittedMicroblock.serialize();
-		const encodedMicroblockData = hexEncoder.encode(microblockData);
-
-		return this.anchorRequestRepository.update({
-			anchorRequestId
-		}, {
-			status: AnchorRequestStatus.SUBMITTED,
-			submittedMicroblockHash: mbHash.encode(),
-			virtualBlockchainId: vbId.encode(),
-			submittedAt: Date.now(),
-			submittedMicroblock: encodedMicroblockData
-		})
-	}
-
-
-
-
-
-	async createSubmittedAnchorRequest(
-		anchorDto: AnchorDto,
-		application: ApplicationEntity,
-		virtualBlockId: Hash,
-		submittedMicroblock: Microblock
-	) {
-		const microblockHash = submittedMicroblock.getHash();
-		const hexEncoder = EncoderFactory.bytesToHexEncoder();
-		const {microblockData} = submittedMicroblock.serialize();
-		const encodedMicroblockData = hexEncoder.encode(microblockData);
-		const anchorRequestId = this.generateRandomAnchorRequestId();
-		await this.anchorRequestRepository.save({
-			anchorRequestId: anchorRequestId,
-			status: AnchorRequestStatus.SUBMITTED,
-			receivedAnchorRequest: anchorDto,
-			application: application,
-			virtualBlockchainId: virtualBlockId.encode(),
-			submittedMicroblockHash: microblockHash.encode(),
-			submittedAt: Date.now(),
-			submittedMicroblockHeight: submittedMicroblock.getHeight(),
-			submittedMicroblock: encodedMicroblockData,
-			expirationInDays: anchorDto.chainStorageInDays
-		});
-		return anchorRequestId;
-	}
 
 	async saveMicroblock(anchorRequestId: string, mb: Microblock) {
 		const {microblockData: serializedMb} = mb.serialize();

@@ -2,12 +2,16 @@ import { Public } from '../decorators/PublicDecorator';
 import { ApiExcludeEndpoint } from '@nestjs/swagger';
 import { Body, Controller, Logger, Post } from '@nestjs/common';
 import {
-	WalletInteractiveAnchoringRequest, WalletInteractiveAnchoringRequestType,
-	WalletInteractiveAnchoringResponse, WalletInteractiveAnchoringResponseType,
+	WalletInteractiveAnchoringRequest,
+	WalletInteractiveAnchoringRequestType,
+	WalletInteractiveAnchoringResponse,
+	WalletInteractiveAnchoringResponseType,
 	WalletInteractiveAnchoringValidation,
 } from '@cmts-dev/carmentis-sdk-core';
 import { WalletAnchoringRequestService } from '../services/wallet-anchoring-request.service';
 import { AnchorRequestService } from '../services/AnchorRequestService';
+import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
+import { AnchorRequestStatus } from '../utils/AnchorRequestStatus';
 
 @Controller('/api')
 export class ProtocolWiapV1Controller {
@@ -15,6 +19,7 @@ export class ProtocolWiapV1Controller {
 	private logger = new Logger();
 	constructor(
 		private readonly operatorService: WalletAnchoringRequestService,
+		private readonly anchorService: AnchorRequestService
 	) {}
 
 	@Public()
@@ -28,8 +33,20 @@ export class ProtocolWiapV1Controller {
 		const request: WalletInteractiveAnchoringRequest = WalletInteractiveAnchoringValidation.validateRequest(unverifiedRequest);
 		const type = request.type;
 
+
+
 		// handle the request
 		try {
+			// mark the anchor request as initiated
+			const anchorRequest = await AnchorRequestEntity.findOneBy({
+				anchorRequestId: request.anchorRequestId
+			})
+			if (anchorRequest.status === AnchorRequestStatus.CREATED) {
+				anchorRequest.status = AnchorRequestStatus.INITIATED;
+				await anchorRequest.save();
+			}
+
+
 			this.logger.debug(`Handling request type ${type}`)
 			let response: WalletInteractiveAnchoringResponse;
 			switch(type) {
