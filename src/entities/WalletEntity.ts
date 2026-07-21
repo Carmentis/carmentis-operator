@@ -1,13 +1,26 @@
 import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { EncryptedColumn } from '../decorators/EncryptionDecorator';
 import { ApplicationEntity } from './ApplicationEntity';
-import { Provider, ProviderFactory } from '@cmts-dev/carmentis-sdk-core';
+import { ApiKeyEntity } from './ApiKeyEntity';
+import {
+	Provider,
+	ProviderFactory,
+	PublicKeyEncryptionSchemeId,
+	SignatureSchemeId,
+} from '@cmts-dev/carmentis-sdk-core';
+import { Exclude } from 'class-transformer';
 
 @Entity('wallet')
 export class WalletEntity extends BaseEntity {
 
 	@PrimaryGeneratedColumn()
-	walletId: number;
+	id: number;
+
+	@Column()
+	signatureSchemeId: number = SignatureSchemeId.SECP256K1;
+
+	@Column()
+	publicKeyEncryptionSchemeId: number = PublicKeyEncryptionSchemeId.ML_KEM_768_AES_256_GCM
 
 	@EncryptedColumn()
 	seed: string;
@@ -21,9 +34,17 @@ export class WalletEntity extends BaseEntity {
 	@Column()
 	rpcEndpoint: string;
 
+	@Column()
+	indexerEndpoint: string;
+
+	@Column({nullable: true})
+	allowedEndpointsRegex?: string;
+
 	@OneToMany(() => ApplicationEntity, app => app.wallet, { cascade: true })
 	applications: ApplicationEntity[];
 
+	@OneToMany(() => ApiKeyEntity, apiKey => apiKey.wallet)
+	apiKeys: ApiKeyEntity[];
 
 	getProvider(): Provider {
 		return ProviderFactory.createInMemoryProviderWithExternalProvider(this.rpcEndpoint);

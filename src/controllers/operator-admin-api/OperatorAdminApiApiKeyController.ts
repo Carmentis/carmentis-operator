@@ -6,6 +6,7 @@ import { ApiKeyService } from '../../services/ApiKeyService';
 import { ApplicationService } from '../../services/ApplicationService';
 import { ApiKeyCreationDto } from '../../dto/ApiKeyCreationDto';
 import { ApplicationEntity } from '../../entities/ApplicationEntity';
+import { WalletEntity } from '../../entities/WalletEntity';
 
 @Crud({
 	model: {
@@ -19,6 +20,10 @@ import { ApplicationEntity } from '../../entities/ApplicationEntity';
 			application: {
 				eager: true,
 				allow: ["vbId", "name"]
+			},
+			wallet: {
+				eager: true,
+				allow: ["id", "name"]
 			},
 		},
 	}
@@ -35,15 +40,36 @@ export class OperatorAdminApiApiKeyController  {
 	async createApiKey(
 		@Body() body: ApiKeyCreationDto
 	) {
-		this.logger.log('Creating API key for application with VB ID:', body.applicationVbId);
-		const application = await ApplicationEntity.findOneByOrFail({
-			vbId: body.applicationVbId
-		});
+		let application: ApplicationEntity | undefined;
+		let wallet: WalletEntity | undefined;
+
+		if (body.applicationVbId) {
+			this.logger.log('Creating API key for application with VB ID:', body.applicationVbId);
+			application = await ApplicationEntity.findOneByOrFail({
+				vbId: body.applicationVbId
+			});
+		}
+
+		if (body.walletId) {
+			this.logger.log('Creating API key for wallet with ID:', body.walletId);
+			wallet = await WalletEntity.findOneByOrFail({
+				id: body.walletId
+			});
+		}
+
+		if (!body.applicationVbId && !body.walletId) {
+			this.logger.log('Creating API key without linked application or wallet');
+		}
+
 		const activeUntil = body.activeUntil ? new Date(body.activeUntil) : undefined;
 		const apiKey = await this.service.createKey(
 			body.name,
 			application,
-			activeUntil
+			activeUntil,
+			body.endpointRegex,
+			body.gasMinAtomics,
+			body.gasMaxAtomics,
+			wallet
 		);
 		return apiKey;
 	}

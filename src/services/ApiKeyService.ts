@@ -17,20 +17,33 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 		super(repo);
 	}
 
-	async createKey( name: string, application: ApplicationEntity, activeUntil: Date | undefined ) {
+	async createKey(
+		name: string,
+		application: ApplicationEntity | undefined,
+		activeUntil: Date | undefined,
+		endpointRegex?: string,
+		gasMinAtomics?: number,
+		gasMaxAtomics?: number,
+		wallet?: WalletEntity
+	) {
 		// we start by creating the key
 		const secret = randomBytes(32).toString('hex');
 		const key = this.repo.create({
 			activeUntil,
 			application,
+			wallet,
 			name,
 			apiKey: secret,
 			isActive: true,
+			endpointRegex,
+			gasMinAtomics: gasMinAtomics ?? 0,
+			gasMaxAtomics: gasMaxAtomics ?? 1000000,
 		});
 		const keyEntity = await this.repo.save(key);
 
 		// once the id is defined, we construct the api key
-		const formattedKey = this.formatKey(keyEntity.id, application.vbId, secret);
+		const applicationVbId = application?.vbId ?? '';
+		const formattedKey = this.formatKey(keyEntity.id, applicationVbId, secret);
 		await this.repo.update({ id: keyEntity.id }, { apiKey: formattedKey })
 		return ApiKeyEntity.findOneBy({ id: keyEntity.id })
 	}
@@ -46,16 +59,6 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 		})
 	}
 
-	async findWalletByApiKey(apiKey: ApiKeyEntity): Promise<WalletEntity> {
-		return WalletEntity.findOneBy({
-			applications: {
-				apiKeys: {
-					id: apiKey.id
-				}
-			}
-		})
-	}
-
 	/**
 	 * Format an API key with the structure: cmts:<id>:<applicationId>:<key>
 	 * @param id - The API key entity ID
@@ -64,15 +67,18 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 	 * @private
 	 */
 	private formatKey(id: number, applicationVbId: string, key: string): string {
-		return `cmts:${id}:${applicationVbId}:${key}`;
+		return `cmts:${id}:${key}`;
 	}
 
 
 	async findOneByKey(key: string) {
-		const {id} = this.parseKey(key);
-		return this.repo.findOne({
+		const {id, key: secret} = this.parseKey(key);
+		const apiKey = await ApiKeyEntity.findOne({
 			where: { id },
+			relations: ['wallet', 'application']
 		})
+		if (apiKey.apiKey !== key) throw new Error('Invalid API key');
+		return apiKey;
 	}
 
 	async updateKey(id: number, updateKey: Partial<ApiKeyEntity>) {
@@ -129,13 +135,12 @@ export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
 	 */
 	private parseKey( apiKey: string ) {
 		try {
-			const [header, id, applicationId, key] = apiKey.split(':');
-			if (header !== 'cmts' || !id || !applicationId || !key) {
+			const [header, id, key] = apiKey.split(':');
+			if (header !== 'cmts' || !id  || !key) {
 				throw new Error("Invalid format");
 			}
 			return {
 				id: parseInt(id, 10),
-				applicationVbId: applicationId,
 				key
 			}
 		} catch (e) {

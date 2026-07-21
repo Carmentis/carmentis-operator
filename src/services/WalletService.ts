@@ -12,4 +12,18 @@ export class WalletService extends TypeOrmCrudService<WalletEntity> {
 	) {
 		super(repo);
 	}
+
+	async getOneById(id: number) {
+		return this.repo.findOneBy({ id });
+	}
+
+	async getWalletByApplicationId(applicationId: string) {
+		return this.repo.findOne({
+			where: {
+				applications: {
+					vbId: applicationId,
+				},
+			}
+		});
+	}
 }

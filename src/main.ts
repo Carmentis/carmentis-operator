@@ -42,6 +42,8 @@ async function bootstrap() {
 
 	// Set up the swagger
 	const swaggerCustomOptions = {
+		customSiteTitle: "Carmentis Operator",
+		jsonDocumentUrl: 'swagger/json',
 		swaggerOptions: {
 			tryItOutEnabled: false,
 		},
