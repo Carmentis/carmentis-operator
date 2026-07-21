@@ -61,7 +61,6 @@ export class AuthGuard implements CanActivate {
 					}
 
 					request.apiKey = apiKeyEntity;
-					this.logger.debug('API key authentication successful');
 					return true;
 				}
 			}
