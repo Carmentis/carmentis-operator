@@ -113,7 +113,6 @@ export class AnchorRequestController {
 		@Body() request: GetAuthenticityProofRequestDto
 	) {
 		// fetch the wallet from the api key
-		console.log(apiKey);
 		const wallet = apiKey.wallet;
 		if (!wallet) {
 			throw new BadRequestException('Cannot produce a proof for an api key not associated with a wallet.');

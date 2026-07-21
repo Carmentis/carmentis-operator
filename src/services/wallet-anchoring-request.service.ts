@@ -104,7 +104,7 @@ export class WalletAnchoringRequestService {
 				if (e.getNotSubscribedActorName() === endorser) {
 					this.logger.debug(`Endorser not subscribed: asking actor key to the wallet`);
 					const genesisSeed = await applicationLedger.getGenesisSeed();
-					console.log(`The genesis seed saved for anchor request id ${anchorRequestId}:`, genesisSeed.toBytes());
+					console.log(`The genesis seed saved for anchor request id ${anchorRequestId}`);
 					await this.anchorRequestService.saveGenesisSeed(anchorRequestId, genesisSeed);
 					return {
 						type: WalletInteractiveAnchoringResponseType.ACTOR_KEY_REQUIRED,
