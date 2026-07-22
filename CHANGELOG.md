@@ -1,3 +1,17 @@
+# [1.11.0](https://github.com/Carmentis/carmentis-operator/compare/v1.10.0...v1.11.0) (2026-07-22)
+
+
+### Bug Fixes
+
+* **operator-admin-api:** include `indexerEndpoint` in wallet `allow` list for eager loading ([42bf173](https://github.com/Carmentis/carmentis-operator/commit/42bf173783f22c1b68ff1fe6a711bef97468519d))
+* **wallet-controller:** rename `walletId` field to `id` in wallet params configuration ([52f3bca](https://github.com/Carmentis/carmentis-operator/commit/52f3bca9fa9046f8c6a8b1dbee6fd9f1cd43a749))
+* **wallet-entity:** add missing semicolon to `publicKeyEncryptionSchemeId` definition ([4a99d9a](https://github.com/Carmentis/carmentis-operator/commit/4a99d9a4805c6900aec8a1bd4ae58cc98b6c5eab))
+
+
+### Features
+
+* **operator-admin-api:** add `WalletDto` and `WalletWithSeedDto` with Swagger and class-transformer integration ([4268d85](https://github.com/Carmentis/carmentis-operator/commit/4268d85aec50f42ee97e7e3d71001fd9f80b55b9))
+
 # [1.10.0](https://github.com/Carmentis/carmentis-operator/compare/v1.9.0...v1.10.0) (2026-07-21)
 
 
