@@ -10,7 +10,7 @@ import { WalletService } from '../../services/WalletService';
 	},
 	params: {
 		walletId: {
-			field: 'walletId',
+			field: 'id',
 			type: 'number',
 			primary: true,
 		},
