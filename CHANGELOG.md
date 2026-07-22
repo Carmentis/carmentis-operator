@@ -1,3 +1,20 @@
+# [1.10.0](https://github.com/Carmentis/carmentis-operator/compare/v1.9.0...v1.10.0) (2026-07-21)
+
+
+### Bug Fixes
+
+* **anchor-request:** handle unsubmitted status in isPublishedOnChain method ([029a5e1](https://github.com/Carmentis/carmentis-operator/commit/029a5e11188b6f02fc9e1868dca2a226959db4cb))
+* application was searched using api key which is no more supported ([cc20f8e](https://github.com/Carmentis/carmentis-operator/commit/cc20f8ed6d510939ed5b361e2b6f87879a6c8b7b))
+
+
+### Features
+
+* **auth-guards:** introduce `AuthGuard` for consolidated authentication and update related modules ([bf77eb8](https://github.com/Carmentis/carmentis-operator/commit/bf77eb82356d0313be8789bc3fbe458ec689bd8e))
+* Exclude the seed from every endpoints. ([6b8a2e4](https://github.com/Carmentis/carmentis-operator/commit/6b8a2e476bcd9b483cc86bb4970ec5627c4501e5))
+* introduce wallet signature, VC verification handlers, and crypto utilities ([023e66d](https://github.com/Carmentis/carmentis-operator/commit/023e66dff5a1fdf14cf6aea71fcbace723699b54))
+* introduce wallet signature, VC verification handlers, and crypto utilities ([6f29bed](https://github.com/Carmentis/carmentis-operator/commit/6f29bed9203eaf813fb177ff376153dbb86ca210))
+* **wallet-proof:** add authenticity proof handler and enhance Swagger documentation ([eb24a4e](https://github.com/Carmentis/carmentis-operator/commit/eb24a4ebf272e44fe7ad09898854706a963a9c67))
+
 # [1.9.0](https://github.com/Carmentis/carmentis-operator/compare/v1.8.1...v1.9.0) (2026-07-09)
 
 
