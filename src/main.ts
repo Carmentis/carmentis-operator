@@ -35,7 +35,9 @@ async function bootstrap() {
 	});
 
 	// Set global verification enabled.
-	app.useGlobalPipes(new ValidationPipe({whitelist: false}));
+	app.useGlobalPipes(new ValidationPipe({
+		whitelist: false,
+	}));
 	app.useGlobalFilters(new AllExceptionsFilter());
 
 
