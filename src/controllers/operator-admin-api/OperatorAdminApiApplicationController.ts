@@ -21,7 +21,7 @@ import { WalletEntity } from '../../entities/WalletEntity';
 		join: {
 			wallet: {
 				eager: true,
-				allow: ["walletId", "name", "rpcEndpoint"]
+				allow: ["walletId", "name", "rpcEndpoint", "indexerEndpoint"]
 			},
 		},
 	},
