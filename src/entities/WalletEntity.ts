@@ -20,7 +20,7 @@ export class WalletEntity extends BaseEntity {
 	signatureSchemeId: number = SignatureSchemeId.SECP256K1;
 
 	@Column()
-	publicKeyEncryptionSchemeId: number = PublicKeyEncryptionSchemeId.ML_KEM_768_AES_256_GCM
+	publicKeyEncryptionSchemeId: number = PublicKeyEncryptionSchemeId.ML_KEM_768_AES_256_GCM;
 
 	@EncryptedColumn()
 	seed: string;
