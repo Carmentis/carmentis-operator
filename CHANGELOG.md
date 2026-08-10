@@ -1,3 +1,10 @@
+## [1.11.2](https://github.com/Carmentis/carmentis-operator/compare/v1.11.1...v1.11.2) (2026-08-10)
+
+
+### Bug Fixes
+
+* enable implicit conversion for `ValidationPipe` ([1e10639](https://github.com/Carmentis/carmentis-operator/commit/1e106398a2e6f0241ecb9df1fd114df68717534c))
+
 ## [1.11.1](https://github.com/Carmentis/carmentis-operator/compare/v1.11.0...v1.11.1) (2026-08-10)
 
 
