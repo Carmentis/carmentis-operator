@@ -37,6 +37,10 @@ async function bootstrap() {
 	// Set global verification enabled.
 	app.useGlobalPipes(new ValidationPipe({
 		whitelist: false,
+		transform: true,
+		transformOptions: {
+			enableImplicitConversion: true,
+		}
 	}));
 	app.useGlobalFilters(new AllExceptionsFilter());
 
