@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { WalletAnchoringRequestService } from '../services/wallet-anchoring-request.service';
 import { AnchorRequestService } from '../services/AnchorRequestService';
@@ -86,7 +86,7 @@ export class AnchorRequestController {
 	@ApiSecurity('api-key')
 	@Get()
 	async getAllAnchorRequests(
-		@Body() getAllElementsDto: GetAllElementsDto = new GetAllElementsDto(),
+		@Query() getAllElementsDto: GetAllElementsDto = new GetAllElementsDto(),
 	) {
 		const anchorRequest = await this.anchorService.getAllAnchorRequests(
 			getAllElementsDto.offset,
@@ -110,7 +110,7 @@ export class AnchorRequestController {
 	async getRecord(
 		@ApiKey() apiKey: ApiKeyEntity,
 		@Param('anchorRequestId') anchorRequestId: string,
-		@Body() request: GetAuthenticityProofRequestDto
+		@Query() request: GetAuthenticityProofRequestDto
 	) {
 		// fetch the wallet from the api key
 		const wallet = apiKey.wallet;

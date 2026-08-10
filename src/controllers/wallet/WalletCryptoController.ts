@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WalletService } from '../../services/WalletService';
 import { WalletEntity } from '../../entities/WalletEntity';
@@ -28,7 +28,7 @@ export class WalletCryptoController {
 			}
 		}
 	})
-	@Get(':walletId/signature/sign')
+	@Post(':walletId/signature/sign')
 	async sign(
 		@Param('walletId') walletId: number,
 		@Body() params: WalletBinarySignatureRequestDto,
@@ -55,7 +55,7 @@ export class WalletCryptoController {
 			}
 		}
 	})
-	@Get(':walletId/signature/verify')
+	@Post(':walletId/signature/verify')
 	async verify(
 		@Param('walletId') walletId: number,
 		@Body() params: WalletBinarySignatureVerificationRequestDto,
@@ -149,7 +149,7 @@ export class WalletCryptoController {
 	@Get(':walletId/actor/signature/pk')
 	async getActorPublicSignatureKey(
 		@Param('walletId') walletId: number,
-		@Body() params: ActorPublicKeyRequestDto
+		@Query() params: ActorPublicKeyRequestDto
 	) {
 		const wallet = await this.service.getOneById(walletId)
 		if (!wallet) throw new NotFoundException('Wallet not found');
@@ -181,7 +181,7 @@ export class WalletCryptoController {
 	@Get(':walletId/actor/pke/pk')
 	async getActorPublicEncryptionKey(
 		@Param('walletId') walletId: number,
-		@Body() params: ActorPublicKeyRequestDto
+		@Query() params: ActorPublicKeyRequestDto
 	) {
 		const wallet = await this.service.getOneById(walletId)
 		if (!wallet) throw new NotFoundException('Wallet not found');

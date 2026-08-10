@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Logger, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiKeyService } from '../../services/ApiKeyService';
 import { WalletAnchoringRequestService } from '../../services/wallet-anchoring-request.service';
@@ -30,7 +30,7 @@ export class WalletRecordController {
 	@Get('/:walletId/record')
 	async getRecord(
 		@Param('walletId', ParseIntPipe) walletId: number,
-		@Body() request: GetVirtualBlockchainRecordRequestDto
+		@Query() request: GetVirtualBlockchainRecordRequestDto
 	) {
 		const vbId = request.vbId;
 		const height = request.height;

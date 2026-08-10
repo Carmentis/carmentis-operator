@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Param, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WalletService } from '../../services/WalletService';
 import { GetVirtualBlockchainRecordRequestDto } from '../../dto/wallet/GetVirtualBlockchainRecordRequestDto';
@@ -29,7 +29,7 @@ export class WalletProofController {
 	@Get('/:walletId/proof/authenticity')
 	async getRecord(
 		@Param('walletId', ParseIntPipe) walletId: number,
-		@Body() request: GetVirtualBlockchainAuthenticityProofRequestDto
+		@Query() request: GetVirtualBlockchainAuthenticityProofRequestDto
 	) {
 		const vbId = request.virtualBlockchainId;
 		this.logger.log(`Returning authenticity proof for vb ${vbId}`)
