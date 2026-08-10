@@ -1,3 +1,11 @@
+## [1.11.1](https://github.com/Carmentis/carmentis-operator/compare/v1.11.0...v1.11.1) (2026-08-10)
+
+
+### Bug Fixes
+
+* GET methods cannot have bodyfix: replace request bodies with query parameters for GET methods and update `signature` endpoints to POST ([8dd7aa3](https://github.com/Carmentis/carmentis-operator/commit/8dd7aa39efe7d7eea77eb9adddbd58a71630ceef))
+* **wallet-controller:** consolidate application retrieval into `retrieveApplication` method for improved readability and reuse ([070b7c2](https://github.com/Carmentis/carmentis-operator/commit/070b7c2cd90e96e718ab31b6ac1308665c59aab5))
+
 # [1.11.0](https://github.com/Carmentis/carmentis-operator/compare/v1.10.0...v1.11.0) (2026-07-22)
 
 
