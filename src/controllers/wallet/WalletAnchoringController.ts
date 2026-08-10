@@ -44,10 +44,10 @@ export class WalletAnchoringController {
 		try {
 			this.logAnchorRequest(anchorDto)
 
-			const applicationId = anchorDto.applicationId;
+			const application = await this.retrieveApplication(key, anchorDto);
+			const applicationId = application.vbId;
 			this.validateIfApiKeyAllowingPublicationToApplication(key, applicationId)
 			this.validateGasPrice(key, anchorDto.gasPriceInAtomics);
-			const application = await this.applicationService.findApplicationByVbId(applicationId);
 			return this.operatorService.createAnchorRequestWithWallet(application, anchorDto);
 		} catch (e) {
 			this.logger.error("An error occurred while processing anchoring with wallet request: ", e)
@@ -85,11 +85,11 @@ export class WalletAnchoringController {
 		@ApiKey() key: ApiKeyEntity,
 	): Promise<AnchorRequestResponseDto> {
 		// find application and organization
-		const applicationId = anchorDto.applicationId;
+		const application = await this.retrieveApplication(key, anchorDto);
+		const applicationId = application.vbId;
 		this.validateIfApiKeyAllowingPublicationToApplication(key, applicationId)
 		this.validateGasPrice(key, anchorDto.gasPriceInAtomics);
 		this.logAnchorRequest(anchorDto)
-		const application = await this.applicationService.findApplicationByVbId(applicationId);
 		const anchorRequestId = await this.operatorService.anchor(application, anchorDto);
 		return { anchorRequestId: anchorRequestId }
 	}
