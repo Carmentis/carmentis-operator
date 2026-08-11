@@ -1,6 +1,8 @@
 import * as z from "zod";
 import { join } from 'path';
 
+const DEFAULT_JWT_TOKEN_VALIDITY = 28800; // 8h
+
 export const ConfigSchema = z.object({
 	operator: z.object({
 
@@ -13,7 +15,7 @@ export const ConfigSchema = z.object({
 			jwt: z.object({
 				secret: z.string().optional()
 					.describe("Secret key used for signing JWT tokens to authenticate users on the Workspace API."),
-				tokenValidity: z.number().default(3600)
+				tokenValidity: z.number().default(28800)
 					.describe("Validity duration in seconds of the generated JWT tokens (e.g., 3600 for a day)."),
 			}).prefault({})
 				.describe("JWT authentication configuration."),
