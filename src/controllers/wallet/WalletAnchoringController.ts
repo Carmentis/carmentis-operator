@@ -169,14 +169,14 @@ export class WalletAnchoringController {
 			if (!isApplicationSpecifiedInRequest) {
 				throw new BadRequestException('Either a wallet or an application must be associated with the API key.');
 			} else {
-				return ApplicationEntity.findOneByOrFail({
-					vbId: anchorDto.applicationId
-				})
+				return this.applicationService.findApplicationByVbId(
+					anchorDto.applicationId
+				)
 			}
 		} else {
-			return ApplicationEntity.findOneByOrFail({
-				vbId: key.application.vbId
-			})
+			return this.applicationService.findApplicationByVbId(
+				anchorDto.applicationId
+			)
 		}
 	}
 
