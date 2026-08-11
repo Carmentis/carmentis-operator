@@ -211,8 +211,8 @@ export class WalletAnchoringController {
 	}
 
 	private validateGasPrice(apiKey: ApiKeyEntity, gasPriceInAtomics: number) {
-		if (typeof gasPriceInAtomics !== 'number') {
-			throw new Error(`Gas price ${gasPriceInAtomics} is not a number`);
+		if (!Number.isSafeInteger(gasPriceInAtomics)) {
+			throw new Error(`Gas price ${gasPriceInAtomics} is not a safe integer`);
 		}
 
 		if (gasPriceInAtomics < apiKey.gasMinAtomics) {
