@@ -151,7 +151,6 @@ export class AnchorDto  {
 	@ApiProperty({
 		description: 'Gas price in atomic units to use for the anchoring transaction. If limits are defined in the API key, then the gas price must be within theses limits (gasMinAtomics - gasMaxAtomics)',
 		example: 100000,
-		required: false
 	})
 	@IsNumber()
 	@IsPositive()
