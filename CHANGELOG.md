@@ -1,3 +1,10 @@
+## [1.11.4](https://github.com/Carmentis/carmentis-operator/compare/v1.11.3...v1.11.4) (2026-08-11)
+
+
+### Bug Fixes
+
+* **config:** update default JWT token validity to 8 hours for consistency ([8cb469d](https://github.com/Carmentis/carmentis-operator/commit/8cb469dab6403337ed839c103884089bc66c494c))
+
 ## [1.11.3](https://github.com/Carmentis/carmentis-operator/compare/v1.11.2...v1.11.3) (2026-08-11)
 
 
