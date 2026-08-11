@@ -149,8 +149,8 @@ export class AnchorDto  {
 	chainStorageInDays?: number;
 
 	@ApiProperty({
-		description: 'Gas price in atomic units to use for the anchoring transaction. If limits are defined, gas price must be within the API key limits (gasMinAtomics - gasMaxAtomics)',
-		example: 1000000000,
+		description: 'Gas price in atomic units to use for the anchoring transaction. If limits are defined in the API key, then the gas price must be within theses limits (gasMinAtomics - gasMaxAtomics)',
+		example: 100000,
 		required: false
 	})
 	@IsNumber()
