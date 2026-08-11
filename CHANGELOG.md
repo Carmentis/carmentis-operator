@@ -1,3 +1,16 @@
+## [1.11.3](https://github.com/Carmentis/carmentis-operator/compare/v1.11.2...v1.11.3) (2026-08-11)
+
+
+### Bug Fixes
+
+* better protection against invalid gas price ([71478a5](https://github.com/Carmentis/carmentis-operator/commit/71478a59f6e3693349445f280fe83f65588ba2ab))
+* **dto, wallet-controller:** add examples to API methods and improve property descriptions/annotations ([0c74554](https://github.com/Carmentis/carmentis-operator/commit/0c745543b7b6fefee1b307543695caeccab2823d))
+* **dto:** gasPriceInAtomics was marked as optional but is required ([09f4334](https://github.com/Carmentis/carmentis-operator/commit/09f4334d1179328ee2e50a70365c545e01477dba))
+* **dto:** refine `AnchorDto` gas price description and example for improved clarity ([28c98fe](https://github.com/Carmentis/carmentis-operator/commit/28c98fe0882987b50eeafea2e11be02d709b0e66))
+* **dto:** update `AnchorDto` example for ledger identifier to align with expected format ([8396074](https://github.com/Carmentis/carmentis-operator/commit/8396074d8c0a4ebaec8ccb5b1d523233e826d153))
+* **dto:** update `AnchorDto` property descriptions, examples, and defaults for improved clarity and consistency ([f102f59](https://github.com/Carmentis/carmentis-operator/commit/f102f59a55fac2cc09ef87f4a3cac52e351ddbec))
+* **wallet-controller:** use `applicationService` for application retrieval ([aadf6f4](https://github.com/Carmentis/carmentis-operator/commit/aadf6f4ecb53f050299decaf201a503428843560))
+
 ## [1.11.2](https://github.com/Carmentis/carmentis-operator/compare/v1.11.1...v1.11.2) (2026-08-10)
 
 
