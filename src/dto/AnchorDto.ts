@@ -121,7 +121,7 @@ export class AnchorDto  {
 		description: 'Identifier of the application virtual blockchain. ' +
 			'The application must be published online before calling this endpoint.' +
 			'When omitted, either a wallet or an application must be associated with the API key.',
-		example: 'app123',
+		example: '6AC2A4EBFD08F34C2EF4432041313F83EB4C8AB9154FAEF61ABB833613DA1C10',
 		required: false,
 	})
 	@IsOptional()
@@ -129,7 +129,7 @@ export class AnchorDto  {
 	applicationId?: string;
 
 	@ApiProperty({
-		description: 'Identifier of the target virtual blockchain. If omitted, a new virtual blockchain is created for this anchor request',
+		description: 'Identifier of the target application ledger. If omitted, a new virtual blockchain is created for this anchor request',
 		example: 'vb456',
 		required: false
 	})
@@ -208,23 +208,24 @@ export class AnchorDto  {
 		type: [HashableFieldDto],
 		description: 'Fields whose values should be hashed for zero-knowledge proofs',
 		default: [],
-		example: [{ fieldPath: 'ssn' }]
+		required: false,
+		example: []
 	})
 	@ValidateNested({ each: true })
 	@Type(() => HashableFieldDto)
 	@IsOptional()
-	hashableFields: HashableFieldDto[];
+	hashableFields: HashableFieldDto[] = [];
 
 	@ApiProperty({
 		type: [MaskableFieldDto],
 		description: 'Fields that support masking (redaction) of specific parts. Useful for PII and sensitive data',
 		default: [],
-		example: [{ fieldPath: 'credit_card', maskedParts: [{ position: 0, length: 12, replacementString: '****' }] }]
+		example: [],
 	})
 	@ValidateNested({ each: true })
 	@Type(() => MaskableFieldDto)
 	@IsOptional()
-	maskableFields: MaskableFieldDto[];
+	maskableFields: MaskableFieldDto[]  = [];
 
 	@ApiProperty({
 		title: "Author",
