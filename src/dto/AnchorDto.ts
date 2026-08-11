@@ -241,7 +241,7 @@ export class AnchorDto  {
  */
 export class AnchorWithWalletDto extends AnchorDto {
 	@ApiProperty({
-		description: 'The actor who endorses/approves this transaction. Often a human user or trusted service',
+		description: 'The actor who endorses/approves this transaction. In practice, this actor is a human running a Desk application.',
 		example: "Endorser"
 	})
 	@IsString()
@@ -249,8 +249,11 @@ export class AnchorWithWalletDto extends AnchorDto {
 
 	@ApiProperty({
 		description: 'User-facing message displayed on the wallet during approval. Helps users understand what they are approving',
-		example: 'Please approve the anchoring of invoice INV-001 for $1000'
+		example: 'Please approve the anchoring of invoice INV-001 for $1000',
+		default: "",
+		required: false
 	})
 	@IsString()
-	approvalMessage: string;
+	@IsOptional()
+	approvalMessage: string = "";
 }

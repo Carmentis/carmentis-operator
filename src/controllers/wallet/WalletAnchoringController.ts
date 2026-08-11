@@ -16,6 +16,96 @@ import { InvalidArgumentError } from 'commander';
 import { WalletEntity } from '../../entities/WalletEntity';
 import { ApplicationEntity } from '../../entities/ApplicationEntity';
 
+
+const AnchoringExamples = {
+	createApplicationLedger: {
+		summary: 'Create an application ledger',
+		value: {
+			"applicationId": "6AC2A4EBFD08F34C2EF4432041313F83EB4C8AB9154FAEF61ABB833613DA1C10",
+			"chainStorageInDays": 360,
+			"gasPriceInAtomics": 200000,
+			"channels": [
+				{
+					"name": "New Channel 1",
+					"public": true
+				},
+				{
+					"name": "New Channel 2",
+					"public": false
+				}
+			],
+			"actors": [
+				{
+					"name": "New Actor 1"
+				},
+				{
+					"name": "New Actor 2"
+				}
+			],
+			"data": {
+				"invoice_id": "INV-001",
+				"amount": 1000,
+				"customer": "ACME Corp"
+			},
+			"channelAssignations": [
+				{
+					"channelName": "New Channel 1",
+					"fieldPath": "this.*"
+				}
+			],
+			"actorAssignations": [
+				{
+					"channelName": "New Channel 1",
+					"actorName": "New Actor 1"
+				}
+			],
+			"author": "New Actor 1"
+		}
+	},
+	appendToApplicationLedger: {
+		summary: 'Append application ledger',
+		value: {
+			"applicationId": "6AC2A4EBFD08F34C2EF4432041313F83EB4C8AB9154FAEF61ABB833613DA1C10",
+			"virtualBlockchainId": '82A49C89ACA5F3ECA4139A040A028B4C5B0A686BC1CE4B58DDE1BFC6B1004FBD',
+			"gasPriceInAtomics": 200000,
+			"channels": [
+				{
+					"name": "New Channel 3",
+					"public": true
+				}
+			],
+			"actors": [
+				{
+					"name": "New Actor 3"
+				},
+			],
+			"data": {
+				"invoice_id": "INV-001",
+				"amount": 1000,
+				"customer": "ACME Corp"
+			},
+			"channelAssignations": [
+				{
+					"channelName": "Public",
+					"fieldPath": "this.*"
+				}
+			],
+			"author": "Endorser"
+		}
+	}
+}
+
+const AnchoringWithWalletExamples = {
+	createApplicationLedger: {
+		...AnchoringExamples.createApplicationLedger,
+		endorser: 'New Actor 2'
+	},
+	appendToApplicationLedger: {
+		...AnchoringExamples.appendToApplicationLedger,
+		endorser: 'New Actor 2'
+	}
+}
+
 @ApiTags('Wallet Anchoring')
 @Controller('/api')
 export class WalletAnchoringController {
@@ -30,7 +120,7 @@ export class WalletAnchoringController {
 		summary: 'Initiate an anchor request with wallet',
 		description: 'Initiates an anchoring request that should be accepted by a wallet. This endpoint allows anchoring with explicit wallet approval.'
 	})
-	@ApiBody({ type: AnchorWithWalletDto })
+	@ApiBody({ type: AnchorWithWalletDto, examples: AnchoringWithWalletExamples })
 	@ApiCreatedResponse({
 		description: 'The anchoring session has been created successfully.',
 		type: AnchorRequestResponseDto
@@ -73,7 +163,7 @@ export class WalletAnchoringController {
 		summary: 'Initiate an anchor request',
 		description: 'Initiates an anchoring request for an application. This endpoint is used to create an anchor request without explicit wallet approval.'
 	})
-	@ApiBody({ type: AnchorDto })
+	@ApiBody({ type: AnchorDto, examples: AnchoringExamples })
 	@ApiCreatedResponse({
 		description: 'The anchoring request has been created successfully.',
 		type: AnchorRequestResponseDto
@@ -100,7 +190,7 @@ export class WalletAnchoringController {
 		summary: 'Initiate an anchor request with wallet',
 		description: 'Initiates an anchoring request that should be accepted by a wallet. This endpoint allows anchoring with explicit wallet approval.'
 	})
-	@ApiBody({ type: AnchorWithWalletDto })
+	@ApiBody({ type: AnchorWithWalletDto, examples: AnchoringWithWalletExamples })
 	@ApiCreatedResponse({
 		description: 'The anchoring session has been created successfully.',
 		type: AnchorRequestResponseDto
@@ -142,7 +232,10 @@ export class WalletAnchoringController {
 		summary: 'Initiate an anchor request',
 		description: 'Initiates an anchoring request for an application. This endpoint is used to create an anchor request without explicit wallet approval.'
 	})
-	@ApiBody({ type: AnchorDto })
+	@ApiBody({
+		type: AnchorDto,
+		examples: AnchoringExamples
+	})
 	@ApiCreatedResponse({
 		description: 'The anchoring request has been created successfully.',
 		type: AnchorRequestResponseDto
