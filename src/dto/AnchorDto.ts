@@ -130,7 +130,7 @@ export class AnchorDto  {
 
 	@ApiProperty({
 		description: 'Identifier of the target application ledger. If omitted, a new virtual blockchain is created for this anchor request',
-		example: 'vb456',
+		example: '82A49C89ACA5F3ECA4139A040A028B4C5B0A686BC1CE4B58DDE1BFC6B1004FBD',
 		required: false
 	})
 	@IsString()
