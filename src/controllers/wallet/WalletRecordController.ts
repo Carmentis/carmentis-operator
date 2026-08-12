@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Logger, OnModuleInit, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ApiKeyService } from '../../services/ApiKeyService';
 import { WalletAnchoringRequestService } from '../../services/wallet-anchoring-request.service';
@@ -36,11 +36,9 @@ export class WalletRecordController {
 		const height = request.height;
 		this.logger.log(`Accessing record for vb ${vbId} at height ${height}`)
 		const wallet = await this.walletService.getOneById(walletId)
-		const rawVbId = Buffer.from(vbId, 'hex')
-		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, rawVbId)
-		const actorCrypto = await WalletUtils.getActorCryptoFromWallet(wallet, vbSeed);
+		const accountCrypto = await WalletUtils.getAccountCryptoFromWallet(wallet);
 		const provider = wallet.getProvider();
 		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.from(vbId))
-		return vb.getRecord(height, actorCrypto);
+		return vb.getRecord(height, accountCrypto);
 	}
 }
