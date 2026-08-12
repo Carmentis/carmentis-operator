@@ -1,3 +1,10 @@
+## [1.11.6](https://github.com/Carmentis/carmentis-operator/compare/v1.11.5...v1.11.6) (2026-08-12)
+
+
+### Bug Fixes
+
+* **anchor-request, wallet-proof:** replace actorCrypto with accountCrypto for blockchain proof generation ([a424fe4](https://github.com/Carmentis/carmentis-operator/commit/a424fe4e380975e70771966674bf2affdb2569ac))
+
 ## [1.11.5](https://github.com/Carmentis/carmentis-operator/compare/v1.11.4...v1.11.5) (2026-08-12)
 
 
