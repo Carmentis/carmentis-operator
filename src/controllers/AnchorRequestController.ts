@@ -136,13 +136,13 @@ export class AnchorRequestController {
 		this.logger.log(`Returning authenticity proof for vb ${vbId} with author ${author}`)
 		const rawVbId = Buffer.from(vbId, 'hex')
 		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, rawVbId)
-		const actorCrypto = await WalletUtils.getActorCryptoFromWallet(wallet, vbSeed);
+		const accountCrypto = await WalletUtils.getAccountCryptoFromWallet(wallet);
 		const provider = wallet.getProvider();
 		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.from(vbId))
 		this.logger.log(`Returning authenticity proof for vb ${vbId} with author ${author}`)
 		return await vb.exportProof({
 			author
-		}, actorCrypto);
+		}, accountCrypto);
 	}
 
 

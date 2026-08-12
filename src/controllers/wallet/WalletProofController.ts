@@ -36,13 +36,13 @@ export class WalletProofController {
 		const wallet = await this.walletService.getOneById(walletId)
 		const rawVbId = Buffer.from(vbId, 'hex')
 		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, rawVbId)
-		const actorCrypto = await WalletUtils.getActorCryptoFromWallet(wallet, vbSeed);
+		const accountCrypto = await WalletUtils.getAccountCryptoFromWallet(wallet);
 		const provider = wallet.getProvider();
 		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.from(vbId))
 		const author = request.proofAuthor ?? wallet.name;
 		const proof = await vb.exportProof({
 			author
-		}, actorCrypto)
+		}, accountCrypto)
 		return proof;
 	}
 }
