@@ -1,3 +1,10 @@
+## [1.11.5](https://github.com/Carmentis/carmentis-operator/compare/v1.11.4...v1.11.5) (2026-08-12)
+
+
+### Bug Fixes
+
+* **wallet-controller:** replace actorCrypto with accountCrypto in virtual blockchain record retrieval ([46fff40](https://github.com/Carmentis/carmentis-operator/commit/46fff4053627292a409f4fd3f5e665d0249d69c0))
+
 ## [1.11.4](https://github.com/Carmentis/carmentis-operator/compare/v1.11.3...v1.11.4) (2026-08-11)
 
 
