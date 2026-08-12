@@ -60,6 +60,7 @@ export class WalletAnchoringRequestService {
 		const wallet = await this.loadWalletEntityFromApplication(application);
 		const provider = wallet.getProvider();
 		const accountCrypto = await this.loadAccountCryptoFromApplication(application);
+		// TODO: determine if actor crypto is needed here !
 		let applicationLedger = await this.loadApplicationLedger(
 			provider,
 			application,
