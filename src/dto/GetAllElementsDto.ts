@@ -1,5 +1,6 @@
 import { IsInt, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class GetAllElementsDto {
 	@ApiProperty({
@@ -8,6 +9,7 @@ export class GetAllElementsDto {
 		default: 100,
 		required: false
 	})
+	@Type(() => Number)
 	@IsInt()
 	@IsOptional()
 	limit?: number = 100;
@@ -19,5 +21,6 @@ export class GetAllElementsDto {
 		required: false,
 	})
 	@IsInt()
+	@Type(() => Number)
 	offset?: number = 0;
 }

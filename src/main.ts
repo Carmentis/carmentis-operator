@@ -39,7 +39,7 @@ async function bootstrap() {
 		whitelist: false,
 		transform: true,
 		transformOptions: {
-			enableImplicitConversion: true,
+			exposeDefaultValues: true,
 		}
 	}));
 	app.useGlobalFilters(new AllExceptionsFilter());
