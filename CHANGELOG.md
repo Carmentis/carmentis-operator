@@ -1,3 +1,11 @@
+## [1.11.7](https://github.com/Carmentis/carmentis-operator/compare/v1.11.6...v1.11.7) (2026-08-13)
+
+
+### Bug Fixes
+
+* **controllers, crypto-service:** refactor wallet ID handling with pipes, centralize crypto operations in CryptoService ([85120f6](https://github.com/Carmentis/carmentis-operator/commit/85120f6b02bfc4e371196b0d0de51c311d2a843f))
+* **dto, main:** disable implicit conversion and add explicit conversions in DTOs. ([e588c09](https://github.com/Carmentis/carmentis-operator/commit/e588c0949f27ee96a47ed0cc9f3840d4e07c6fa5))
+
 ## [1.11.6](https://github.com/Carmentis/carmentis-operator/compare/v1.11.5...v1.11.6) (2026-08-12)
 
 
