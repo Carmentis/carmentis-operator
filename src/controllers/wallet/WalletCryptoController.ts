@@ -1,99 +1,108 @@
 import { Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WalletService } from '../../services/WalletService';
 import { WalletEntity } from '../../entities/WalletEntity';
-import { CryptoEncoderFactory, Hash, ProviderFactory, SeedEncoder, WalletCrypto } from '@cmts-dev/carmentis-sdk-core';
+import {
+	CryptoEncoderFactory,
+	Hash,
+	PrivateSignatureKey,
+	ProviderFactory, PublicSignatureKey,
+	SeedEncoder,
+	WalletCrypto,
+} from '@cmts-dev/carmentis-sdk-core';
 import { BinaryEncodingUtils } from '../../utils/BinaryEncodingUtils';
 import { WalletBinarySignatureRequestDto } from '../../dto/wallet/WalletBinarySignatureRequestDto';
 import { WalletBinarySignatureVerificationRequestDto } from '../../dto/wallet/WalletBinarySignatureVerificationRequestDto';
 import { ActorPublicKeyRequestDto } from '../../dto/wallet/ActorPublicKeyRequestDto';
 import { WalletUtils } from '../../utils/WalletUtils';
 import { VbUtils } from '../../utils/VbUtils';
+import { CryptoService } from '../../services/CryptoService';
+import { SignatureVerificationApiResponse } from '../../swagger/SignatureVerificationApiResponse';
+import { WalletJsonSignatureRequestDto } from '../../dto/wallet/WalletJsonSignatureRequestDto';
+import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
+import { ExtractPrivateSignatureKeyFromWallet } from '../../pipes/ExtractPrivateSignatureKeyFromWallet';
+import { ExtractPublicSignatureKeyFromWallet } from '../../pipes/ExtractPublicSignatureKeyFromWallet';
+import { PublicKeyRetrievalApiResponse } from '../../swagger/PublicKeyRetreivalApiResponse';
+import { WalletJsonSignatureVerificationRequestDto } from '../../dto/wallet/WalletJsonSignatureVerificationRequestDto';
 
 @ApiTags('Wallet Crypto')
 @Controller('/api/crypto/wallet')
+@ApiParam({ name: 'walletId', type: Number, description: 'Wallet identifier' })
 export class WalletCryptoController {
-	constructor(public service: WalletService) {}
+	constructor(
+		public service: WalletService,
+		private cryptoService: CryptoService,
+	) {}
 
 	@ApiOperation({
 		summary: 'Sign a binary message with wallet signature key',
 		description: 'Signs a binary message using the wallet\'s private signature key.'
 	})
-	@ApiResponse({
-		status: 200,
-		description: 'The message has been signed.',
-		schema: {
-			properties: {
-				signature: { type: 'string' }
-			}
-		}
-	})
-	@Post(':walletId/signature/sign')
+	@ApiParam({ name: 'walletId', type: Number, description: 'Wallet identifier' })
+	@ApiResponse(SignatureVerificationApiResponse.Response200)
+	@Post([
+		':walletId/signature/sign',
+		':walletId/signature/sign/binary'
+	])
 	async sign(
-		@Param('walletId') walletId: number,
+		@Param('walletId', WalletByIdPipe, ExtractPrivateSignatureKeyFromWallet)
+		sk: PrivateSignatureKey,
 		@Body() params: WalletBinarySignatureRequestDto,
 	) {
-		const wallet = await this.service.getOneById(walletId)
-		if (!wallet) throw new NotFoundException('Wallet not found');
-		const sk = await WalletUtils.getPrivateSignatureKeyFromWallet(wallet);
-		const message = BinaryEncodingUtils.decode(params.message, params.messageEncoding);
-		const rawSignature = await sk.sign(message);
-		const signature = BinaryEncodingUtils.encode(rawSignature, params.signatureEncoding);
-		return { signature: signature };
+		return this.cryptoService.signBinary(sk, params.message, params.messageEncoding, params.signatureEncoding);
 	}
 
 	@ApiOperation({
-		summary: 'Verify a binary message signature',
-		description: 'Verifies that a signature was created by the wallet\'s private signature key.'
+		summary: 'Sign a json message with wallet signature key',
 	})
-	@ApiResponse({
-		status: 200,
-		description: 'The signature has been verified.',
-		schema: {
-			properties: {
-				verified: { type: 'boolean' }
-			}
-		}
+	@ApiResponse(SignatureVerificationApiResponse.Response200)
+	@Post(':walletId/signature/sign/json')
+	async signJson(
+		@Param('walletId', WalletByIdPipe, ExtractPrivateSignatureKeyFromWallet)
+		sk: PrivateSignatureKey,
+		@Body() params: WalletJsonSignatureRequestDto,
+	) {
+		return this.cryptoService.signJson(sk, params.message, params.canonicalizationMethod, params.signatureEncoding);
+	}
+
+	@ApiOperation({
+		summary: "Verify a binary message signature with the wallet's public key"
 	})
-	@Post(':walletId/signature/verify')
+	@ApiResponse(SignatureVerificationApiResponse.Response200)
+	@Post([
+		':walletId/signature/verify',
+		':walletId/signature/verify/binary'
+	])
 	async verify(
-		@Param('walletId') walletId: number,
+		@Param('walletId', WalletByIdPipe, ExtractPublicSignatureKeyFromWallet)
+		pk: PublicSignatureKey,
 		@Body() params: WalletBinarySignatureVerificationRequestDto,
 	) {
-		const wallet = await this.service.findOneBy({ id: walletId })
-		if (!wallet) throw new NotFoundException('Wallet not found');
-		const sk = await WalletUtils.getPrivateSignatureKeyFromWallet(wallet);
-		const pk = await sk.getPublicKey();
-		const message = BinaryEncodingUtils.decode(params.message, params.messageEncoding);
-		const encodedSignature = params.signature;
-		const signature = BinaryEncodingUtils.decode(encodedSignature, params.signatureEncoding);
-		const result = await pk.verify(message, signature);
-		return { verified: result }
+		return this.cryptoService.verifyBinary(pk, params.message, params.messageEncoding, params.signature, params.signatureEncoding);
+	}
+
+	@ApiOperation({
+		summary: "Verify a json message signature with the wallet's public key"
+	})
+	@ApiResponse(SignatureVerificationApiResponse.Response200)
+	@Post(':walletId/signature/verify/json')
+	async verifyJson(
+		@Param('walletId', WalletByIdPipe, ExtractPublicSignatureKeyFromWallet)
+		pk: PublicSignatureKey,
+		@Body() params: WalletJsonSignatureVerificationRequestDto,
+	) {
+		return this.cryptoService.verifyJson(pk, params.message, params.canonicalizationMethod, params.signature, params.signatureEncoding);
 	}
 
 	@ApiOperation({
 		summary: 'Get wallet public signature key',
 		description: 'Retrieves the public signature key associated with the wallet.'
 	})
-	@ApiResponse({
-		status: 200,
-		description: 'The public signature key has been retrieved.',
-		schema: {
-			properties: {
-				signature: {
-					properties: {
-						pk: { type: 'string' }
-					}
-				}
-			}
-		}
-	})
+	@ApiResponse(PublicKeyRetrievalApiResponse.Signature.Response200)
 	@Get(':walletId/signature/pk')
 	async getPublicSignatureKey(
-		@Param('walletId') walletId: number,
+		@Param('walletId', WalletByIdPipe) wallet: WalletEntity,
 	) {
-		const wallet = await this.service.getOneById(walletId)
-		if (!wallet) throw new NotFoundException('Wallet not found');
 		const sk = await WalletUtils.getPrivateSignatureKeyFromWallet(wallet);
 		const pk = await sk.getPublicKey();
 		const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
@@ -104,25 +113,11 @@ export class WalletCryptoController {
 		summary: 'Get wallet public encryption key',
 		description: 'Retrieves the public encryption key associated with the wallet.'
 	})
-	@ApiResponse({
-		status: 200,
-		description: 'The public encryption key has been retrieved.',
-		schema: {
-			properties: {
-				pke: {
-					properties: {
-						pk: { type: 'string' }
-					}
-				}
-			}
-		}
-	})
+	@ApiResponse(PublicKeyRetrievalApiResponse.Pke.Response200)
 	@Get(':walletId/pke/pk')
 	async getPublicEncryptionKey(
-		@Param('walletId') walletId: number
+		@Param('walletId', WalletByIdPipe) wallet: WalletEntity,
 	) {
-		const wallet = await this.service.getOneById(walletId)
-		if (!wallet) throw new NotFoundException('Wallet not found');
 		const sk = await WalletUtils.getPrivateDecryptionKeyFromWallet(wallet);
 		const pk = await sk.getPublicKey();
 		const encoder = CryptoEncoderFactory.defaultStringPublicKeyEncryptionEncoder();
@@ -134,25 +129,14 @@ export class WalletCryptoController {
 		description: 'Retrieves the public signature key for an actor in a virtual blockchain associated with the wallet.'
 	})
 	@ApiResponse({
-		status: 200,
-		description: 'The actor\'s public signature key has been retrieved.',
-		schema: {
-			properties: {
-				signature: {
-					properties: {
-						pk: { type: 'string' }
-					}
-				}
-			}
-		}
+		...PublicKeyRetrievalApiResponse.Signature.Response200,
+		description: 'The actor\'s public signature key'
 	})
 	@Get(':walletId/actor/signature/pk')
 	async getActorPublicSignatureKey(
-		@Param('walletId') walletId: number,
+		@Param('walletId', WalletByIdPipe) wallet: WalletEntity,
 		@Query() params: ActorPublicKeyRequestDto
 	) {
-		const wallet = await this.service.getOneById(walletId)
-		if (!wallet) throw new NotFoundException('Wallet not found');
 		const vbId = BinaryEncodingUtils.decode(params.vbId, params.vbIdEncoding);
 		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, vbId)
 		const sk = await WalletUtils.getActorPrivateSignatureKeyFromWallet(wallet, vbSeed);
@@ -166,25 +150,14 @@ export class WalletCryptoController {
 		description: 'Retrieves the public encryption key for an actor in a virtual blockchain associated with the wallet.'
 	})
 	@ApiResponse({
-		status: 200,
-		description: 'The actor\'s public encryption key has been retrieved.',
-		schema: {
-			properties: {
-				pke: {
-					properties: {
-						pk: { type: 'string' }
-					}
-				}
-			}
-		}
+		...PublicKeyRetrievalApiResponse.Pke.Response200,
+		description: 'The actor\'s public encryption key.'
 	})
 	@Get(':walletId/actor/pke/pk')
 	async getActorPublicEncryptionKey(
-		@Param('walletId') walletId: number,
+		@Param('walletId', WalletByIdPipe) wallet: WalletEntity,
 		@Query() params: ActorPublicKeyRequestDto
 	) {
-		const wallet = await this.service.getOneById(walletId)
-		if (!wallet) throw new NotFoundException('Wallet not found');
 		const vbId = BinaryEncodingUtils.decode(params.vbId, params.vbIdEncoding);
 		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, vbId)
 		const sk = await WalletUtils.getActorPrivateDecryptionKeyFromWallet(wallet, vbSeed);

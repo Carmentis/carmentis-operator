@@ -8,6 +8,8 @@ import { Hash } from '@cmts-dev/carmentis-sdk-core';
 import {
 	GetVirtualBlockchainAuthenticityProofRequestDto
 } from '../../dto/wallet/GetVirtualBlockchainAuthenticityProofRequestDto';
+import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
+import { WalletEntity } from '../../entities/WalletEntity';
 
 @ApiTags('Wallet Proof')
 @Controller('/api/wallet')
@@ -28,12 +30,11 @@ export class WalletProofController {
 	})
 	@Get('/:walletId/proof/authenticity')
 	async getRecord(
-		@Param('walletId', ParseIntPipe) walletId: number,
+		@Param('walletId', WalletByIdPipe) wallet: WalletEntity,
 		@Query() request: GetVirtualBlockchainAuthenticityProofRequestDto
 	) {
 		const vbId = request.virtualBlockchainId;
 		this.logger.log(`Returning authenticity proof for vb ${vbId}`)
-		const wallet = await this.walletService.getOneById(walletId)
 		const rawVbId = Buffer.from(vbId, 'hex')
 		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, rawVbId)
 		const accountCrypto = await WalletUtils.getAccountCryptoFromWallet(wallet);

@@ -9,15 +9,14 @@ import { WalletUtils } from '../../utils/WalletUtils';
 import { GetVirtualBlockchainRecordRequestDto } from '../../dto/wallet/GetVirtualBlockchainRecordRequestDto';
 import { Hash } from '@cmts-dev/carmentis-sdk-core';
 import { WalletService } from '../../services/WalletService';
+import { WalletEntity } from '../../entities/WalletEntity';
+import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
 
 @ApiTags('Wallet Record')
 @Controller('/api/wallet')
 export class WalletRecordController {
 
 	private logger = new Logger();
-	constructor(
-		private readonly walletService: WalletService,
-	) {}
 
 	@ApiOperation({
 		summary: 'Get a record from a virtual blockchain',
@@ -29,13 +28,12 @@ export class WalletRecordController {
 	})
 	@Get('/:walletId/record')
 	async getRecord(
-		@Param('walletId', ParseIntPipe) walletId: number,
+		@Param('walletId', WalletByIdPipe) wallet: WalletEntity,
 		@Query() request: GetVirtualBlockchainRecordRequestDto
 	) {
 		const vbId = request.vbId;
 		const height = request.height;
 		this.logger.log(`Accessing record for vb ${vbId} at height ${height}`)
-		const wallet = await this.walletService.getOneById(walletId)
 		const accountCrypto = await WalletUtils.getAccountCryptoFromWallet(wallet);
 		const provider = wallet.getProvider();
 		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.from(vbId))
