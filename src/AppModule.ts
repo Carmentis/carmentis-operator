@@ -47,6 +47,9 @@ import { AnchorRequestController } from './controllers/AnchorRequestController';
 import { ChainController } from './controllers/ChainController';
 import { WalletProofController } from './controllers/wallet/WalletProofController';
 import { AuthGuard } from './guards/AuthGuard';
+import { WalletByIdPipe } from './pipes/WalletByIdPipe';
+import { ExtractPrivateSignatureKeyFromWallet } from './pipes/ExtractPrivateSignatureKeyFromWallet';
+import { ExtractPublicSignatureKeyFromWallet } from './pipes/ExtractPublicSignatureKeyFromWallet';
 
 @Module({
 	imports: [
@@ -78,6 +81,7 @@ import { AuthGuard } from './guards/AuthGuard';
 		TypeOrmModule.forRoot(DataSourceOptions),
 	],
 	providers: [
+		// services
 		CryptoService,
 		EnvService,
 		WalletAnchoringRequestService,
@@ -90,6 +94,13 @@ import { AuthGuard } from './guards/AuthGuard';
 		ChainService,
 		AnchorRequestService,
 		ChallengeService,
+
+		// pipes
+		WalletByIdPipe,
+		ExtractPrivateSignatureKeyFromWallet,
+		ExtractPublicSignatureKeyFromWallet,
+
+		// guards & interceptors
 		{
 			provide: APP_GUARD,
 			useClass: AuthGuard,
