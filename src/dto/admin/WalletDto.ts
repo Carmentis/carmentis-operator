@@ -2,7 +2,7 @@
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { PublicKeyEncryptionSchemeId, SignatureSchemeId } from '@cmts-dev/carmentis-sdk-core';
-import { IsOptional } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 /**
  * DTO public du Wallet.
@@ -42,6 +42,8 @@ export class WalletDto {
 		description: 'Human-readable name for the wallet',
 		example: 'Administrateur Carmentis',
 	})
+	@IsString()
+	@IsNotEmpty()
 	@Expose()
 	name: string;
 
@@ -56,6 +58,8 @@ export class WalletDto {
 		description: 'RPC endpoint URL for blockchain interactions',
 		example: 'https://node2.server2.devnet.carmentis.io',
 	})
+	@IsString()
+	@IsNotEmpty()
 	@Expose()
 	rpcEndpoint: string;
 
@@ -63,6 +67,8 @@ export class WalletDto {
 		description: 'Indexer endpoint URL for blockchain data queries',
 		example: 'https://indexer.server4.devnet.carmentis.io',
 	})
+	@IsString()
+	@IsNotEmpty()
 	@Expose()
 	indexerEndpoint: string;
 
@@ -71,6 +77,8 @@ export class WalletDto {
 		example: '^/api/.*',
 		required: false,
 	})
+	@IsOptional()
+	@IsString()
 	@Expose()
 	allowedEndpointsRegex?: string;
 
@@ -82,6 +90,8 @@ export class WalletWithSeedDto extends WalletDto {
 		description: 'Seed of the wallet',
 		example: 'a1b2c3d4e5f6...',
 	})
+	@IsString()
+	@IsNotEmpty()
 	@Expose()
 	seed: string;
 }

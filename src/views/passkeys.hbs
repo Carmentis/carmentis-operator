@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Passkeys - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<h2>My passkeys</h2>
+				{{>flash}}
+
+				<div class="flash flash-error" id="passkeys-error" style="display:none;"></div>
+
+				<form id="add-passkey-form" style="margin-bottom: 1.5rem;">
+					<button type="submit" class="btn btn-primary">Add a new passkey</button>
+				</form>
+
+				<table>
+					<thead>
+					<tr>
+						<th>Name</th>
+						<th>Created</th>
+						<th>Last used</th>
+						<th></th>
+					</tr>
+					</thead>
+					<tbody id="passkeys-body">
+					<tr><td colspan="4">Loading…</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/webauthn.js"></script>
+	<script src="/admin/static/admin.js"></script>
+	<script>
+		function showError(message) {
+			const el = document.getElementById('passkeys-error');
+			el.textContent = message;
+			el.style.display = '';
+		}
+
+		async function loadPasskeys() {
+			const res = await fetch('/admin/api/v1/passkeys');
+			const passkeys = await res.json();
+			const body = document.getElementById('passkeys-body');
+			if (!passkeys.length) {
+				body.innerHTML = '<tr><td colspan="4">No passkeys yet.</td></tr>';
+				return;
+			}
+			body.innerHTML = passkeys.map((passkey) => `
+				<tr>
+					<td>${passkey.name || '(unnamed)'}</td>
+					<td>${new Date(passkey.createdAt).toLocaleString()}</td>
+					<td>${passkey.lastUsedAt ? new Date(passkey.lastUsedAt).toLocaleString() : 'never'}</td>
+					<td class="action-buttons">
+						<button class="btn btn-danger" data-confirm="Remove this passkey?" data-remove-id="${passkey.id}">Remove</button>
+					</td>
+				</tr>
+			`).join('');
+
+			body.querySelectorAll('[data-remove-id]').forEach((btn) => {
+				btn.addEventListener('click', async () => {
+					if (!window.confirm(btn.getAttribute('data-confirm'))) return;
+					const res = await fetch(`/admin/api/v1/passkeys/${btn.getAttribute('data-remove-id')}`, { method: 'DELETE' });
+					const data = await res.json().catch(() => ({}));
+					if (!res.ok) {
+						showError(data.message || 'Could not remove this passkey.');
+						return;
+					}
+					await loadPasskeys();
+				});
+			});
+		}
+
+		document.getElementById('add-passkey-form').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			document.getElementById('passkeys-error').style.display = 'none';
+			try {
+				await registerPasskey('/admin/api/v1/passkeys/options', '/admin/api/v1/passkeys/verify', undefined);
+				await loadPasskeys();
+			} catch (err) {
+				showError(err.message || 'Could not add a new passkey.');
+			}
+		});
+
+		loadPasskeys();
+	</script>
+</body>
+</html>

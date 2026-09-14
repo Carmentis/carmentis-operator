@@ -1,9 +1,10 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Param, Patch, Post } from '@nestjs/common';
 import { OPERATOR_ADMIN_API_PREFIX } from './OperatorAdminApiController';
-import { Crud, CrudController } from '@dataui/crud';
+import { Crud } from '@dataui/crud';
 import { ApplicationEntity } from '../../entities/ApplicationEntity';
 import { ApplicationService } from '../../services/ApplicationService';
 import { ApplicationCreationDto } from '../../dto/ApplicationCreationDto';
+import { ApplicationUpdateDto } from '../../dto/ApplicationUpdateDto';
 import { WalletEntity } from '../../entities/WalletEntity';
 
 @Crud({
@@ -27,7 +28,10 @@ import { WalletEntity } from '../../entities/WalletEntity';
 	},
 
 	routes: {
-		only: ['getOneBase', 'getManyBase', 'deleteOneBase'],
+		// create/update/delete are handled manually below: creation needs to resolve the
+		// wallet relation, update is restricted to `name` only, and delete must refuse when
+		// API keys or anchor requests still depend on the application.
+		only: ['getOneBase', 'getManyBase'],
 	}
 
 })
@@ -46,5 +50,15 @@ export class OperatorAdminApiApplicationController {
 			name: body.name,
 			wallet: wallet
 		})
+	}
+
+	@Patch(':vbId')
+	async updateApplication(@Param('vbId') vbId: string, @Body() dto: ApplicationUpdateDto) {
+		return this.service.updateApplication(vbId, dto);
+	}
+
+	@Delete(':vbId')
+	async deleteApplication(@Param('vbId') vbId: string) {
+		await this.service.deleteApplication(vbId);
 	}
 }

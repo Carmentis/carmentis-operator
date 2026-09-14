@@ -12,12 +12,17 @@ import { EnvService } from './services/EnvService';
 import { OperatorConfigService } from './config/services/operator-config.service';
 import { AnchorRequestEntity } from './entities/AnchorRequestEntity';
 import { UserEntity } from './entities/UserEntity';
+import { UserCredentialEntity } from './entities/UserCredentialEntity';
+import { InvitationEntity } from './entities/InvitationEntity';
+import { WebauthnChallengeEntity } from './entities/WebauthnChallengeEntity';
 import { ApiKeyEntity } from './entities/ApiKeyEntity';
 import { WalletEntity } from './entities/WalletEntity';
 import { ApplicationEntity } from './entities/ApplicationEntity';
 import { OperatorAdminApiSetupController } from './controllers/operator-admin-api/OperatorAdminApiSetupController';
 import { OperatorAdminApiApiKeyController } from './controllers/operator-admin-api/OperatorAdminApiApiKeyController';
-import { OperatorAdminApiLoginController } from './controllers/operator-admin-api/OperatorAdminApiLoginController';
+import { OperatorAdminApiWebauthnLoginController } from './controllers/operator-admin-api/OperatorAdminApiWebauthnLoginController';
+import { OperatorAdminApiInvitationController } from './controllers/operator-admin-api/OperatorAdminApiInvitationController';
+import { OperatorAdminApiPasskeyController } from './controllers/operator-admin-api/OperatorAdminApiPasskeyController';
 import { OperatorAdminApiUserController } from './controllers/operator-admin-api/OperatorAdminApiUserController';
 import {
 	OperatorAdminApiApplicationController
@@ -32,7 +37,11 @@ import { ApplicationService } from './services/ApplicationService';
 import { WalletService } from './services/WalletService';
 import ChainService from './services/ChainService';
 import { AnchorRequestService } from './services/AnchorRequestService';
-import { ChallengeService } from './services/ChallengeService';
+import { WebauthnChallengeService } from './services/WebauthnChallengeService';
+import { WebauthnService } from './services/WebauthnService';
+import { InvitationService } from './services/InvitationService';
+import { PasskeyService } from './services/PasskeyService';
+import { RegistrationService } from './services/RegistrationService';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { CrudRequestInterceptor } from '@dataui/crud';
 import { EncryptionServiceProxy } from './shared/transformers/EncryptionServiceProxy';
@@ -50,6 +59,16 @@ import { AuthGuard } from './guards/AuthGuard';
 import { WalletByIdPipe } from './pipes/WalletByIdPipe';
 import { ExtractPrivateSignatureKeyFromWallet } from './pipes/ExtractPrivateSignatureKeyFromWallet';
 import { ExtractPublicSignatureKeyFromWallet } from './pipes/ExtractPublicSignatureKeyFromWallet';
+import { AuthTokenService } from './services/AuthTokenService';
+import { OperatorAdminUiAuthController } from './controllers/operator-admin-ui/OperatorAdminUiAuthController';
+import { OperatorAdminUiSetupController } from './controllers/operator-admin-ui/OperatorAdminUiSetupController';
+import { OperatorAdminUiInvitationController } from './controllers/operator-admin-ui/OperatorAdminUiInvitationController';
+import { OperatorAdminUiPasskeyController } from './controllers/operator-admin-ui/OperatorAdminUiPasskeyController';
+import { OperatorAdminUiDashboardController } from './controllers/operator-admin-ui/OperatorAdminUiDashboardController';
+import { OperatorAdminUiWalletController } from './controllers/operator-admin-ui/OperatorAdminUiWalletController';
+import { OperatorAdminUiApplicationController } from './controllers/operator-admin-ui/OperatorAdminUiApplicationController';
+import { OperatorAdminUiUserController } from './controllers/operator-admin-ui/OperatorAdminUiUserController';
+import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui/OperatorAdminUiApiKeyController';
 
 @Module({
 	imports: [
@@ -65,6 +84,9 @@ import { ExtractPublicSignatureKeyFromWallet } from './pipes/ExtractPublicSignat
 		TypeOrmModule.forFeature([
 			AnchorRequestEntity,
 			UserEntity,
+			UserCredentialEntity,
+			InvitationEntity,
+			WebauthnChallengeEntity,
 			ApiKeyEntity,
 			WalletEntity,
 			ApplicationEntity,
@@ -86,14 +108,18 @@ import { ExtractPublicSignatureKeyFromWallet } from './pipes/ExtractPublicSignat
 		EnvService,
 		WalletAnchoringRequestService,
 		EncryptionService,
-		CryptoService,
 		ApiKeyService,
 		UserService,
 		ApplicationService,
 		WalletService,
 		ChainService,
 		AnchorRequestService,
-		ChallengeService,
+		WebauthnChallengeService,
+		WebauthnService,
+		InvitationService,
+		PasskeyService,
+		RegistrationService,
+		AuthTokenService,
 
 		// pipes
 		WalletByIdPipe,
@@ -111,13 +137,26 @@ import { ExtractPublicSignatureKeyFromWallet } from './pipes/ExtractPublicSignat
 		}
 	],
 	controllers: [
-		// admin controllers
+		// admin JSON API controllers
 		OperatorAdminApiSetupController,
 		OperatorAdminApiApiKeyController,
-		OperatorAdminApiLoginController,
+		OperatorAdminApiWebauthnLoginController,
+		OperatorAdminApiInvitationController,
+		OperatorAdminApiPasskeyController,
 		OperatorAdminApiUserController,
 		OperatorAdminApiApplicationController,
 		OperatorAdminApiWalletController,
+
+		// admin UI controllers
+		OperatorAdminUiAuthController,
+		OperatorAdminUiSetupController,
+		OperatorAdminUiInvitationController,
+		OperatorAdminUiPasskeyController,
+		OperatorAdminUiWalletController,
+		OperatorAdminUiApplicationController,
+		OperatorAdminUiUserController,
+		OperatorAdminUiApiKeyController,
+		OperatorAdminUiDashboardController,
 
 		// additional controllers
 		ChainController,

@@ -19,6 +19,22 @@ export const ConfigSchema = z.object({
 					.describe("Validity duration in seconds of the generated JWT tokens (e.g., 3600 for a day)."),
 			}).prefault({})
 				.describe("JWT authentication configuration."),
+
+			webauthn: z.object({
+				rpName: z.string().default('Carmentis Operator')
+					.describe("User-visible name of the Relying Party shown by the browser/authenticator during passkey ceremonies."),
+				rpID: z.string().default('localhost')
+					.describe("Relying Party ID (domain, without scheme or port) that passkeys are scoped to. MUST match the real domain the admin UI is served on in production, otherwise all WebAuthn ceremonies will fail."),
+				origin: z.string().default('http://localhost:3003')
+					.describe("Comma-separated list of HTTP(S) origin(s) (scheme+domain+port) allowed to complete WebAuthn ceremonies. MUST be set to the real origin(s) in production."),
+			}).prefault({})
+				.describe("WebAuthn/FIDO2 (passkey) authentication configuration."),
+
+			invitation: z.object({
+				expirySeconds: z.number().default(86400)
+					.describe("Validity duration in seconds of invitation links used to register new admin users (default: 1 day)."),
+			}).prefault({})
+				.describe("Admin invitation link configuration."),
 		}).prefault({})
 			.describe("Workspace configuration, including authentication and GraphQL settings."),
 

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Users - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<h2>Users</h2>
+				{{>flash}}
+				<table>
+					<thead>
+					<tr>
+						<th>Pseudo</th>
+						<th>Email</th>
+						<th>Passkeys</th>
+						<th>Created</th>
+					</tr>
+					</thead>
+					<tbody>
+					{{#each users}}
+					<tr>
+						<td>{{this.pseudo}}</td>
+						<td>{{this.email}}</td>
+						<td>{{this.passkeyCount}}</td>
+						<td>{{this.createdAt}}</td>
+					</tr>
+					{{else}}
+					<tr><td colspan="4">No users yet.</td></tr>
+					{{/each}}
+					</tbody>
+				</table>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+</body>
+</html>

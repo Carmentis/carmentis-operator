@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Join Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body class="login-page">
+	<div class="login-container">
+		<div class="login-card">
+			<img src="/admin/static/assets/carmentis.svg" alt="Carmentis" class="login-logo">
+			{{#if valid}}
+			<h1>Create your account</h1>
+			<div class="flash flash-error" id="register-error" style="display:none;"></div>
+			<form id="register-form" data-token="{{token}}">
+				<div class="form-group">
+					<label for="pseudo">Pseudo</label>
+					<input type="text" id="pseudo" name="pseudo" required autofocus>
+				</div>
+				<div class="form-group">
+					<label for="email">Email (optional)</label>
+					<input type="email" id="email" name="email">
+				</div>
+				<button type="submit" class="btn btn-primary btn-block">Create my passkey</button>
+			</form>
+			<script src="/admin/static/webauthn.js"></script>
+			<script>
+				const registerForm = document.getElementById('register-form');
+				registerForm.addEventListener('submit', async (e) => {
+					e.preventDefault();
+					const errorEl = document.getElementById('register-error');
+					errorEl.style.display = 'none';
+					const pseudo = document.getElementById('pseudo').value;
+					const email = document.getElementById('email').value || undefined;
+					const token = registerForm.getAttribute('data-token');
+					try {
+						await registerPasskey(
+							`/admin/api/v1/invitations/${encodeURIComponent(token)}/register/options`,
+							`/admin/api/v1/invitations/${encodeURIComponent(token)}/register/verify`,
+							{ pseudo, email },
+						);
+						window.location.href = '/admin';
+					} catch (err) {
+						errorEl.textContent = err.message || 'Registration failed.';
+						errorEl.style.display = '';
+					}
+				});
+			</script>
+			{{else}}
+			<h1>Invitation not available</h1>
+			<p style="color: var(--color-text-secondary);">{{reason}}</p>
+			<a href="/admin/login" class="btn btn-secondary btn-block" style="margin-top: 1rem;">Back to login</a>
+			{{/if}}
+		</div>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+</body>
+</html>

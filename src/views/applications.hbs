@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Applications - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<h2>Applications</h2>
+				{{>flash}}
+				<div class="flash flash-error" id="applications-error" style="display:none;"></div>
+				<p><a href="/admin/applications/new" class="btn btn-primary">New application</a></p>
+				<table>
+					<thead>
+					<tr>
+						<th>Name</th>
+						<th>Virtual blockchain ID</th>
+						<th>Wallet</th>
+						<th>Created</th>
+						<th></th>
+					</tr>
+					</thead>
+					<tbody>
+					{{#each applications}}
+					<tr>
+						<td>{{this.name}}</td>
+						<td>{{this.vbId}}</td>
+						<td>{{this.wallet.name}}</td>
+						<td>{{this.createdAt}}</td>
+						<td class="action-buttons">
+							<a href="/admin/applications/{{this.vbId}}/edit" class="btn btn-secondary">Edit</a>
+							<button class="btn btn-danger" data-confirm-message="Delete this application?" data-remove-id="{{this.vbId}}">Delete</button>
+						</td>
+					</tr>
+					{{else}}
+					<tr><td colspan="5">No applications yet.</td></tr>
+					{{/each}}
+					</tbody>
+				</table>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+	<script>
+		document.querySelectorAll('[data-remove-id]').forEach((btn) => {
+			btn.addEventListener('click', async () => {
+				if (!window.confirm(btn.getAttribute('data-confirm-message'))) return;
+				const res = await fetch(`/admin/api/v1/application/${btn.getAttribute('data-remove-id')}`, { method: 'DELETE' });
+				if (res.ok) {
+					window.location.reload();
+					return;
+				}
+				const data = await res.json().catch(() => ({}));
+				const errorEl = document.getElementById('applications-error');
+				errorEl.textContent = data.message || 'Could not delete this application.';
+				errorEl.style.display = '';
+			});
+		});
+	</script>
+</body>
+</html>

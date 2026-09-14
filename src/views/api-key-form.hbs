@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{#if apiKey}}Edit{{else}}New{{/if}} API Key - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<h2>{{#if apiKey}}Edit API key{{else}}New API key{{/if}}</h2>
+
+				<div class="flash flash-error" id="form-error" style="display:none;"></div>
+
+				<div id="created-key-box" class="flash flash-success" style="display:none; flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+					<strong>API key created (shown once, copy it now):</strong>
+					<code id="created-key-value" style="word-break: break-all;"></code>
+					<button type="button" class="btn btn-secondary" id="copy-key-btn" data-copy-text="">Copy</button>
+					<a href="/admin/api-keys" class="btn btn-primary">Back to list</a>
+				</div>
+
+				<form id="api-key-form">
+					<div class="form-group">
+						<label for="name">Name</label>
+						<input type="text" id="name" name="name" required value="{{apiKey.name}}">
+					</div>
+					<div class="form-group">
+						<label for="applicationVbId">Application (optional)</label>
+						<select id="applicationVbId" name="applicationVbId">
+							<option value="">— none —</option>
+							{{#each applications}}
+							<option value="{{this.vbId}}" {{#if (eq this.vbId ../apiKey.application.vbId)}}selected{{/if}}>{{this.name}}</option>
+							{{/each}}
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="walletId">Wallet (optional)</label>
+						<select id="walletId" name="walletId">
+							<option value="">— none —</option>
+							{{#each wallets}}
+							<option value="{{this.id}}" {{#if (eq this.id ../apiKey.wallet.id)}}selected{{/if}}>{{this.name}}</option>
+							{{/each}}
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="endpointRegex">Endpoint regex (optional)</label>
+						<input type="text" id="endpointRegex" name="endpointRegex" value="{{apiKey.endpointRegex}}">
+					</div>
+					<div class="form-group">
+						<label for="activeUntil">Active until (optional)</label>
+						<input type="date" id="activeUntil" name="activeUntil" data-initial-value="{{apiKey.activeUntil}}">
+					</div>
+					<div class="form-group">
+						<label for="gasMinAtomics">Minimum gas price (atomics)</label>
+						<input type="number" id="gasMinAtomics" name="gasMinAtomics" min="0" value="{{#if apiKey}}{{apiKey.gasMinAtomics}}{{else}}0{{/if}}">
+					</div>
+					<div class="form-group">
+						<label for="gasMaxAtomics">Maximum gas price (atomics)</label>
+						<input type="number" id="gasMaxAtomics" name="gasMaxAtomics" min="0" value="{{#if apiKey}}{{apiKey.gasMaxAtomics}}{{else}}1000000{{/if}}">
+					</div>
+
+					<button type="submit" class="btn btn-primary">{{#if apiKey}}Save changes{{else}}Create API key{{/if}}</button>
+					<a href="/admin/api-keys" class="btn btn-secondary">Cancel</a>
+				</form>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+	<script>
+		const apiKeyId = {{#if apiKey}}{{apiKey.id}}{{else}}null{{/if}};
+
+		const activeUntilInput = document.getElementById('activeUntil');
+		const initialActiveUntil = activeUntilInput.getAttribute('data-initial-value');
+		if (initialActiveUntil) {
+			activeUntilInput.value = new Date(initialActiveUntil).toISOString().slice(0, 10);
+		}
+
+		document.getElementById('api-key-form').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const errorEl = document.getElementById('form-error');
+			errorEl.style.display = 'none';
+
+			const activeUntilRaw = document.getElementById('activeUntil').value;
+			const body = {
+				name: document.getElementById('name').value,
+				applicationVbId: document.getElementById('applicationVbId').value || null,
+				walletId: document.getElementById('walletId').value ? Number(document.getElementById('walletId').value) : null,
+				endpointRegex: document.getElementById('endpointRegex').value || undefined,
+				activeUntil: activeUntilRaw ? new Date(activeUntilRaw).toISOString() : undefined,
+				gasMinAtomics: Number(document.getElementById('gasMinAtomics').value),
+				gasMaxAtomics: Number(document.getElementById('gasMaxAtomics').value),
+			};
+
+			const url = apiKeyId ? `/admin/api/v1/apiKey/${apiKeyId}` : '/admin/api/v1/apiKey';
+			const method = apiKeyId ? 'PATCH' : 'POST';
+
+			const res = await fetch(url, {
+				method,
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(body),
+			});
+			const data = await res.json().catch(() => ({}));
+			if (!res.ok) {
+				errorEl.textContent = data.message || 'Could not save this API key.';
+				errorEl.style.display = '';
+				return;
+			}
+
+			if (apiKeyId) {
+				window.location.href = '/admin/api-keys';
+			} else {
+				document.getElementById('api-key-form').style.display = 'none';
+				document.getElementById('created-key-value').textContent = data.apiKey;
+				document.getElementById('copy-key-btn').setAttribute('data-copy-text', data.apiKey);
+				document.getElementById('created-key-box').style.display = 'flex';
+			}
+		});
+	</script>
+</body>
+</html>

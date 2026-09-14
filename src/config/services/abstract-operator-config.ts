@@ -109,4 +109,23 @@ export abstract class AbstractOperatorConfig {
 		return this.config.operator.database.encryption.allow_encryption_key_generation;
 	}
 
+	/**
+	 * Returns the WebAuthn (passkey) relying party configuration.
+	 */
+	getWebauthnConfig(): { rpName: string; rpID: string; origins: string[] } {
+		const webauthnConfig = this.config.operator.admin.webauthn;
+		return {
+			rpName: webauthnConfig.rpName,
+			rpID: webauthnConfig.rpID,
+			origins: webauthnConfig.origin.split(',').map((origin) => origin.trim()).filter((origin) => origin.length > 0),
+		}
+	}
+
+	/**
+	 * Returns the validity duration (in seconds) of admin invitation links.
+	 */
+	getInvitationExpirySeconds(): number {
+		return this.config.operator.admin.invitation.expirySeconds;
+	}
+
 }

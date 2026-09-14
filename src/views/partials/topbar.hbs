@@ -1,0 +1,10 @@
+<div class="topbar">
+	<div class="topbar-right">
+		{{#if user}}
+		<span class="user-info">{{user.pseudo}}{{#if user.email}} ({{user.email}}){{/if}}</span>
+		<form method="POST" action="/admin/logout" style="display: inline;">
+			<button type="submit" class="btn btn-secondary">Logout</button>
+		</form>
+		{{/if}}
+	</div>
+</div>

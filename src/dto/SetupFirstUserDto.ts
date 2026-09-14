@@ -1,11 +1,11 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsEmail } from 'class-validator';
 
 export class SetupFirstUserDto {
 	@IsString()
 	@IsNotEmpty()
-	readonly publicKey: string;
-
-	@IsString()
-	@IsNotEmpty()
 	readonly pseudo: string;
+
+	@IsOptional()
+	@IsEmail()
+	readonly email?: string;
 }

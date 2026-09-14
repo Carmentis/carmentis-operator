@@ -1,51 +1,69 @@
-import { BadRequestException, Body, Controller, Get, Logger, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { OPERATOR_ADMIN_API_PREFIX } from './OperatorAdminApiController';
-import { UserEntity } from '../../entities/UserEntity';
 import { Public } from '../../decorators/PublicDecorator';
-import { AuthGuard } from '../../workspace/guards/AuthGuard';
 import { SetupFirstUserDto } from '../../dto/SetupFirstUserDto';
+import { WebauthnResponseDto } from '../../dto/WebauthnResponseDto';
 import { UserService } from '../../services/UserService';
+import { WebauthnService } from '../../services/WebauthnService';
+import { RegistrationService } from '../../services/RegistrationService';
+import { AuthTokenService } from '../../services/AuthTokenService';
+import { OperatorConfigService } from '../../config/services/operator-config.service';
+import { setAdminSessionCookie } from '../../utils/AdminSession';
 
 @Controller(`${OPERATOR_ADMIN_API_PREFIX}/setup`)
 export class OperatorAdminApiSetupController {
-
-	private logger = new Logger(OperatorAdminApiSetupController.name);
-	constructor(private readonly userService: UserService) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly webauthnService: WebauthnService,
+		private readonly registrationService: RegistrationService,
+		private readonly authTokenService: AuthTokenService,
+		private readonly config: OperatorConfigService,
+	) {}
 
 	@Public()
-	@Get("/status")
+	@Get('/status')
 	async status() {
 		return {
-			isInitialized: await this.isInitialized()
-		}
-	}
-
-	@Public()
-	@Post()
-	async setup(@Body() setupDto: SetupFirstUserDto) {
-		if (await this.isInitialized()) {
-			throw new BadRequestException('Server is already initialized');
-		}
-
-		this.logger.debug(`Setting up first user with public key: ${setupDto.publicKey}`);
-
-		const user = await this.userService.createUser(
-			setupDto.publicKey,
-			setupDto.pseudo
-		);
-
-		return {
-			success: true,
-			user: {
-				publicKey: user.publicKey,
-				pseudo: user.pseudo
-			}
+			isInitialized: await this.userService.isInitialized(),
 		};
 	}
 
-	async isInitialized() {
-		const numberOfUsers = await UserEntity.count();
-		return numberOfUsers !== 0;
+	/**
+	 * Begins the passkey registration ceremony for the very first admin user. Only usable
+	 * while the server has no user yet; once the first user exists, registration is only
+	 * possible through an invitation link.
+	 */
+	@Public()
+	@Post('register/options')
+	async registerOptions(@Body() dto: SetupFirstUserDto) {
+		if (await this.userService.isInitialized()) {
+			throw new BadRequestException('Server is already initialized');
+		}
+		return this.webauthnService.beginRegistration({
+			userName: dto.pseudo,
+			userDisplayName: dto.pseudo,
+			pendingPseudo: dto.pseudo,
+			pendingEmail: dto.email,
+		});
 	}
 
+	@Public()
+	@Post('register/verify')
+	async registerVerify(@Body() dto: WebauthnResponseDto, @Res() res: Response) {
+		if (await this.userService.isInitialized()) {
+			throw new BadRequestException('Server is already initialized');
+		}
+
+		const result = await this.webauthnService.finishRegistration(dto.response as any);
+		const user = await this.registrationService.completeRegistration({
+			challengeRow: result.challengeRow,
+			credential: result,
+		});
+
+		const { token } = this.authTokenService.issueToken(user);
+		setAdminSessionCookie(res, token, this.config.getJwtTokenValidity());
+
+		return res.json({ success: true });
+	}
 }

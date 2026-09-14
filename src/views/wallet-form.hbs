@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{#if wallet}}Edit{{else}}New{{/if}} Wallet - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<h2>{{#if wallet}}Edit wallet{{else}}New wallet{{/if}}</h2>
+
+				<div class="flash flash-error" id="form-error" style="display:none;"></div>
+
+				<form id="wallet-form">
+					<div class="form-group">
+						<label for="name">Name</label>
+						<input type="text" id="name" name="name" required value="{{wallet.name}}">
+					</div>
+					<div class="form-group">
+						<label for="rpcEndpoint">RPC endpoint</label>
+						<input type="text" id="rpcEndpoint" name="rpcEndpoint" required value="{{wallet.rpcEndpoint}}">
+					</div>
+					<div class="form-group">
+						<label for="indexerEndpoint">Indexer endpoint</label>
+						<input type="text" id="indexerEndpoint" name="indexerEndpoint" required value="{{wallet.indexerEndpoint}}">
+					</div>
+					<div class="form-group">
+						<label for="allowedEndpointsRegex">Allowed endpoints regex (optional)</label>
+						<input type="text" id="allowedEndpointsRegex" name="allowedEndpointsRegex" value="{{wallet.allowedEndpointsRegex}}">
+					</div>
+
+					{{#unless wallet}}
+					<div class="form-group">
+						<label for="seed">Seed</label>
+						<textarea id="seed" name="seed" required rows="3" placeholder="Paste an existing seed, or generate a new one"></textarea>
+						<div class="action-buttons" style="justify-content: flex-start; margin-top: 0.5rem;">
+							<button type="button" id="generate-seed-btn" class="btn btn-secondary">Generate a new seed</button>
+							<button type="button" id="copy-seed-btn" class="btn btn-secondary" data-copy-text="" style="display:none;">Copy</button>
+						</div>
+					</div>
+					{{/unless}}
+
+					<button type="submit" class="btn btn-primary">{{#if wallet}}Save changes{{else}}Create wallet{{/if}}</button>
+					<a href="/admin/wallets" class="btn btn-secondary">Cancel</a>
+				</form>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+	<script>
+		const walletId = {{#if wallet}}{{wallet.id}}{{else}}null{{/if}};
+
+		const generateBtn = document.getElementById('generate-seed-btn');
+		if (generateBtn) {
+			generateBtn.addEventListener('click', async () => {
+				const res = await fetch('/admin/api/v1/wallet/seed', { method: 'POST' });
+				const data = await res.json();
+				if (res.ok) {
+					document.getElementById('seed').value = data.seed;
+					const copyBtn = document.getElementById('copy-seed-btn');
+					copyBtn.setAttribute('data-copy-text', data.seed);
+					copyBtn.style.display = '';
+				}
+			});
+		}
+
+		document.getElementById('wallet-form').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const errorEl = document.getElementById('form-error');
+			errorEl.style.display = 'none';
+
+			const body = {
+				name: document.getElementById('name').value,
+				rpcEndpoint: document.getElementById('rpcEndpoint').value,
+				indexerEndpoint: document.getElementById('indexerEndpoint').value,
+				allowedEndpointsRegex: document.getElementById('allowedEndpointsRegex').value || undefined,
+			};
+			if (!walletId) {
+				body.seed = document.getElementById('seed').value;
+			}
+
+			const url = walletId ? `/admin/api/v1/wallet/${walletId}` : '/admin/api/v1/wallet';
+			const method = walletId ? 'PATCH' : 'POST';
+
+			const res = await fetch(url, {
+				method,
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(body),
+			});
+			const data = await res.json().catch(() => ({}));
+			if (!res.ok) {
+				errorEl.textContent = data.message || 'Could not save this wallet.';
+				errorEl.style.display = '';
+				return;
+			}
+			window.location.href = '/admin/wallets';
+		});
+	</script>
+</body>
+</html>

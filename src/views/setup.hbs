@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Initial Setup - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body class="login-page">
+	<div class="login-container">
+		<div class="login-card">
+			<img src="/admin/static/assets/carmentis.svg" alt="Carmentis" class="login-logo">
+			<h1>Welcome</h1>
+			<p style="margin-bottom: 1.5rem; color: var(--color-text-secondary);">
+				Create the first administrator account by registering a passkey.
+			</p>
+			<div class="flash flash-error" id="setup-error" style="display:none;"></div>
+			<form id="setup-form">
+				<div class="form-group">
+					<label for="pseudo">Pseudo</label>
+					<input type="text" id="pseudo" name="pseudo" required autofocus>
+				</div>
+				<div class="form-group">
+					<label for="email">Email (optional)</label>
+					<input type="email" id="email" name="email">
+				</div>
+				<button type="submit" class="btn btn-primary btn-block">Create my passkey</button>
+			</form>
+		</div>
+	</div>
+	<script src="/admin/static/webauthn.js"></script>
+	<script src="/admin/static/admin.js"></script>
+	<script>
+		document.getElementById('setup-form').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const errorEl = document.getElementById('setup-error');
+			errorEl.style.display = 'none';
+			const pseudo = document.getElementById('pseudo').value;
+			const email = document.getElementById('email').value || undefined;
+			try {
+				await registerPasskey(
+					'/admin/api/v1/setup/register/options',
+					'/admin/api/v1/setup/register/verify',
+					{ pseudo, email },
+				);
+				window.location.href = '/admin';
+			} catch (err) {
+				errorEl.textContent = err.message || 'Setup failed.';
+				errorEl.style.display = '';
+			}
+		});
+	</script>
+</body>
+</html>
