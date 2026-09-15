@@ -95,6 +95,11 @@ button {
 	background-color: #b81d26;
 }
 
+.btn-sm {
+	padding: var(--spacing-xs) var(--spacing-sm);
+	font-size: 12px;
+}
+
 .btn-block {
 	width: 100%;
 }
@@ -495,6 +500,27 @@ textarea {
 	border: 1px solid var(--color-danger);
 	border-radius: 4px;
 	background-color: #fff5f5;
+}
+
+.danger-zone h3 {
+	color: var(--color-danger);
+	margin-bottom: var(--spacing-md);
+}
+
+.danger-zone p {
+	color: var(--color-text);
+	margin-bottom: var(--spacing-md);
+	font-size: 13px;
+}
+
+.action-buttons-inline {
+	display: flex;
+	gap: var(--spacing-sm);
+}
+
+.action-buttons-inline .btn-sm {
+	padding: var(--spacing-xs) var(--spacing-sm);
+	font-size: 12px;
 }
 
 
