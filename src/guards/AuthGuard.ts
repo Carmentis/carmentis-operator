@@ -51,11 +51,12 @@ export class AuthGuard implements CanActivate {
 					const apiKeyEntity = await this.apiKeyService.findOneByKey(apiKey);
 
 					// Validate endpoint regex if defined
-					if (apiKeyEntity.endpointRegex) {
+					const endpointRegex = apiKeyEntity.endpointRegex;
+					if (endpointRegex) {
 						const endpoint = request.path;
-						const regex = new RegExp(apiKeyEntity.endpointRegex);
+						const regex = new RegExp(endpointRegex);
 						if (!regex.test(endpoint)) {
-							this.logger.debug(`Endpoint ${endpoint} does not match allowed regex pattern`);
+							this.logger.debug(`Endpoint ${endpoint} does not match allowed regex pattern ${endpointRegex}`);
 							return false;
 						}
 					}
