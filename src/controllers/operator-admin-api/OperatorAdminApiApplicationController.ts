@@ -12,7 +12,7 @@ import { WalletEntity } from '../../entities/WalletEntity';
 		type: ApplicationEntity,
 	},
 	params: {
-		publicKey: {
+		vbId: {
 			field: 'vbId',
 			type: 'string',
 			primary: true,
