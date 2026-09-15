@@ -10,14 +10,16 @@
 	<div class="login-container">
 		<div class="login-card">
 			<img src="/admin/static/assets/carmentis.svg" alt="Carmentis" class="login-logo">
-			<h1>Operator Admin</h1>
+			<h1>Welcome</h1>
 			{{#if error}}
 			<div class="flash flash-error" id="flash">{{error}}</div>
 			{{/if}}
 			<div class="flash flash-error" id="desk-auth-error" style="display:none;"></div>
-			<button type="button" id="login-btn" class="btn btn-primary btn-block" data-next="{{next}}">Se connecter avec Carmentis Desk</button>
+			<button type="button" id="login-btn" class="btn btn-primary btn-block" data-next="{{next}}">
+				Connect with your Desk
+			</button>
 			<p style="margin-top: 1rem; font-size: 12px; color: var(--color-text-secondary);">
-				Vous devez avoir été invité par un administrateur pour créer un compte.
+				You should be registered to connect. To register, ask an administrator to provide you a registration link.
 			</p>
 		</div>
 	</div>
