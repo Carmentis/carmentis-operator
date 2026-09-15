@@ -3,12 +3,61 @@
 		<img src="/admin/static/assets/carmentis.svg" alt="Carmentis" class="sidebar-logo">
 	</div>
 	<nav class="sidebar-nav">
-		<a href="/admin/account" id="my-account" class="nav-link {{#if (eq currentSection "account")}}active{{/if}}">My Account</a>
-		<a href="/admin" class="nav-link {{#if (eq currentSection "dashboard")}}active{{/if}}">Dashboard</a>
-		<a href="/admin/wallets" class="nav-link {{#if (eq currentSection "wallets")}}active{{/if}}">Wallets</a>
-		<a href="/admin/applications" class="nav-link {{#if (eq currentSection "applications")}}active{{/if}}">Applications</a>
-		<a href="/admin/users" class="nav-link {{#if (eq currentSection "users")}}active{{/if}}">Users</a>
-		<a href="/admin/api-keys" class="nav-link {{#if (eq currentSection "api-keys")}}active{{/if}}">API Keys</a>
-		<a href="/admin/invitations" class="nav-link {{#if (eq currentSection "invitations")}}active{{/if}}">Invitations</a>
+		<a href="/admin/account" id="my-account" class="nav-link {{#if (eq currentSection "account")}}active{{/if}}">
+			<span class="nav-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">
+					<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+				</svg>
+			</span>
+			My Account
+		</a>
+		<a href="/admin" class="nav-link {{#if (eq currentSection "dashboard")}}active{{/if}}">
+			<span class="nav-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">
+					<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+				</svg>
+			</span>
+			Dashboard
+		</a>
+		<a href="/admin/wallets" class="nav-link {{#if (eq currentSection "wallets")}}active{{/if}}">
+			<span class="nav-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">
+					<path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm7 13h-12V8h12v9zm-6-2c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z"/>
+				</svg>
+			</span>
+			Wallets
+		</a>
+		<a href="/admin/applications" class="nav-link {{#if (eq currentSection "applications")}}active{{/if}}">
+			<span class="nav-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">
+					<path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18.5c-4.41 0-8-3.59-8-8V8.5l8-4 8 4v4c0 4.41-3.59 8-8 8z"/>
+				</svg>
+			</span>
+			Applications
+		</a>
+		<a href="/admin/users" class="nav-link {{#if (eq currentSection "users")}}active{{/if}}">
+			<span class="nav-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">
+					<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.89 1.97 1.74 1.97 2.95V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+				</svg>
+			</span>
+			Users
+		</a>
+		<a href="/admin/api-keys" class="nav-link {{#if (eq currentSection "api-keys")}}active{{/if}}">
+			<span class="nav-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">
+					<path d="M12.65 10C12 7.75 10.23 6 8 6c-2.42 0-4.44 2.02-4.44 4.5S5.58 15 8 15c2.23 0 4-1.75 4.65-4H17v-1h-4.35zM8 13c-1.38 0-2.5-1.12-2.5-2.5S6.62 8 8 8c1.38 0 2.5 1.12 2.5 2.5S9.38 13 8 13z"/>
+				</svg>
+			</span>
+			API Keys
+		</a>
+		<a href="/admin/invitations" class="nav-link {{#if (eq currentSection "invitations")}}active{{/if}}">
+			<span class="nav-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">
+					<path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+				</svg>
+			</span>
+			Invitations
+		</a>
 	</nav>
 </aside>
