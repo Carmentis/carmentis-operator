@@ -67,6 +67,7 @@ import { OperatorAdminUiWalletController } from './controllers/operator-admin-ui
 import { OperatorAdminUiApplicationController } from './controllers/operator-admin-ui/OperatorAdminUiApplicationController';
 import { OperatorAdminUiUserController } from './controllers/operator-admin-ui/OperatorAdminUiUserController';
 import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui/OperatorAdminUiApiKeyController';
+import { HomeController } from './controllers/HomeController';
 
 @Module({
 	imports: [
@@ -133,6 +134,7 @@ import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui
 		}
 	],
 	controllers: [
+		HomeController,
 		// admin JSON API controllers
 		OperatorAdminApiSetupController,
 		OperatorAdminApiApiKeyController,
