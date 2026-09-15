@@ -274,6 +274,36 @@ textarea {
 	transition: filter 0.2s;
 }
 
+.sidebar-footer {
+	margin-top: var(--spacing-xl);
+	padding-top: var(--spacing-lg);
+	border-top: 1px solid var(--color-border);
+	display: flex;
+	gap: var(--spacing-md);
+}
+
+.external-link {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 4px;
+	color: var(--color-text);
+	transition: all 0.2s;
+}
+
+.external-link:hover {
+	background-color: var(--color-bg);
+	text-decoration: none;
+}
+
+.external-link svg {
+	width: 20px;
+	height: 20px;
+	display: block;
+}
+
 .main-content {
 	margin-left: 260px;
 	flex: 1;
