@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module, NestModule, OnApplicationBootstrap } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OperatorApiModule } from './OperatorApiModule';
 import { OperatorConfigModule } from './config/OperatorConfigModule';
@@ -40,7 +40,7 @@ import { DeskAuthChallengeService } from './services/DeskAuthChallengeService';
 import { CarmentisDeskAuthService } from './services/CarmentisDeskAuthService';
 import { InvitationService } from './services/InvitationService';
 import { RegistrationService } from './services/RegistrationService';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, HttpAdapterHost } from '@nestjs/core';
 import { CrudRequestInterceptor } from '@dataui/crud';
 import { EncryptionServiceProxy } from './shared/transformers/EncryptionServiceProxy';
 import { CorsMiddleware } from './middlewares/CorsMiddleware';
@@ -170,9 +170,32 @@ import { HomeController } from './controllers/HomeController';
 		WalletCryptoController
 	]
 })
-export class AppModule implements NestModule {
+export class AppModule implements NestModule, OnApplicationBootstrap {
+	private logger = new Logger();
 
-	constructor(private readonly encryptionService: EncryptionService) {}
+	constructor(
+		private readonly encryptionService: EncryptionService,
+		private readonly config: OperatorConfigService,
+		private readonly httpAdapterHost: HttpAdapterHost,
+	) {}
+
+	onApplicationBootstrap() {
+		const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
+		const address = httpServer.address();
+
+		const port =
+			typeof address === "object" && address !== null
+				? address.port
+				: 3000;
+		const sep = "-------------------------------------------------"
+		this.logger.log([
+			"Operator is running, displaying welcome message",
+			sep,
+			"The Operator server is running, you can now configure it at:",
+			`http://localhost:${port}`,
+			sep
+		].join("\n"));
+    }
 
 	onModuleInit() {
 		EncryptionServiceProxy.setInstance(this.encryptionService);
