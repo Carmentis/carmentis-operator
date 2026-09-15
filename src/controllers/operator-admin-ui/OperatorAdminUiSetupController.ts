@@ -2,11 +2,15 @@ import { Controller, Get, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { Public } from '../../decorators/PublicDecorator';
 import { UserService } from '../../services/UserService';
+import { OperatorConfigService } from '../../config/services/operator-config.service';
 import { OPERATOR_ADMIN_UI_PREFIX } from './OperatorAdminUiController';
 
 @Controller(`${OPERATOR_ADMIN_UI_PREFIX}/setup`)
 export class OperatorAdminUiSetupController {
-	constructor(private readonly userService: UserService) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly config: OperatorConfigService,
+	) {}
 
 	@Public()
 	@Get()
@@ -14,6 +18,6 @@ export class OperatorAdminUiSetupController {
 		if (await this.userService.isInitialized()) {
 			return res.redirect('/admin/login');
 		}
-		return res.render('setup', {});
+		return res.render('setup', { relayUrl: this.config.getDeskAuthConfig().relayUrl });
 	}
 }

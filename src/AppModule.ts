@@ -12,17 +12,16 @@ import { EnvService } from './services/EnvService';
 import { OperatorConfigService } from './config/services/operator-config.service';
 import { AnchorRequestEntity } from './entities/AnchorRequestEntity';
 import { UserEntity } from './entities/UserEntity';
-import { UserCredentialEntity } from './entities/UserCredentialEntity';
+import { DeskAuthChallengeEntity } from './entities/DeskAuthChallengeEntity';
 import { InvitationEntity } from './entities/InvitationEntity';
-import { WebauthnChallengeEntity } from './entities/WebauthnChallengeEntity';
 import { ApiKeyEntity } from './entities/ApiKeyEntity';
 import { WalletEntity } from './entities/WalletEntity';
 import { ApplicationEntity } from './entities/ApplicationEntity';
 import { OperatorAdminApiSetupController } from './controllers/operator-admin-api/OperatorAdminApiSetupController';
 import { OperatorAdminApiApiKeyController } from './controllers/operator-admin-api/OperatorAdminApiApiKeyController';
-import { OperatorAdminApiWebauthnLoginController } from './controllers/operator-admin-api/OperatorAdminApiWebauthnLoginController';
+import { OperatorAdminApiAuthController } from './controllers/operator-admin-api/OperatorAdminApiAuthController';
+import { OperatorAdminApiMeController } from './controllers/operator-admin-api/OperatorAdminApiMeController';
 import { OperatorAdminApiInvitationController } from './controllers/operator-admin-api/OperatorAdminApiInvitationController';
-import { OperatorAdminApiPasskeyController } from './controllers/operator-admin-api/OperatorAdminApiPasskeyController';
 import { OperatorAdminApiUserController } from './controllers/operator-admin-api/OperatorAdminApiUserController';
 import {
 	OperatorAdminApiApplicationController
@@ -37,10 +36,9 @@ import { ApplicationService } from './services/ApplicationService';
 import { WalletService } from './services/WalletService';
 import ChainService from './services/ChainService';
 import { AnchorRequestService } from './services/AnchorRequestService';
-import { WebauthnChallengeService } from './services/WebauthnChallengeService';
-import { WebauthnService } from './services/WebauthnService';
+import { DeskAuthChallengeService } from './services/DeskAuthChallengeService';
+import { CarmentisDeskAuthService } from './services/CarmentisDeskAuthService';
 import { InvitationService } from './services/InvitationService';
-import { PasskeyService } from './services/PasskeyService';
 import { RegistrationService } from './services/RegistrationService';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { CrudRequestInterceptor } from '@dataui/crud';
@@ -63,7 +61,7 @@ import { AuthTokenService } from './services/AuthTokenService';
 import { OperatorAdminUiAuthController } from './controllers/operator-admin-ui/OperatorAdminUiAuthController';
 import { OperatorAdminUiSetupController } from './controllers/operator-admin-ui/OperatorAdminUiSetupController';
 import { OperatorAdminUiInvitationController } from './controllers/operator-admin-ui/OperatorAdminUiInvitationController';
-import { OperatorAdminUiPasskeyController } from './controllers/operator-admin-ui/OperatorAdminUiPasskeyController';
+import { OperatorAdminUiAccountController } from './controllers/operator-admin-ui/OperatorAdminUiAccountController';
 import { OperatorAdminUiDashboardController } from './controllers/operator-admin-ui/OperatorAdminUiDashboardController';
 import { OperatorAdminUiWalletController } from './controllers/operator-admin-ui/OperatorAdminUiWalletController';
 import { OperatorAdminUiApplicationController } from './controllers/operator-admin-ui/OperatorAdminUiApplicationController';
@@ -84,9 +82,8 @@ import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui
 		TypeOrmModule.forFeature([
 			AnchorRequestEntity,
 			UserEntity,
-			UserCredentialEntity,
+			DeskAuthChallengeEntity,
 			InvitationEntity,
-			WebauthnChallengeEntity,
 			ApiKeyEntity,
 			WalletEntity,
 			ApplicationEntity,
@@ -114,10 +111,9 @@ import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui
 		WalletService,
 		ChainService,
 		AnchorRequestService,
-		WebauthnChallengeService,
-		WebauthnService,
+		DeskAuthChallengeService,
+		CarmentisDeskAuthService,
 		InvitationService,
-		PasskeyService,
 		RegistrationService,
 		AuthTokenService,
 
@@ -140,9 +136,9 @@ import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui
 		// admin JSON API controllers
 		OperatorAdminApiSetupController,
 		OperatorAdminApiApiKeyController,
-		OperatorAdminApiWebauthnLoginController,
+		OperatorAdminApiAuthController,
+		OperatorAdminApiMeController,
 		OperatorAdminApiInvitationController,
-		OperatorAdminApiPasskeyController,
 		OperatorAdminApiUserController,
 		OperatorAdminApiApplicationController,
 		OperatorAdminApiWalletController,
@@ -151,7 +147,7 @@ import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui
 		OperatorAdminUiAuthController,
 		OperatorAdminUiSetupController,
 		OperatorAdminUiInvitationController,
-		OperatorAdminUiPasskeyController,
+		OperatorAdminUiAccountController,
 		OperatorAdminUiWalletController,
 		OperatorAdminUiApplicationController,
 		OperatorAdminUiUserController,

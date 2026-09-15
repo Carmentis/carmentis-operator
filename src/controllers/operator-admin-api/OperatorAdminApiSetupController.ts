@@ -2,10 +2,9 @@ import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/c
 import { Response } from 'express';
 import { OPERATOR_ADMIN_API_PREFIX } from './OperatorAdminApiController';
 import { Public } from '../../decorators/PublicDecorator';
-import { SetupFirstUserDto } from '../../dto/SetupFirstUserDto';
-import { WebauthnResponseDto } from '../../dto/WebauthnResponseDto';
+import { DeskAuthVerifyDto } from '../../dto/DeskAuthVerifyDto';
 import { UserService } from '../../services/UserService';
-import { WebauthnService } from '../../services/WebauthnService';
+import { CarmentisDeskAuthService } from '../../services/CarmentisDeskAuthService';
 import { RegistrationService } from '../../services/RegistrationService';
 import { AuthTokenService } from '../../services/AuthTokenService';
 import { OperatorConfigService } from '../../config/services/operator-config.service';
@@ -15,14 +14,14 @@ import { setAdminSessionCookie } from '../../utils/AdminSession';
 export class OperatorAdminApiSetupController {
 	constructor(
 		private readonly userService: UserService,
-		private readonly webauthnService: WebauthnService,
+		private readonly deskAuthService: CarmentisDeskAuthService,
 		private readonly registrationService: RegistrationService,
 		private readonly authTokenService: AuthTokenService,
 		private readonly config: OperatorConfigService,
 	) {}
 
 	@Public()
-	@Get('/status')
+	@Get('status')
 	async status() {
 		return {
 			isInitialized: await this.userService.isInitialized(),
@@ -30,36 +29,19 @@ export class OperatorAdminApiSetupController {
 	}
 
 	/**
-	 * Begins the passkey registration ceremony for the very first admin user. Only usable
+	 * Registers the very first admin account from a verified Carmentis Desk wallet. Only usable
 	 * while the server has no user yet; once the first user exists, registration is only
 	 * possible through an invitation link.
 	 */
 	@Public()
-	@Post('register/options')
-	async registerOptions(@Body() dto: SetupFirstUserDto) {
-		if (await this.userService.isInitialized()) {
-			throw new BadRequestException('Server is already initialized');
-		}
-		return this.webauthnService.beginRegistration({
-			userName: dto.pseudo,
-			userDisplayName: dto.pseudo,
-			pendingPseudo: dto.pseudo,
-			pendingEmail: dto.email,
-		});
-	}
-
-	@Public()
-	@Post('register/verify')
-	async registerVerify(@Body() dto: WebauthnResponseDto, @Res() res: Response) {
+	@Post('register')
+	async register(@Body() dto: DeskAuthVerifyDto, @Res() res: Response) {
 		if (await this.userService.isInitialized()) {
 			throw new BadRequestException('Server is already initialized');
 		}
 
-		const result = await this.webauthnService.finishRegistration(dto.response as any);
-		const user = await this.registrationService.completeRegistration({
-			challengeRow: result.challengeRow,
-			credential: result,
-		});
+		const publicKey = await this.deskAuthService.verifySignedChallenge(dto);
+		const user = await this.registrationService.completeRegistration({ publicKey });
 
 		const { token } = this.authTokenService.issueToken(user);
 		setAdminSessionCookie(res, token, this.config.getJwtTokenValidity());

@@ -18,6 +18,11 @@
 	--spacing-xxl: 3rem;
 }
 
+
+#my-account {
+	border-bottom: 1px solid var(--color-border);
+}
+
 * {
 	margin: 0;
 	padding: 0;
@@ -207,12 +212,11 @@ textarea {
 }
 
 .sidebar-header {
-	margin-bottom: var(--spacing-xl);
 	text-align: center;
 }
 
 .sidebar-logo {
-	width: 60px;
+	width: 150px;
 	height: 60px;
 	margin-bottom: var(--spacing-md);
 }

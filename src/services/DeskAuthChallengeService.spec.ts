@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
-import { WebauthnChallengeService } from './WebauthnChallengeService';
+import { DeskAuthChallengeService } from './DeskAuthChallengeService';
 
-describe('WebauthnChallengeService', () => {
+describe('DeskAuthChallengeService', () => {
 	function buildRepository(initial: any[]) {
 		const rows = [...initial];
 		return {
@@ -13,7 +13,7 @@ describe('WebauthnChallengeService', () => {
 				return entity;
 			}),
 			findOne: jest.fn(async ({ where }: any) => {
-				return rows.find((row) => row.challenge === where.challenge && row.purpose === where.purpose) ?? null;
+				return rows.find((row) => row.challenge === where.challenge) ?? null;
 			}),
 			// Simulates an atomic conditional UPDATE: only succeeds if `consumed` still matches `where.consumed`.
 			update: jest.fn(async (where: any, patch: any) => {
@@ -30,48 +30,48 @@ describe('WebauthnChallengeService', () => {
 
 	it('creates a challenge with a 5 minute expiry', async () => {
 		const repository = buildRepository([]);
-		const service = new WebauthnChallengeService(repository as any);
+		const service = new DeskAuthChallengeService(repository as any);
 
 		const before = Date.now();
-		const row = await service.create({ challenge: 'abc', purpose: 'authentication' });
+		const row = await service.create('abc');
 		expect(row.expiresAt.getTime()).toBeGreaterThan(before);
 		expect(row.expiresAt.getTime()).toBeLessThanOrEqual(before + 5 * 60 * 1000 + 1000);
 	});
 
 	it('consumes a fresh challenge exactly once', async () => {
 		const repository = buildRepository([]);
-		const service = new WebauthnChallengeService(repository as any);
-		await service.create({ challenge: 'abc', purpose: 'authentication' });
+		const service = new DeskAuthChallengeService(repository as any);
+		await service.create('abc');
 
-		const consumed = await service.consume('abc', 'authentication');
+		const consumed = await service.consume('abc');
 		expect(consumed.challenge).toBe('abc');
 
-		await expect(service.consume('abc', 'authentication')).rejects.toThrow(BadRequestException);
+		await expect(service.consume('abc')).rejects.toThrow(BadRequestException);
 	});
 
 	it('rejects an unknown challenge', async () => {
 		const repository = buildRepository([]);
-		const service = new WebauthnChallengeService(repository as any);
-		await expect(service.consume('does-not-exist', 'authentication')).rejects.toThrow(BadRequestException);
+		const service = new DeskAuthChallengeService(repository as any);
+		await expect(service.consume('does-not-exist')).rejects.toThrow(BadRequestException);
 	});
 
 	it('rejects an expired challenge', async () => {
 		const repository = buildRepository([]);
-		const service = new WebauthnChallengeService(repository as any);
-		const row = await service.create({ challenge: 'abc', purpose: 'authentication' });
+		const service = new DeskAuthChallengeService(repository as any);
+		const row = await service.create('abc');
 		row.expiresAt = new Date(Date.now() - 1000);
 
-		await expect(service.consume('abc', 'authentication')).rejects.toThrow(BadRequestException);
+		await expect(service.consume('abc')).rejects.toThrow(BadRequestException);
 	});
 
 	it('only lets one of two concurrent consume attempts succeed (replay protection)', async () => {
 		const repository = buildRepository([]);
-		const service = new WebauthnChallengeService(repository as any);
-		await service.create({ challenge: 'race', purpose: 'authentication' });
+		const service = new DeskAuthChallengeService(repository as any);
+		await service.create('race');
 
 		const results = await Promise.allSettled([
-			service.consume('race', 'authentication'),
-			service.consume('race', 'authentication'),
+			service.consume('race'),
+			service.consume('race'),
 		]);
 
 		const fulfilled = results.filter((r) => r.status === 'fulfilled');

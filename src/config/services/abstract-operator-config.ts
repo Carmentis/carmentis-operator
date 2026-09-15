@@ -110,14 +110,11 @@ export abstract class AbstractOperatorConfig {
 	}
 
 	/**
-	 * Returns the WebAuthn (passkey) relying party configuration.
+	 * Returns the Carmentis Desk wallet authentication configuration.
 	 */
-	getWebauthnConfig(): { rpName: string; rpID: string; origins: string[] } {
-		const webauthnConfig = this.config.operator.admin.webauthn;
+	getDeskAuthConfig(): { relayUrl: string } {
 		return {
-			rpName: webauthnConfig.rpName,
-			rpID: webauthnConfig.rpID,
-			origins: webauthnConfig.origin.split(',').map((origin) => origin.trim()).filter((origin) => origin.length > 0),
+			relayUrl: this.config.operator.admin.desk.relayUrl,
 		}
 	}
 

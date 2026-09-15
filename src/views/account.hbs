@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Account - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<h2>My account</h2>
+				{{>flash}}
+
+				<div class="flash flash-error" id="account-error" style="display:none;"></div>
+				<div class="flash flash-success" id="account-success" style="display:none;"></div>
+
+				<div class="form-group">
+					<label>Wallet public key</label>
+					<code style="word-break: break-all; display: block;">{{user.publicKey}}</code>
+				</div>
+
+				<form id="rename-form">
+					<div class="form-group">
+						<label for="pseudo">Pseudo</label>
+						<input type="text" id="pseudo" name="pseudo" value="{{user.pseudo}}" required minlength="2" maxlength="32">
+					</div>
+					<button type="submit" class="btn btn-primary">Save</button>
+				</form>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+	<script>
+		document.getElementById('rename-form').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const errorEl = document.getElementById('account-error');
+			const successEl = document.getElementById('account-success');
+			errorEl.style.display = 'none';
+			successEl.style.display = 'none';
+
+			const pseudo = document.getElementById('pseudo').value.trim();
+			try {
+				const res = await fetch('/admin/api/v1/me/pseudo', {
+					method: 'PATCH',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ pseudo }),
+				});
+				const data = await res.json().catch(() => ({}));
+				if (!res.ok) {
+					throw new Error(data.message || 'Could not update pseudo.');
+				}
+				successEl.textContent = 'Pseudo updated.';
+				successEl.style.display = '';
+			} catch (err) {
+				errorEl.textContent = err.message || 'Could not update pseudo.';
+				errorEl.style.display = '';
+			}
+		});
+	</script>
+</body>
+</html>

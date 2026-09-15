@@ -6,7 +6,7 @@ import { UserEntity } from '../entities/UserEntity';
 export interface AdminJwtPayload {
 	sub: number;
 	pseudo: string;
-	email: string | null;
+	publicKey: string;
 }
 
 @Injectable()
@@ -20,7 +20,7 @@ export class AuthTokenService {
 		return {
 			sub: user.id,
 			pseudo: user.pseudo,
-			email: user.email ?? null,
+			publicKey: user.publicKey,
 		};
 	}
 

@@ -12,36 +12,24 @@
 			<img src="/admin/static/assets/carmentis.svg" alt="Carmentis" class="login-logo">
 			<h1>Welcome</h1>
 			<p style="margin-bottom: 1.5rem; color: var(--color-text-secondary);">
-				Create the first administrator account by registering a passkey.
+				Create the first administrator account by authenticating with Carmentis Desk.
 			</p>
 			<div class="flash flash-error" id="setup-error" style="display:none;"></div>
-			<form id="setup-form">
-				<div class="form-group">
-					<label for="pseudo">Pseudo</label>
-					<input type="text" id="pseudo" name="pseudo" required autofocus>
-				</div>
-				<div class="form-group">
-					<label for="email">Email (optional)</label>
-					<input type="email" id="email" name="email">
-				</div>
-				<button type="submit" class="btn btn-primary btn-block">Create my passkey</button>
-			</form>
+			<button type="button" id="setup-btn" class="btn btn-primary btn-block">Se connecter avec Carmentis Desk</button>
 		</div>
 	</div>
-	<script src="/admin/static/webauthn.js"></script>
+	<script src="https://unpkg.com/@cmts-dev/carmentis-desk-connect-js@1.1.0/dist/index.umd.cjs"></script>
+	<script src="/admin/static/carmentis-desk-auth.js"></script>
 	<script src="/admin/static/admin.js"></script>
 	<script>
-		document.getElementById('setup-form').addEventListener('submit', async (e) => {
-			e.preventDefault();
+		document.getElementById('setup-btn').addEventListener('click', async () => {
 			const errorEl = document.getElementById('setup-error');
 			errorEl.style.display = 'none';
-			const pseudo = document.getElementById('pseudo').value;
-			const email = document.getElementById('email').value || undefined;
 			try {
-				await registerPasskey(
-					'/admin/api/v1/setup/register/options',
-					'/admin/api/v1/setup/register/verify',
-					{ pseudo, email },
+				await authenticateWithDesk(
+					'/admin/api/v1/auth/challenge',
+					'/admin/api/v1/setup/register',
+					'{{relayUrl}}',
 				);
 				window.location.href = '/admin';
 			} catch (err) {

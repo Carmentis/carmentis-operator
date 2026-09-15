@@ -20,15 +20,11 @@ export const ConfigSchema = z.object({
 			}).prefault({})
 				.describe("JWT authentication configuration."),
 
-			webauthn: z.object({
-				rpName: z.string().default('Carmentis Operator')
-					.describe("User-visible name of the Relying Party shown by the browser/authenticator during passkey ceremonies."),
-				rpID: z.string().default('localhost')
-					.describe("Relying Party ID (domain, without scheme or port) that passkeys are scoped to. MUST match the real domain the admin UI is served on in production, otherwise all WebAuthn ceremonies will fail."),
-				origin: z.string().default('http://localhost:3003')
-					.describe("Comma-separated list of HTTP(S) origin(s) (scheme+domain+port) allowed to complete WebAuthn ceremonies. MUST be set to the real origin(s) in production."),
+			desk: z.object({
+				relayUrl: z.string().default('https://relay.testnet.carmentis.io')
+					.describe("URL of the Carmentis relay the admin UI's browser widget uses to reach the user's Carmentis Desk wallet during authentication."),
 			}).prefault({})
-				.describe("WebAuthn/FIDO2 (passkey) authentication configuration."),
+				.describe("Carmentis Desk wallet authentication configuration."),
 
 			invitation: z.object({
 				expirySeconds: z.number().default(86400)

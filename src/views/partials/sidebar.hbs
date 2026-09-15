@@ -1,15 +1,14 @@
 <aside class="sidebar">
 	<div class="sidebar-header">
 		<img src="/admin/static/assets/carmentis.svg" alt="Carmentis" class="sidebar-logo">
-		<h1>Operator Admin</h1>
 	</div>
 	<nav class="sidebar-nav">
+		<a href="/admin/account" id="my-account" class="nav-link {{#if (eq currentSection "account")}}active{{/if}}">My Account</a>
 		<a href="/admin" class="nav-link {{#if (eq currentSection "dashboard")}}active{{/if}}">Dashboard</a>
 		<a href="/admin/wallets" class="nav-link {{#if (eq currentSection "wallets")}}active{{/if}}">Wallets</a>
 		<a href="/admin/applications" class="nav-link {{#if (eq currentSection "applications")}}active{{/if}}">Applications</a>
 		<a href="/admin/users" class="nav-link {{#if (eq currentSection "users")}}active{{/if}}">Users</a>
 		<a href="/admin/api-keys" class="nav-link {{#if (eq currentSection "api-keys")}}active{{/if}}">API Keys</a>
-		<a href="/admin/passkeys" class="nav-link {{#if (eq currentSection "passkeys")}}active{{/if}}">My Passkeys</a>
 		<a href="/admin/invitations" class="nav-link {{#if (eq currentSection "invitations")}}active{{/if}}">Invitations</a>
 	</nav>
 </aside>

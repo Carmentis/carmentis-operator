@@ -2,7 +2,6 @@ import { DataSource } from 'typeorm';
 import { GoneException, NotFoundException } from '@nestjs/common';
 import { InvitationEntity } from '../entities/InvitationEntity';
 import { UserEntity } from '../entities/UserEntity';
-import { UserCredentialEntity } from '../entities/UserCredentialEntity';
 import { InvitationService } from './InvitationService';
 
 describe('InvitationService', () => {
@@ -15,12 +14,12 @@ describe('InvitationService', () => {
 			type: 'sqlite',
 			database: ':memory:',
 			synchronize: true,
-			entities: [UserEntity, UserCredentialEntity, InvitationEntity],
+			entities: [UserEntity, InvitationEntity],
 		});
 		await dataSource.initialize();
 
 		const userRepository = dataSource.getRepository(UserEntity);
-		admin = await userRepository.save(userRepository.create({ pseudo: 'admin' }));
+		admin = await userRepository.save(userRepository.create({ pseudo: 'admin', publicKey: 'pk-admin' }));
 
 		const config = { getInvitationExpirySeconds: () => 86400 } as any;
 		service = new InvitationService(dataSource.getRepository(InvitationEntity), config);
@@ -64,7 +63,7 @@ describe('InvitationService', () => {
 	it('marks an invitation as used once consumed, and rejects it afterwards', async () => {
 		const { token, invitation } = await service.createInvitation(admin);
 		const newUserRepository = dataSource.getRepository(UserEntity);
-		const newUser = await newUserRepository.save(newUserRepository.create({ pseudo: 'invitee' }));
+		const newUser = await newUserRepository.save(newUserRepository.create({ pseudo: 'invitee', publicKey: 'pk-invitee' }));
 
 		await service.consumeInvitation(invitation, newUser);
 
@@ -77,8 +76,8 @@ describe('InvitationService', () => {
 	it('only lets one of two concurrent consumption attempts succeed (single-use under race)', async () => {
 		const { invitation } = await service.createInvitation(admin);
 		const userRepository = dataSource.getRepository(UserEntity);
-		const userA = await userRepository.save(userRepository.create({ pseudo: 'a' }));
-		const userB = await userRepository.save(userRepository.create({ pseudo: 'b' }));
+		const userA = await userRepository.save(userRepository.create({ pseudo: 'a', publicKey: 'pk-a' }));
+		const userB = await userRepository.save(userRepository.create({ pseudo: 'b', publicKey: 'pk-b' }));
 
 		const results = await Promise.allSettled([
 			service.consumeInvitation(invitation, userA),

@@ -19,20 +19,17 @@ export class OperatorAdminUiUserController {
 			select: {
 				id: true,
 				pseudo: true,
-				email: true,
+				publicKey: true,
 				createdAt: true,
-				credentials: { id: true },
 			},
-			relations: { credentials: true },
 			order: { createdAt: 'ASC' },
 		});
 
 		const users = rows.map((row) => ({
 			id: row.id,
 			pseudo: row.pseudo,
-			email: row.email ?? null,
+			publicKey: row.publicKey,
 			createdAt: row.createdAt,
-			passkeyCount: row.credentials?.length ?? 0,
 		}));
 
 		return {

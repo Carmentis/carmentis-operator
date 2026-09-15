@@ -3,10 +3,9 @@ import { Response } from 'express';
 import { OPERATOR_ADMIN_API_PREFIX } from './OperatorAdminApiController';
 import { Public } from '../../decorators/PublicDecorator';
 import { CurrentAdminUser } from '../../decorators/CurrentAdminUserDecorator';
-import { InvitationRegistrationDto } from '../../dto/InvitationRegistrationDto';
-import { WebauthnResponseDto } from '../../dto/WebauthnResponseDto';
+import { DeskAuthVerifyDto } from '../../dto/DeskAuthVerifyDto';
 import { InvitationService } from '../../services/InvitationService';
-import { WebauthnService } from '../../services/WebauthnService';
+import { CarmentisDeskAuthService } from '../../services/CarmentisDeskAuthService';
 import { RegistrationService } from '../../services/RegistrationService';
 import { AuthTokenService } from '../../services/AuthTokenService';
 import { UserService } from '../../services/UserService';
@@ -18,7 +17,7 @@ import { AdminJwtPayload } from '../../services/AuthTokenService';
 export class OperatorAdminApiInvitationController {
 	constructor(
 		private readonly invitationService: InvitationService,
-		private readonly webauthnService: WebauthnService,
+		private readonly deskAuthService: CarmentisDeskAuthService,
 		private readonly registrationService: RegistrationService,
 		private readonly authTokenService: AuthTokenService,
 		private readonly userService: UserService,
@@ -49,29 +48,12 @@ export class OperatorAdminApiInvitationController {
 	}
 
 	@Public()
-	@Post(':token/register/options')
-	async registerOptions(@Param('token') token: string, @Body() dto: InvitationRegistrationDto) {
-		const invitation = await this.invitationService.validateToken(token);
-		return this.webauthnService.beginRegistration({
-			userName: dto.pseudo,
-			userDisplayName: dto.pseudo,
-			pendingPseudo: dto.pseudo,
-			pendingEmail: dto.email,
-			invitationId: invitation.id,
-		});
-	}
-
-	@Public()
-	@Post(':token/register/verify')
-	async registerVerify(@Param('token') token: string, @Body() dto: WebauthnResponseDto, @Res() res: Response) {
+	@Post(':token/register')
+	async register(@Param('token') token: string, @Body() dto: DeskAuthVerifyDto, @Res() res: Response) {
 		const invitation = await this.invitationService.validateToken(token);
 
-		const result = await this.webauthnService.finishRegistration(dto.response as any);
-		const user = await this.registrationService.completeRegistration({
-			challengeRow: result.challengeRow,
-			credential: result,
-			invitation,
-		});
+		const publicKey = await this.deskAuthService.verifySignedChallenge(dto);
+		const user = await this.registrationService.completeRegistration({ publicKey, invitation });
 
 		const { token: sessionToken } = this.authTokenService.issueToken(user);
 		setAdminSessionCookie(res, sessionToken, this.config.getJwtTokenValidity());

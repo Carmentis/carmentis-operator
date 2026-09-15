@@ -2,11 +2,15 @@ import { Controller, Get, Param, Render, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { Public } from '../../decorators/PublicDecorator';
 import { InvitationService } from '../../services/InvitationService';
+import { OperatorConfigService } from '../../config/services/operator-config.service';
 import { OPERATOR_ADMIN_UI_PREFIX } from './OperatorAdminUiController';
 
 @Controller(`${OPERATOR_ADMIN_UI_PREFIX}/invitations`)
 export class OperatorAdminUiInvitationController {
-	constructor(private readonly invitationService: InvitationService) {}
+	constructor(
+		private readonly invitationService: InvitationService,
+		private readonly config: OperatorConfigService,
+	) {}
 
 	@Get()
 	@Render('invitations')
@@ -30,7 +34,7 @@ export class OperatorAdminUiInvitationController {
 	async register(@Param('token') token: string) {
 		try {
 			await this.invitationService.validateToken(token);
-			return { valid: true, token };
+			return { valid: true, token, relayUrl: this.config.getDeskAuthConfig().relayUrl };
 		} catch (error) {
 			return { valid: false, reason: error?.message ?? 'This invitation link is not valid.' };
 		}
