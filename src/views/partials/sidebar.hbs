@@ -19,6 +19,23 @@
 			</span>
 			Dashboard
 		</a>
+		<a href="/admin/users" class="nav-link {{#if (eq currentSection "users")}}active{{/if}}">
+			<span class="nav-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">
+					<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.89 1.97 1.74 1.97 2.95V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+				</svg>
+			</span>
+			Users
+		</a>
+		<a href="/admin/invitations" class="nav-link {{#if (eq currentSection "invitations")}}active{{/if}}">
+			<span class="nav-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">
+					<path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+				</svg>
+			</span>
+			Invitations
+		</a>
+
 		<a href="/admin/wallets" class="nav-link {{#if (eq currentSection "wallets")}}active{{/if}}">
 			<span class="nav-icon">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">
@@ -35,14 +52,7 @@
 			</span>
 			Applications
 		</a>
-		<a href="/admin/users" class="nav-link {{#if (eq currentSection "users")}}active{{/if}}">
-			<span class="nav-icon">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">
-					<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.89 1.97 1.74 1.97 2.95V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-				</svg>
-			</span>
-			Users
-		</a>
+
 		<a href="/admin/api-keys" class="nav-link {{#if (eq currentSection "api-keys")}}active{{/if}}">
 			<span class="nav-icon">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">
@@ -51,14 +61,7 @@
 			</span>
 			API Keys
 		</a>
-		<a href="/admin/invitations" class="nav-link {{#if (eq currentSection "invitations")}}active{{/if}}">
-			<span class="nav-icon">
-				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">
-					<path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-				</svg>
-			</span>
-			Invitations
-		</a>
+
 	</nav>
 	<div class="sidebar-footer">
 		<a href="https://github.com/carmentis/carmentis-operator" target="_blank" rel="noopener noreferrer" class="external-link" title="GitHub Repository">

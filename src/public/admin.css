@@ -436,6 +436,10 @@ textarea {
 	color: var(--color-text);
 }
 
+.text {
+	margin-bottom: var(--spacing-md);
+}
+
 @media (max-width: 768px) {
 	.layout {
 		flex-direction: column;
