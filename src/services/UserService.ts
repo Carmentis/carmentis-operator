@@ -1,9 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Repository } from 'typeorm';
+import { DeleteResult, Not, Repository } from 'typeorm';
 import { UserEntity } from '../entities/UserEntity';
-import CreateUserDto from '../workspace/dto/create-user.dto';
-import CreateNotWhitelistedUserDto from '../workspace/dto/create-user-public.dto';
 import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 
 @Injectable()
@@ -15,31 +13,44 @@ export class UserService extends TypeOrmCrudService<UserEntity> {
 		super(userEntityRepository);
 	}
 
-	// Find one item by public key
-	async findUserByPublicKey(publicKey: string): Promise<UserEntity> {
-		const user = this.userEntityRepository.findOne({
-			where: {
-				publicKey: publicKey
-			},
-		});
+	async findUserById(id: number): Promise<UserEntity> {
+		const user = await this.userEntityRepository.findOneBy({ id });
 		if (!user) throw new NotFoundException();
 		return user;
 	}
 
+	async findByPublicKey(publicKey: string): Promise<UserEntity | null> {
+		return this.userEntityRepository.findOneBy({ publicKey });
+	}
 
-	async deleteUserByPublicKey(deletedAdminPublicKey: string): Promise<DeleteResult> {
-		return this.userEntityRepository.delete(deletedAdminPublicKey);
+	async deleteUserById(id: number): Promise<DeleteResult> {
+		return this.userEntityRepository.delete(id);
 	}
 
 	async findAllUsers() {
 		return this.userEntityRepository.find();
 	}
 
-	async createUser(publicKey: string, pseudo: string) {
-		const item = this.userEntityRepository.create({
-			publicKey,
-			pseudo
-		});
-		return this.userEntityRepository.save(item);
+	async isInitialized(): Promise<boolean> {
+		const count = await this.userEntityRepository.count();
+		return count !== 0;
+	}
+
+	/**
+	 * Renames a user's pseudo, rejecting blank/duplicate values. Uniqueness is checked
+	 * explicitly (rather than relying solely on the DB's unique constraint) so callers get a
+	 * clean 409 instead of a raw driver error.
+	 */
+	async renamePseudo(userId: number, pseudo: string): Promise<UserEntity> {
+		const trimmed = pseudo.trim();
+		const user = await this.findUserById(userId);
+
+		const collision = await this.userEntityRepository.findOneBy({ pseudo: trimmed, id: Not(userId) });
+		if (collision) {
+			throw new ConflictException('This pseudo is already taken');
+		}
+
+		user.pseudo = trimmed;
+		return this.userEntityRepository.save(user);
 	}
 }

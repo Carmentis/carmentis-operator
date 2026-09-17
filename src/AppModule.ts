@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Logger, MiddlewareConsumer, Module, NestModule, OnApplicationBootstrap } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OperatorApiModule } from './OperatorApiModule';
 import { OperatorConfigModule } from './config/OperatorConfigModule';
@@ -12,12 +12,16 @@ import { EnvService } from './services/EnvService';
 import { OperatorConfigService } from './config/services/operator-config.service';
 import { AnchorRequestEntity } from './entities/AnchorRequestEntity';
 import { UserEntity } from './entities/UserEntity';
+import { DeskAuthChallengeEntity } from './entities/DeskAuthChallengeEntity';
+import { InvitationEntity } from './entities/InvitationEntity';
 import { ApiKeyEntity } from './entities/ApiKeyEntity';
 import { WalletEntity } from './entities/WalletEntity';
 import { ApplicationEntity } from './entities/ApplicationEntity';
 import { OperatorAdminApiSetupController } from './controllers/operator-admin-api/OperatorAdminApiSetupController';
 import { OperatorAdminApiApiKeyController } from './controllers/operator-admin-api/OperatorAdminApiApiKeyController';
-import { OperatorAdminApiLoginController } from './controllers/operator-admin-api/OperatorAdminApiLoginController';
+import { OperatorAdminApiAuthController } from './controllers/operator-admin-api/OperatorAdminApiAuthController';
+import { OperatorAdminApiMeController } from './controllers/operator-admin-api/OperatorAdminApiMeController';
+import { OperatorAdminApiInvitationController } from './controllers/operator-admin-api/OperatorAdminApiInvitationController';
 import { OperatorAdminApiUserController } from './controllers/operator-admin-api/OperatorAdminApiUserController';
 import {
 	OperatorAdminApiApplicationController
@@ -32,8 +36,11 @@ import { ApplicationService } from './services/ApplicationService';
 import { WalletService } from './services/WalletService';
 import ChainService from './services/ChainService';
 import { AnchorRequestService } from './services/AnchorRequestService';
-import { ChallengeService } from './services/ChallengeService';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { DeskAuthChallengeService } from './services/DeskAuthChallengeService';
+import { CarmentisDeskAuthService } from './services/CarmentisDeskAuthService';
+import { InvitationService } from './services/InvitationService';
+import { RegistrationService } from './services/RegistrationService';
+import { APP_GUARD, APP_INTERCEPTOR, HttpAdapterHost } from '@nestjs/core';
 import { CrudRequestInterceptor } from '@dataui/crud';
 import { EncryptionServiceProxy } from './shared/transformers/EncryptionServiceProxy';
 import { CorsMiddleware } from './middlewares/CorsMiddleware';
@@ -50,6 +57,17 @@ import { AuthGuard } from './guards/AuthGuard';
 import { WalletByIdPipe } from './pipes/WalletByIdPipe';
 import { ExtractPrivateSignatureKeyFromWallet } from './pipes/ExtractPrivateSignatureKeyFromWallet';
 import { ExtractPublicSignatureKeyFromWallet } from './pipes/ExtractPublicSignatureKeyFromWallet';
+import { AuthTokenService } from './services/AuthTokenService';
+import { OperatorAdminUiAuthController } from './controllers/operator-admin-ui/OperatorAdminUiAuthController';
+import { OperatorAdminUiSetupController } from './controllers/operator-admin-ui/OperatorAdminUiSetupController';
+import { OperatorAdminUiInvitationController } from './controllers/operator-admin-ui/OperatorAdminUiInvitationController';
+import { OperatorAdminUiAccountController } from './controllers/operator-admin-ui/OperatorAdminUiAccountController';
+import { OperatorAdminUiDashboardController } from './controllers/operator-admin-ui/OperatorAdminUiDashboardController';
+import { OperatorAdminUiWalletController } from './controllers/operator-admin-ui/OperatorAdminUiWalletController';
+import { OperatorAdminUiApplicationController } from './controllers/operator-admin-ui/OperatorAdminUiApplicationController';
+import { OperatorAdminUiUserController } from './controllers/operator-admin-ui/OperatorAdminUiUserController';
+import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui/OperatorAdminUiApiKeyController';
+import { HomeController } from './controllers/HomeController';
 
 @Module({
 	imports: [
@@ -65,6 +83,8 @@ import { ExtractPublicSignatureKeyFromWallet } from './pipes/ExtractPublicSignat
 		TypeOrmModule.forFeature([
 			AnchorRequestEntity,
 			UserEntity,
+			DeskAuthChallengeEntity,
+			InvitationEntity,
 			ApiKeyEntity,
 			WalletEntity,
 			ApplicationEntity,
@@ -86,14 +106,17 @@ import { ExtractPublicSignatureKeyFromWallet } from './pipes/ExtractPublicSignat
 		EnvService,
 		WalletAnchoringRequestService,
 		EncryptionService,
-		CryptoService,
 		ApiKeyService,
 		UserService,
 		ApplicationService,
 		WalletService,
 		ChainService,
 		AnchorRequestService,
-		ChallengeService,
+		DeskAuthChallengeService,
+		CarmentisDeskAuthService,
+		InvitationService,
+		RegistrationService,
+		AuthTokenService,
 
 		// pipes
 		WalletByIdPipe,
@@ -111,13 +134,27 @@ import { ExtractPublicSignatureKeyFromWallet } from './pipes/ExtractPublicSignat
 		}
 	],
 	controllers: [
-		// admin controllers
+		HomeController,
+		// admin JSON API controllers
 		OperatorAdminApiSetupController,
 		OperatorAdminApiApiKeyController,
-		OperatorAdminApiLoginController,
+		OperatorAdminApiAuthController,
+		OperatorAdminApiMeController,
+		OperatorAdminApiInvitationController,
 		OperatorAdminApiUserController,
 		OperatorAdminApiApplicationController,
 		OperatorAdminApiWalletController,
+
+		// admin UI controllers
+		OperatorAdminUiAuthController,
+		OperatorAdminUiSetupController,
+		OperatorAdminUiInvitationController,
+		OperatorAdminUiAccountController,
+		OperatorAdminUiWalletController,
+		OperatorAdminUiApplicationController,
+		OperatorAdminUiUserController,
+		OperatorAdminUiApiKeyController,
+		OperatorAdminUiDashboardController,
 
 		// additional controllers
 		ChainController,
@@ -133,9 +170,32 @@ import { ExtractPublicSignatureKeyFromWallet } from './pipes/ExtractPublicSignat
 		WalletCryptoController
 	]
 })
-export class AppModule implements NestModule {
+export class AppModule implements NestModule, OnApplicationBootstrap {
+	private logger = new Logger();
 
-	constructor(private readonly encryptionService: EncryptionService) {}
+	constructor(
+		private readonly encryptionService: EncryptionService,
+		private readonly config: OperatorConfigService,
+		private readonly httpAdapterHost: HttpAdapterHost,
+	) {}
+
+	onApplicationBootstrap() {
+		const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
+		const address = httpServer.address();
+
+		const port =
+			typeof address === "object" && address !== null
+				? address.port
+				: 3000;
+		const sep = "-------------------------------------------------"
+		this.logger.log([
+			"Operator is running, displaying welcome message",
+			sep,
+			"The Operator server is running, you can now configure it at:",
+			`http://localhost:${port}`,
+			sep
+		].join("\n"));
+    }
 
 	onModuleInit() {
 		EncryptionServiceProxy.setInstance(this.encryptionService);

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>API Keys - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<h2>API Keys</h2>
+				<p class="text">
+					API keys are used to authenticate requests to the <a href="/swagger">API</a>.
+				</p>
+				{{>flash}}
+				<div class="flash flash-error" id="api-keys-error" style="display:none;"></div>
+				<p><a href="/admin/api-keys/new" class="btn btn-primary">New API key</a></p>
+				<table>
+					<thead>
+					<tr>
+						<th>Name</th>
+						<th>Active</th>
+						<th>Application</th>
+						<th>Wallet</th>
+						<th>Expires</th>
+						<th>Created</th>
+						<th></th>
+					</tr>
+					</thead>
+					<tbody>
+					{{#each apiKeys}}
+					<tr>
+						<td>{{this.name}}</td>
+						<td>{{#if this.isActive}}yes{{else}}no{{/if}}</td>
+						<td>{{this.application.name}}</td>
+						<td>{{this.wallet.name}}</td>
+						<td>{{#if this.activeUntil}}{{this.activeUntil}}{{else}}never{{/if}}</td>
+						<td>{{this.createdAt}}</td>
+						<td class="action-buttons">
+							<a href="/admin/api-keys/{{this.id}}/edit" class="btn btn-secondary">Edit</a>
+							<button class="btn btn-secondary" data-toggle-id="{{this.id}}">{{#if this.isActive}}Deactivate{{else}}Activate{{/if}}</button>
+							<button class="btn btn-danger" data-confirm-message="Delete this API key?" data-remove-id="{{this.id}}">Delete</button>
+						</td>
+					</tr>
+					{{else}}
+					<tr><td colspan="7">No API keys yet.</td></tr>
+					{{/each}}
+					</tbody>
+				</table>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+	<script>
+		function showError(message) {
+			const errorEl = document.getElementById('api-keys-error');
+			errorEl.textContent = message;
+			errorEl.style.display = '';
+		}
+
+		document.querySelectorAll('[data-remove-id]').forEach((btn) => {
+			btn.addEventListener('click', async () => {
+				if (!window.confirm(btn.getAttribute('data-confirm-message'))) return;
+				const res = await fetch(`/admin/api/v1/apiKey/${btn.getAttribute('data-remove-id')}`, { method: 'DELETE' });
+				if (res.ok) {
+					window.location.reload();
+					return;
+				}
+				const data = await res.json().catch(() => ({}));
+				showError(data.message || 'Could not delete this API key.');
+			});
+		});
+
+		document.querySelectorAll('[data-toggle-id]').forEach((btn) => {
+			btn.addEventListener('click', async () => {
+				const res = await fetch(`/admin/api/v1/apiKey/${btn.getAttribute('data-toggle-id')}/toggle`, { method: 'PATCH' });
+				if (res.ok) {
+					window.location.reload();
+					return;
+				}
+				const data = await res.json().catch(() => ({}));
+				showError(data.message || 'Could not update this API key.');
+			});
+		});
+	</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{{#if flash}}
+<div class="flash flash-{{flashType}}" id="flash">
+	{{flash}}
+	<button class="flash-close" onclick="document.getElementById('flash').remove()">&times;</button>
+</div>
+<script>
+setTimeout(() => {
+	const el = document.getElementById('flash');
+	if (el) el.remove();
+	const url = new URL(window.location);
+	url.searchParams.delete('flash');
+	url.searchParams.delete('flashType');
+	window.history.replaceState({}, '', url.toString());
+}, 3500);
+</script>
+{{/if}}

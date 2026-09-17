@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Invitations - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<h2>Invitations</h2>
+				{{>flash}}
+				<p class="text">
+					Create an invitation link to invite a user to register to this operator.
+				</p>
+
+				<div id="new-invitation" class="flash flash-success" style="display:none; flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+					<strong>Invitation link created (shown once, copy it now):</strong>
+					<code id="new-invitation-link" style="word-break: break-all;"></code>
+				</div>
+
+				<form id="create-invitation-form" style="margin-bottom: 1.5rem;">
+					<button type="submit" class="btn btn-primary">Create invitation link</button>
+				</form>
+
+				<table>
+					<thead>
+					<tr>
+						<th>Created</th>
+						<th>Expires</th>
+						<th>Status</th>
+						<th>Used by</th>
+					</tr>
+					</thead>
+					<tbody id="invitations-body">
+					<tr><td colspan="4">Loading…</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+	<script>
+		async function loadInvitations() {
+			const res = await fetch('/admin/api/v1/invitations');
+			const invitations = await res.json();
+			const body = document.getElementById('invitations-body');
+			if (!invitations.length) {
+				body.innerHTML = '<tr><td colspan="4">No invitations yet.</td></tr>';
+				return;
+			}
+			body.innerHTML = invitations.map((invitation) => `
+				<tr>
+					<td>${new Date(invitation.createdAt).toLocaleString()}</td>
+					<td>${new Date(invitation.expiresAt).toLocaleString()}</td>
+					<td>${invitation.status}</td>
+					<td>${invitation.usedByPseudo || '-'}</td>
+				</tr>
+			`).join('');
+		}
+
+		document.getElementById('create-invitation-form').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const res = await fetch('/admin/api/v1/invitations', { method: 'POST' });
+			const data = await res.json();
+			if (res.ok) {
+				const link = `${window.location.origin}/admin/invitations/${data.token}`;
+				document.getElementById('new-invitation-link').textContent = link;
+				document.getElementById('new-invitation').style.display = 'flex';
+				await loadInvitations();
+			}
+		});
+
+		loadInvitations();
+	</script>
+</body>
+</html>

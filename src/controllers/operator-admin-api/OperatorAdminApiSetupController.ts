@@ -1,51 +1,51 @@
-import { BadRequestException, Body, Controller, Get, Logger, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { OPERATOR_ADMIN_API_PREFIX } from './OperatorAdminApiController';
-import { UserEntity } from '../../entities/UserEntity';
 import { Public } from '../../decorators/PublicDecorator';
-import { AuthGuard } from '../../workspace/guards/AuthGuard';
-import { SetupFirstUserDto } from '../../dto/SetupFirstUserDto';
+import { DeskAuthVerifyDto } from '../../dto/DeskAuthVerifyDto';
 import { UserService } from '../../services/UserService';
+import { CarmentisDeskAuthService } from '../../services/CarmentisDeskAuthService';
+import { RegistrationService } from '../../services/RegistrationService';
+import { AuthTokenService } from '../../services/AuthTokenService';
+import { OperatorConfigService } from '../../config/services/operator-config.service';
+import { setAdminSessionCookie } from '../../utils/AdminSession';
 
 @Controller(`${OPERATOR_ADMIN_API_PREFIX}/setup`)
 export class OperatorAdminApiSetupController {
-
-	private logger = new Logger(OperatorAdminApiSetupController.name);
-	constructor(private readonly userService: UserService) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly deskAuthService: CarmentisDeskAuthService,
+		private readonly registrationService: RegistrationService,
+		private readonly authTokenService: AuthTokenService,
+		private readonly config: OperatorConfigService,
+	) {}
 
 	@Public()
-	@Get("/status")
+	@Get('status')
 	async status() {
 		return {
-			isInitialized: await this.isInitialized()
-		}
-	}
-
-	@Public()
-	@Post()
-	async setup(@Body() setupDto: SetupFirstUserDto) {
-		if (await this.isInitialized()) {
-			throw new BadRequestException('Server is already initialized');
-		}
-
-		this.logger.debug(`Setting up first user with public key: ${setupDto.publicKey}`);
-
-		const user = await this.userService.createUser(
-			setupDto.publicKey,
-			setupDto.pseudo
-		);
-
-		return {
-			success: true,
-			user: {
-				publicKey: user.publicKey,
-				pseudo: user.pseudo
-			}
+			isInitialized: await this.userService.isInitialized(),
 		};
 	}
 
-	async isInitialized() {
-		const numberOfUsers = await UserEntity.count();
-		return numberOfUsers !== 0;
-	}
+	/**
+	 * Registers the very first admin account from a verified Carmentis Desk wallet. Only usable
+	 * while the server has no user yet; once the first user exists, registration is only
+	 * possible through an invitation link.
+	 */
+	@Public()
+	@Post('register')
+	async register(@Body() dto: DeskAuthVerifyDto, @Res() res: Response) {
+		if (await this.userService.isInitialized()) {
+			throw new BadRequestException('Server is already initialized');
+		}
 
+		const publicKey = await this.deskAuthService.verifySignedChallenge(dto);
+		const user = await this.registrationService.completeRegistration({ publicKey });
+
+		const { token } = this.authTokenService.issueToken(user);
+		setAdminSessionCookie(res, token, this.config.getJwtTokenValidity());
+
+		return res.json({ success: true });
+	}
 }

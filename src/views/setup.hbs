@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Initial Setup - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body class="login-page">
+	<div class="login-container">
+		<div class="login-card">
+			<img src="/admin/static/assets/carmentis.svg" alt="Carmentis" class="login-logo">
+			<h1>Welcome</h1>
+			<p style="margin-bottom: 1.5rem; color: var(--color-text-secondary);">
+				Create the first administrator account by authenticating with Carmentis Desk.
+			</p>
+			<div class="flash flash-error" id="setup-error" style="display:none;"></div>
+			<button type="button" id="setup-btn" class="btn btn-primary btn-block">Se connecter avec Carmentis Desk</button>
+		</div>
+	</div>
+	<script src="https://unpkg.com/@cmts-dev/carmentis-desk-connect-js@1.1.0/dist/index.umd.cjs"></script>
+	<script src="/admin/static/carmentis-desk-auth.js"></script>
+	<script src="/admin/static/admin.js"></script>
+	<script>
+		document.getElementById('setup-btn').addEventListener('click', async () => {
+			const errorEl = document.getElementById('setup-error');
+			errorEl.style.display = 'none';
+			try {
+				await authenticateWithDesk(
+					'/admin/api/v1/auth/challenge',
+					'/admin/api/v1/setup/register',
+					'{{relayUrl}}',
+				);
+				window.location.href = '/admin';
+			} catch (err) {
+				errorEl.textContent = err.message || 'Setup failed.';
+				errorEl.style.display = '';
+			}
+		});
+	</script>
+</body>
+</html>

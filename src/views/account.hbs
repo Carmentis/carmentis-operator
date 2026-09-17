@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Account - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<h2>My account</h2>
+				{{>flash}}
+
+				<div class="flash flash-error" id="account-error" style="display:none;"></div>
+				<div class="flash flash-success" id="account-success" style="display:none;"></div>
+
+				<div class="form-group">
+					<label>Wallet public key</label>
+					<code style="word-break: break-all; display: block;">{{user.publicKey}}</code>
+				</div>
+
+				<form id="rename-form">
+					<div class="form-group">
+						<label for="pseudo">Pseudo</label>
+						<input type="text" id="pseudo" name="pseudo" value="{{user.pseudo}}" required minlength="2" maxlength="32">
+					</div>
+					<div class="note note-warning" style="margin-bottom: 20px;">
+						<div class="note-icon">!</div>
+						<div class="note-content">
+							<strong>Note</strong>
+							<p>
+								This update will only take effect after you log out and log back in.
+							</p>
+						</div>
+					</div>
+					<button type="submit" class="btn btn-primary">Save</button>
+				</form>
+
+				<div class="danger-zone">
+					<h3>Delete Account</h3>
+					<p>Permanently delete this account. This action cannot be undone.</p>
+					<button type="button" id="delete-account-btn" class="btn btn-danger">Delete My Account</button>
+				</div>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+	<script>
+		document.getElementById('rename-form').addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const errorEl = document.getElementById('account-error');
+			const successEl = document.getElementById('account-success');
+			errorEl.style.display = 'none';
+			successEl.style.display = 'none';
+
+			const pseudo = document.getElementById('pseudo').value.trim();
+			try {
+				const res = await fetch('/admin/api/v1/me/pseudo', {
+					method: 'PATCH',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ pseudo }),
+				});
+				const data = await res.json().catch(() => ({}));
+				if (!res.ok) {
+					throw new Error(data.message || 'Could not update pseudo.');
+				}
+				successEl.textContent = 'Pseudo updated.';
+				successEl.style.display = '';
+			} catch (err) {
+				errorEl.textContent = err.message || 'Could not update pseudo.';
+				errorEl.style.display = '';
+			}
+		});
+
+		document.getElementById('delete-account-btn').addEventListener('click', async () => {
+			const confirmed = confirm('Are you sure you want to delete your account? This action cannot be undone.');
+			if (!confirmed) return;
+
+			const doubleConfirmed = confirm('This will permanently delete your account and log you out. Type "DELETE" in the next prompt to confirm.');
+			if (!doubleConfirmed) return;
+
+			const input = prompt('Type DELETE to confirm account deletion:');
+			if (input !== 'DELETE') {
+				alert('Account deletion cancelled.');
+				return;
+			}
+
+			const errorEl = document.getElementById('account-error');
+			const successEl = document.getElementById('account-success');
+			errorEl.style.display = 'none';
+			successEl.style.display = 'none';
+
+			try {
+				const res = await fetch('/admin/api/v1/user/{{user.id}}', { method: 'DELETE' });
+				if (!res.ok) {
+					const data = await res.json().catch(() => ({}));
+					throw new Error(data.message || 'Could not delete account.');
+				}
+				successEl.textContent = 'Account deleted. Redirecting...';
+				successEl.style.display = '';
+				setTimeout(() => {
+					window.location.href = '/admin/login';
+				}, 2000);
+			} catch (err) {
+				errorEl.textContent = err.message || 'Could not delete account.';
+				errorEl.style.display = '';
+			}
+		});
+	</script>
+</body>
+</html>

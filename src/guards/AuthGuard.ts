@@ -4,6 +4,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { ApiKeyService } from '../services/ApiKeyService';
 import { IS_PUBLIC_KEY } from '../decorators/PublicDecorator';
+import { isAdminApiPath, isAdminUiPath } from '../utils/AdminPaths';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -26,9 +27,9 @@ export class AuthGuard implements CanActivate {
 		]);
 		if (isPublic) return true;
 
-		// Try JWT authentication for /admin/api/** routes
+		// Try JWT authentication for /admin/** routes (both API and UI)
 		const path = request.url;
-		if (path.startsWith('/admin/api/')) {
+		if (isAdminApiPath(path) || isAdminUiPath(path)) {
 			try {
 				const token = this.extractTokenFromHeader(request);
 				if (token) {
@@ -50,11 +51,12 @@ export class AuthGuard implements CanActivate {
 					const apiKeyEntity = await this.apiKeyService.findOneByKey(apiKey);
 
 					// Validate endpoint regex if defined
-					if (apiKeyEntity.endpointRegex) {
+					const endpointRegex = apiKeyEntity.endpointRegex;
+					if (endpointRegex) {
 						const endpoint = request.path;
-						const regex = new RegExp(apiKeyEntity.endpointRegex);
+						const regex = new RegExp(endpointRegex);
 						if (!regex.test(endpoint)) {
-							this.logger.debug(`Endpoint ${endpoint} does not match allowed regex pattern`);
+							this.logger.debug(`Endpoint ${endpoint} does not match allowed regex pattern ${endpointRegex}`);
 							return false;
 						}
 					}
@@ -67,8 +69,8 @@ export class AuthGuard implements CanActivate {
 			this.logger.debug('API key authentication failed');
 		}
 
-		// For /admin/api/** routes, throw Unauthorized if no valid authentication
-		if (path.startsWith('/admin/api/')) {
+		// For any /admin/** route, throw Unauthorized if no valid authentication
+		if (isAdminApiPath(path) || isAdminUiPath(path)) {
 			throw new UnauthorizedException();
 		}
 
@@ -78,9 +80,12 @@ export class AuthGuard implements CanActivate {
 
 	private extractTokenFromHeader(request: Request): string | undefined {
 		const auth = request.headers['authorization'];
-		if (!auth) return undefined;
-		const [type, token] = auth.split(' ') ?? [];
-		return type === 'Bearer' ? token : undefined;
+		if (auth) {
+			const [type, token] = auth.split(' ') ?? [];
+			if (type === 'Bearer') return token;
+		}
+		// Fallback to admin_session cookie for browser-based requests
+		return (request.cookies as any)?.['admin_session'];
 	}
 
 	private extractApiKeyFromHeader(request: Request): string | undefined {

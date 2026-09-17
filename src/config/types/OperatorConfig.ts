@@ -19,6 +19,18 @@ export const ConfigSchema = z.object({
 					.describe("Validity duration in seconds of the generated JWT tokens (e.g., 3600 for a day)."),
 			}).prefault({})
 				.describe("JWT authentication configuration."),
+
+			desk: z.object({
+				relayUrl: z.string().default('https://relay.testnet.carmentis.io')
+					.describe("URL of the Carmentis relay the admin UI's browser widget uses to reach the user's Carmentis Desk wallet during authentication."),
+			}).prefault({})
+				.describe("Carmentis Desk wallet authentication configuration."),
+
+			invitation: z.object({
+				expirySeconds: z.number().default(86400)
+					.describe("Validity duration in seconds of invitation links used to register new admin users (default: 1 day)."),
+			}).prefault({})
+				.describe("Admin invitation link configuration."),
 		}).prefault({})
 			.describe("Workspace configuration, including authentication and GraphQL settings."),
 

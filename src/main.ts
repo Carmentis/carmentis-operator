@@ -5,6 +5,10 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import getPort, { portNumbers } from 'get-port';
 import { OperatorConfigService } from './config/services/operator-config.service';
 import { AllExceptionsFilter } from './filters/AllExceptionsFilter';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
+import cookieParser from 'cookie-parser';
+import hbs = require('hbs');
 
 async function bootstrap() {
 
@@ -12,7 +16,7 @@ async function bootstrap() {
 	const logger = new Logger();
 
 	// create the application and load the configuration
-	const app = await NestFactory.create(AppModule);
+	const app = await NestFactory.create<NestExpressApplication>(AppModule);
 	const operatorConfig = app.get(OperatorConfigService);
 
 
@@ -43,6 +47,28 @@ async function bootstrap() {
 		}
 	}));
 	app.useGlobalFilters(new AllExceptionsFilter());
+
+	// Cookie parser middleware for session support
+	app.use(cookieParser());
+
+	// HBS view engine setup.
+	// Views/public/assets are copied into dist/ at build time by nest-cli.json's
+	// `compilerOptions.assets` entries, so they are resolved relative to __dirname
+	// (dist/ at runtime) exactly like the static assets below — this works identically
+	// in dev (nest start --watch keeps dist/ in sync) and from a compiled dist/ build,
+	// regardless of the process's current working directory.
+	const viewsDir = join(__dirname, 'views');
+	app.setBaseViewsDir(viewsDir);
+	app.setViewEngine('hbs');
+	hbs.registerPartials(join(viewsDir, 'partials'));
+	hbs.registerHelper('eq', (a: unknown, b: unknown) => a === b);
+
+
+	// Serve static assets
+	app.useStaticAssets(join(__dirname, 'public'), { prefix: '/admin/static/' });
+	app.useStaticAssets(join(__dirname, 'assets'), {
+		prefix: '/admin/static/assets/',
+	});
 
 
 

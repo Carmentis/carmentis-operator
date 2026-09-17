@@ -109,4 +109,20 @@ export abstract class AbstractOperatorConfig {
 		return this.config.operator.database.encryption.allow_encryption_key_generation;
 	}
 
+	/**
+	 * Returns the Carmentis Desk wallet authentication configuration.
+	 */
+	getDeskAuthConfig(): { relayUrl: string } {
+		return {
+			relayUrl: this.config.operator.admin.desk.relayUrl,
+		}
+	}
+
+	/**
+	 * Returns the validity duration (in seconds) of admin invitation links.
+	 */
+	getInvitationExpirySeconds(): number {
+		return this.config.operator.admin.invitation.expirySeconds;
+	}
+
 }

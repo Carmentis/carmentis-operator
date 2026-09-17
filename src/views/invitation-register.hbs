@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Join Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body class="login-page">
+	<div class="login-container">
+		<div class="login-card">
+			<img src="/admin/static/assets/carmentis.svg" alt="Carmentis" class="login-logo">
+			{{#if valid}}
+			<h1>Create your account</h1>
+			<div class="flash flash-error" id="register-error" style="display:none;"></div>
+			<button type="button" id="register-btn" class="btn btn-primary btn-block" data-token="{{token}}">Se connecter avec Carmentis Desk</button>
+			<script src="https://unpkg.com/@cmts-dev/carmentis-desk-connect-js@1.1.0/dist/index.umd.cjs"></script>
+			<script src="/admin/static/carmentis-desk-auth.js"></script>
+			<script>
+				const registerBtn = document.getElementById('register-btn');
+				registerBtn.addEventListener('click', async () => {
+					const errorEl = document.getElementById('register-error');
+					errorEl.style.display = 'none';
+					const token = registerBtn.getAttribute('data-token');
+					try {
+						await authenticateWithDesk(
+							'/admin/api/v1/auth/challenge',
+							`/admin/api/v1/invitations/${encodeURIComponent(token)}/register`,
+							'{{relayUrl}}',
+						);
+						window.location.href = '/admin';
+					} catch (err) {
+						errorEl.textContent = err.message || 'Registration failed.';
+						errorEl.style.display = '';
+					}
+				});
+			</script>
+			{{else}}
+			<h1>Invitation not available</h1>
+			<p style="color: var(--color-text-secondary);">{{reason}}</p>
+			<a href="/admin/login" class="btn btn-secondary btn-block" style="margin-top: 1rem;">Back to login</a>
+			{{/if}}
+		</div>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+</body>
+</html>

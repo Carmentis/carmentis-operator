@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Dashboard - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<h2>Dashboard</h2>
+				{{>flash}}
+				<div class="stats-grid">
+					<div class="stat-card">
+						<div class="stat-label">Wallets</div>
+						<div class="stat-value">{{walletCount}}</div>
+						<a href="/admin/wallets" class="stat-link">View all</a>
+					</div>
+					<div class="stat-card">
+						<div class="stat-label">Applications</div>
+						<div class="stat-value">{{applicationCount}}</div>
+						<a href="/admin/applications" class="stat-link">View all</a>
+					</div>
+					<div class="stat-card">
+						<div class="stat-label">Users</div>
+						<div class="stat-value">{{userCount}}</div>
+						<a href="/admin/users" class="stat-link">View all</a>
+					</div>
+					<div class="stat-card">
+						<div class="stat-label">API Keys</div>
+						<div class="stat-value">{{apiKeyCount}}</div>
+						<a href="/admin/api-keys" class="stat-link">View all</a>
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+</body>
+</html>

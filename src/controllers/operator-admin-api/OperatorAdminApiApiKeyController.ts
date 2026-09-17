@@ -1,10 +1,11 @@
 import { Body, Controller, Logger, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { OPERATOR_ADMIN_API_PREFIX } from './OperatorAdminApiController';
-import { Crud, CrudController, CrudOptions } from '@dataui/crud';
+import { Crud, CrudOptions } from '@dataui/crud';
 import { ApiKeyEntity } from '../../entities/ApiKeyEntity';
 import { ApiKeyService } from '../../services/ApiKeyService';
 import { ApplicationService } from '../../services/ApplicationService';
 import { ApiKeyCreationDto } from '../../dto/ApiKeyCreationDto';
+import { ApiKeyUpdateDto } from '../../dto/ApiKeyUpdateDto';
 import { ApplicationEntity } from '../../entities/ApplicationEntity';
 import { WalletEntity } from '../../entities/WalletEntity';
 
@@ -77,6 +78,30 @@ export class OperatorAdminApiApiKeyController  {
 	@Patch('/:id/toggle')
 	async toggle(@Param('id', ParseIntPipe) id: number) {
 		await this.service.toggleActivityForApiKeyById(id);
+	}
+
+	@Patch('/:id')
+	async updateApiKey(@Param('id', ParseIntPipe) id: number, @Body() dto: ApiKeyUpdateDto) {
+		const update: Partial<ApiKeyEntity> = {};
+
+		if (dto.name !== undefined) update.name = dto.name;
+		if (dto.endpointRegex !== undefined) update.endpointRegex = dto.endpointRegex;
+		if (dto.gasMinAtomics !== undefined) update.gasMinAtomics = dto.gasMinAtomics;
+		if (dto.gasMaxAtomics !== undefined) update.gasMaxAtomics = dto.gasMaxAtomics;
+		if (dto.activeUntil !== undefined) update.activeUntil = new Date(dto.activeUntil);
+
+		if (dto.applicationVbId !== undefined) {
+			update.application = dto.applicationVbId
+				? await ApplicationEntity.findOneByOrFail({ vbId: dto.applicationVbId })
+				: null;
+		}
+		if (dto.walletId !== undefined) {
+			update.wallet = dto.walletId
+				? await WalletEntity.findOneByOrFail({ id: dto.walletId })
+				: null;
+		}
+
+		return this.service.updateKey(id, update);
 	}
 
 }

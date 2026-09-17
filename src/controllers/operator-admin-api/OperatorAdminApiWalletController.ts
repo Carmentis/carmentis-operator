@@ -5,6 +5,7 @@ import { OPERATOR_ADMIN_API_PREFIX } from './OperatorAdminApiController';
 import { WalletEntity } from '../../entities/WalletEntity';
 import { WalletService } from '../../services/WalletService';
 import { WalletDto, WalletWithSeedDto } from '../../dto/admin/WalletDto';
+import { WalletUpdateDto } from '../../dto/admin/WalletUpdateDto';
 
 @ApiTags('Wallets')
 @ApiSecurity('api-key')
@@ -20,6 +21,13 @@ export class OperatorAdminApiWalletController {
 			...dto,
 		});
 		return plainToInstance(WalletWithSeedDto, wallet, { excludeExtraneousValues: true });
+	}
+
+	@Post('seed')
+	@ApiOperation({ summary: 'Generate a fresh, randomly-seeded wallet secret (not persisted)' })
+	@ApiResponse({ status: 201, description: 'Freshly generated seed' })
+	generateSeed(): { seed: string } {
+		return { seed: this.service.generateSeed() };
 	}
 
 	@Get()
@@ -39,37 +47,32 @@ export class OperatorAdminApiWalletController {
 	}
 
 	@Patch(':id')
-	@ApiOperation({ summary: 'Update a wallet' })
+	@ApiOperation({ summary: 'Update a wallet (partial: only provided fields are changed)' })
 	@ApiResponse({ status: 200, description: 'Wallet updated successfully', type: WalletDto })
 	async update(
 		@Param('id', ParseIntPipe) id: number,
-		@Body() dto: WalletDto,
+		@Body() dto: WalletUpdateDto,
 	): Promise<WalletDto> {
-		const wallet = await WalletEntity.save({
-			...dto,
-			id,
-		});
+		const wallet = await this.service.updateWallet(id, dto);
 		return plainToInstance(WalletDto, wallet, { excludeExtraneousValues: true });
 	}
 
 	@Put(':id')
-	@ApiOperation({ summary: 'Replace a wallet' })
-	@ApiResponse({ status: 200, description: 'Wallet replaced successfully', type: WalletDto })
+	@ApiOperation({ summary: 'Update a wallet (alias of PATCH: still a partial merge, seed/scheme ids are never touched)' })
+	@ApiResponse({ status: 200, description: 'Wallet updated successfully', type: WalletDto })
 	async replace(
 		@Param('id', ParseIntPipe) id: number,
-		@Body() dto: WalletDto,
+		@Body() dto: WalletUpdateDto,
 	): Promise<WalletDto> {
-		const wallet = await WalletEntity.save({
-			...dto,
-			id,
-		});
+		const wallet = await this.service.updateWallet(id, dto);
 		return plainToInstance(WalletDto, wallet, { excludeExtraneousValues: true });
 	}
 
 	@Delete(':id')
-	@ApiOperation({ summary: 'Delete a wallet' })
+	@ApiOperation({ summary: 'Delete a wallet (refused if applications or API keys still depend on it)' })
 	@ApiResponse({ status: 200, description: 'Wallet deleted successfully' })
+	@ApiResponse({ status: 409, description: 'Wallet has dependent applications or API keys' })
 	async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
-		await WalletEntity.delete(id);
+		await this.service.deleteWallet(id);
 	}
 }
