@@ -1,3 +1,19 @@
+# [1.12.0](https://github.com/Carmentis/carmentis-operator/compare/v1.11.7...v1.12.0) (2026-09-17)
+
+
+### Bug Fixes
+
+* **guards:** improve logging for endpoint regex validation in AuthGuard ([0cf2e2f](https://github.com/Carmentis/carmentis-operator/commit/0cf2e2f6cc97a92c447da5bf9c5040884f15a1ff))
+* rename 'publicKey' parameter to 'vbId' in OperatorAdminApiApplicationController ([11e8a9b](https://github.com/Carmentis/carmentis-operator/commit/11e8a9bb0252fa8047f50354eac7458b6e66687f))
+
+
+### Features
+
+* **admin-ui, controllers:** add user and account deletion functionality ([34c293d](https://github.com/Carmentis/carmentis-operator/commit/34c293d94da706736a89d9f4e6e7fc62fd07e623))
+* **AppModule, icons:** add server startup logging and update SVG assets ([d1fb032](https://github.com/Carmentis/carmentis-operator/commit/d1fb032fedd71068bb3bfce971aa1cc44ed94f24))
+* **auth, admin-ui:** remove WebAuthn-based passkey authentication and replace with Desk auth ([c02d6f5](https://github.com/Carmentis/carmentis-operator/commit/c02d6f5fea30ffa3dbb9d882e29542ba38d8a3f5))
+* **controllers:** add HomeController with redirect to admin page and register in AppModule ([8f3f131](https://github.com/Carmentis/carmentis-operator/commit/8f3f131e684c5e7a2865c5162c092e049263815d))
+
 ## [1.11.7](https://github.com/Carmentis/carmentis-operator/compare/v1.11.6...v1.11.7) (2026-08-13)
 
 
