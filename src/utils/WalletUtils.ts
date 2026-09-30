@@ -25,6 +25,7 @@ export class WalletUtils {
 
 	static async getAccountCryptoFromWallet(wallet: WalletEntity) {
 		const seed = wallet.seed;
+		console.log("original seed", seed);
 		const seedEncoder = new SeedEncoder();
 		const rawSeed = seedEncoder.decode(seed);
 		const walletCrypto = WalletCrypto.fromSeed(rawSeed);

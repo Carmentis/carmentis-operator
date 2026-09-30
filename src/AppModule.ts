@@ -68,6 +68,7 @@ import { OperatorAdminUiApplicationController } from './controllers/operator-adm
 import { OperatorAdminUiUserController } from './controllers/operator-admin-ui/OperatorAdminUiUserController';
 import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui/OperatorAdminUiApiKeyController';
 import { HomeController } from './controllers/HomeController';
+import { WalletResolverController } from './controllers/wallet/WalletResolverController';
 
 @Module({
 	imports: [
@@ -167,7 +168,8 @@ import { HomeController } from './controllers/HomeController';
 		VerifiableCredentialController,
 		CryptoController,
 		CryptoSignatureController,
-		WalletCryptoController
+		WalletCryptoController,
+		WalletResolverController,
 	]
 })
 export class AppModule implements NestModule, OnApplicationBootstrap {

@@ -1,15 +1,12 @@
-import { Body, Controller, Get, Logger, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Get, Logger, Param, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WalletService } from '../../services/WalletService';
-import { GetVirtualBlockchainRecordRequestDto } from '../../dto/wallet/GetVirtualBlockchainRecordRequestDto';
-import { VbUtils } from '../../utils/VbUtils';
-import { WalletUtils } from '../../utils/WalletUtils';
-import { Hash } from '@cmts-dev/carmentis-sdk-core';
 import {
 	GetVirtualBlockchainAuthenticityProofRequestDto
 } from '../../dto/wallet/GetVirtualBlockchainAuthenticityProofRequestDto';
 import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
 import { WalletEntity } from '../../entities/WalletEntity';
+import { Proof } from 'src/utils/proof/Proof';
 
 @ApiTags('Wallet Proof')
 @Controller('/api/wallet')
@@ -34,16 +31,9 @@ export class WalletProofController {
 		@Query() request: GetVirtualBlockchainAuthenticityProofRequestDto
 	) {
 		const vbId = request.virtualBlockchainId;
-		this.logger.log(`Returning authenticity proof for vb ${vbId}`)
-		const rawVbId = Buffer.from(vbId, 'hex')
-		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, rawVbId)
-		const accountCrypto = await WalletUtils.getAccountCryptoFromWallet(wallet);
-		const provider = wallet.getProvider();
-		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.from(vbId))
-		const author = request.proofAuthor ?? wallet.name;
-		const proof = await vb.exportProof({
-			author
-		}, accountCrypto)
+		const author = request.proofAuthor;
+		this.logger.log(`Returning authenticity proof for vb ${vbId} with author ${author}`)
+		const proof = await Proof.getVbProof(vbId, wallet, author);
 		return proof;
 	}
 }

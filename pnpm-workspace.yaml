@@ -1,5 +1,6 @@
 packages:
   - .
+
 minimumReleaseAge: 0
 
 onlyBuiltDependencies:
@@ -12,6 +13,7 @@ onlyBuiltDependencies:
   - ssh2
   - unrs-resolver
   - '@apollo/protobufjs'
+
 overrides:
   '@apollo/server@<5.5.0': '>=5.5.0'
   '@tootallnate/once@<2.0.1': '>=2.0.1'
@@ -23,3 +25,4 @@ overrides:
   tar@<=7.5.3: '>=7.5.4'
   tar@<=7.5.9: '>=7.5.10'
   uuid@<11.1.1: '>=11.1.1'
+  '@cmts-dev/carmentis-sdk-core': link:../../Users/arnau/AppData/Local/pnpm/global/5/node_modules/@cmts-dev/carmentis-sdk-core
