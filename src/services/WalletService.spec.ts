@@ -6,6 +6,7 @@ import { WalletEntity } from '../entities/WalletEntity';
 import { PrivateKeyEntity } from '../entities/PrivateKeyEntity';
 import { PrivateKeyObjectType } from '../types/types';
 import { PrivateKeyService } from './PrivateKeyService';
+import { Bip39Utils } from '../utils/Bip39Utils';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
@@ -20,6 +21,8 @@ EncryptionServiceProxy.setInstance({
 	encrypt: (value: string) => `enc:${value}`,
 	decrypt: (value: string) => value.replace(/^enc:/, ''),
 } as any);
+
+const VALID_MNEMONIC = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
 
 describe('WalletService', () => {
 	let dataSource: DataSource;
@@ -64,16 +67,39 @@ describe('WalletService', () => {
 		expect(() => WalletCrypto.fromSeed(decoded)).not.toThrow();
 	});
 
+	it('generates distinct, valid BIP39 actor passphrases', () => {
+		const first = service.generateActorPassphrase();
+		expect(first.split(' ')).toHaveLength(24);
+		expect(Bip39Utils.isValid(first)).toBe(true);
+		expect(service.generateActorPassphrase()).not.toBe(first);
+	});
+
+	it.each(['', 'not a mnemonic', 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon'])(
+		'rejects the invalid actor passphrase "%s" and persists nothing',
+		async (actorPassphrase) => {
+			await expect(
+				service.createWallet({
+					...baseDto,
+					actorPassphrase,
+					privateKey: { keyType: PrivateKeyObjectType.SEED, schemeId: SignatureSchemeId.SECP256K1, seed: service.generateSeed() },
+				}),
+			).rejects.toThrow(BadRequestException);
+			expect(await dataSource.getRepository(WalletEntity).count()).toBe(0);
+			expect(await dataSource.getRepository(PrivateKeyEntity).count()).toBe(0);
+		},
+	);
+
 	const baseDto = {
 		name: 'created',
 		rpcEndpoint: 'https://rpc.example',
 		indexerEndpoint: 'https://indexer.example',
-		actorPassphrase: '1234',
+		actorPassphrase: VALID_MNEMONIC,
 	};
 
-	it('creates a wallet from a seed-based private key, keeping a numeric passphrase a string', async () => {
+	it('creates a wallet from a seed-based private key, storing the normalized mnemonic', async () => {
 		const wallet = await service.createWallet({
 			...baseDto,
+			actorPassphrase: `  ${VALID_MNEMONIC.toUpperCase().replace(/ /g, '   ')}\n`,
 			privateKey: { keyType: PrivateKeyObjectType.SEED, schemeId: SignatureSchemeId.SECP256K1, seed: service.generateSeed() },
 		});
 
@@ -81,7 +107,7 @@ describe('WalletService', () => {
 			where: { id: wallet.id },
 			relations: ['privateKey'],
 		});
-		expect(stored.actorPassphrase).toBe('1234');
+		expect(stored.actorPassphrase).toBe(VALID_MNEMONIC);
 		expect(stored.privateKey.privateKey.keyType).toBe(PrivateKeyObjectType.SEED);
 		await expect(service.getPublicKeyOfWallet(wallet.id)).resolves.toBeDefined();
 	});

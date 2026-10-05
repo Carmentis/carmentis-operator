@@ -20,6 +20,7 @@ import { WalletService } from '../../services/WalletService';
 import { WalletCreationDto } from '../../dto/wallet/WalletCreationDto';
 import { WalletUpdateDto } from '../../dto/admin/WalletUpdateDto';
 import { PrivateKeyObjectType } from '../../types/types';
+import { CUSTOM_NETWORK_ID, DEFAULT_NETWORK_ID, resolveNetwork, WALLET_NETWORKS } from '../../config/WalletNetworks';
 import { OPERATOR_ADMIN_UI_PREFIX } from './OperatorAdminUiController';
 import {
 	emptyToUndefined,
@@ -71,7 +72,14 @@ export class OperatorAdminUiWalletController {
 			user: (req as any).user,
 			mode: 'create',
 			keyType: PrivateKeyObjectType.SEED,
+			...this.buildCreationDefaults(DEFAULT_NETWORK_ID),
 		};
+	}
+
+	/** Stateless helper for the "regenerate" button of the actor passphrase: nothing is persisted. */
+	@Post('passphrase')
+	generatePassphrase(): { passphrase: string } {
+		return { passphrase: this.walletService.generateActorPassphrase() };
 	}
 
 	/** Stateless helper for the "generate" button of the creation form: nothing is persisted. */
@@ -83,10 +91,11 @@ export class OperatorAdminUiWalletController {
 	@Post()
 	async create(@Req() req: Request, @Body() body: Record<string, string>, @Res() res: Response) {
 		try {
+			const endpoints = this.resolveEndpoints(body);
 			const dto = await validateForm(WalletCreationDto, {
 				name: body.name,
-				rpcEndpoint: body.rpcEndpoint,
-				indexerEndpoint: body.indexerEndpoint,
+				rpcEndpoint: endpoints.rpcEndpoint,
+				indexerEndpoint: endpoints.indexerEndpoint,
 				allowedEndpointsRegex: emptyToUndefined(body.allowedEndpointsRegex),
 				actorPassphrase: body.actorPassphrase,
 				privateKey: this.buildPrivateKeyObject(body),
@@ -101,6 +110,7 @@ export class OperatorAdminUiWalletController {
 				user: (req as any).user,
 				mode: 'create',
 				keyType: body.keyType === PrivateKeyObjectType.JWK ? PrivateKeyObjectType.JWK : PrivateKeyObjectType.SEED,
+				...this.buildCreationDefaults(body.network),
 				flash: getErrorMessage(error, 'Could not create this wallet.'),
 				flashType: 'error',
 				wallet: undefined,
@@ -163,6 +173,30 @@ export class OperatorAdminUiWalletController {
 		} catch (error) {
 			return redirectWithFlash(res, WALLETS_PATH, getErrorMessage(error, 'Could not delete this wallet.'), 'error');
 		}
+	}
+
+	/** Network choices and the generated passphrase shown by the creation form. */
+	private buildCreationDefaults(network: string | undefined) {
+		return {
+			networks: WALLET_NETWORKS,
+			network: network === CUSTOM_NETWORK_ID || resolveNetwork(network) ? network : DEFAULT_NETWORK_ID,
+			actorPassphrase: this.walletService.generateActorPassphrase(),
+		};
+	}
+
+	/**
+	 * A preset network always wins over the posted URLs, so a tampered form cannot point a
+	 * preset at another node; only the custom network uses what the user typed.
+	 */
+	private resolveEndpoints(body: Record<string, string>) {
+		if (body.network === CUSTOM_NETWORK_ID) {
+			return { rpcEndpoint: body.rpcEndpoint, indexerEndpoint: body.indexerEndpoint };
+		}
+		const preset = resolveNetwork(body.network);
+		if (!preset) {
+			throw new BadRequestException('Choose a network');
+		}
+		return { rpcEndpoint: preset.rpcEndpoint, indexerEndpoint: preset.indexerEndpoint };
 	}
 
 	/** Turns the flat form fields into the nested private key object (validated by the service). */

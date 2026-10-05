@@ -21,6 +21,7 @@
 						<label for="name">Name</label>
 						<input type="text" id="name" name="name" required value="{{wallet.name}}{{form.name}}">
 					</div>
+					{{#if wallet}}
 					<div class="form-group">
 						<label for="rpcEndpoint">RPC endpoint</label>
 						<input type="text" id="rpcEndpoint" name="rpcEndpoint" required value="{{wallet.rpcEndpoint}}{{form.rpcEndpoint}}">
@@ -29,6 +30,27 @@
 						<label for="indexerEndpoint">Indexer endpoint</label>
 						<input type="text" id="indexerEndpoint" name="indexerEndpoint" required value="{{wallet.indexerEndpoint}}{{form.indexerEndpoint}}">
 					</div>
+					{{else}}
+					<div class="form-group">
+						<label for="network">Network</label>
+						<select id="network" name="network" required>
+							{{#each networks}}
+							<option value="{{this.id}}" {{#if (eq this.id ../network)}}selected{{/if}}>{{this.label}}</option>
+							{{/each}}
+							<option value="custom" {{#if (eq network "custom")}}selected{{/if}}>Custom</option>
+						</select>
+					</div>
+					<div id="custom-network-group" style="display:none;">
+						<div class="form-group">
+							<label for="rpcEndpoint">RPC endpoint</label>
+							<input type="text" id="rpcEndpoint" name="rpcEndpoint" value="{{form.rpcEndpoint}}">
+						</div>
+						<div class="form-group">
+							<label for="indexerEndpoint">Indexer endpoint</label>
+							<input type="text" id="indexerEndpoint" name="indexerEndpoint" value="{{form.indexerEndpoint}}">
+						</div>
+					</div>
+					{{/if}}
 					<div class="form-group">
 						<label for="allowedEndpointsRegex">Allowed endpoints regex (optional)</label>
 						<input type="text" id="allowedEndpointsRegex" name="allowedEndpointsRegex" value="{{wallet.allowedEndpointsRegex}}{{form.allowedEndpointsRegex}}">
@@ -36,11 +58,15 @@
 
 					{{#unless wallet}}
 					<div class="form-group">
-						<label for="actorPassphrase">Actor passphrase</label>
-						<input type="password" id="actorPassphrase" name="actorPassphrase" required autocomplete="new-password">
+						<label for="actorPassphrase">Actor passphrase (BIP39 mnemonic)</label>
+						<textarea id="actorPassphrase" name="actorPassphrase" required rows="2" autocomplete="off" spellcheck="false">{{actorPassphrase}}</textarea>
+						<div class="action-buttons" style="justify-content: flex-start; margin-top: 0.5rem;">
+							<button type="button" id="generate-passphrase-btn" class="btn btn-secondary">Regenerate</button>
+							<button type="button" id="copy-passphrase-btn" class="btn btn-secondary" data-copy-text="{{actorPassphrase}}">Copy</button>
+						</div>
 						<p style="font-size: 12px; color: var(--color-text-secondary);">
-							Used to derive the actor identities of this wallet. It cannot be changed afterwards:
-							losing it means losing access to the identities derived from it.
+							A BIP39 mnemonic (English words, 12 to 24 words with a valid checksum). Used to derive the actor identities of this wallet. It cannot be changed afterwards
+							and is not shown again: save it now, losing it means losing access to the identities derived from it.
 						</p>
 					</div>
 
@@ -91,6 +117,29 @@
 		}
 		document.querySelectorAll('input[name="keyType"]').forEach((radio) => radio.addEventListener('change', refreshKeyType));
 		refreshKeyType();
+
+		const networkSelect = document.getElementById('network');
+		const customGroup = document.getElementById('custom-network-group');
+		const customInputs = customGroup.querySelectorAll('input');
+
+		function refreshNetwork() {
+			const isCustom = networkSelect.value === 'custom';
+			customGroup.style.display = isCustom ? '' : 'none';
+			customInputs.forEach((input) => { input.required = isCustom; });
+		}
+		networkSelect.addEventListener('change', refreshNetwork);
+		refreshNetwork();
+
+		const passphraseInput = document.getElementById('actorPassphrase');
+		const copyPassphraseBtn = document.getElementById('copy-passphrase-btn');
+		passphraseInput.addEventListener('input', () => copyPassphraseBtn.setAttribute('data-copy-text', passphraseInput.value));
+		document.getElementById('generate-passphrase-btn').addEventListener('click', async () => {
+			const res = await fetch('/admin/wallets/passphrase', { method: 'POST' });
+			if (!res.ok) return;
+			const data = await res.json();
+			passphraseInput.value = data.passphrase;
+			copyPassphraseBtn.setAttribute('data-copy-text', data.passphrase);
+		});
 
 		document.getElementById('generate-seed-btn').addEventListener('click', async () => {
 			const res = await fetch('/admin/wallets/seed', { method: 'POST' });

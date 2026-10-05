@@ -48,6 +48,7 @@
     "@nestjs/websockets": "^11.1.28",
     "@noble/ciphers": "^2.2.0",
     "@noble/secp256k1": "^3.1.0",
+    "@scure/bip39": "^2.4.0",
     "@sd-jwt/core": "^0.20.0",
     "@sd-jwt/crypto-nodejs": "^0.19.0",
     "@sd-jwt/sd-jwt-vc": "^0.20.0",
@@ -121,6 +122,9 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!\\.pnpm/@(scure|noble)\\+|@(scure|noble)/)"
+    ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],

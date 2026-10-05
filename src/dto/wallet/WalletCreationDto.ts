@@ -22,7 +22,7 @@ export class WalletCreationDto {
 	@IsString()
 	allowedEndpointsRegex?: string;
 
-	@ApiProperty({ description: 'Passphrase from which the actor identities are derived' })
+	@ApiProperty({ description: 'BIP39 mnemonic (English word list) from which the actor identities are derived' })
 	@IsString()
 	@IsNotEmpty()
 	actorPassphrase: string;

@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WalletEntity } from '../entities/WalletEntity';
@@ -7,6 +7,7 @@ import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import { ExternalKeyApplicationLedgerActorIdentity, SeedEncoder, WalletCrypto } from '@cmts-dev/carmentis-sdk-core';
 import { WalletUpdateDto } from '../dto/admin/WalletUpdateDto';
 import { PrivateKeyUtils } from '../utils/PrivateKeyUtils';
+import { Bip39Utils } from '../utils/Bip39Utils';
 import { PrivateKeyService } from './PrivateKeyService';
 import { PrivateKeyEntity } from '../entities/PrivateKeyEntity';
 import { WalletCreationDto } from '../dto/wallet/WalletCreationDto';
@@ -30,6 +31,12 @@ export class WalletService {
 	 * is written, and the key and the wallet are persisted atomically.
 	 */
 	async createWallet(dto: WalletCreationDto): Promise<WalletEntity> {
+		if (!Bip39Utils.isValid(dto.actorPassphrase)) {
+			throw new BadRequestException(
+				'The actor passphrase must be a valid BIP39 mnemonic (English word list, correct checksum)',
+			);
+		}
+		const actorPassphrase = Bip39Utils.normalize(dto.actorPassphrase);
 		const privateKey = await this.privateKeyService.parseAndValidate(dto.privateKey);
 		return this.repo.manager.transaction(async manager => {
 			const privateKeyEntity = await manager.save(PrivateKeyEntity.create({ privateKey }));
@@ -39,7 +46,7 @@ export class WalletService {
 					rpcEndpoint: dto.rpcEndpoint,
 					indexerEndpoint: dto.indexerEndpoint,
 					allowedEndpointsRegex: dto.allowedEndpointsRegex || undefined,
-					actorPassphrase: dto.actorPassphrase,
+					actorPassphrase,
 					privateKey: privateKeyEntity,
 				}),
 			);
@@ -124,6 +131,11 @@ export class WalletService {
 	 * elsewhere (see `WalletUtils.getAccountCryptoFromWallet`, which decodes via `SeedEncoder`). */
 	generateSeed(): string {
 		return WalletCrypto.generateWallet().encode(new SeedEncoder());
+	}
+
+	/** Generates a fresh BIP39 mnemonic, proposed (and editable) as actor passphrase in the creation form. */
+	generateActorPassphrase(): string {
+		return Bip39Utils.generate();
 	}
 
 	/** Partial update: only the fields actually present in `dto` are changed, everything
