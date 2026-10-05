@@ -18,6 +18,9 @@ export class WalletRecordController {
 
 	private logger = new Logger();
 
+	constructor(private walletService: WalletService) {
+	}
+
 	@ApiOperation({
 		summary: 'Get a record from a virtual blockchain',
 		description: 'Retrieves a record from a specific virtual blockchain at a given block height.'
@@ -34,9 +37,10 @@ export class WalletRecordController {
 		const vbId = request.vbId;
 		const height = request.height;
 		this.logger.log(`Accessing record for vb ${vbId} at height ${height}`)
-		const accountCrypto = await WalletUtils.getAccountCryptoFromWallet(wallet);
 		const provider = wallet.getProvider();
 		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.from(vbId))
-		return vb.getRecord(height, accountCrypto);
+		const vbSeed = (await vb.getGenesisSeed()).toBytes();
+		const actorIdentity = await this.walletService.getActorIdentity(wallet, vbSeed);
+		return vb.getRecord(height, actorIdentity);
 	}
 }

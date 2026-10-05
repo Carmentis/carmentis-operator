@@ -10,12 +10,8 @@ import {
 	SeedEncoder,
 	WalletCrypto,
 } from '@cmts-dev/carmentis-sdk-core';
-import { BinaryEncodingUtils } from '../../utils/BinaryEncodingUtils';
 import { WalletBinarySignatureRequestDto } from '../../dto/wallet/WalletBinarySignatureRequestDto';
 import { WalletBinarySignatureVerificationRequestDto } from '../../dto/wallet/WalletBinarySignatureVerificationRequestDto';
-import { ActorPublicKeyRequestDto } from '../../dto/wallet/ActorPublicKeyRequestDto';
-import { WalletUtils } from '../../utils/WalletUtils';
-import { VbUtils } from '../../utils/VbUtils';
 import { CryptoService } from '../../services/CryptoService';
 import { SignatureVerificationApiResponse } from '../../swagger/SignatureVerificationApiResponse';
 import { WalletJsonSignatureRequestDto } from '../../dto/wallet/WalletJsonSignatureRequestDto';
@@ -101,29 +97,14 @@ export class WalletCryptoController {
 	@ApiResponse(PublicKeyRetrievalApiResponse.Signature.Response200)
 	@Get(':walletId/signature/pk')
 	async getPublicSignatureKey(
-		@Param('walletId', WalletByIdPipe) wallet: WalletEntity,
+		@Param('walletId', WalletByIdPipe, ExtractPublicSignatureKeyFromWallet)
+		pk: PublicSignatureKey
 	) {
-		const sk = await WalletUtils.getPrivateSignatureKeyFromWallet(wallet);
-		const pk = await sk.getPublicKey();
 		const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
 		return { signature: { pk: await encoder.encodePublicKey(pk) } }
 	}
 
-	@ApiOperation({
-		summary: 'Get wallet public encryption key',
-		description: 'Retrieves the public encryption key associated with the wallet.'
-	})
-	@ApiResponse(PublicKeyRetrievalApiResponse.Pke.Response200)
-	@Get(':walletId/pke/pk')
-	async getPublicEncryptionKey(
-		@Param('walletId', WalletByIdPipe) wallet: WalletEntity,
-	) {
-		const sk = await WalletUtils.getPrivateDecryptionKeyFromWallet(wallet);
-		const pk = await sk.getPublicKey();
-		const encoder = CryptoEncoderFactory.defaultStringPublicKeyEncryptionEncoder();
-		return { pke: { pk: await encoder.encodePublicEncryptionKey(pk) } }
-	}
-
+	/*
 	@ApiOperation({
 		summary: 'Get actor public signature key',
 		description: 'Retrieves the public signature key for an actor in a virtual blockchain associated with the wallet.'
@@ -165,6 +146,8 @@ export class WalletCryptoController {
 		const encoder = CryptoEncoderFactory.defaultStringPublicKeyEncryptionEncoder();
 		return { pke: { pk: await encoder.encodePublicEncryptionKey(pk) } }
 	}
+
+	 */
 
 
 }

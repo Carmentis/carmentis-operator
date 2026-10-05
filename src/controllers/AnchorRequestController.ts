@@ -11,7 +11,7 @@ import { AnchorRequestStatus } from '../utils/AnchorRequestStatus';
 import { GetAuthenticityProofRequestDto } from '../dto/wallet/GetVirtualBlockchainAuthenticityProofRequestDto';
 import { VbUtils } from '../utils/VbUtils';
 import { WalletUtils } from '../utils/WalletUtils';
-import { Hash } from '@cmts-dev/carmentis-sdk-core';
+import { ExternalKeyApplicationLedgerActorIdentity, Hash } from '@cmts-dev/carmentis-sdk-core';
 import { UserService } from '../services/UserService';
 import { ApiKey } from '../decorators/ApiKeyDecorator';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
@@ -136,13 +136,14 @@ export class AnchorRequestController {
 		this.logger.log(`Returning authenticity proof for vb ${vbId} with author ${author}`)
 		const rawVbId = Buffer.from(vbId, 'hex')
 		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, rawVbId)
-		const accountCrypto = await WalletUtils.getAccountCryptoFromWallet(wallet);
+		const actorIdentity = await this.walletService.getActorIdentity(wallet, vbSeed)
+
 		const provider = wallet.getProvider();
 		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.from(vbId))
 		this.logger.log(`Returning authenticity proof for vb ${vbId} with author ${author}`)
 		return await vb.exportProof({
 			author
-		}, accountCrypto);
+		}, actorIdentity);
 	}
 
 

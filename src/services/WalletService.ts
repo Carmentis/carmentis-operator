@@ -5,8 +5,9 @@ import { WalletEntity } from '../entities/WalletEntity';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import { TypeOrmCrudService } from '@dataui/crud-typeorm';
-import { SeedEncoder, WalletCrypto } from '@cmts-dev/carmentis-sdk-core';
+import { ExternalKeyApplicationLedgerActorIdentity, SeedEncoder, WalletCrypto } from '@cmts-dev/carmentis-sdk-core';
 import { WalletUpdateDto } from '../dto/admin/WalletUpdateDto';
+import { PrivateKeyUtils } from '../utils/PrivateKeyUtils';
 
 @Injectable()
 export class WalletService extends TypeOrmCrudService<WalletEntity> {
@@ -15,6 +16,66 @@ export class WalletService extends TypeOrmCrudService<WalletEntity> {
 		repo: Repository<WalletEntity>,
 	) {
 		super(repo);
+	}
+
+	/**
+	 * Returns the private key entity of a wallet.
+	 * @param walletId
+	 */
+	async getPrivateKeyEntityOfWallet(walletId: number) {
+		const wallet = await WalletEntity.findOne({
+			where: {
+				id: walletId,
+			},
+			relations: ["privateKey"]
+		});
+		return wallet.privateKey;
+	}
+
+
+	/**
+	 * Returns the private key of a wallet.
+	 * @param walletId
+	 */
+	async getPrivateKeyOfWallet(walletId: number) {
+		const privateKeyEntity = await this.getPrivateKeyEntityOfWallet(walletId);
+		const privateKey = privateKeyEntity.privateKey;
+		return PrivateKeyUtils.getPrivateSignatureKeyFromPrivateKeyObject(privateKey)
+	}
+
+	/**
+	 * Returns the public key of a wallet.
+	 *
+	 * @param walletId
+	 */
+	async getPublicKeyOfWallet(walletId: number) {
+		const privateKey = await this.getPrivateKeyOfWallet(walletId);
+		return privateKey.getPublicKey()
+	}
+
+
+	async getActorIdentity(wallet: number | WalletEntity, vbSeed: Uint8Array) {
+		const walletId = typeof wallet === 'number' ? wallet : wallet.id;
+		const organizationPrivateKey = await this.getPrivateKeyOfWallet(walletId);
+		const organizationPublicKey = await organizationPrivateKey.getPublicKey();
+		const actorPassphrase = await this.getActorPassphraseOfWallet(walletId)
+		return await ExternalKeyApplicationLedgerActorIdentity.createFromPublicSignatureKeyAndMnemonic(
+			organizationPublicKey,
+			actorPassphrase,
+			vbSeed,
+		)
+	}
+	/**
+	 * Returns the private key of a wallet.
+	 * @param walletId
+	 */
+	async getActorPassphraseOfWallet(walletId: number) {
+		const wallet = await WalletEntity.findOne({
+			where: {
+				id: walletId,
+			},
+		});
+		return wallet.actorPassphrase;
 	}
 
 	async getOneById(id: number) {

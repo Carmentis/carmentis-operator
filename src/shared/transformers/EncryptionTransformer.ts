@@ -4,13 +4,23 @@ import { EncryptionService } from '../../services/EncryptionService';
 export class EncryptionTransformer implements ValueTransformer {
 	constructor(private encryptionServiceProvider: () => EncryptionService) {}
 
-	to(value: string | null): string | null {
+	to(value: string | null | object): string | null {
 		if (!value) return null;
-		return this.encryptionServiceProvider().encrypt(value);
+		const encryptionService = this.encryptionServiceProvider();
+		if (typeof value === 'object') {
+			return encryptionService.encrypt(JSON.stringify(value));
+		} else {
+			return encryptionService.encrypt(value);
+		}
 	}
 
-	from(value: string | null): string | null {
-		if (!value) return null;
-		return  this.encryptionServiceProvider().decrypt(value);
+	from(ciphertext: string | null): string | object | null {
+		if (!ciphertext) return null;
+		const plaintext = this.encryptionServiceProvider().decrypt(ciphertext);
+		try {
+			return JSON.parse(plaintext);
+		} catch (error) {
+			return plaintext;
+		}
 	}
 }

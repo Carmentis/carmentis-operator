@@ -22,6 +22,7 @@ export class ProtocolWiapV1Controller {
 		private readonly anchorService: AnchorRequestService
 	) {}
 
+	/*
 	@Public()
 	@ApiExcludeEndpoint()
 	@Post("/protocols/wiap/v1")
@@ -91,4 +92,6 @@ export class ProtocolWiapV1Controller {
 			}
 		}
 	}
+
+	 */
 }

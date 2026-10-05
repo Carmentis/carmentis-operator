@@ -37,13 +37,13 @@ export class WalletProofController {
 		this.logger.log(`Returning authenticity proof for vb ${vbId}`)
 		const rawVbId = Buffer.from(vbId, 'hex')
 		const vbSeed = await VbUtils.getVbSeedFromVbId(wallet, rawVbId)
-		const accountCrypto = await WalletUtils.getAccountCryptoFromWallet(wallet);
+		const actorIdentity = await this.walletService.getActorIdentity(wallet, vbSeed);
 		const provider = wallet.getProvider();
 		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.from(vbId))
 		const author = request.proofAuthor ?? wallet.name;
 		const proof = await vb.exportProof({
 			author
-		}, accountCrypto)
+		}, actorIdentity)
 		return proof;
 	}
 }

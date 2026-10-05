@@ -64,7 +64,7 @@ describe('WalletService', () => {
 		expect(updated.name).toBe('renamed');
 		expect(updated.rpcEndpoint).toBe('https://rpc.example');
 		expect(updated.allowedEndpointsRegex).toBe('^/api/.*');
-		expect(updated.signatureSchemeId).toBe(wallet.signatureSchemeId);
+		expect(updated.actorSignatureSchemeId).toBe(wallet.actorSignatureSchemeId);
 	});
 
 	it('throws when updating a wallet that does not exist', async () => {

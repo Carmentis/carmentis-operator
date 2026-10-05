@@ -9,10 +9,12 @@ import { WalletUtils } from '../utils/WalletUtils';
  */
 @Injectable()
 export class ExtractPublicSignatureKeyFromWallet implements PipeTransform<WalletEntity, Promise<PublicSignatureKey>> {
-	constructor() {}
+	constructor(
+		private walletService: WalletService
+	) {}
 
 	async transform(wallet: WalletEntity): Promise<PublicSignatureKey> {
-		const sk = await WalletUtils.getPrivateSignatureKeyFromWallet(wallet)
+		const sk = await this.walletService.getPrivateKeyOfWallet(wallet.id);
 		return sk.getPublicKey();
 	}
 }
