@@ -96,6 +96,65 @@ describe('WalletService', () => {
 		expect(provider.getAccountState).toHaveBeenCalledWith(new Uint8Array(32).fill(0xab));
 	});
 
+	describe('getApplicationOnChainDetails', () => {
+		const vbId = 'aa'.repeat(32);
+		const organizationId = new Hash(new Uint8Array(32).fill(0xcd));
+		const applicationVb = {
+			getApplicationDescription: jest.fn().mockResolvedValue({
+				name: 'My app',
+				description: 'desc',
+				homepageUrl: 'https://app.example',
+				logoUrl: 'https://app.example/logo.png',
+			}),
+			getOrganizationId: () => organizationId,
+		};
+		const walletWith = (loadOrganizationVirtualBlockchain: jest.Mock) =>
+			({
+				rpcEndpoint: 'https://rpc.example',
+				getProvider: () => ({
+					loadApplicationVirtualBlockchain: jest.fn().mockResolvedValue(applicationVb),
+					loadOrganizationVirtualBlockchain,
+				}),
+			}) as any;
+
+		it('returns the application and the organization owning it', async () => {
+			const load = jest.fn().mockResolvedValue({
+				getDescription: jest.fn().mockResolvedValue({ name: 'Acme', website: 'https://acme.example', city: 'Paris', countryCode: 'FR' }),
+			});
+
+			const details = await service.getApplicationOnChainDetails(walletWith(load), vbId);
+
+			expect(details.application.name).toBe('My app');
+			expect(details.organization).toEqual({
+				id: 'CD'.repeat(32),
+				name: 'Acme',
+				website: 'https://acme.example',
+				city: 'Paris',
+				countryCode: 'FR',
+			});
+			expect(details.organizationError).toBeUndefined();
+			expect(load).toHaveBeenCalledWith(organizationId);
+		});
+
+		it('still returns the application when only the organization cannot be read', async () => {
+			const load = jest.fn().mockRejectedValue(new Error('organization not found'));
+
+			const details = await service.getApplicationOnChainDetails(walletWith(load), vbId);
+
+			expect(details.application.name).toBe('My app');
+			expect(details.organization).toEqual({ id: 'CD'.repeat(32) });
+			expect(details.organizationError).toBe('organization not found');
+		});
+
+		it('fails when the application itself cannot be read', async () => {
+			const wallet = {
+				rpcEndpoint: 'https://rpc.example',
+				getProvider: () => ({ loadApplicationVirtualBlockchain: jest.fn().mockRejectedValue(new Error('boom')) }),
+			} as any;
+			await expect(service.getApplicationOnChainDetails(wallet, vbId)).rejects.toThrow(BadRequestException);
+		});
+	});
+
 	describe('fetchApplicationNameFromChain', () => {
 		const walletWith = (getVirtualBlockchainStatus: jest.Mock, name = 'On-chain name') =>
 			({

@@ -33,11 +33,12 @@
 					<tbody>
 					{{#each applications}}
 					<tr>
-						<td>{{this.name}}</td>
+						<td><a href="/admin/applications/{{this.vbId}}">{{this.name}}</a></td>
 						<td>{{this.vbId}}</td>
 						<td>{{this.wallet.name}}</td>
 						<td>{{this.createdAt}}</td>
 						<td class="action-buttons">
+							<a href="/admin/applications/{{this.vbId}}" class="btn btn-secondary">Details</a>
 							<a href="/admin/applications/{{this.vbId}}/edit" class="btn btn-secondary">Edit</a>
 							<form method="post" action="/admin/applications/{{this.vbId}}/delete" style="display:inline;">
 								<button type="submit" class="btn btn-danger" data-confirm="Delete this application?">Delete</button>

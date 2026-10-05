@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{application.name}} - Application - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<div class="page-header">
+					<h2>{{application.name}}</h2>
+					<div class="page-header-actions">
+						<a href="/admin/applications" class="btn btn-secondary">Back to list</a>
+						<a href="/admin/applications/{{application.vbId}}/edit" class="btn btn-primary">Edit</a>
+					</div>
+				</div>
+				{{>flash}}
+
+				<section class="detail-section">
+					<h3>General</h3>
+					<dl class="detail-list">
+						<dt>Name</dt><dd>{{application.name}}</dd>
+						<dt>Virtual blockchain ID</dt><dd><code>{{application.vbId}}</code></dd>
+						<dt>Wallet</dt><dd><a href="/admin/wallets/{{application.wallet.id}}">{{application.wallet.name}}</a></dd>
+						<dt>Imported</dt><dd>{{application.createdAt}}</dd>
+						<dt>Anchor requests</dt><dd>{{anchorRequestCount}}</dd>
+					</dl>
+				</section>
+
+				<section class="detail-section">
+					<h3>On-chain application</h3>
+					<dl class="detail-list">
+						<dt>Name</dt><dd id="app-name">Loading…</dd>
+						<dt>Description</dt><dd id="app-description">Loading…</dd>
+						<dt>Homepage</dt><dd id="app-homepage">Loading…</dd>
+						<dt>Logo URL</dt><dd id="app-logo">Loading…</dd>
+					</dl>
+				</section>
+
+				<section class="detail-section">
+					<h3>Organization</h3>
+					<p class="text">The organization owning this application on-chain.</p>
+					<dl class="detail-list">
+						<dt>Name</dt><dd id="org-name">Loading…</dd>
+						<dt>Organization ID</dt><dd id="org-id">Loading…</dd>
+						<dt>Website</dt><dd id="org-website">Loading…</dd>
+						<dt>City</dt><dd id="org-city">Loading…</dd>
+						<dt>Country</dt><dd id="org-country">Loading…</dd>
+					</dl>
+				</section>
+
+				<section class="detail-section">
+					<h3>API keys</h3>
+					<table>
+						<thead><tr><th>Name</th><th>Active</th><th>Expires</th><th></th></tr></thead>
+						<tbody>
+						{{#each application.apiKeys}}
+						<tr>
+							<td>{{this.name}}</td>
+							<td>{{#if this.isActive}}yes{{else}}no{{/if}}</td>
+							<td>{{#if this.activeUntil}}{{this.activeUntil}}{{else}}never{{/if}}</td>
+							<td class="action-buttons"><a href="/admin/api-keys/{{this.id}}/edit" class="btn btn-secondary">Edit</a></td>
+						</tr>
+						{{else}}
+						<tr><td colspan="4">No API keys.</td></tr>
+						{{/each}}
+						</tbody>
+					</table>
+				</section>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+	<script>
+		// The node is queried after the page has loaded, so a slow or unreachable node never blocks it.
+		// Values come from the chain, so they are only ever written as text; a link is built
+		// only for http(s) URLs.
+		const cells = ['app-name', 'app-description', 'app-homepage', 'app-logo', 'org-name', 'org-id', 'org-website', 'org-city', 'org-country']
+			.reduce((acc, id) => ({ ...acc, [id]: document.getElementById(id) }), {});
+
+		function setText(id, value) {
+			cells[id].textContent = value || '-';
+		}
+
+		function setLink(id, value) {
+			const cell = cells[id];
+			if (value && /^https?:\/\//i.test(value)) {
+				const link = document.createElement('a');
+				link.href = value;
+				link.textContent = value;
+				link.rel = 'noopener noreferrer';
+				link.target = '_blank';
+				cell.replaceChildren(link);
+			} else {
+				setText(id, value);
+			}
+		}
+
+		(async () => {
+			try {
+				const res = await fetch('/admin/applications/{{application.vbId}}/chain');
+				const data = await res.json();
+				if (!res.ok || data.error) throw new Error(data.error || data.message || 'Request failed');
+
+				setText('app-name', data.application.name);
+				setText('app-description', data.application.description);
+				setLink('app-homepage', data.application.homepageUrl);
+				setLink('app-logo', data.application.logoUrl);
+
+				const organization = data.organization;
+				setText('org-id', organization.id);
+				if (data.organizationError) {
+					const message = `Unavailable (${data.organizationError})`;
+					['org-name', 'org-website', 'org-city', 'org-country'].forEach((id) => { cells[id].textContent = message; });
+				} else {
+					setText('org-name', organization.name);
+					setLink('org-website', organization.website);
+					setText('org-city', organization.city);
+					setText('org-country', organization.countryCode);
+				}
+			} catch (err) {
+				Object.values(cells).forEach((cell) => { cell.textContent = `Unavailable (${err.message})`; });
+			}
+		})();
+	</script>
+</body>
+</html>

@@ -120,6 +120,55 @@ export class OperatorAdminUiApplicationController {
 		}
 	}
 
+	@Get(':vbId')
+	@Render('application-details')
+	async details(@Req() req: Request, @Param('vbId') vbId: string): Promise<any> {
+		// Explicit selection: the encrypted columns of the wallet and of the API keys are never fetched.
+		const application = await this.applicationRepository.findOne({
+			where: { vbId },
+			select: {
+				vbId: true,
+				name: true,
+				createdAt: true,
+				wallet: { id: true, name: true },
+				apiKeys: { id: true, name: true, isActive: true, activeUntil: true },
+			},
+			relations: { wallet: true, apiKeys: true },
+		});
+		if (!application) {
+			throw new NotFoundException('Application not found');
+		}
+		return {
+			currentSection: 'applications',
+			user: (req as any).user,
+			flash: req.query?.flash,
+			flashType: req.query?.flashType,
+			application,
+			anchorRequestCount: (await this.applicationService.countDependents(vbId)).anchorRequests,
+		};
+	}
+
+	/**
+	 * Live on-chain data of the application and of its organization, fetched by the details
+	 * page after it has loaded so that a slow or unreachable node never blocks the page itself.
+	 */
+	@Get(':vbId/chain')
+	async chain(@Param('vbId') vbId: string) {
+		const application = await this.applicationRepository.findOne({
+			where: { vbId },
+			select: { vbId: true, wallet: { id: true, rpcEndpoint: true } },
+			relations: { wallet: true },
+		});
+		if (!application) {
+			throw new NotFoundException('Application not found');
+		}
+		try {
+			return await this.walletService.getApplicationOnChainDetails(application.wallet, vbId);
+		} catch (error) {
+			return { error: getErrorMessage(error, 'The application could not be retrieved from the node.') };
+		}
+	}
+
 	@Get(':vbId/edit')
 	@Render('application-form')
 	async editForm(@Req() req: Request, @Param('vbId') vbId: string): Promise<any> {

@@ -21,6 +21,12 @@ import { PrivateKeyService } from './PrivateKeyService';
 import { PrivateKeyEntity } from '../entities/PrivateKeyEntity';
 import { WalletCreationDto } from '../dto/wallet/WalletCreationDto';
 
+export interface ApplicationOnChainDetails {
+	application: { name: string; description: string; homepageUrl: string; logoUrl: string };
+	organization: { id: string; name?: string; website?: string; city?: string; countryCode?: string };
+	organizationError?: string;
+}
+
 @Injectable()
 export class WalletService {
 	constructor(
@@ -205,6 +211,53 @@ export class WalletService {
 			return description.name;
 		} catch (error) {
 			throw this.chainLookupFailure(wallet, vbId, error);
+		}
+	}
+
+	/**
+	 * Reads, through the provider of the wallet (its RPC endpoint), the on-chain description of
+	 * an application and of the organization owning it.
+	 *
+	 * The organization is looked up separately: if only that part fails, the application is
+	 * still returned along with `organizationError`.
+	 *
+	 * @throws BadRequestException If the application itself cannot be read.
+	 */
+	async getApplicationOnChainDetails(wallet: WalletEntity, vbId: string): Promise<ApplicationOnChainDetails> {
+		const provider = wallet.getProvider();
+		let applicationVb;
+		let application;
+		try {
+			applicationVb = await provider.loadApplicationVirtualBlockchain(Hash.fromHex(vbId));
+			const description = await applicationVb.getApplicationDescription();
+			application = {
+				name: description.name,
+				description: description.description,
+				homepageUrl: description.homepageUrl,
+				logoUrl: description.logoUrl,
+			};
+		} catch (error) {
+			throw this.chainLookupFailure(wallet, vbId, error);
+		}
+
+		const organizationId = applicationVb.getOrganizationId();
+		const organizationIdHex = organizationId.encode(new BytesToHexEncoder());
+		try {
+			const organizationVb = await provider.loadOrganizationVirtualBlockchain(organizationId);
+			const description = await organizationVb.getDescription();
+			return {
+				application,
+				organization: {
+					id: organizationIdHex,
+					name: description.name,
+					website: description.website,
+					city: description.city,
+					countryCode: description.countryCode,
+				},
+			};
+		} catch (error) {
+			const reason = error instanceof Error ? error.message : String(error);
+			return { application, organization: { id: organizationIdHex }, organizationError: reason };
 		}
 	}
 
