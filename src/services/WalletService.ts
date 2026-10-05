@@ -5,6 +5,9 @@ import { WalletEntity } from '../entities/WalletEntity';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import {
+	BytesToHexEncoder,
+	CMTSToken,
+	CryptoEncoderFactory,
 	ExternalKeyApplicationLedgerActorIdentity,
 	Hash,
 	SeedEncoder,
@@ -137,6 +140,38 @@ export class WalletService {
 	 * elsewhere (see `WalletUtils.getAccountCryptoFromWallet`, which decodes via `SeedEncoder`). */
 	generateSeed(): string {
 		return WalletCrypto.generateWallet().encode(new SeedEncoder());
+	}
+
+	/**
+	 * Non-secret facts about the key of a wallet, for display: its type and its public key.
+	 * The public key is `null` when it cannot be derived.
+	 */
+	async getKeyDetails(walletId: number): Promise<{ keyType: string; publicKey: string | null }> {
+		const privateKeyEntity = await this.getPrivateKeyEntityOfWallet(walletId);
+		const keyType = privateKeyEntity.privateKey.keyType;
+		try {
+			const publicKey = await this.getPublicKeyOfWallet(walletId);
+			return { keyType, publicKey: await CryptoEncoderFactory.defaultStringSignatureEncoder().encodePublicKey(publicKey) };
+		} catch {
+			return { keyType, publicKey: null };
+		}
+	}
+
+	/**
+	 * Looks up, through the provider of the wallet (its RPC endpoint), the on-chain account
+	 * owning the wallet's public key and its balance, formatted as a CMTS amount.
+	 *
+	 * @throws If the node cannot be reached or does not know the account.
+	 */
+	async getOnChainAccount(wallet: WalletEntity): Promise<{ accountId: string; balance: string }> {
+		const provider = wallet.getProvider();
+		const publicKey = await this.getPublicKeyOfWallet(wallet.id);
+		const accountId = await provider.getAccountIdFromPublicKey(publicKey);
+		const state = await provider.getAccountState(accountId.toBytes());
+		return {
+			accountId: accountId.encode(new BytesToHexEncoder()),
+			balance: CMTSToken.createAtomic(state.balance).toString(),
+		};
 	}
 
 	/**

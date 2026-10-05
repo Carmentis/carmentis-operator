@@ -1,7 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
-import { WalletCrypto, SeedEncoder, SignatureSchemeId, JwkPrivateSignatureKey, VirtualBlockchainType } from '@cmts-dev/carmentis-sdk-core';
+import { WalletCrypto, SeedEncoder, SignatureSchemeId, JwkPrivateSignatureKey, VirtualBlockchainType, Hash } from '@cmts-dev/carmentis-sdk-core';
 import { WalletEntity } from '../entities/WalletEntity';
 import { PrivateKeyEntity } from '../entities/PrivateKeyEntity';
 import { PrivateKeyObjectType } from '../types/types';
@@ -65,6 +65,35 @@ describe('WalletService', () => {
 		expect(typeof seed).toBe('string');
 		const decoded = new SeedEncoder().decode(seed);
 		expect(() => WalletCrypto.fromSeed(decoded)).not.toThrow();
+	});
+
+	it('describes the key of a wallet without exposing any secret', async () => {
+		const wallet = await service.createWallet({
+			...baseDto,
+			privateKey: { keyType: PrivateKeyObjectType.SEED, schemeId: SignatureSchemeId.SECP256K1, seed: service.generateSeed() },
+		});
+
+		const details = await service.getKeyDetails(wallet.id);
+
+		expect(details.keyType).toBe(PrivateKeyObjectType.SEED);
+		expect(details.publicKey).toMatch(/^sig:secp256k1:pk:[0-9a-f]+$/);
+		expect(JSON.stringify(details)).not.toContain('seed');
+	});
+
+	it('reads the on-chain account and balance through the wallet provider', async () => {
+		const wallet = await service.createWallet({
+			...baseDto,
+			privateKey: { keyType: PrivateKeyObjectType.SEED, schemeId: SignatureSchemeId.SECP256K1, seed: service.generateSeed() },
+		});
+		const provider = {
+			getAccountIdFromPublicKey: jest.fn().mockResolvedValue(new Hash(new Uint8Array(32).fill(0xab))),
+			getAccountState: jest.fn().mockResolvedValue({ balance: 42 }),
+		};
+
+		const account = await service.getOnChainAccount({ id: wallet.id, getProvider: () => provider } as any);
+
+		expect(account).toEqual({ accountId: 'AB'.repeat(32), balance: '0.00042 CMTS' });
+		expect(provider.getAccountState).toHaveBeenCalledWith(new Uint8Array(32).fill(0xab));
 	});
 
 	describe('fetchApplicationNameFromChain', () => {

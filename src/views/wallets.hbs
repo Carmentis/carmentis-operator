@@ -35,11 +35,12 @@
 					{{#each wallets}}
 					<tr>
 						<td>{{this.id}}</td>
-						<td>{{this.name}}</td>
+						<td><a href="/admin/wallets/{{this.id}}">{{this.name}}</a></td>
 						<td>{{this.rpcEndpoint}}</td>
 						<td>{{this.indexerEndpoint}}</td>
 						<td>{{this.createdAt}}</td>
 						<td class="action-buttons">
+							<a href="/admin/wallets/{{this.id}}" class="btn btn-secondary">Details</a>
 							<a href="/admin/wallets/{{this.id}}/edit" class="btn btn-secondary">Edit</a>
 							<form method="post" action="/admin/wallets/{{this.id}}/delete" style="display:inline;">
 								<button type="submit" class="btn btn-danger" data-confirm="Delete this wallet?">Delete</button>

@@ -124,6 +124,58 @@ export class OperatorAdminUiWalletController {
 		}
 	}
 
+	@Get(':id')
+	@Render('wallet-details')
+	async details(@Req() req: Request, @Param('id', ParseIntPipe) id: number): Promise<any> {
+		// Explicit selection: neither the encrypted actor passphrase nor any API key value is
+		// ever fetched for display.
+		const wallet = await this.walletRepository.findOne({
+			where: { id },
+			select: {
+				id: true,
+				name: true,
+				rpcEndpoint: true,
+				indexerEndpoint: true,
+				allowedEndpointsRegex: true,
+				createdAt: true,
+				applications: { vbId: true, name: true },
+				apiKeys: { id: true, name: true, isActive: true, activeUntil: true },
+			},
+			relations: { applications: true, apiKeys: true },
+		});
+		if (!wallet) {
+			throw new NotFoundException('Wallet not found');
+		}
+		return {
+			currentSection: 'wallets',
+			user: (req as any).user,
+			flash: req.query?.flash,
+			flashType: req.query?.flashType,
+			wallet,
+			key: await this.walletService.getKeyDetails(id),
+		};
+	}
+
+	/**
+	 * Live on-chain data of the wallet, fetched by the details page after it has loaded so
+	 * that a slow or unreachable node never blocks the page itself.
+	 */
+	@Get(':id/account')
+	async account(@Param('id', ParseIntPipe) id: number) {
+		const wallet = await this.walletRepository.findOne({
+			where: { id },
+			select: { id: true, rpcEndpoint: true },
+		});
+		if (!wallet) {
+			throw new NotFoundException('Wallet not found');
+		}
+		try {
+			return await this.walletService.getOnChainAccount(wallet);
+		} catch (error) {
+			return { error: getErrorMessage(error, 'The account could not be retrieved from the node.') };
+		}
+	}
+
 	@Get(':id/edit')
 	@Render('wallet-form')
 	async editForm(@Req() req: Request, @Param('id', ParseIntPipe) id: number): Promise<any> {
