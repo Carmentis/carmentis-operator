@@ -12,17 +12,16 @@
 		<main class="main-content">
 			{{>topbar}}
 			<div class="content-area">
-				<h2>{{#if application}}Edit application{{else}}New application{{/if}}</h2>
+				<h2>{{#if application}}Edit application{{else}}Import application{{/if}}</h2>
 
 				{{>flash}}
 
 				<form method="post" action="{{#if application}}/admin/applications/{{application.vbId}}/update{{else}}/admin/applications{{/if}}">
+					{{#if application}}
 					<div class="form-group">
 						<label for="name">Name</label>
 						<input type="text" id="name" name="name" required value="{{application.name}}">
 					</div>
-
-					{{#if application}}
 					<div class="form-group">
 						<label>Virtual blockchain ID</label>
 						<input type="text" value="{{application.vbId}}" disabled>
@@ -48,9 +47,12 @@
 							{{/each}}
 						</select>
 					</div>
+					<p style="font-size: 12px; color: var(--color-text-secondary);">
+						The application must already exist on-chain: it is looked up through the RPC endpoint of the selected wallet, and its on-chain name is imported with it.
+					</p>
 					{{/if}}
 
-					<button type="submit" class="btn btn-primary">{{#if application}}Save changes{{else}}Create application{{/if}}</button>
+					<button type="submit" class="btn btn-primary">{{#if application}}Save changes{{else}}Import application{{/if}}</button>
 					<a href="/admin/applications" class="btn btn-secondary">Cancel</a>
 				</form>
 			</div>

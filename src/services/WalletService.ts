@@ -4,7 +4,13 @@ import { Repository } from 'typeorm';
 import { WalletEntity } from '../entities/WalletEntity';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
-import { ExternalKeyApplicationLedgerActorIdentity, SeedEncoder, WalletCrypto } from '@cmts-dev/carmentis-sdk-core';
+import {
+	ExternalKeyApplicationLedgerActorIdentity,
+	Hash,
+	SeedEncoder,
+	VirtualBlockchainType,
+	WalletCrypto,
+} from '@cmts-dev/carmentis-sdk-core';
 import { WalletUpdateDto } from '../dto/admin/WalletUpdateDto';
 import { PrivateKeyUtils } from '../utils/PrivateKeyUtils';
 import { Bip39Utils } from '../utils/Bip39Utils';
@@ -131,6 +137,45 @@ export class WalletService {
 	 * elsewhere (see `WalletUtils.getAccountCryptoFromWallet`, which decodes via `SeedEncoder`). */
 	generateSeed(): string {
 		return WalletCrypto.generateWallet().encode(new SeedEncoder());
+	}
+
+	/**
+	 * Checks, through the provider of the wallet (its RPC endpoint), that the given virtual
+	 * blockchain exists on-chain and is an application, and returns the name it was given
+	 * on-chain.
+	 *
+	 * @throws BadRequestException If the identifier is malformed, the virtual blockchain is
+	 * unknown to the network, is not an application, or the network cannot be queried.
+	 */
+	async fetchApplicationNameFromChain(wallet: WalletEntity, vbId: string): Promise<string> {
+		const provider = wallet.getProvider();
+		let state;
+		try {
+			state = await provider.getVirtualBlockchainStatus(Hash.fromHex(vbId).toBytes());
+		} catch (error) {
+			throw this.chainLookupFailure(wallet, vbId, error);
+		}
+		if (!state) {
+			throw new BadRequestException(
+				`No virtual blockchain ${vbId} exists on ${wallet.rpcEndpoint}: the application must exist on-chain before being imported`,
+			);
+		}
+		if (state.type !== VirtualBlockchainType.APPLICATION_VIRTUAL_BLOCKCHAIN) {
+			throw new BadRequestException(`The virtual blockchain ${vbId} exists on-chain but is not an application`);
+		}
+
+		try {
+			const applicationVb = await provider.loadApplicationVirtualBlockchain(Hash.fromHex(vbId));
+			const description = await applicationVb.getApplicationDescription();
+			return description.name;
+		} catch (error) {
+			throw this.chainLookupFailure(wallet, vbId, error);
+		}
+	}
+
+	private chainLookupFailure(wallet: WalletEntity, vbId: string, error: unknown) {
+		const reason = error instanceof Error ? error.message : String(error);
+		return new BadRequestException(`Could not verify the application ${vbId} on ${wallet.rpcEndpoint}: ${reason}`);
 	}
 
 	/** Generates a fresh BIP39 mnemonic, proposed (and editable) as actor passphrase in the creation form. */

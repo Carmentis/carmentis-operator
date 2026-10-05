@@ -1,10 +1,11 @@
-import { Body, Controller, Get, NotFoundException, Param, Post, Render, Req, Res } from '@nestjs/common';
+import { Body, ConflictException, Controller, Get, NotFoundException, Param, Post, Render, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ApplicationEntity } from '../../entities/ApplicationEntity';
 import { WalletEntity } from '../../entities/WalletEntity';
 import { ApplicationService } from '../../services/ApplicationService';
+import { WalletService } from '../../services/WalletService';
 import { ApplicationCreationDto } from '../../dto/ApplicationCreationDto';
 import { ApplicationUpdateDto } from '../../dto/ApplicationUpdateDto';
 import { getErrorMessage, redirectWithFlash, toOptionalNumber, validateForm } from '../../utils/AdminForm';
@@ -20,6 +21,7 @@ export class OperatorAdminUiApplicationController {
 		@InjectRepository(WalletEntity)
 		private readonly walletRepository: Repository<WalletEntity>,
 		private readonly applicationService: ApplicationService,
+		private readonly walletService: WalletService,
 	) {}
 
 	@Get()
@@ -67,7 +69,6 @@ export class OperatorAdminUiApplicationController {
 	async create(@Body() body: Record<string, string>, @Res() res: Response) {
 		try {
 			const dto = await validateForm(ApplicationCreationDto, {
-				name: body.name,
 				vbId: body.vbId,
 				walletId: toOptionalNumber(body.walletId),
 			});
@@ -75,7 +76,13 @@ export class OperatorAdminUiApplicationController {
 			if (!wallet) {
 				throw new NotFoundException('Wallet not found');
 			}
-			await this.applicationRepository.save({ vbId: dto.vbId, name: dto.name, wallet });
+			if (await this.applicationRepository.existsBy({ vbId: dto.vbId })) {
+				throw new ConflictException('This application is already imported');
+			}
+			// importing only makes sense for an application that already exists on-chain, whose
+			// name is the one it was given there
+			const name = await this.walletService.fetchApplicationNameFromChain(wallet, dto.vbId);
+			await this.applicationRepository.save({ vbId: dto.vbId, name, wallet });
 			return redirectWithFlash(res, APPLICATIONS_PATH, 'Application created.', 'success');
 		} catch (error) {
 			return redirectWithFlash(

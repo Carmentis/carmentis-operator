@@ -1,7 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
-import { WalletCrypto, SeedEncoder, SignatureSchemeId, JwkPrivateSignatureKey } from '@cmts-dev/carmentis-sdk-core';
+import { WalletCrypto, SeedEncoder, SignatureSchemeId, JwkPrivateSignatureKey, VirtualBlockchainType } from '@cmts-dev/carmentis-sdk-core';
 import { WalletEntity } from '../entities/WalletEntity';
 import { PrivateKeyEntity } from '../entities/PrivateKeyEntity';
 import { PrivateKeyObjectType } from '../types/types';
@@ -65,6 +65,41 @@ describe('WalletService', () => {
 		expect(typeof seed).toBe('string');
 		const decoded = new SeedEncoder().decode(seed);
 		expect(() => WalletCrypto.fromSeed(decoded)).not.toThrow();
+	});
+
+	describe('fetchApplicationNameFromChain', () => {
+		const walletWith = (getVirtualBlockchainStatus: jest.Mock, name = 'On-chain name') =>
+			({
+				rpcEndpoint: 'https://rpc.example',
+				getProvider: () => ({
+					getVirtualBlockchainStatus,
+					loadApplicationVirtualBlockchain: jest.fn().mockResolvedValue({
+						getApplicationDescription: jest.fn().mockResolvedValue({ name }),
+					}),
+				}),
+			}) as any;
+		const vbId = 'aa'.repeat(32);
+
+		it('returns the on-chain name of an application virtual blockchain', async () => {
+			const status = jest.fn().mockResolvedValue({ type: VirtualBlockchainType.APPLICATION_VIRTUAL_BLOCKCHAIN });
+			await expect(service.fetchApplicationNameFromChain(walletWith(status, 'My app'), vbId)).resolves.toBe('My app');
+			expect(status).toHaveBeenCalledWith(Buffer.from(vbId, 'hex'));
+		});
+
+		it('rejects an unknown virtual blockchain', async () => {
+			const status = jest.fn().mockResolvedValue(null);
+			await expect(service.fetchApplicationNameFromChain(walletWith(status), vbId)).rejects.toThrow(/No virtual blockchain/);
+		});
+
+		it('rejects a virtual blockchain that is not an application', async () => {
+			const status = jest.fn().mockResolvedValue({ type: VirtualBlockchainType.APP_LEDGER_VIRTUAL_BLOCKCHAIN });
+			await expect(service.fetchApplicationNameFromChain(walletWith(status), vbId)).rejects.toThrow(/not an application/);
+		});
+
+		it('reports a provider failure as a bad request', async () => {
+			const status = jest.fn().mockRejectedValue(new Error('connection refused'));
+			await expect(service.fetchApplicationNameFromChain(walletWith(status), vbId)).rejects.toThrow(BadRequestException);
+		});
 	});
 
 	it('generates distinct, valid BIP39 actor passphrases', () => {
