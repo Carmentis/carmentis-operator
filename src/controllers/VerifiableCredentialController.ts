@@ -10,9 +10,10 @@ import {
 	SdJwtVerifiableCredentialVerificationResponseDto,
 } from '../utils/vc/SdJwtVerifiableCredentialHandler';
 import { SdJwtCredentialVerificationResultDto } from '../dto/vc/SdJwtCredentialVerificationResultDto';
+import { API_V1 } from '../api/ApiVersion';
 
 @ApiTags('Verifiable Credentials')
-@Controller('/api')
+@Controller({ path: '', version: API_V1 })
 export class VerifiableCredentialController {
 
 	private logger = new Logger();

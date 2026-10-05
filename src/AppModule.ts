@@ -45,6 +45,7 @@ import { WalletProofController } from './controllers/wallet/WalletProofControlle
 import { AuthGuard } from './guards/AuthGuard';
 import { SameOriginGuard } from './guards/SameOriginGuard';
 import { PrivateKeyService } from './services/PrivateKeyService';
+import { JsonSignatureService } from './services/JsonSignatureService';
 import { PrivateKeyEntity } from './entities/PrivateKeyEntity';
 import { WalletByIdPipe } from './pipes/WalletByIdPipe';
 import { ExtractPrivateSignatureKeyFromWallet } from './pipes/ExtractPrivateSignatureKeyFromWallet';
@@ -104,6 +105,7 @@ import { HomeController } from './controllers/HomeController';
 		ApplicationService,
 		WalletService,
 		PrivateKeyService,
+		JsonSignatureService,
 		ChainService,
 		AnchorRequestService,
 		DeskAuthChallengeService,

@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ApiKeyService } from '../services/ApiKeyService';
 import { IS_PUBLIC_KEY } from '../decorators/PublicDecorator';
 import { isAdminUiPath } from '../utils/AdminPaths';
+import { stripApiVersion } from '../utils/ApiPaths';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -55,7 +56,7 @@ export class AuthGuard implements CanActivate {
 					// Validate endpoint regex if defined
 					const endpointRegex = apiKeyEntity.endpointRegex;
 					if (endpointRegex) {
-						const endpoint = request.path;
+						const endpoint = stripApiVersion(request.path);
 						const regex = new RegExp(endpointRegex);
 						if (!regex.test(endpoint)) {
 							this.logger.debug(`Endpoint ${endpoint} does not match allowed regex pattern ${endpointRegex}`);

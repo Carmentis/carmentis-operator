@@ -15,9 +15,10 @@ import { ExternalKeyApplicationLedgerActorIdentity, Hash } from '@cmts-dev/carme
 import { UserService } from '../services/UserService';
 import { ApiKey } from '../decorators/ApiKeyDecorator';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
+import { API_V1 } from '../api/ApiVersion';
 
 @ApiTags('Anchor Request')
-@Controller('/api/anchorRequest')
+@Controller({ path: 'anchorRequest', version: API_V1 })
 export class AnchorRequestController {
 
 	private logger = new Logger();

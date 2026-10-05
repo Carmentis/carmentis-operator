@@ -11,9 +11,10 @@ import { Hash } from '@cmts-dev/carmentis-sdk-core';
 import { WalletService } from '../../services/WalletService';
 import { WalletEntity } from '../../entities/WalletEntity';
 import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
+import { API_V1 } from '../../api/ApiVersion';
 
 @ApiTags('Wallet Record')
-@Controller('/api/wallet')
+@Controller({ path: 'wallet', version: API_V1 })
 export class WalletRecordController {
 
 	private logger = new Logger();

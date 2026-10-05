@@ -1,9 +1,10 @@
 import { Controller, Get, ParseIntPipe, Query } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import crypto from 'crypto';
+import { API_V1 } from '../../../api/ApiVersion';
 
 @ApiTags('Crypto')
-@Controller('/api/crypto')
+@Controller({ path: 'crypto', version: API_V1 })
 export class CryptoController {
 	/**
 	 * Generate a cryptographic challenge

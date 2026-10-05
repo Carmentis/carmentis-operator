@@ -15,6 +15,7 @@ import { ApplicationService } from '../../services/ApplicationService';
 import { InvalidArgumentError } from 'commander';
 import { WalletEntity } from '../../entities/WalletEntity';
 import { ApplicationEntity } from '../../entities/ApplicationEntity';
+import { API_V1 } from '../../api/ApiVersion';
 
 
 const AnchoringExamples = {
@@ -107,7 +108,7 @@ const AnchoringWithWalletExamples = {
 }
 
 @ApiTags('Wallet Anchoring')
-@Controller('/api')
+@Controller({ path: '', version: API_V1 })
 export class WalletAnchoringController {
 	private logger = new Logger();
 	constructor(

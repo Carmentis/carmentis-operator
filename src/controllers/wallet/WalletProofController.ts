@@ -10,9 +10,10 @@ import {
 } from '../../dto/wallet/GetVirtualBlockchainAuthenticityProofRequestDto';
 import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
 import { WalletEntity } from '../../entities/WalletEntity';
+import { API_V1 } from '../../api/ApiVersion';
 
 @ApiTags('Wallet Proof')
-@Controller('/api/wallet')
+@Controller({ path: 'wallet', version: API_V1 })
 export class WalletProofController {
 
 	private logger = new Logger();
