@@ -19,7 +19,6 @@
 				</p>
 
 				{{>flash}}
-				<div class="flash flash-error" id="wallets-error" style="display:none;"></div>
 				<p><a href="/admin/wallets/new" class="btn btn-primary">New wallet</a></p>
 				<table>
 					<thead>
@@ -42,11 +41,13 @@
 						<td>{{this.createdAt}}</td>
 						<td class="action-buttons">
 							<a href="/admin/wallets/{{this.id}}/edit" class="btn btn-secondary">Edit</a>
-							<button class="btn btn-danger" data-confirm-message="Delete this wallet?" data-remove-id="{{this.id}}">Delete</button>
+							<form method="post" action="/admin/wallets/{{this.id}}/delete" style="display:inline;">
+								<button type="submit" class="btn btn-danger" data-confirm="Delete this wallet?">Delete</button>
+							</form>
 						</td>
 					</tr>
 					{{else}}
-					<tr><td colspan="5">No wallets yet.</td></tr>
+					<tr><td colspan="6">No wallets yet.</td></tr>
 					{{/each}}
 					</tbody>
 				</table>
@@ -54,21 +55,5 @@
 		</main>
 	</div>
 	<script src="/admin/static/admin.js"></script>
-	<script>
-		document.querySelectorAll('[data-remove-id]').forEach((btn) => {
-			btn.addEventListener('click', async () => {
-				if (!window.confirm(btn.getAttribute('data-confirm-message'))) return;
-				const res = await fetch(`/admin/api/v1/wallet/${btn.getAttribute('data-remove-id')}`, { method: 'DELETE' });
-				if (res.ok) {
-					window.location.reload();
-					return;
-				}
-				const data = await res.json().catch(() => ({}));
-				const errorEl = document.getElementById('wallets-error');
-				errorEl.textContent = data.message || 'Could not delete this wallet.';
-				errorEl.style.display = '';
-			});
-		});
-	</script>
 </body>
 </html>

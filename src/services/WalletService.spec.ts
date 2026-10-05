@@ -1,14 +1,18 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { WalletCrypto, SeedEncoder } from '@cmts-dev/carmentis-sdk-core';
+import { BadRequestException } from '@nestjs/common';
+import { WalletCrypto, SeedEncoder, SignatureSchemeId, JwkPrivateSignatureKey } from '@cmts-dev/carmentis-sdk-core';
 import { WalletEntity } from '../entities/WalletEntity';
+import { PrivateKeyEntity } from '../entities/PrivateKeyEntity';
+import { PrivateKeyObjectType } from '../types/types';
+import { PrivateKeyService } from './PrivateKeyService';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
 import { WalletService } from './WalletService';
 import { EncryptionServiceProxy } from '../shared/transformers/EncryptionServiceProxy';
 
-// WalletEntity.seed is an @EncryptedColumn(), whose transformer reads
+// WalletEntity.actorPassphrase is an @EncryptedColumn(), whose transformer reads
 // EncryptionServiceProxy.instance. In the real app that's set once from
 // AppModule.onModuleInit(); here we just need any encrypt/decrypt pair so
 // persisting a WalletEntity in these tests doesn't throw.
@@ -23,10 +27,14 @@ describe('WalletService', () => {
 
 	async function createWallet(overrides: Partial<WalletEntity> = {}): Promise<WalletEntity> {
 		const repository = dataSource.getRepository(WalletEntity);
+		const privateKey = await dataSource.getRepository(PrivateKeyEntity).save({
+			privateKey: { keyType: PrivateKeyObjectType.SEED, schemeId: 0, seed: 'seed-value' },
+		});
 		return repository.save(
 			repository.create({
 				name: 'wallet-1',
-				seed: 'seed-value',
+				actorPassphrase: 'passphrase',
+				privateKey,
 				rpcEndpoint: 'https://rpc.example',
 				indexerEndpoint: 'https://indexer.example',
 				...overrides,
@@ -39,10 +47,10 @@ describe('WalletService', () => {
 			type: 'sqlite',
 			database: ':memory:',
 			synchronize: true,
-			entities: [WalletEntity, ApplicationEntity, ApiKeyEntity, AnchorRequestEntity],
+			entities: [WalletEntity, PrivateKeyEntity, ApplicationEntity, ApiKeyEntity, AnchorRequestEntity],
 		});
 		await dataSource.initialize();
-		service = new WalletService(dataSource.getRepository(WalletEntity));
+		service = new WalletService(dataSource.getRepository(WalletEntity), new PrivateKeyService());
 	});
 
 	afterEach(async () => {
@@ -54,6 +62,61 @@ describe('WalletService', () => {
 		expect(typeof seed).toBe('string');
 		const decoded = new SeedEncoder().decode(seed);
 		expect(() => WalletCrypto.fromSeed(decoded)).not.toThrow();
+	});
+
+	const baseDto = {
+		name: 'created',
+		rpcEndpoint: 'https://rpc.example',
+		indexerEndpoint: 'https://indexer.example',
+		actorPassphrase: '1234',
+	};
+
+	it('creates a wallet from a seed-based private key, keeping a numeric passphrase a string', async () => {
+		const wallet = await service.createWallet({
+			...baseDto,
+			privateKey: { keyType: PrivateKeyObjectType.SEED, schemeId: SignatureSchemeId.SECP256K1, seed: service.generateSeed() },
+		});
+
+		const stored = await dataSource.getRepository(WalletEntity).findOneOrFail({
+			where: { id: wallet.id },
+			relations: ['privateKey'],
+		});
+		expect(stored.actorPassphrase).toBe('1234');
+		expect(stored.privateKey.privateKey.keyType).toBe(PrivateKeyObjectType.SEED);
+		await expect(service.getPublicKeyOfWallet(wallet.id)).resolves.toBeDefined();
+	});
+
+	it('creates a wallet from a JWK private key', async () => {
+		const jwk = (await JwkPrivateSignatureKey.gen()).getPrivateJwk();
+		const wallet = await service.createWallet({
+			...baseDto,
+			privateKey: { keyType: PrivateKeyObjectType.JWK, jwk },
+		});
+		await expect(service.getPublicKeyOfWallet(wallet.id)).resolves.toBeDefined();
+	});
+
+	it('lets several wallets share one private key entity', async () => {
+		const first = await createWallet({ name: 'a' });
+		const second = await createWallet({ name: 'b', privateKey: (await service.getPrivateKeyEntityOfWallet(first.id)) });
+		const keyOfSecond = await dataSource.getRepository(WalletEntity).findOneOrFail({
+			where: { id: second.id },
+			relations: ['privateKey'],
+		});
+		expect(keyOfSecond.privateKey.id).toBe((await service.getPrivateKeyEntityOfWallet(first.id)).id);
+	});
+
+	it('rejects an unusable private key and persists nothing', async () => {
+		await expect(
+			service.createWallet({
+				...baseDto,
+				privateKey: { keyType: PrivateKeyObjectType.JWK, jwk: { kty: 'EC' } },
+			}),
+		).rejects.toThrow(BadRequestException);
+		await expect(
+			service.createWallet({ ...baseDto, privateKey: { keyType: 'NOPE' } }),
+		).rejects.toThrow(BadRequestException);
+		expect(await dataSource.getRepository(WalletEntity).count()).toBe(0);
+		expect(await dataSource.getRepository(PrivateKeyEntity).count()).toBe(0);
 	});
 
 	it('updates only the fields provided, leaving the rest untouched (regression for the silent-reset bug)', async () => {

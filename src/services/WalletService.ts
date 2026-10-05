@@ -4,18 +4,46 @@ import { Repository } from 'typeorm';
 import { WalletEntity } from '../entities/WalletEntity';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
-import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 import { ExternalKeyApplicationLedgerActorIdentity, SeedEncoder, WalletCrypto } from '@cmts-dev/carmentis-sdk-core';
 import { WalletUpdateDto } from '../dto/admin/WalletUpdateDto';
 import { PrivateKeyUtils } from '../utils/PrivateKeyUtils';
+import { PrivateKeyService } from './PrivateKeyService';
+import { PrivateKeyEntity } from '../entities/PrivateKeyEntity';
+import { WalletCreationDto } from '../dto/wallet/WalletCreationDto';
 
 @Injectable()
-export class WalletService extends TypeOrmCrudService<WalletEntity> {
+export class WalletService {
 	constructor(
 		@InjectRepository(WalletEntity)
-		repo: Repository<WalletEntity>,
-	) {
-		super(repo);
+		private readonly repo: Repository<WalletEntity>,
+		private readonly privateKeyService: PrivateKeyService,
+	) {}
+
+	async findAll(): Promise<WalletEntity[]> {
+		return this.repo.find();
+	}
+
+	/**
+	 * Creates a wallet together with its private key.
+	 *
+	 * The private key is validated (a sample message is signed and verified) before anything
+	 * is written, and the key and the wallet are persisted atomically.
+	 */
+	async createWallet(dto: WalletCreationDto): Promise<WalletEntity> {
+		const privateKey = await this.privateKeyService.parseAndValidate(dto.privateKey);
+		return this.repo.manager.transaction(async manager => {
+			const privateKeyEntity = await manager.save(PrivateKeyEntity.create({ privateKey }));
+			return manager.save(
+				this.repo.create({
+					name: dto.name,
+					rpcEndpoint: dto.rpcEndpoint,
+					indexerEndpoint: dto.indexerEndpoint,
+					allowedEndpointsRegex: dto.allowedEndpointsRegex || undefined,
+					actorPassphrase: dto.actorPassphrase,
+					privateKey: privateKeyEntity,
+				}),
+			);
+		});
 	}
 
 	/**

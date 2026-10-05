@@ -32,8 +32,6 @@
     "@automapper/classes": "^8.8.1",
     "@automapper/core": "^8.8.1",
     "@cmts-dev/carmentis-sdk-core": "^1.7.3",
-    "@dataui/crud": "^5.3.4",
-    "@dataui/crud-typeorm": "^5.3.4",
     "@digitalbazaar/did-method-jwk": "^2.0.0",
     "@iarna/toml": "^2.2.5",
     "@logtape/logtape": "^2.2.4",

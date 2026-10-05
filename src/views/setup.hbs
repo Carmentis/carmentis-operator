@@ -27,8 +27,8 @@
 			errorEl.style.display = 'none';
 			try {
 				await authenticateWithDesk(
-					'/admin/api/v1/auth/challenge',
-					'/admin/api/v1/setup/register',
+					'/admin/auth/challenge',
+					'/admin/setup/register',
 					'{{relayUrl}}',
 				);
 				window.location.href = '/admin';

@@ -14,9 +14,9 @@
 			<div class="content-area">
 				<h2>{{#if application}}Edit application{{else}}New application{{/if}}</h2>
 
-				<div class="flash flash-error" id="form-error" style="display:none;"></div>
+				{{>flash}}
 
-				<form id="application-form">
+				<form method="post" action="{{#if application}}/admin/applications/{{application.vbId}}/update{{else}}/admin/applications{{/if}}">
 					<div class="form-group">
 						<label for="name">Name</label>
 						<input type="text" id="name" name="name" required value="{{application.name}}">
@@ -57,42 +57,5 @@
 		</main>
 	</div>
 	<script src="/admin/static/admin.js"></script>
-	<script>
-		const applicationVbId = {{#if application}}"{{application.vbId}}"{{else}}null{{/if}};
-
-		document.getElementById('application-form').addEventListener('submit', async (e) => {
-			e.preventDefault();
-			const errorEl = document.getElementById('form-error');
-			errorEl.style.display = 'none';
-
-			let url, method, body;
-			if (applicationVbId) {
-				url = `/admin/api/v1/application/${applicationVbId}`;
-				method = 'PATCH';
-				body = { name: document.getElementById('name').value };
-			} else {
-				url = '/admin/api/v1/application';
-				method = 'POST';
-				body = {
-					name: document.getElementById('name').value,
-					vbId: document.getElementById('vbId').value,
-					walletId: Number(document.getElementById('walletId').value),
-				};
-			}
-
-			const res = await fetch(url, {
-				method,
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(body),
-			});
-			const data = await res.json().catch(() => ({}));
-			if (!res.ok) {
-				errorEl.textContent = data.message || 'Could not save this application.';
-				errorEl.style.display = '';
-				return;
-			}
-			window.location.href = '/admin/applications';
-		});
-	</script>
 </body>
 </html>

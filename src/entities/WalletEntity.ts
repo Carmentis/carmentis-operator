@@ -50,7 +50,7 @@ export class WalletEntity extends BaseEntity {
 	@OneToMany(() => ApiKeyEntity, apiKey => apiKey.wallet)
 	apiKeys: ApiKeyEntity[];
 
-	@ManyToOne(() => PrivateKeyEntity, privateKey => privateKey.wallets)
+	@ManyToOne(() => PrivateKeyEntity, privateKey => privateKey.wallets, { nullable: false })
 	privateKey: PrivateKeyEntity;
 
 	getProvider(): Provider {

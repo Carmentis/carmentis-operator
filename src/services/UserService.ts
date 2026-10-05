@@ -2,16 +2,13 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Not, Repository } from 'typeorm';
 import { UserEntity } from '../entities/UserEntity';
-import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 
 @Injectable()
-export class UserService extends TypeOrmCrudService<UserEntity> {
+export class UserService {
 	constructor(
 		@InjectRepository(UserEntity)
 		private readonly userEntityRepository: Repository<UserEntity>,
-	) {
-		super(userEntityRepository);
-	}
+	) {}
 
 	async findUserById(id: number): Promise<UserEntity> {
 		const user = await this.userEntityRepository.findOneBy({ id });

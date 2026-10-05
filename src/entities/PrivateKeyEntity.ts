@@ -8,7 +8,7 @@ import { WalletEntity } from './WalletEntity';
  *
  * The private keys are encrypted stored in the database.
  */
-@Entity()
+@Entity('private_key')
 export class PrivateKeyEntity extends BaseEntity {
 	@PrimaryGeneratedColumn('uuid')
 	id: string;

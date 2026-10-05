@@ -1,6 +1,8 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { WalletEntity } from '../entities/WalletEntity';
+import { PrivateKeyEntity } from '../entities/PrivateKeyEntity';
+import { PrivateKeyObjectType } from '../types/types';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
@@ -23,15 +25,19 @@ describe('ApplicationService', () => {
 			type: 'sqlite',
 			database: ':memory:',
 			synchronize: true,
-			entities: [WalletEntity, ApplicationEntity, ApiKeyEntity, AnchorRequestEntity],
+			entities: [WalletEntity, PrivateKeyEntity, ApplicationEntity, ApiKeyEntity, AnchorRequestEntity],
 		});
 		await dataSource.initialize();
 
+		const privateKey = await dataSource.getRepository(PrivateKeyEntity).save({
+			privateKey: { keyType: PrivateKeyObjectType.SEED, schemeId: 0, seed: 'seed-value' },
+		});
 		const walletRepository = dataSource.getRepository(WalletEntity);
 		wallet = await walletRepository.save(
 			walletRepository.create({
 				name: 'wallet-1',
-				seed: 'seed-value',
+				actorPassphrase: 'passphrase',
+				privateKey,
 				rpcEndpoint: 'https://rpc.example',
 				indexerEndpoint: 'https://indexer.example',
 			}),

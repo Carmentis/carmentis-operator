@@ -17,10 +17,16 @@ export class EncryptionTransformer implements ValueTransformer {
 	from(ciphertext: string | null): string | object | null {
 		if (!ciphertext) return null;
 		const plaintext = this.encryptionServiceProvider().decrypt(ciphertext);
-		try {
-			return JSON.parse(plaintext);
-		} catch (error) {
-			return plaintext;
+		// Only objects and arrays are JSON-decoded: parsing every value would turn a plain
+		// string such as "1234" or "true" into a number or a boolean.
+		const trimmed = plaintext.trimStart();
+		if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+			try {
+				return JSON.parse(plaintext);
+			} catch (error) {
+				return plaintext;
+			}
 		}
+		return plaintext;
 	}
 }

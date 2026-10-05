@@ -33,12 +33,6 @@ importers:
       '@cmts-dev/carmentis-sdk-core':
         specifier: link:../../.local/share/pnpm/global/5/node_modules/@cmts-dev/carmentis-sdk-core
         version: link:../../.local/share/pnpm/global/5/node_modules/@cmts-dev/carmentis-sdk-core
-      '@dataui/crud':
-        specifier: ^5.3.4
-        version: 5.3.4(class-transformer@0.5.1)(class-validator@0.15.1)
-      '@dataui/crud-typeorm':
-        specifier: ^5.3.4
-        version: 5.3.4
       '@digitalbazaar/did-method-jwk':
         specifier: ^2.0.0
         version: 2.0.0
@@ -623,21 +617,6 @@ packages:
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
-
-  '@dataui/crud-request@5.3.4':
-    resolution: {integrity: sha512-Q8hvGQppeWtKZdCe6h414M7jgvuX4cNplnQRlWCCR4rOnSYjWcQV5aJlbEaSC3oNCzb5WZJs7SSf7fF/JV9KMA==}
-
-  '@dataui/crud-typeorm@5.3.4':
-    resolution: {integrity: sha512-rFIop8t2K/Y4YuifjWbuiSybAm+4s8jSlcGkn/f2Q2GmPKGt0xDkg56UBJ9m0kvqejYtT4lUcUz4d5cG6/RgpA==}
-
-  '@dataui/crud-util@5.3.4':
-    resolution: {integrity: sha512-NAJ/KQshpttB/k8V72tpOIcfgZ/KINivfLq5T3Wyy7BKU6cARYzuE4gHSWjSM5WcyavHr9tBaodTAoNd7j+KiA==}
-
-  '@dataui/crud@5.3.4':
-    resolution: {integrity: sha512-Klw0/fiBvbuZoswPbfhlNhfwDizIhg1WgSxD/rlZ9E08e+L5iU/KwgIHQsP+kKhv0nF+z6H97XLgzrJRGcuhnA==}
-    peerDependencies:
-      class-transformer: '*'
-      class-validator: '*'
 
   '@digitalbazaar/did-method-jwk@2.0.0':
     resolution: {integrity: sha512-I426Hj91v7CwwR0WPH3rqGBy2aTBl1SACSiHYwe/eDHz+1exRsZf6Jbxn72DugcTwi8+uBzAat1YKOClJR0OBA==}
@@ -1829,9 +1808,6 @@ packages:
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
 
-  '@zmotivat0r/o0@1.0.2':
-    resolution: {integrity: sha512-wQ/sHqJEtYb+QtgxtWlBpGASFZ2avpoRWbvpginEuy7howZHTZTy3zYMRMaBKok4bZwIGU5bjmzE59+m1IWqKQ==}
-
   abbrev@1.1.1:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
 
@@ -2573,10 +2549,6 @@ packages:
 
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
-
-  deepmerge@3.3.0:
-    resolution: {integrity: sha512-GRQOafGHwMHpjPx9iCvTgpu9NojZ49q794EEL94JVEw6VaeA8XTUyBKvAkOOjBX9oJNiV6G3P+T+tihFjo2TqA==}
-    engines: {node: '>=0.10.0'}
 
   deepmerge@4.3.1:
     resolution: {integrity: sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==}
@@ -6091,26 +6063,6 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
-  '@dataui/crud-request@5.3.4':
-    dependencies:
-      '@dataui/crud-util': 5.3.4
-      qs: 6.15.3
-
-  '@dataui/crud-typeorm@5.3.4':
-    dependencies:
-      '@zmotivat0r/o0': 1.0.2
-
-  '@dataui/crud-util@5.3.4': {}
-
-  '@dataui/crud@5.3.4(class-transformer@0.5.1)(class-validator@0.15.1)':
-    dependencies:
-      '@dataui/crud-request': 5.3.4
-      '@dataui/crud-util': 5.3.4
-      class-transformer: 0.5.1
-      class-validator: 0.15.1
-      deepmerge: 3.3.0
-      pluralize: 8.0.0
-
   '@digitalbazaar/did-method-jwk@2.0.0':
     dependencies:
       base64url-universal: 2.0.0
@@ -7535,8 +7487,6 @@ snapshots:
 
   '@xtuc/long@4.2.2': {}
 
-  '@zmotivat0r/o0@1.0.2': {}
-
   abbrev@1.1.1:
     optional: true
 
@@ -8286,8 +8236,6 @@ snapshots:
   deep-extend@0.6.0: {}
 
   deep-is@0.1.4: {}
-
-  deepmerge@3.3.0: {}
 
   deepmerge@4.3.1: {}
 

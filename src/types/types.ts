@@ -32,7 +32,10 @@ export const SeedableKeySchema = v.object({
 export const JwkKeySchema = v.object({
 	keyType: v.literal(PrivateKeyObjectType.JWK),
 
-	jwk: v.unknown(),
+	/**
+	 * The private JWK (RFC 7517), including its private members.
+	 */
+	jwk: v.record(v.string(), v.unknown()),
 })
 
 

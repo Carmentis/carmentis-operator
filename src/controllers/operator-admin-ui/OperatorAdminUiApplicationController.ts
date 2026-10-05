@@ -1,18 +1,25 @@
-import { Controller, Get, NotFoundException, Param, Render, Req } from '@nestjs/common';
-import { Request } from 'express';
+import { Body, Controller, Get, NotFoundException, Param, Post, Render, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ApplicationEntity } from '../../entities/ApplicationEntity';
 import { WalletEntity } from '../../entities/WalletEntity';
+import { ApplicationService } from '../../services/ApplicationService';
+import { ApplicationCreationDto } from '../../dto/ApplicationCreationDto';
+import { ApplicationUpdateDto } from '../../dto/ApplicationUpdateDto';
+import { getErrorMessage, redirectWithFlash, toOptionalNumber, validateForm } from '../../utils/AdminForm';
 import { OPERATOR_ADMIN_UI_PREFIX } from './OperatorAdminUiController';
 
-@Controller(`${OPERATOR_ADMIN_UI_PREFIX}/applications`)
+const APPLICATIONS_PATH = `${OPERATOR_ADMIN_UI_PREFIX}/applications`;
+
+@Controller(APPLICATIONS_PATH)
 export class OperatorAdminUiApplicationController {
 	constructor(
 		@InjectRepository(ApplicationEntity)
 		private readonly applicationRepository: Repository<ApplicationEntity>,
 		@InjectRepository(WalletEntity)
 		private readonly walletRepository: Repository<WalletEntity>,
+		private readonly applicationService: ApplicationService,
 	) {}
 
 	@Get()
@@ -51,7 +58,59 @@ export class OperatorAdminUiApplicationController {
 			user: (req as any).user,
 			mode: 'create',
 			wallets,
+			flash: req.query?.flash,
+			flashType: req.query?.flashType,
 		};
+	}
+
+	@Post()
+	async create(@Body() body: Record<string, string>, @Res() res: Response) {
+		try {
+			const dto = await validateForm(ApplicationCreationDto, {
+				name: body.name,
+				vbId: body.vbId,
+				walletId: toOptionalNumber(body.walletId),
+			});
+			const wallet = await this.walletRepository.findOneBy({ id: dto.walletId });
+			if (!wallet) {
+				throw new NotFoundException('Wallet not found');
+			}
+			await this.applicationRepository.save({ vbId: dto.vbId, name: dto.name, wallet });
+			return redirectWithFlash(res, APPLICATIONS_PATH, 'Application created.', 'success');
+		} catch (error) {
+			return redirectWithFlash(
+				res,
+				`${APPLICATIONS_PATH}/new`,
+				getErrorMessage(error, 'Could not create this application.'),
+				'error',
+			);
+		}
+	}
+
+	@Post(':vbId/update')
+	async update(@Param('vbId') vbId: string, @Body() body: Record<string, string>, @Res() res: Response) {
+		try {
+			const dto = await validateForm(ApplicationUpdateDto, { name: body.name });
+			await this.applicationService.updateApplication(vbId, dto);
+			return redirectWithFlash(res, APPLICATIONS_PATH, 'Application updated.', 'success');
+		} catch (error) {
+			return redirectWithFlash(
+				res,
+				`${APPLICATIONS_PATH}/${encodeURIComponent(vbId)}/edit`,
+				getErrorMessage(error, 'Could not save this application.'),
+				'error',
+			);
+		}
+	}
+
+	@Post(':vbId/delete')
+	async delete(@Param('vbId') vbId: string, @Res() res: Response) {
+		try {
+			await this.applicationService.deleteApplication(vbId);
+			return redirectWithFlash(res, APPLICATIONS_PATH, 'Application deleted.', 'success');
+		} catch (error) {
+			return redirectWithFlash(res, APPLICATIONS_PATH, getErrorMessage(error, 'Could not delete this application.'), 'error');
+		}
 	}
 
 	@Get(':vbId/edit')
@@ -70,6 +129,8 @@ export class OperatorAdminUiApplicationController {
 			user: (req as any).user,
 			mode: 'edit',
 			application,
+			flash: req.query?.flash,
+			flashType: req.query?.flashType,
 		};
 	}
 }

@@ -4,7 +4,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { ApiKeyService } from '../services/ApiKeyService';
 import { IS_PUBLIC_KEY } from '../decorators/PublicDecorator';
-import { isAdminApiPath, isAdminUiPath } from '../utils/AdminPaths';
+import { isAdminUiPath } from '../utils/AdminPaths';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -27,9 +27,10 @@ export class AuthGuard implements CanActivate {
 		]);
 		if (isPublic) return true;
 
-		// Try JWT authentication for /admin/** routes (both API and UI)
+		// The admin UI is only reachable with an admin session cookie/JWT: an API key must
+		// never be accepted there, otherwise it could drive the admin handlers.
 		const path = request.url;
-		if (isAdminApiPath(path) || isAdminUiPath(path)) {
+		if (isAdminUiPath(path)) {
 			try {
 				const token = this.extractTokenFromHeader(request);
 				if (token) {
@@ -40,6 +41,7 @@ export class AuthGuard implements CanActivate {
 			} catch (error) {
 				this.logger.debug('JWT authentication failed');
 			}
+			throw new UnauthorizedException();
 		}
 
 		// Try API key authentication
@@ -67,11 +69,6 @@ export class AuthGuard implements CanActivate {
 			}
 		} catch (error) {
 			this.logger.debug('API key authentication failed');
-		}
-
-		// For any /admin/** route, throw Unauthorized if no valid authentication
-		if (isAdminApiPath(path) || isAdminUiPath(path)) {
-			throw new UnauthorizedException();
 		}
 
 		// For other routes, return false if no valid authentication

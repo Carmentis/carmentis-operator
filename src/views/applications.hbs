@@ -19,7 +19,6 @@
 					transactions to be anchored on-chain.
 				</p>
 				{{>flash}}
-				<div class="flash flash-error" id="applications-error" style="display:none;"></div>
 				<p><a href="/admin/applications/new" class="btn btn-primary">New application</a></p>
 				<table>
 					<thead>
@@ -40,7 +39,9 @@
 						<td>{{this.createdAt}}</td>
 						<td class="action-buttons">
 							<a href="/admin/applications/{{this.vbId}}/edit" class="btn btn-secondary">Edit</a>
-							<button class="btn btn-danger" data-confirm-message="Delete this application?" data-remove-id="{{this.vbId}}">Delete</button>
+							<form method="post" action="/admin/applications/{{this.vbId}}/delete" style="display:inline;">
+								<button type="submit" class="btn btn-danger" data-confirm="Delete this application?">Delete</button>
+							</form>
 						</td>
 					</tr>
 					{{else}}
@@ -52,21 +53,5 @@
 		</main>
 	</div>
 	<script src="/admin/static/admin.js"></script>
-	<script>
-		document.querySelectorAll('[data-remove-id]').forEach((btn) => {
-			btn.addEventListener('click', async () => {
-				if (!window.confirm(btn.getAttribute('data-confirm-message'))) return;
-				const res = await fetch(`/admin/api/v1/application/${btn.getAttribute('data-remove-id')}`, { method: 'DELETE' });
-				if (res.ok) {
-					window.location.reload();
-					return;
-				}
-				const data = await res.json().catch(() => ({}));
-				const errorEl = document.getElementById('applications-error');
-				errorEl.textContent = data.message || 'Could not delete this application.';
-				errorEl.style.display = '';
-			});
-		});
-	</script>
 </body>
 </html>

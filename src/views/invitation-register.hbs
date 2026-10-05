@@ -24,8 +24,8 @@
 					const token = registerBtn.getAttribute('data-token');
 					try {
 						await authenticateWithDesk(
-							'/admin/api/v1/auth/challenge',
-							`/admin/api/v1/invitations/${encodeURIComponent(token)}/register`,
+							'/admin/auth/challenge',
+							`/admin/invitations/${encodeURIComponent(token)}/register`,
 							'{{relayUrl}}',
 						);
 						window.location.href = '/admin';
