@@ -56,6 +56,15 @@
 						<dt>Account ID</dt><dd id="account-id">Loading…</dd>
 						<dt>Balance</dt><dd id="account-balance">Loading…</dd>
 					</dl>
+					<h4>Tokens</h4>
+					<p class="text">The balance is the total of the account: the spendable tokens plus the tokens locked in staking, vesting and escrows.</p>
+					<dl class="detail-list">
+						<dt>Spendable</dt><dd id="tokens-spendable">Loading…</dd>
+						<dt>Locked in staking</dt><dd id="tokens-staking">Loading…</dd>
+						<dt>Locked in vesting</dt><dd id="tokens-vesting">Loading…</dd>
+						<dt>Locked in escrows</dt><dd id="tokens-escrows">Loading…</dd>
+					</dl>
+					<p class="catalog-note" id="tokens-note"></p>
 				</section>
 
 				<section class="detail-section">
@@ -117,10 +126,21 @@
 	</div>
 	<script src="/admin/static/admin.js"></script>
 	<script>
-		// The node is queried after the page has loaded, so a slow or unreachable node never blocks it.
+		// The node and the indexer are queried after the page has loaded, so a slow or unreachable
+		// one never blocks it. Values are only ever written as text.
 		(async () => {
 			const idCell = document.getElementById('account-id');
 			const balanceCell = document.getElementById('account-balance');
+			const tokenCells = {
+				spendable: document.getElementById('tokens-spendable'),
+				lockedInStaking: document.getElementById('tokens-staking'),
+				lockedInVesting: document.getElementById('tokens-vesting'),
+				lockedInEscrows: document.getElementById('tokens-escrows'),
+			};
+			const lockCounts = { lockedInStaking: 'stakingLocks', lockedInVesting: 'vestingLocks', lockedInEscrows: 'escrowLocks' };
+			const note = document.getElementById('tokens-note');
+			const setTokens = (text) => Object.values(tokenCells).forEach((cell) => { cell.textContent = text; });
+
 			try {
 				const res = await fetch('/admin/wallets/{{wallet.id}}/account');
 				const data = await res.json();
@@ -128,12 +148,26 @@
 				if (data.attached === false) {
 					idCell.textContent = 'Not attached to an on-chain account: organizations and applications can only be created locally.';
 					balanceCell.textContent = '-';
+					setTokens('-');
 					return;
 				}
 				idCell.textContent = data.accountId;
 				balanceCell.textContent = data.balance;
+
+				if (!data.breakdown) {
+					setTokens(`Unavailable (${data.breakdownError})`);
+					return;
+				}
+				for (const [key, cell] of Object.entries(tokenCells)) {
+					const locks = data.breakdown[lockCounts[key]];
+					cell.textContent = locks ? `${data.breakdown[key]} (${locks} ${locks === 1 ? 'lock' : 'locks'})` : data.breakdown[key];
+				}
+				note.textContent = data.breakdown.inSync
+					? `Breakdown from the indexer, at height ${data.breakdown.indexedHeight}.`
+					: `Breakdown from the indexer, at height ${data.breakdown.indexedHeight}: the indexer is behind the node, so these amounts may not add up to the balance yet.`;
 			} catch (err) {
 				idCell.textContent = balanceCell.textContent = `Unavailable (${err.message})`;
+				setTokens(`Unavailable (${err.message})`);
 			}
 		})();
 	</script>

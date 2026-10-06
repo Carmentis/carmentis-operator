@@ -17,9 +17,10 @@ describe('OperatorAdminUiWalletController.create', () => {
 			createWallet: jest.fn().mockResolvedValue({ id: 1 }),
 			generateActorPassphrase: jest.fn().mockReturnValue('generated'),
 		};
-		const controller = new OperatorAdminUiWalletController({} as any, walletService as any);
+		const walletBalanceService = { getBalances: jest.fn() };
+		const controller = new OperatorAdminUiWalletController({} as any, walletService as any, walletBalanceService as any);
 		const res = { redirect: jest.fn(), status: jest.fn().mockReturnThis(), render: jest.fn() };
-		return { controller, walletService, res };
+		return { controller, walletService, walletBalanceService, res };
 	}
 
 	it('uses the server-side endpoints of a preset network, ignoring posted URLs', async () => {
@@ -59,5 +60,38 @@ describe('OperatorAdminUiWalletController.create', () => {
 			'wallet-form',
 			expect.objectContaining({ network: 'devnet', actorPassphrase: 'generated', flashType: 'error' }),
 		);
+	});
+
+	describe('account', () => {
+		function setupAccount(wallet: object | null) {
+			const walletRepository = { findOne: jest.fn().mockResolvedValue(wallet) };
+			const walletBalanceService = { getBalances: jest.fn() };
+			const controller = new OperatorAdminUiWalletController(walletRepository as any, {} as any, walletBalanceService as any);
+			return { controller, walletRepository, walletBalanceService };
+		}
+
+		it('returns the balances of the wallet, loading what the node and the indexer need', async () => {
+			const { controller, walletRepository, walletBalanceService } = setupAccount({ id: 1 });
+			const balances = { attached: true, accountId: 'AB', balance: '5 CMTS' };
+			walletBalanceService.getBalances.mockResolvedValue(balances);
+
+			await expect(controller.account(1)).resolves.toBe(balances);
+			expect(walletRepository.findOne).toHaveBeenCalledWith(
+				expect.objectContaining({ select: { id: true, rpcEndpoint: true, indexerEndpoint: true } }),
+			);
+		});
+
+		it('reports a node failure as an error message instead of throwing', async () => {
+			const { controller, walletBalanceService } = setupAccount({ id: 1 });
+			walletBalanceService.getBalances.mockRejectedValue(new Error('node down'));
+
+			await expect(controller.account(1)).resolves.toEqual({ error: 'node down' });
+		});
+
+		it('is not found for an unknown wallet', async () => {
+			const { controller } = setupAccount(null);
+
+			await expect(controller.account(9)).rejects.toThrow('Wallet not found');
+		});
 	});
 });

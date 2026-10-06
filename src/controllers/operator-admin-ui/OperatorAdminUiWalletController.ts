@@ -16,6 +16,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SignatureSchemeId } from '@cmts-dev/carmentis-sdk-core';
 import { WalletEntity } from '../../entities/WalletEntity';
+import { WalletBalanceService } from '../../services/WalletBalanceService';
 import { WalletService } from '../../services/WalletService';
 import { WalletCreationDto } from '../../dto/wallet/WalletCreationDto';
 import { WalletUpdateDto } from '../../dto/admin/WalletUpdateDto';
@@ -37,6 +38,7 @@ export class OperatorAdminUiWalletController {
 		@InjectRepository(WalletEntity)
 		private readonly walletRepository: Repository<WalletEntity>,
 		private readonly walletService: WalletService,
+		private readonly walletBalanceService: WalletBalanceService,
 	) {}
 
 	@Get()
@@ -165,13 +167,13 @@ export class OperatorAdminUiWalletController {
 	async account(@Param('id', ParseIntPipe) id: number) {
 		const wallet = await this.walletRepository.findOne({
 			where: { id },
-			select: { id: true, rpcEndpoint: true },
+			select: { id: true, rpcEndpoint: true, indexerEndpoint: true },
 		});
 		if (!wallet) {
 			throw new NotFoundException('Wallet not found');
 		}
 		try {
-			return await this.walletService.getAccountStatus(wallet);
+			return await this.walletBalanceService.getBalances(wallet);
 		} catch (error) {
 			return { error: getErrorMessage(error, 'The account could not be retrieved from the node.') };
 		}

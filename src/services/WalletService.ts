@@ -7,7 +7,6 @@ import { OrganizationEntity } from '../entities/OrganizationEntity';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import {
 	BytesToHexEncoder,
-	CMTSToken,
 	CryptoEncoderFactory,
 	ExternalKeyApplicationLedgerActorIdentity,
 	Hash,
@@ -17,6 +16,7 @@ import {
 } from '@cmts-dev/carmentis-sdk-core';
 import { WalletUpdateDto } from '../dto/admin/WalletUpdateDto';
 import { PrivateKeyUtils } from '../utils/PrivateKeyUtils';
+import { formatAtomicsAsCmts } from '../utils/TokenFormat';
 import { Bip39Utils } from '../utils/Bip39Utils';
 import { PrivateKeyService } from './PrivateKeyService';
 import { PrivateKeyEntity } from '../entities/PrivateKeyEntity';
@@ -181,7 +181,7 @@ export class WalletService {
 		const state = await provider.getAccountState(accountId.toBytes());
 		return {
 			accountId: accountId.encode(new BytesToHexEncoder()),
-			balance: CMTSToken.createAtomic(state.balance).toString(),
+			balance: formatAtomicsAsCmts(state.balance),
 		};
 	}
 

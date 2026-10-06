@@ -29,6 +29,7 @@ import { OrganizationService } from './services/OrganizationService';
 import { CatalogService } from './services/CatalogService';
 import { OnChainPublicationService } from './services/OnChainPublicationService';
 import { IndexerService } from './indexer/IndexerService';
+import { WalletBalanceService } from './services/WalletBalanceService';
 import ChainService from './services/ChainService';
 import { AnchorRequestService } from './services/AnchorRequestService';
 import { DeskAuthChallengeService } from './services/DeskAuthChallengeService';
@@ -114,6 +115,7 @@ import { HomeController } from './controllers/HomeController';
 		CatalogService,
 		OnChainPublicationService,
 		IndexerService,
+		WalletBalanceService,
 		WalletService,
 		PrivateKeyService,
 		JsonSignatureService,
