@@ -12,6 +12,7 @@
 		<main class="main-content">
 			{{>topbar}}
 			<div class="content-area">
+				{{> breadcrumbs section="Applications" sectionHref="/admin/applications" item=application.name}}
 				<div class="page-header">
 					<h2>{{application.name}}</h2>
 					<div class="page-header-actions">

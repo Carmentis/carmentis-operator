@@ -12,6 +12,7 @@
 		<main class="main-content">
 			{{>topbar}}
 			<div class="content-area">
+				{{> breadcrumbs section="Wallets" sectionHref="/admin/wallets" item=wallet.name}}
 				<div class="page-header">
 					<h2>{{wallet.name}}</h2>
 					<div class="page-header-actions">

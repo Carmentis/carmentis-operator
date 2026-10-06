@@ -1,0 +1,11 @@
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+	<a href="{{sectionHref}}">{{section}}</a>
+	{{#if item}}
+	<span class="breadcrumb-sep">&rsaquo;</span>
+	{{#if itemId}}<a href="{{itemBase}}/{{itemId}}">{{item}}</a>{{else}}<span class="breadcrumb-current">{{item}}</span>{{/if}}
+	{{/if}}
+	{{#if action}}
+	<span class="breadcrumb-sep">&rsaquo;</span>
+	<span class="breadcrumb-current">{{action}}</span>
+	{{/if}}
+</nav>

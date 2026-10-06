@@ -12,6 +12,7 @@
 		<main class="main-content">
 			{{>topbar}}
 			<div class="content-area">
+				{{#if application}}{{> breadcrumbs section="Applications" sectionHref="/admin/applications" item=application.name itemBase="/admin/applications" itemId=application.id action="Edit"}}{{else}}{{> breadcrumbs section="Applications" sectionHref="/admin/applications" action="New"}}{{/if}}
 				<h2>{{#if application}}Edit application{{else}}New application{{/if}}</h2>
 
 				{{>flash}}

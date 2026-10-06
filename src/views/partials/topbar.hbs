@@ -5,8 +5,10 @@
 	<div class="topbar-spacer"></div>
 	{{#if user}}
 	<div class="user-section">
-		<div class="user-avatar">{{user.pseudo.[0]}}</div>
-		<span class="user-pseudo">{{user.pseudo}}</span>
+		<a href="/admin/account" id="my-account" class="user-link {{#if (eq currentSection "account")}}active{{/if}}" title="My account">
+			<div class="user-avatar">{{user.pseudo.[0]}}</div>
+			<span class="user-pseudo">{{user.pseudo}}</span>
+		</a>
 		<form method="POST" action="/admin/logout" style="display: inline;">
 			<button type="submit" class="btn-logout" title="Logout">
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="#16A34A">

@@ -12,6 +12,7 @@
 		<main class="main-content">
 			{{>topbar}}
 			<div class="content-area">
+				{{#if wallet}}{{> breadcrumbs section="Wallets" sectionHref="/admin/wallets" item=wallet.name itemBase="/admin/wallets" itemId=wallet.id action="Edit"}}{{else}}{{> breadcrumbs section="Wallets" sectionHref="/admin/wallets" action="New"}}{{/if}}
 				<h2>{{#if wallet}}Edit wallet{{else}}New wallet{{/if}}</h2>
 
 				{{>flash}}

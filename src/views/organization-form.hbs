@@ -12,6 +12,7 @@
 		<main class="main-content">
 			{{>topbar}}
 			<div class="content-area">
+				{{#if organization}}{{> breadcrumbs section="Organizations" sectionHref="/admin/organizations" item=organization.name action="Edit"}}{{else}}{{> breadcrumbs section="Organizations" sectionHref="/admin/organizations" action="New"}}{{/if}}
 				<h2>{{#if organization}}Edit organization{{else}}New organization{{/if}}</h2>
 
 				{{>flash}}
