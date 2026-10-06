@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Organizations - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<h2>Organizations</h2>
+				<p class="text">
+					An on-chain organization is attached to the account of a wallet and owns applications.
+					It can be created locally at any time, but it can only be published on-chain by a wallet
+					attached to an on-chain account. Organizations already published on-chain are listed below
+					and can be imported.
+				</p>
+				{{>flash}}
+				<p><a href="/admin/organizations/new" class="btn btn-primary">New organization</a></p>
+				<div id="catalog-status"></div>
+				{{#each wallets}}<span class="wallet-ref" data-id="{{this.id}}" data-name="{{this.name}}" hidden></span>{{/each}}
+				<table>
+					<thead>
+					<tr>
+						<th>Name</th>
+						<th>Location</th>
+						<th>State</th>
+						<th>Wallet</th>
+						<th></th>
+					</tr>
+					</thead>
+					<tbody>
+					{{#each organizations}}
+					<tr>
+						<td>{{this.name}}</td>
+						<td>{{this.city}}, {{this.countryCode}}</td>
+						<td>
+							{{#if this.vbId}}<span class="badge badge-published">Published</span><br><code style="word-break: break-all;">{{this.vbId}}</code>
+							{{else}}<span class="badge badge-draft">Local only</span>{{/if}}
+						</td>
+						<td>{{this.wallet.name}}</td>
+						<td class="action-buttons">
+							<a href="/admin/organizations/{{this.id}}/edit" class="btn btn-secondary">Edit</a>
+							<form method="post" action="/admin/organizations/{{this.id}}/publish" style="display:inline;">
+								<button type="submit" class="btn btn-primary" data-publish-wallet-id="{{this.wallet.id}}"
+									data-confirm="Publish this organization on-chain? This spends fees from the wallet's account.">{{#if this.vbId}}Republish{{else}}Publish{{/if}}</button>
+							</form>
+							<form method="post" action="/admin/organizations/{{this.id}}/delete" style="display:inline;">
+								<button type="submit" class="btn btn-danger" data-confirm="Delete this organization from the local registry? A published organization stays on-chain.">Delete</button>
+							</form>
+						</td>
+					</tr>
+					{{else}}
+					<tr><td colspan="5">No organizations yet.</td></tr>
+					{{/each}}
+					</tbody>
+				</table>
+
+				<div id="onchain-section" hidden>
+					<h3>Found on-chain, not registered locally</h3>
+					<table>
+						<thead><tr><th>Name</th><th>Location</th><th>Virtual blockchain ID</th><th>Wallet</th><th></th></tr></thead>
+						<tbody id="onchain-rows"></tbody>
+					</table>
+				</div>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+	<script src="/admin/static/catalog.js"></script>
+	<script>
+		initCatalog({
+			discoverUrl: '/admin/organizations/discover',
+			importUrl: '/admin/organizations/import',
+			describe: (org) => [org.name, `${org.city}, ${org.countryCode}`],
+		});
+	</script>
+</body>
+</html>

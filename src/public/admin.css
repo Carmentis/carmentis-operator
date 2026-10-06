@@ -681,3 +681,30 @@ textarea {
 	margin: 0;
 	word-break: break-all;
 }
+
+/* Publication state of organizations and applications */
+.badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: 12px;
+	font-weight: 600;
+	background: #e5e7eb;
+	color: #374151;
+}
+
+.badge-draft {
+	background: #fef3c7;
+	color: #92400e;
+}
+
+.badge-published {
+	background: #dcfce7;
+	color: #166534;
+}
+
+.catalog-note {
+	font-size: 13px;
+	color: var(--color-text-secondary);
+	margin: 4px 0;
+}

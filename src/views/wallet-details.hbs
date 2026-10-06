@@ -58,15 +58,33 @@
 				</section>
 
 				<section class="detail-section">
+					<h3>Organizations</h3>
+					<table>
+						<thead><tr><th>Name</th><th>State</th><th></th></tr></thead>
+						<tbody>
+						{{#each wallet.organizations}}
+						<tr>
+							<td>{{this.name}}</td>
+							<td>{{#if this.vbId}}<span class="badge badge-published">Published</span> <code style="word-break: break-all;">{{this.vbId}}</code>{{else}}<span class="badge badge-draft">Local only</span>{{/if}}</td>
+							<td class="action-buttons"><a href="/admin/organizations/{{this.id}}/edit" class="btn btn-secondary">Edit</a></td>
+						</tr>
+						{{else}}
+						<tr><td colspan="3">No organizations.</td></tr>
+						{{/each}}
+						</tbody>
+					</table>
+				</section>
+
+				<section class="detail-section">
 					<h3>Applications</h3>
 					<table>
-						<thead><tr><th>Name</th><th>Virtual blockchain ID</th><th></th></tr></thead>
+						<thead><tr><th>Name</th><th>State</th><th></th></tr></thead>
 						<tbody>
 						{{#each wallet.applications}}
 						<tr>
 							<td>{{this.name}}</td>
-							<td><code style="word-break: break-all;">{{this.vbId}}</code></td>
-							<td class="action-buttons"><a href="/admin/applications/{{this.vbId}}/edit" class="btn btn-secondary">Edit</a></td>
+							<td>{{#if this.vbId}}<span class="badge badge-published">Published</span> <code style="word-break: break-all;">{{this.vbId}}</code>{{else}}<span class="badge badge-draft">Local only</span>{{/if}}</td>
+							<td class="action-buttons"><a href="/admin/applications/{{this.id}}/edit" class="btn btn-secondary">Edit</a></td>
 						</tr>
 						{{else}}
 						<tr><td colspan="3">No applications.</td></tr>
@@ -106,6 +124,11 @@
 				const res = await fetch('/admin/wallets/{{wallet.id}}/account');
 				const data = await res.json();
 				if (!res.ok || data.error) throw new Error(data.error || data.message || 'Request failed');
+				if (data.attached === false) {
+					idCell.textContent = 'Not attached to an on-chain account: organizations and applications can only be created locally.';
+					balanceCell.textContent = '-';
+					return;
+				}
 				idCell.textContent = data.accountId;
 				balanceCell.textContent = data.balance;
 			} catch (err) {

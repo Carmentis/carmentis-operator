@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{#if organization}}Edit{{else}}New{{/if}} Organization - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<h2>{{#if organization}}Edit organization{{else}}New organization{{/if}}</h2>
+
+				{{>flash}}
+
+				<form method="post" action="{{#if organization}}/admin/organizations/{{organization.id}}/update{{else}}/admin/organizations{{/if}}">
+					{{#if organization}}
+					<div class="form-group">
+						<label>Wallet</label>
+						<input type="text" value="{{organization.wallet.name}}" disabled>
+					</div>
+					{{#if organization.vbId}}
+					<div class="form-group">
+						<label>Virtual blockchain ID</label>
+						<input type="text" value="{{organization.vbId}}" disabled>
+					</div>
+					{{/if}}
+					{{else}}
+					<div class="form-group">
+						<label for="walletId">Wallet</label>
+						<select id="walletId" name="walletId" required>
+							<option value="" disabled selected>Select a wallet…</option>
+							{{#each wallets}}
+							<option value="{{this.id}}">{{this.name}}</option>
+							{{/each}}
+						</select>
+					</div>
+					{{/if}}
+					<div class="form-group">
+						<label for="name">Name</label>
+						<input type="text" id="name" name="name" required value="{{organization.name}}">
+					</div>
+					<div class="form-group">
+						<label for="city">City</label>
+						<input type="text" id="city" name="city" required value="{{organization.city}}">
+					</div>
+					<div class="form-group">
+						<label for="countryCode">Country code (2 letters, e.g. FR)</label>
+						<input type="text" id="countryCode" name="countryCode" required minlength="2" maxlength="2" value="{{organization.countryCode}}">
+					</div>
+					<div class="form-group">
+						<label for="website">Website</label>
+						<input type="text" id="website" name="website" required placeholder="https://" value="{{organization.website}}">
+					</div>
+					<p style="font-size: 12px; color: var(--color-text-secondary);">
+						Saving only changes the local registry. Publish the organization from the list to push these values on-chain.
+						The wallet cannot be changed after creation.
+					</p>
+
+					<button type="submit" class="btn btn-primary">{{#if organization}}Save changes{{else}}Create organization{{/if}}</button>
+					<a href="/admin/organizations" class="btn btn-secondary">Cancel</a>
+				</form>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+</body>
+</html>

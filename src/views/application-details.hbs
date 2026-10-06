@@ -16,7 +16,7 @@
 					<h2>{{application.name}}</h2>
 					<div class="page-header-actions">
 						<a href="/admin/applications" class="btn btn-secondary">Back to list</a>
-						<a href="/admin/applications/{{application.vbId}}/edit" class="btn btn-primary">Edit</a>
+						<a href="/admin/applications/{{application.id}}/edit" class="btn btn-primary">Edit</a>
 					</div>
 				</div>
 				{{>flash}}
@@ -25,15 +25,18 @@
 					<h3>General</h3>
 					<dl class="detail-list">
 						<dt>Name</dt><dd>{{application.name}}</dd>
-						<dt>Virtual blockchain ID</dt><dd><code>{{application.vbId}}</code></dd>
+						<dt>State</dt><dd>{{#if application.vbId}}<span class="badge badge-published">Published</span>{{else}}<span class="badge badge-draft">Local only</span>{{/if}}</dd>
+						<dt>Virtual blockchain ID</dt><dd>{{#if application.vbId}}<code>{{application.vbId}}</code>{{else}}Not published yet{{/if}}</dd>
+						<dt>Organization</dt><dd>{{application.organization.name}}</dd>
 						<dt>Wallet</dt><dd><a href="/admin/wallets/{{application.wallet.id}}">{{application.wallet.name}}</a></dd>
-						<dt>Imported</dt><dd>{{application.createdAt}}</dd>
+						<dt>Created</dt><dd>{{application.createdAt}}</dd>
 						<dt>Anchor requests</dt><dd>{{anchorRequestCount}}</dd>
 					</dl>
 				</section>
 
 				<section class="detail-section">
 					<h3>On-chain application</h3>
+					<p class="text">Values currently stored on-chain, which differ from the local ones until the application is published again.</p>
 					<dl class="detail-list">
 						<dt>Name</dt><dd id="app-name">Loading…</dd>
 						<dt>Description</dt><dd id="app-description">Loading…</dd>
@@ -103,7 +106,7 @@
 
 		(async () => {
 			try {
-				const res = await fetch('/admin/applications/{{application.vbId}}/chain');
+				const res = await fetch('/admin/applications/{{application.id}}/chain');
 				const data = await res.json();
 				if (!res.ok || data.error) throw new Error(data.error || data.message || 'Request failed');
 

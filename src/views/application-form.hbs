@@ -12,32 +12,27 @@
 		<main class="main-content">
 			{{>topbar}}
 			<div class="content-area">
-				<h2>{{#if application}}Edit application{{else}}Import application{{/if}}</h2>
+				<h2>{{#if application}}Edit application{{else}}New application{{/if}}</h2>
 
 				{{>flash}}
 
-				<form method="post" action="{{#if application}}/admin/applications/{{application.vbId}}/update{{else}}/admin/applications{{/if}}">
+				<form method="post" action="{{#if application}}/admin/applications/{{application.id}}/update{{else}}/admin/applications{{/if}}">
 					{{#if application}}
-					<div class="form-group">
-						<label for="name">Name</label>
-						<input type="text" id="name" name="name" required value="{{application.name}}">
-					</div>
-					<div class="form-group">
-						<label>Virtual blockchain ID</label>
-						<input type="text" value="{{application.vbId}}" disabled>
-					</div>
 					<div class="form-group">
 						<label>Wallet</label>
 						<input type="text" value="{{application.wallet.name}}" disabled>
 					</div>
-					<p style="font-size: 12px; color: var(--color-text-secondary);">
-						The virtual blockchain ID and owning wallet cannot be changed after creation.
-					</p>
-					{{else}}
 					<div class="form-group">
-						<label for="vbId">Virtual blockchain ID (hexadecimal)</label>
-						<input type="text" id="vbId" name="vbId" required pattern="[0-9a-fA-F]+" placeholder="e.g. a1b2c3...">
+						<label>Organization</label>
+						<input type="text" value="{{application.organization.name}}" disabled>
 					</div>
+					{{#if application.vbId}}
+					<div class="form-group">
+						<label>Virtual blockchain ID</label>
+						<input type="text" value="{{application.vbId}}" disabled>
+					</div>
+					{{/if}}
+					{{else}}
 					<div class="form-group">
 						<label for="walletId">Wallet</label>
 						<select id="walletId" name="walletId" required>
@@ -47,17 +42,58 @@
 							{{/each}}
 						</select>
 					</div>
-					<p style="font-size: 12px; color: var(--color-text-secondary);">
-						The application must already exist on-chain: it is looked up through the RPC endpoint of the selected wallet, and its on-chain name is imported with it.
-					</p>
+					<div class="form-group">
+						<label for="organizationId">Organization</label>
+						<select id="organizationId" name="organizationId" required>
+							<option value="" disabled selected>Select an organization…</option>
+							{{#each organizations}}
+							<option value="{{this.id}}" data-wallet-id="{{this.wallet.id}}">{{this.name}}</option>
+							{{/each}}
+						</select>
+					</div>
 					{{/if}}
+					<div class="form-group">
+						<label for="name">Name</label>
+						<input type="text" id="name" name="name" required value="{{application.name}}">
+					</div>
+					<div class="form-group">
+						<label for="description">Description</label>
+						<textarea id="description" name="description" rows="3">{{application.description}}</textarea>
+					</div>
+					<div class="form-group">
+						<label for="homepageUrl">Homepage URL</label>
+						<input type="text" id="homepageUrl" name="homepageUrl" placeholder="https://" value="{{application.homepageUrl}}">
+					</div>
+					<div class="form-group">
+						<label for="logoUrl">Logo URL</label>
+						<input type="text" id="logoUrl" name="logoUrl" placeholder="https://" value="{{application.logoUrl}}">
+					</div>
+					<p style="font-size: 12px; color: var(--color-text-secondary);">
+						Saving only changes the local registry. Publish the application from the list to push these values on-chain.
+						The wallet and the organization cannot be changed after creation.
+					</p>
 
-					<button type="submit" class="btn btn-primary">{{#if application}}Save changes{{else}}Import application{{/if}}</button>
+					<button type="submit" class="btn btn-primary">{{#if application}}Save changes{{else}}Create application{{/if}}</button>
 					<a href="/admin/applications" class="btn btn-secondary">Cancel</a>
 				</form>
 			</div>
 		</main>
 	</div>
 	<script src="/admin/static/admin.js"></script>
+	{{#unless application}}
+	<script>
+		// Only the organizations of the selected wallet can own the new application.
+		const walletSelect = document.getElementById('walletId');
+		const organizationSelect = document.getElementById('organizationId');
+		function filterOrganizations() {
+			organizationSelect.value = '';
+			for (const option of organizationSelect.options) {
+				if (option.dataset.walletId) option.hidden = option.disabled = option.dataset.walletId !== walletSelect.value;
+			}
+		}
+		walletSelect.addEventListener('change', filterOrganizations);
+		filterOrganizations();
+	</script>
+	{{/unless}}
 </body>
 </html>

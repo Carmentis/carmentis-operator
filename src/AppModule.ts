@@ -17,6 +17,7 @@ import { InvitationEntity } from './entities/InvitationEntity';
 import { ApiKeyEntity } from './entities/ApiKeyEntity';
 import { WalletEntity } from './entities/WalletEntity';
 import { ApplicationEntity } from './entities/ApplicationEntity';
+import { OrganizationEntity } from './entities/OrganizationEntity';
 import { CryptoService } from './services/CryptoService';
 import { WalletAnchoringRequestService } from './services/wallet-anchoring-request.service';
 import { EncryptionService } from './services/EncryptionService';
@@ -24,6 +25,10 @@ import { ApiKeyService } from './services/ApiKeyService';
 import { UserService } from './services/UserService';
 import { ApplicationService } from './services/ApplicationService';
 import { WalletService } from './services/WalletService';
+import { OrganizationService } from './services/OrganizationService';
+import { CatalogService } from './services/CatalogService';
+import { OnChainPublicationService } from './services/OnChainPublicationService';
+import { IndexerService } from './indexer/IndexerService';
 import ChainService from './services/ChainService';
 import { AnchorRequestService } from './services/AnchorRequestService';
 import { DeskAuthChallengeService } from './services/DeskAuthChallengeService';
@@ -58,6 +63,7 @@ import { OperatorAdminUiAccountController } from './controllers/operator-admin-u
 import { OperatorAdminUiDashboardController } from './controllers/operator-admin-ui/OperatorAdminUiDashboardController';
 import { OperatorAdminUiWalletController } from './controllers/operator-admin-ui/OperatorAdminUiWalletController';
 import { OperatorAdminUiApplicationController } from './controllers/operator-admin-ui/OperatorAdminUiApplicationController';
+import { OperatorAdminUiOrganizationController } from './controllers/operator-admin-ui/OperatorAdminUiOrganizationController';
 import { OperatorAdminUiUserController } from './controllers/operator-admin-ui/OperatorAdminUiUserController';
 import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui/OperatorAdminUiApiKeyController';
 import { HomeController } from './controllers/HomeController';
@@ -82,6 +88,7 @@ import { HomeController } from './controllers/HomeController';
 			WalletEntity,
 			PrivateKeyEntity,
 			ApplicationEntity,
+			OrganizationEntity,
 		]),
 		ScheduleModule.forRoot(),
 		ThrottlerModule.forRoot({
@@ -103,6 +110,10 @@ import { HomeController } from './controllers/HomeController';
 		ApiKeyService,
 		UserService,
 		ApplicationService,
+		OrganizationService,
+		CatalogService,
+		OnChainPublicationService,
+		IndexerService,
 		WalletService,
 		PrivateKeyService,
 		JsonSignatureService,
@@ -137,6 +148,7 @@ import { HomeController } from './controllers/HomeController';
 		OperatorAdminUiInvitationController,
 		OperatorAdminUiAccountController,
 		OperatorAdminUiWalletController,
+		OperatorAdminUiOrganizationController,
 		OperatorAdminUiApplicationController,
 		OperatorAdminUiUserController,
 		OperatorAdminUiApiKeyController,

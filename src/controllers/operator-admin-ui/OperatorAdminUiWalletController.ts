@@ -138,10 +138,11 @@ export class OperatorAdminUiWalletController {
 				indexerEndpoint: true,
 				allowedEndpointsRegex: true,
 				createdAt: true,
-				applications: { vbId: true, name: true },
+				organizations: { id: true, vbId: true, name: true },
+				applications: { id: true, vbId: true, name: true },
 				apiKeys: { id: true, name: true, isActive: true, activeUntil: true },
 			},
-			relations: { applications: true, apiKeys: true },
+			relations: { organizations: true, applications: true, apiKeys: true },
 		});
 		if (!wallet) {
 			throw new NotFoundException('Wallet not found');
@@ -170,7 +171,7 @@ export class OperatorAdminUiWalletController {
 			throw new NotFoundException('Wallet not found');
 		}
 		try {
-			return await this.walletService.getOnChainAccount(wallet);
+			return await this.walletService.getAccountStatus(wallet);
 		} catch (error) {
 			return { error: getErrorMessage(error, 'The account could not be retrieved from the node.') };
 		}

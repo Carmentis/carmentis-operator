@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WalletEntity } from '../entities/WalletEntity';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
+import { OrganizationEntity } from '../entities/OrganizationEntity';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import {
 	BytesToHexEncoder,
@@ -26,6 +27,10 @@ export interface ApplicationOnChainDetails {
 	organization: { id: string; name?: string; website?: string; city?: string; countryCode?: string };
 	organizationError?: string;
 }
+
+export type AccountStatus =
+	| { attached: false }
+	| { attached: true; accountId: string; balance: string };
 
 @Injectable()
 export class WalletService {
@@ -181,6 +186,26 @@ export class WalletService {
 	}
 
 	/**
+	 * Tells whether the wallet is attached to an on-chain account, which is required to
+	 * publish anything (the account pays the fees). A wallet whose key is unknown to the
+	 * network is simply "not attached": only local creation is possible for it.
+	 *
+	 * @throws If the node cannot be reached or fails for any other reason, so that an outage is
+	 * never mistaken for a missing account.
+	 */
+	async getAccountStatus(wallet: WalletEntity): Promise<AccountStatus> {
+		try {
+			return { attached: true, ...(await this.getOnChainAccount(wallet)) };
+		} catch (error) {
+			const reason = error instanceof Error ? error.message : String(error);
+			if (/unknown account/i.test(reason)) {
+				return { attached: false };
+			}
+			throw error;
+		}
+	}
+
+	/**
 	 * Checks, through the provider of the wallet (its RPC endpoint), that the given virtual
 	 * blockchain exists on-chain and is an application, and returns the name it was given
 	 * on-chain.
@@ -283,12 +308,13 @@ export class WalletService {
 		return this.repo.save(wallet);
 	}
 
-	async countDependents(id: number): Promise<{ applications: number; apiKeys: number }> {
-		const [applications, apiKeys] = await Promise.all([
+	async countDependents(id: number): Promise<{ organizations: number; applications: number; apiKeys: number }> {
+		const [organizations, applications, apiKeys] = await Promise.all([
+			OrganizationEntity.count({ where: { wallet: { id } } }),
 			ApplicationEntity.count({ where: { wallet: { id } } }),
 			ApiKeyEntity.count({ where: { wallet: { id } } }),
 		]);
-		return { applications, apiKeys };
+		return { organizations, applications, apiKeys };
 	}
 
 	/** Refuses to delete a wallet that still has applications or API keys attached, rather
@@ -298,10 +324,10 @@ export class WalletService {
 		if (!wallet) {
 			throw new NotFoundException('Wallet not found');
 		}
-		const { applications, apiKeys } = await this.countDependents(id);
-		if (applications > 0 || apiKeys > 0) {
+		const { organizations, applications, apiKeys } = await this.countDependents(id);
+		if (organizations > 0 || applications > 0 || apiKeys > 0) {
 			throw new ConflictException(
-				`Cannot delete this wallet: ${applications} application(s) and ${apiKeys} API key(s) still depend on it. Delete or reassign them first.`,
+				`Cannot delete this wallet: ${organizations} organization(s), ${applications} application(s) and ${apiKeys} API key(s) still depend on it. Delete or reassign them first.`,
 			);
 		}
 		await this.repo.delete(id);

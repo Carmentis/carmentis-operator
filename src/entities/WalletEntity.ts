@@ -1,6 +1,7 @@
 import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { EncryptedColumn } from '../decorators/EncryptionDecorator';
 import { ApplicationEntity } from './ApplicationEntity';
+import { OrganizationEntity } from './OrganizationEntity';
 import { ApiKeyEntity } from './ApiKeyEntity';
 import { PrivateKeyEntity } from './PrivateKeyEntity';
 import {
@@ -46,6 +47,9 @@ export class WalletEntity extends BaseEntity {
 
 	@OneToMany(() => ApplicationEntity, app => app.wallet, { cascade: true })
 	applications: ApplicationEntity[];
+
+	@OneToMany(() => OrganizationEntity, org => org.wallet, { cascade: true })
+	organizations: OrganizationEntity[];
 
 	@OneToMany(() => ApiKeyEntity, apiKey => apiKey.wallet)
 	apiKeys: ApiKeyEntity[];

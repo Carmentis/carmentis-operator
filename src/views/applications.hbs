@@ -16,32 +16,43 @@
 				<p class="text">
 					An on-chain application is a blockchain space dedicated to an application,
 					linked to an organization, that allows information common to all of its
-					transactions to be anchored on-chain.
+					transactions to be anchored on-chain. It can be created locally at any time and published
+					once its organization is published, by a wallet attached to an on-chain account.
+					Applications already published on-chain are listed below and can be imported.
 				</p>
 				{{>flash}}
 				<p><a href="/admin/applications/new" class="btn btn-primary">New application</a></p>
+				<div id="catalog-status"></div>
+				{{#each wallets}}<span class="wallet-ref" data-id="{{this.id}}" data-name="{{this.name}}" hidden></span>{{/each}}
 				<table>
 					<thead>
 					<tr>
 						<th>Name</th>
-						<th>Virtual blockchain ID</th>
+						<th>Organization</th>
+						<th>State</th>
 						<th>Wallet</th>
-						<th>Created</th>
 						<th></th>
 					</tr>
 					</thead>
 					<tbody>
 					{{#each applications}}
 					<tr>
-						<td><a href="/admin/applications/{{this.vbId}}">{{this.name}}</a></td>
-						<td>{{this.vbId}}</td>
+						<td><a href="/admin/applications/{{this.id}}">{{this.name}}</a></td>
+						<td>{{this.organization.name}}</td>
+						<td>
+							{{#if this.vbId}}<span class="badge badge-published">Published</span><br><code style="word-break: break-all;">{{this.vbId}}</code>
+							{{else}}<span class="badge badge-draft">Local only</span>{{/if}}
+						</td>
 						<td>{{this.wallet.name}}</td>
-						<td>{{this.createdAt}}</td>
 						<td class="action-buttons">
-							<a href="/admin/applications/{{this.vbId}}" class="btn btn-secondary">Details</a>
-							<a href="/admin/applications/{{this.vbId}}/edit" class="btn btn-secondary">Edit</a>
-							<form method="post" action="/admin/applications/{{this.vbId}}/delete" style="display:inline;">
-								<button type="submit" class="btn btn-danger" data-confirm="Delete this application?">Delete</button>
+							<a href="/admin/applications/{{this.id}}" class="btn btn-secondary">Details</a>
+							<a href="/admin/applications/{{this.id}}/edit" class="btn btn-secondary">Edit</a>
+							<form method="post" action="/admin/applications/{{this.id}}/publish" style="display:inline;">
+								<button type="submit" class="btn btn-primary" data-publish-wallet-id="{{this.wallet.id}}"
+									data-confirm="Publish this application on-chain? This spends fees from the wallet's account.">{{#if this.vbId}}Republish{{else}}Publish{{/if}}</button>
+							</form>
+							<form method="post" action="/admin/applications/{{this.id}}/delete" style="display:inline;">
+								<button type="submit" class="btn btn-danger" data-confirm="Delete this application from the local registry? A published application stays on-chain.">Delete</button>
 							</form>
 						</td>
 					</tr>
@@ -50,9 +61,25 @@
 					{{/each}}
 					</tbody>
 				</table>
+
+				<div id="onchain-section" hidden>
+					<h3>Found on-chain, not registered locally</h3>
+					<table>
+						<thead><tr><th>Name</th><th>Description</th><th>Virtual blockchain ID</th><th>Wallet</th><th></th></tr></thead>
+						<tbody id="onchain-rows"></tbody>
+					</table>
+				</div>
 			</div>
 		</main>
 	</div>
 	<script src="/admin/static/admin.js"></script>
+	<script src="/admin/static/catalog.js"></script>
+	<script>
+		initCatalog({
+			discoverUrl: '/admin/applications/discover',
+			importUrl: '/admin/applications/import',
+			describe: (app) => [app.name, app.description],
+		});
+	</script>
 </body>
 </html>
