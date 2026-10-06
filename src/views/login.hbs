@@ -34,8 +34,8 @@
 			errorEl.style.display = 'none';
 			try {
 				await authenticateWithDesk(
-					'/admin/api/v1/auth/challenge',
-					'/admin/api/v1/auth/login',
+					'/admin/auth/challenge',
+					'/admin/auth/login',
 					'{{relayUrl}}',
 				);
 				window.location.href = next && next.startsWith('/admin') ? next : '/admin';

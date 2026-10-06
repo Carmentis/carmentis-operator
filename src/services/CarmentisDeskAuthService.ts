@@ -1,11 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
-import { CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk-core';
+import { CryptoEncoderFactory, PublicSignatureKey } from '@cmts-dev/carmentis-sdk-core';
+import { canonicalize } from 'json-canonicalize';
 import { DeskAuthChallengeService } from './DeskAuthChallengeService';
 import { DeskAuthVerifyDto } from '../dto/DeskAuthVerifyDto';
 import { encodeAuthChallengeRequest } from '../utils/DeskWalletRequestUtils';
-import { CryptoService } from './CryptoService';
-import { JsonCanonicalizationMethod } from '../dto/signature/JsonCanonicalizationMethod';
+import { BinaryEncodingUtils } from '../utils/BinaryEncodingUtils';
 import { BinaryEncoding } from '../dto/signature/BinaryEncoding';
 
 /**
@@ -18,7 +18,6 @@ import { BinaryEncoding } from '../dto/signature/BinaryEncoding';
 @Injectable()
 export class CarmentisDeskAuthService {
 	constructor(
-		private readonly cryptoService: CryptoService,
 		private readonly challenges: DeskAuthChallengeService
 	) {}
 
@@ -39,13 +38,7 @@ export class CarmentisDeskAuthService {
 
 		const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
 		const publicKey = await encoder.decodePublicKey(dto.publicKey);
-		const { verified } = await this.cryptoService.verifyJson(
-			publicKey,
-			dto.payload,
-			JsonCanonicalizationMethod.JSON_CANONICAL,
-			dto.signature,
-			BinaryEncoding.BASE64
-		);
+		const verified = await this.verifyCanonicalJsonPayload(publicKey, dto.payload, dto.signature);
 
 
 		/*
@@ -62,5 +55,16 @@ export class CarmentisDeskAuthService {
 		}
 
 		return dto.publicKey;
+	}
+
+	/**
+	 * Carmentis Desk (`sigMethod: 'canonical-json'`) signs the bare RFC 8785 canonical form of
+	 * the auth payload, with a base64 signature. This is the Desk wire protocol, not the
+	 * operator's JSON signature API (which uses the SDK's contextual `JsonSignature`).
+	 */
+	private async verifyCanonicalJsonPayload(publicKey: PublicSignatureKey, payload: object, signature: string) {
+		const rawPayload = new TextEncoder().encode(canonicalize(payload));
+		const rawSignature = BinaryEncodingUtils.decode(signature, BinaryEncoding.BASE64);
+		return publicKey.verify(rawPayload, rawSignature);
 	}
 }

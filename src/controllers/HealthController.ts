@@ -3,9 +3,10 @@ import { AnchorRequestStatusResponseDto } from '../dto/AnchorRequestStatusRespon
 import { Controller, Get, Param } from '@nestjs/common';
 import { HelloResponseDto } from '../dto/HelloResponseDto';
 import { Public } from '../decorators/PublicDecorator';
+import { API_V1 } from '../api/ApiVersion';
 
 @ApiTags('Health')
-@Controller('/api')
+@Controller({ path: '', version: API_V1 })
 export class HealthController {
 
 	@ApiOperation({

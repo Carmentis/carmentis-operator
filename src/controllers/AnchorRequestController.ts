@@ -15,7 +15,7 @@ import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import { Proof } from 'src/utils/proof/Proof';
 
 @ApiTags('Anchor Request')
-@Controller('/api/anchorRequest')
+@Controller({ path: 'anchorRequest', version: API_V1 })
 export class AnchorRequestController {
 
 	private logger = new Logger();

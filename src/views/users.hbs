@@ -24,8 +24,6 @@
 
 
 				{{>flash}}
-				<div class="flash flash-error" id="users-error" style="display:none;"></div>
-				<div class="flash flash-success" id="users-success" style="display:none;"></div>
 				<table>
 					<thead>
 					<tr>
@@ -42,7 +40,9 @@
 						<td><code style="word-break: break-all;">{{this.publicKey}}</code></td>
 						<td>{{this.createdAt}}</td>
 						<td>
-							<button type="button" class="btn btn-sm btn-danger delete-user-btn" data-user-id="{{this.id}}" data-user-pseudo="{{this.pseudo}}" {{#if (eq this.id user.id)}}disabled title="You cannot delete your own account"{{/if}}>Delete</button>
+							<form method="post" action="/admin/users/{{this.id}}/delete" style="display:inline;">
+								<button type="submit" class="btn btn-sm btn-danger" data-confirm="Delete user {{this.pseudo}}? This action cannot be undone." {{#if (eq this.id user.sub)}}disabled title="You cannot delete your own account"{{/if}}>Delete</button>
+							</form>
 						</td>
 					</tr>
 					{{else}}
@@ -54,37 +54,5 @@
 		</main>
 	</div>
 	<script src="/admin/static/admin.js"></script>
-	<script>
-		document.querySelectorAll('.delete-user-btn').forEach(btn => {
-			btn.addEventListener('click', async (e) => {
-				const userId = btn.getAttribute('data-user-id');
-				const userPseudo = btn.getAttribute('data-user-pseudo');
-				const errorEl = document.getElementById('users-error');
-				const successEl = document.getElementById('users-success');
-
-				const confirmed = confirm(`Are you sure you want to delete user "${userPseudo}"? This action cannot be undone.`);
-				if (!confirmed) return;
-
-				errorEl.style.display = 'none';
-				successEl.style.display = 'none';
-
-				try {
-					const res = await fetch(`/admin/api/v1/user/${userId}`, { method: 'DELETE' });
-					if (!res.ok) {
-						const data = await res.json().catch(() => ({}));
-						throw new Error(data.message || 'Could not delete user.');
-					}
-					successEl.textContent = `User "${userPseudo}" deleted successfully. Reloading...`;
-					successEl.style.display = '';
-					setTimeout(() => {
-						window.location.reload();
-					}, 1500);
-				} catch (err) {
-					errorEl.textContent = err.message || 'Could not delete user.';
-					errorEl.style.display = '';
-				}
-			});
-		});
-	</script>
 </body>
 </html>

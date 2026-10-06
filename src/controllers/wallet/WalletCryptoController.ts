@@ -10,28 +10,27 @@ import {
 	SeedEncoder,
 	WalletCrypto,
 } from '@cmts-dev/carmentis-sdk-core';
-import { BinaryEncodingUtils } from '../../utils/BinaryEncodingUtils';
 import { WalletBinarySignatureRequestDto } from '../../dto/wallet/WalletBinarySignatureRequestDto';
 import { WalletBinarySignatureVerificationRequestDto } from '../../dto/wallet/WalletBinarySignatureVerificationRequestDto';
-import { ActorPublicKeyRequestDto } from '../../dto/wallet/ActorPublicKeyRequestDto';
-import { WalletUtils } from '../../utils/WalletUtils';
-import { VbUtils } from '../../utils/VbUtils';
 import { CryptoService } from '../../services/CryptoService';
 import { SignatureVerificationApiResponse } from '../../swagger/SignatureVerificationApiResponse';
-import { WalletJsonSignatureRequestDto } from '../../dto/wallet/WalletJsonSignatureRequestDto';
+import { JsonSignatureRequestDto } from '../../dto/signature/JsonSignatureRequestDto';
+import { JsonSignatureVerificationRequestDto } from '../../dto/signature/JsonSignatureVerificationRequestDto';
+import { JsonSignatureService } from '../../services/JsonSignatureService';
 import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
 import { ExtractPrivateSignatureKeyFromWallet } from '../../pipes/ExtractPrivateSignatureKeyFromWallet';
 import { ExtractPublicSignatureKeyFromWallet } from '../../pipes/ExtractPublicSignatureKeyFromWallet';
 import { PublicKeyRetrievalApiResponse } from '../../swagger/PublicKeyRetreivalApiResponse';
-import { WalletJsonSignatureVerificationRequestDto } from '../../dto/wallet/WalletJsonSignatureVerificationRequestDto';
+import { API_V1 } from '../../api/ApiVersion';
 
 @ApiTags('Wallet Crypto')
-@Controller('/api/crypto/wallet')
+@Controller({ path: 'crypto/wallet', version: API_V1 })
 @ApiParam({ name: 'walletId', type: Number, description: 'Wallet identifier' })
 export class WalletCryptoController {
 	constructor(
 		public service: WalletService,
 		private cryptoService: CryptoService,
+		private jsonSignatureService: JsonSignatureService,
 	) {}
 
 	@ApiOperation({
@@ -53,16 +52,18 @@ export class WalletCryptoController {
 	}
 
 	@ApiOperation({
-		summary: 'Sign a json message with wallet signature key',
+		summary: 'Sign a JSON payload with the wallet signature key',
+		description:
+			'Signs a JSON payload, bound to a context (purpose, target, validity window...), using the SDK JSON signatures. ' +
+			'Supports `json-canonical+utf8` and `jws` (the latter requires a wallet backed by a JWK private key).'
 	})
-	@ApiResponse(SignatureVerificationApiResponse.Response200)
-	@Post(':walletId/signature/sign/json')
-	async signJson(
+	@Post(':walletId/json-signature/sign')
+	async signJsonSignature(
 		@Param('walletId', WalletByIdPipe, ExtractPrivateSignatureKeyFromWallet)
 		sk: PrivateSignatureKey,
-		@Body() params: WalletJsonSignatureRequestDto,
+		@Body() params: JsonSignatureRequestDto,
 	) {
-		return this.cryptoService.signJson(sk, params.message, params.canonicalizationMethod, params.signatureEncoding);
+		return this.jsonSignatureService.sign(sk, params.signatureType, params.context, params.payload, params.options);
 	}
 
 	@ApiOperation({
@@ -82,16 +83,16 @@ export class WalletCryptoController {
 	}
 
 	@ApiOperation({
-		summary: "Verify a json message signature with the wallet's public key"
+		summary: "Verify a JSON signature with the wallet's public key",
+		description: 'Verifies a `json-canonical+utf8` or `jws` signature and the context it carries.'
 	})
-	@ApiResponse(SignatureVerificationApiResponse.Response200)
-	@Post(':walletId/signature/verify/json')
-	async verifyJson(
+	@Post(':walletId/json-signature/verify')
+	async verifyJsonSignature(
 		@Param('walletId', WalletByIdPipe, ExtractPublicSignatureKeyFromWallet)
 		pk: PublicSignatureKey,
-		@Body() params: WalletJsonSignatureVerificationRequestDto,
+		@Body() params: JsonSignatureVerificationRequestDto,
 	) {
-		return this.cryptoService.verifyJson(pk, params.message, params.canonicalizationMethod, params.signature, params.signatureEncoding);
+		return this.jsonSignatureService.verify(pk, params.signature, params.payload, params.verificationContext);
 	}
 
 	@ApiOperation({
@@ -101,29 +102,14 @@ export class WalletCryptoController {
 	@ApiResponse(PublicKeyRetrievalApiResponse.Signature.Response200)
 	@Get(':walletId/signature/pk')
 	async getPublicSignatureKey(
-		@Param('walletId', WalletByIdPipe) wallet: WalletEntity,
+		@Param('walletId', WalletByIdPipe, ExtractPublicSignatureKeyFromWallet)
+		pk: PublicSignatureKey
 	) {
-		const sk = await WalletUtils.getPrivateSignatureKeyFromWallet(wallet);
-		const pk = await sk.getPublicKey();
 		const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
 		return { signature: { pk: await encoder.encodePublicKey(pk) } }
 	}
 
-	@ApiOperation({
-		summary: 'Get wallet public encryption key',
-		description: 'Retrieves the public encryption key associated with the wallet.'
-	})
-	@ApiResponse(PublicKeyRetrievalApiResponse.Pke.Response200)
-	@Get(':walletId/pke/pk')
-	async getPublicEncryptionKey(
-		@Param('walletId', WalletByIdPipe) wallet: WalletEntity,
-	) {
-		const sk = await WalletUtils.getPrivateDecryptionKeyFromWallet(wallet);
-		const pk = await sk.getPublicKey();
-		const encoder = CryptoEncoderFactory.defaultStringPublicKeyEncryptionEncoder();
-		return { pke: { pk: await encoder.encodePublicEncryptionKey(pk) } }
-	}
-
+	/*
 	@ApiOperation({
 		summary: 'Get actor public signature key',
 		description: 'Retrieves the public signature key for an actor in a virtual blockchain associated with the wallet.'
@@ -165,6 +151,8 @@ export class WalletCryptoController {
 		const encoder = CryptoEncoderFactory.defaultStringPublicKeyEncryptionEncoder();
 		return { pke: { pk: await encoder.encodePublicEncryptionKey(pk) } }
 	}
+
+	 */
 
 
 }

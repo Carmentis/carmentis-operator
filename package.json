@@ -27,9 +27,7 @@
     "@as-integrations/express5": "^1.1.2",
     "@automapper/classes": "^8.8.1",
     "@automapper/core": "^8.8.1",
-    "@cmts-dev/carmentis-sdk-core": "^1.4.2",
-    "@dataui/crud": "^5.3.4",
-    "@dataui/crud-typeorm": "^5.3.4",
+    "@cmts-dev/carmentis-sdk-core": "^1.7.3",
     "@digitalbazaar/did-method-jwk": "^2.0.0",
     "@iarna/toml": "^2.2.5",
     "@logtape/logtape": "^2.2.4",
@@ -46,6 +44,7 @@
     "@nestjs/websockets": "^11.1.28",
     "@noble/ciphers": "^2.2.0",
     "@noble/secp256k1": "^3.1.0",
+    "@scure/bip39": "^2.4.0",
     "@sd-jwt/core": "^0.20.0",
     "@sd-jwt/crypto-nodejs": "^0.19.0",
     "@sd-jwt/sd-jwt-vc": "^0.20.0",
@@ -104,5 +103,8 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3"
+  },
+  "directories": {
+    "test": "test"
   }
 }

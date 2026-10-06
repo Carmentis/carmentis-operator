@@ -7,21 +7,19 @@ import {
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
-import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ApplicationUpdateDto } from '../dto/ApplicationUpdateDto';
 
 
 @Injectable()
-export class ApplicationService extends TypeOrmCrudService<ApplicationEntity> {
+export class ApplicationService {
 
     private logger = new Logger(ApplicationService.name);
     constructor(
 		@InjectRepository(ApplicationEntity)
 		private readonly applicationRepository: Repository<ApplicationEntity>,
     ) {
-		super(applicationRepository);
     }
 
 

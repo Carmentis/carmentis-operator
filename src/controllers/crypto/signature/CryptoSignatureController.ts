@@ -1,25 +1,23 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk-core';
-import { match } from 'ts-pattern';
-import { canonicalize } from 'json-canonicalize';
 import { BinaryEncodingUtils } from '../../../utils/BinaryEncodingUtils';
 import {
 	BinaryMessageSignatureVerificationRequestDto,
 } from '../../../dto/signature/BinaryMessageSignatureVerificationRequestDto';
-import {
-	JsonMessageSignatureVerificationRequestDto,
-} from '../../../dto/signature/JsonMessageSignatureVerificationRequestDto';
-import { JsonCanonicalizationMethod } from '../../../dto/signature/JsonCanonicalizationMethod';
+import { JsonSignatureVerificationWithPublicKeyRequestDto } from '../../../dto/signature/JsonSignatureVerificationRequestDto';
+import { JsonSignatureService } from '../../../services/JsonSignatureService';
 import { CryptoService } from '../../../services/CryptoService';
 import { SignatureVerificationApiResponse } from '../../../swagger/SignatureVerificationApiResponse';
+import { API_V1 } from '../../../api/ApiVersion';
 
 @ApiTags('Crypto Signature')
-@Controller('/api/crypto/signature')
+@Controller({ path: 'crypto/signature', version: API_V1 })
 export class CryptoSignatureController {
 
 	constructor(
-		private readonly cryptoService: CryptoService
+		private readonly cryptoService: CryptoService,
+		private readonly jsonSignatureService: JsonSignatureService,
 	) {}
 
 	@ApiOperation({
@@ -40,22 +38,15 @@ export class CryptoSignatureController {
 	}
 
 	@ApiOperation({
-		summary: 'Verify a JSON message signature',
-		description: 'Verifies the authenticity of a signature for a JSON message using a public key with canonical JSON encoding.'
+		summary: 'Verify a JSON signature',
+		description: 'Verifies a `json-canonical+utf8` or `jws` signature, and the context it carries, with a public key.'
 	})
-	@ApiResponse(SignatureVerificationApiResponse.Response200)
-	@Post('verify/json')
+	@Post('json-signature/verify')
 	async verifyJsonSignature(
-		@Body() params: JsonMessageSignatureVerificationRequestDto
+		@Body() params: JsonSignatureVerificationWithPublicKeyRequestDto
 	) {
 		const encoder = CryptoEncoderFactory.defaultStringSignatureEncoder();
 		const publicKey = await encoder.decodePublicKey(params.publicKey);
-		return this.cryptoService.verifyJson(
-			publicKey,
-			params.message,
-			params.canonicalizationMethod,
-			params.signature,
-			params.signatureEncoding
-		);
+		return this.jsonSignatureService.verify(publicKey, params.signature, params.payload, params.verificationContext);
 	}
 }

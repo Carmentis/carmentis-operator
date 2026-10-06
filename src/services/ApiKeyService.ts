@@ -5,17 +5,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'crypto';
 import { WalletEntity } from '../entities/WalletEntity';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
-import { TypeOrmCrudService } from '@dataui/crud-typeorm';
 
 @Injectable()
-export class ApiKeyService extends TypeOrmCrudService<ApiKeyEntity> {
+export class ApiKeyService {
 	private logger = new Logger(ApiKeyService.name);
 	constructor(
 		@InjectRepository(ApiKeyEntity)
 		public readonly repo: Repository<ApiKeyEntity>,
-	) {
-		super(repo);
-	}
+	) {}
 
 	async createKey(
 		name: string,

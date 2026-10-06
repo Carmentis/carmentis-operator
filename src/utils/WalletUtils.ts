@@ -3,6 +3,7 @@ import { SeedEncoder, WalletCrypto } from '@cmts-dev/carmentis-sdk-core';
 
 export class WalletUtils {
 
+	/*
 	static async getPrivateSignatureKeyFromWallet(wallet: WalletEntity) {
 		const accountCrypto = await this.getAccountCryptoFromWallet(wallet);
 		return accountCrypto.getPrivateSignatureKey(wallet.signatureSchemeId);
@@ -23,6 +24,9 @@ export class WalletUtils {
 		return actorCrypto.getPrivateDecryptionKey(wallet.publicKeyEncryptionSchemeId);
 	}
 
+	 */
+
+	/*
 	static async getAccountCryptoFromWallet(wallet: WalletEntity) {
 		const seed = wallet.seed;
 		console.log("original seed", seed);
@@ -32,8 +36,21 @@ export class WalletUtils {
 		return walletCrypto.getDefaultAccountCrypto();
 	}
 
+	 */
+
+
+	static async getAccountCryptoFromSeed(seed: string) {
+		const seedEncoder = new SeedEncoder();
+		const rawSeed = seedEncoder.decode(seed);
+		const walletCrypto = WalletCrypto.fromSeed(rawSeed);
+		return walletCrypto.getDefaultAccountCrypto();
+	}
+
+	/*
 	static async getActorCryptoFromWallet(wallet: WalletEntity, vbSeed: Uint8Array) {
 		const accountCrypto = await this.getAccountCryptoFromWallet(wallet);
 		return accountCrypto.getActor(vbSeed);
 	}
+
+	 */
 }

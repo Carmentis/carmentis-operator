@@ -1,7 +1,8 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { EncryptedColumn } from '../decorators/EncryptionDecorator';
 import { ApplicationEntity } from './ApplicationEntity';
 import { ApiKeyEntity } from './ApiKeyEntity';
+import { PrivateKeyEntity } from './PrivateKeyEntity';
 import {
 	Provider,
 	ProviderFactory,
@@ -14,64 +15,32 @@ import { ApiProperty } from '@nestjs/swagger';
 @Entity('wallet')
 export class WalletEntity extends BaseEntity {
 
-	@ApiProperty({
-		description: 'Unique identifier for the wallet',
-		example: 1,
-	})
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@ApiProperty({
-		description: 'Signature scheme identifier (SECP256K1)',
-		example: SignatureSchemeId.SECP256K1,
-	})
-	@Column()
-	signatureSchemeId: number = SignatureSchemeId.SECP256K1;
-
-	@ApiProperty({
-		description: 'Public key encryption scheme identifier (ML_KEM_768_AES_256_GCM)',
-		example: PublicKeyEncryptionSchemeId.ML_KEM_768_AES_256_GCM,
-	})
-	@Column()
-	publicKeyEncryptionSchemeId: number = PublicKeyEncryptionSchemeId.ML_KEM_768_AES_256_GCM;
-
 
 	@EncryptedColumn()
-	seed: string;
+	actorPassphrase: string;
 
-	@ApiProperty({
-		description: 'Human-readable name for the wallet',
-		example: 'Administrateur Carmentis',
-	})
+	@Column()
+	actorSignatureSchemeId: number = SignatureSchemeId.SECP256K1;
+
+
+	@Column()
+	actorPublicKeyEncryptionSchemeId: number = PublicKeyEncryptionSchemeId.ML_KEM_768_AES_256_GCM;
+
 	@Column()
 	name: string;
 
-	@ApiProperty({
-		description: 'Timestamp when the wallet was created',
-		example: '2024-01-15T10:30:00.000Z',
-	})
 	@CreateDateColumn()
 	createdAt: Date;
 
-	@ApiProperty({
-		description: 'RPC endpoint URL for blockchain interactions',
-		example: 'https://node2.server2.devnet.carmentis.io',
-	})
 	@Column()
 	rpcEndpoint: string;
 
-	@ApiProperty({
-		description: 'Indexer endpoint URL for blockchain data queries',
-		example: 'https://indexer.server4.devnet.carmentis.io',
-	})
 	@Column()
 	indexerEndpoint: string;
 
-	@ApiProperty({
-		description: 'Regular expression pattern to restrict allowed endpoints (optional)',
-		example: '^/api/.*',
-		required: false,
-	})
 	@Column({nullable: true})
 	allowedEndpointsRegex?: string;
 
@@ -80,6 +49,9 @@ export class WalletEntity extends BaseEntity {
 
 	@OneToMany(() => ApiKeyEntity, apiKey => apiKey.wallet)
 	apiKeys: ApiKeyEntity[];
+
+	@ManyToOne(() => PrivateKeyEntity, privateKey => privateKey.wallets, { nullable: false })
+	privateKey: PrivateKeyEntity;
 
 	getProvider(): Provider {
 		return ProviderFactory.createInMemoryProviderWithExternalProvider(this.rpcEndpoint);

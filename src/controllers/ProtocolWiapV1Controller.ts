@@ -12,8 +12,9 @@ import { WalletAnchoringRequestService } from '../services/wallet-anchoring-requ
 import { AnchorRequestService } from '../services/AnchorRequestService';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
 import { AnchorRequestStatus } from '../utils/AnchorRequestStatus';
+import { API_V1 } from '../api/ApiVersion';
 
-@Controller('/api')
+@Controller({ path: '', version: API_V1 })
 export class ProtocolWiapV1Controller {
 
 	private logger = new Logger();
@@ -22,6 +23,7 @@ export class ProtocolWiapV1Controller {
 		private readonly anchorService: AnchorRequestService
 	) {}
 
+	/*
 	@Public()
 	@ApiExcludeEndpoint()
 	@Post("/protocols/wiap/v1")
@@ -91,4 +93,6 @@ export class ProtocolWiapV1Controller {
 			}
 		}
 	}
+
+	 */
 }

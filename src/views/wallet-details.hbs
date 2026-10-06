@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{wallet.name}} - Wallet - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<div class="page-header">
+					<h2>{{wallet.name}}</h2>
+					<div class="page-header-actions">
+						<a href="/admin/wallets" class="btn btn-secondary">Back to list</a>
+						<a href="/admin/wallets/{{wallet.id}}/edit" class="btn btn-primary">Edit</a>
+					</div>
+				</div>
+				{{>flash}}
+
+				<section class="detail-section">
+					<h3>General</h3>
+					<dl class="detail-list">
+						<dt>ID</dt><dd>{{wallet.id}}</dd>
+						<dt>Name</dt><dd>{{wallet.name}}</dd>
+						<dt>Created</dt><dd>{{wallet.createdAt}}</dd>
+					</dl>
+				</section>
+
+				<section class="detail-section">
+					<h3>Network</h3>
+					<dl class="detail-list">
+						<dt>RPC endpoint</dt><dd>{{wallet.rpcEndpoint}}</dd>
+						<dt>Indexer endpoint</dt><dd>{{wallet.indexerEndpoint}}</dd>
+						<dt>Allowed endpoints regex</dt>
+						<dd>{{#if wallet.allowedEndpointsRegex}}<code>{{wallet.allowedEndpointsRegex}}</code>{{else}}All endpoints are allowed{{/if}}</dd>
+					</dl>
+				</section>
+
+				<section class="detail-section">
+					<h3>Key</h3>
+					<dl class="detail-list">
+						<dt>Key type</dt><dd>{{key.keyType}}</dd>
+						<dt>Public key</dt>
+						<dd>{{#if key.publicKey}}<code>{{key.publicKey}}</code>{{else}}Unavailable{{/if}}</dd>
+					</dl>
+				</section>
+
+				<section class="detail-section">
+					<h3>On-chain account</h3>
+					<dl class="detail-list">
+						<dt>Account ID</dt><dd id="account-id">Loading…</dd>
+						<dt>Balance</dt><dd id="account-balance">Loading…</dd>
+					</dl>
+				</section>
+
+				<section class="detail-section">
+					<h3>Applications</h3>
+					<table>
+						<thead><tr><th>Name</th><th>Virtual blockchain ID</th><th></th></tr></thead>
+						<tbody>
+						{{#each wallet.applications}}
+						<tr>
+							<td>{{this.name}}</td>
+							<td><code style="word-break: break-all;">{{this.vbId}}</code></td>
+							<td class="action-buttons"><a href="/admin/applications/{{this.vbId}}/edit" class="btn btn-secondary">Edit</a></td>
+						</tr>
+						{{else}}
+						<tr><td colspan="3">No applications.</td></tr>
+						{{/each}}
+						</tbody>
+					</table>
+				</section>
+
+				<section class="detail-section">
+					<h3>API keys</h3>
+					<table>
+						<thead><tr><th>Name</th><th>Active</th><th>Expires</th><th></th></tr></thead>
+						<tbody>
+						{{#each wallet.apiKeys}}
+						<tr>
+							<td>{{this.name}}</td>
+							<td>{{#if this.isActive}}yes{{else}}no{{/if}}</td>
+							<td>{{#if this.activeUntil}}{{this.activeUntil}}{{else}}never{{/if}}</td>
+							<td class="action-buttons"><a href="/admin/api-keys/{{this.id}}/edit" class="btn btn-secondary">Edit</a></td>
+						</tr>
+						{{else}}
+						<tr><td colspan="4">No API keys.</td></tr>
+						{{/each}}
+						</tbody>
+					</table>
+				</section>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+	<script>
+		// The node is queried after the page has loaded, so a slow or unreachable node never blocks it.
+		(async () => {
+			const idCell = document.getElementById('account-id');
+			const balanceCell = document.getElementById('account-balance');
+			try {
+				const res = await fetch('/admin/wallets/{{wallet.id}}/account');
+				const data = await res.json();
+				if (!res.ok || data.error) throw new Error(data.error || data.message || 'Request failed');
+				idCell.textContent = data.accountId;
+				balanceCell.textContent = data.balance;
+			} catch (err) {
+				idCell.textContent = balanceCell.textContent = `Unavailable (${err.message})`;
+			}
+		})();
+	</script>
+</body>
+</html>

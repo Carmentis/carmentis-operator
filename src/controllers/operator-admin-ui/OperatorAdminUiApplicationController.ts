@@ -1,18 +1,27 @@
-import { Controller, Get, NotFoundException, Param, Render, Req } from '@nestjs/common';
-import { Request } from 'express';
+import { Body, ConflictException, Controller, Get, NotFoundException, Param, Post, Render, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ApplicationEntity } from '../../entities/ApplicationEntity';
 import { WalletEntity } from '../../entities/WalletEntity';
+import { ApplicationService } from '../../services/ApplicationService';
+import { WalletService } from '../../services/WalletService';
+import { ApplicationCreationDto } from '../../dto/ApplicationCreationDto';
+import { ApplicationUpdateDto } from '../../dto/ApplicationUpdateDto';
+import { getErrorMessage, redirectWithFlash, toOptionalNumber, validateForm } from '../../utils/AdminForm';
 import { OPERATOR_ADMIN_UI_PREFIX } from './OperatorAdminUiController';
 
-@Controller(`${OPERATOR_ADMIN_UI_PREFIX}/applications`)
+const APPLICATIONS_PATH = `${OPERATOR_ADMIN_UI_PREFIX}/applications`;
+
+@Controller(APPLICATIONS_PATH)
 export class OperatorAdminUiApplicationController {
 	constructor(
 		@InjectRepository(ApplicationEntity)
 		private readonly applicationRepository: Repository<ApplicationEntity>,
 		@InjectRepository(WalletEntity)
 		private readonly walletRepository: Repository<WalletEntity>,
+		private readonly applicationService: ApplicationService,
+		private readonly walletService: WalletService,
 	) {}
 
 	@Get()
@@ -51,7 +60,113 @@ export class OperatorAdminUiApplicationController {
 			user: (req as any).user,
 			mode: 'create',
 			wallets,
+			flash: req.query?.flash,
+			flashType: req.query?.flashType,
 		};
+	}
+
+	@Post()
+	async create(@Body() body: Record<string, string>, @Res() res: Response) {
+		try {
+			const dto = await validateForm(ApplicationCreationDto, {
+				vbId: body.vbId,
+				walletId: toOptionalNumber(body.walletId),
+			});
+			const wallet = await this.walletRepository.findOneBy({ id: dto.walletId });
+			if (!wallet) {
+				throw new NotFoundException('Wallet not found');
+			}
+			if (await this.applicationRepository.existsBy({ vbId: dto.vbId })) {
+				throw new ConflictException('This application is already imported');
+			}
+			// importing only makes sense for an application that already exists on-chain, whose
+			// name is the one it was given there
+			const name = await this.walletService.fetchApplicationNameFromChain(wallet, dto.vbId);
+			await this.applicationRepository.save({ vbId: dto.vbId, name, wallet });
+			return redirectWithFlash(res, APPLICATIONS_PATH, 'Application created.', 'success');
+		} catch (error) {
+			return redirectWithFlash(
+				res,
+				`${APPLICATIONS_PATH}/new`,
+				getErrorMessage(error, 'Could not create this application.'),
+				'error',
+			);
+		}
+	}
+
+	@Post(':vbId/update')
+	async update(@Param('vbId') vbId: string, @Body() body: Record<string, string>, @Res() res: Response) {
+		try {
+			const dto = await validateForm(ApplicationUpdateDto, { name: body.name });
+			await this.applicationService.updateApplication(vbId, dto);
+			return redirectWithFlash(res, APPLICATIONS_PATH, 'Application updated.', 'success');
+		} catch (error) {
+			return redirectWithFlash(
+				res,
+				`${APPLICATIONS_PATH}/${encodeURIComponent(vbId)}/edit`,
+				getErrorMessage(error, 'Could not save this application.'),
+				'error',
+			);
+		}
+	}
+
+	@Post(':vbId/delete')
+	async delete(@Param('vbId') vbId: string, @Res() res: Response) {
+		try {
+			await this.applicationService.deleteApplication(vbId);
+			return redirectWithFlash(res, APPLICATIONS_PATH, 'Application deleted.', 'success');
+		} catch (error) {
+			return redirectWithFlash(res, APPLICATIONS_PATH, getErrorMessage(error, 'Could not delete this application.'), 'error');
+		}
+	}
+
+	@Get(':vbId')
+	@Render('application-details')
+	async details(@Req() req: Request, @Param('vbId') vbId: string): Promise<any> {
+		// Explicit selection: the encrypted columns of the wallet and of the API keys are never fetched.
+		const application = await this.applicationRepository.findOne({
+			where: { vbId },
+			select: {
+				vbId: true,
+				name: true,
+				createdAt: true,
+				wallet: { id: true, name: true },
+				apiKeys: { id: true, name: true, isActive: true, activeUntil: true },
+			},
+			relations: { wallet: true, apiKeys: true },
+		});
+		if (!application) {
+			throw new NotFoundException('Application not found');
+		}
+		return {
+			currentSection: 'applications',
+			user: (req as any).user,
+			flash: req.query?.flash,
+			flashType: req.query?.flashType,
+			application,
+			anchorRequestCount: (await this.applicationService.countDependents(vbId)).anchorRequests,
+		};
+	}
+
+	/**
+	 * Live on-chain data of the application and of its organization, fetched by the details
+	 * page after it has loaded so that a slow or unreachable node never blocks the page itself.
+	 */
+	@Get(':vbId/chain')
+	async chain(@Param('vbId') vbId: string) {
+		const application = await this.applicationRepository.findOne({
+			where: { vbId },
+			select: { vbId: true, wallet: { id: true, rpcEndpoint: true } },
+			relations: { wallet: true },
+		});
+		if (!application) {
+			throw new NotFoundException('Application not found');
+		}
+		try {
+			return await this.walletService.getApplicationOnChainDetails(application.wallet, vbId);
+		} catch (error) {
+			return { error: getErrorMessage(error, 'The application could not be retrieved from the node.') };
+		}
 	}
 
 	@Get(':vbId/edit')
@@ -70,6 +185,8 @@ export class OperatorAdminUiApplicationController {
 			user: (req as any).user,
 			mode: 'edit',
 			application,
+			flash: req.query?.flash,
+			flashType: req.query?.flashType,
 		};
 	}
 }

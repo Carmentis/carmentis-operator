@@ -1,15 +1,20 @@
-import { Controller, Get, Render, Req } from '@nestjs/common';
-import { Request } from 'express';
+import { Controller, ForbiddenException, Get, Param, ParseIntPipe, Post, Render, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../../entities/UserEntity';
+import { UserService } from '../../services/UserService';
+import { getErrorMessage, redirectWithFlash } from '../../utils/AdminForm';
 import { OPERATOR_ADMIN_UI_PREFIX } from './OperatorAdminUiController';
 
-@Controller(`${OPERATOR_ADMIN_UI_PREFIX}/users`)
+const USERS_PATH = `${OPERATOR_ADMIN_UI_PREFIX}/users`;
+
+@Controller(USERS_PATH)
 export class OperatorAdminUiUserController {
 	constructor(
 		@InjectRepository(UserEntity)
 		private readonly userRepository: Repository<UserEntity>,
+		private readonly userService: UserService,
 	) {}
 
 	@Get()
@@ -39,5 +44,18 @@ export class OperatorAdminUiUserController {
 			flashType: req.query?.flashType,
 			users,
 		};
+	}
+
+	@Post(':id/delete')
+	async delete(@Req() req: Request, @Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+		try {
+			if (id === (req as any).user?.sub) {
+				throw new ForbiddenException('You cannot delete your own account');
+			}
+			await this.userService.deleteUserById(id);
+			return redirectWithFlash(res, USERS_PATH, 'User deleted.', 'success');
+		} catch (error) {
+			return redirectWithFlash(res, USERS_PATH, getErrorMessage(error, 'Could not delete this user.'), 'error');
+		}
 	}
 }

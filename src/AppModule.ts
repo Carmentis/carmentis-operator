@@ -17,16 +17,6 @@ import { InvitationEntity } from './entities/InvitationEntity';
 import { ApiKeyEntity } from './entities/ApiKeyEntity';
 import { WalletEntity } from './entities/WalletEntity';
 import { ApplicationEntity } from './entities/ApplicationEntity';
-import { OperatorAdminApiSetupController } from './controllers/operator-admin-api/OperatorAdminApiSetupController';
-import { OperatorAdminApiApiKeyController } from './controllers/operator-admin-api/OperatorAdminApiApiKeyController';
-import { OperatorAdminApiAuthController } from './controllers/operator-admin-api/OperatorAdminApiAuthController';
-import { OperatorAdminApiMeController } from './controllers/operator-admin-api/OperatorAdminApiMeController';
-import { OperatorAdminApiInvitationController } from './controllers/operator-admin-api/OperatorAdminApiInvitationController';
-import { OperatorAdminApiUserController } from './controllers/operator-admin-api/OperatorAdminApiUserController';
-import {
-	OperatorAdminApiApplicationController
-} from './controllers/operator-admin-api/OperatorAdminApiApplicationController';
-import { OperatorAdminApiWalletController } from './controllers/operator-admin-api/OperatorAdminApiWalletController';
 import { CryptoService } from './services/CryptoService';
 import { WalletAnchoringRequestService } from './services/wallet-anchoring-request.service';
 import { EncryptionService } from './services/EncryptionService';
@@ -40,8 +30,7 @@ import { DeskAuthChallengeService } from './services/DeskAuthChallengeService';
 import { CarmentisDeskAuthService } from './services/CarmentisDeskAuthService';
 import { InvitationService } from './services/InvitationService';
 import { RegistrationService } from './services/RegistrationService';
-import { APP_GUARD, APP_INTERCEPTOR, HttpAdapterHost } from '@nestjs/core';
-import { CrudRequestInterceptor } from '@dataui/crud';
+import { APP_GUARD, HttpAdapterHost } from '@nestjs/core';
 import { EncryptionServiceProxy } from './shared/transformers/EncryptionServiceProxy';
 import { CorsMiddleware } from './middlewares/CorsMiddleware';
 import { CryptoController } from './controllers/crypto/signature/CryptoController';
@@ -54,6 +43,10 @@ import { AnchorRequestController } from './controllers/AnchorRequestController';
 import { ChainController } from './controllers/ChainController';
 import { WalletProofController } from './controllers/wallet/WalletProofController';
 import { AuthGuard } from './guards/AuthGuard';
+import { SameOriginGuard } from './guards/SameOriginGuard';
+import { PrivateKeyService } from './services/PrivateKeyService';
+import { JsonSignatureService } from './services/JsonSignatureService';
+import { PrivateKeyEntity } from './entities/PrivateKeyEntity';
 import { WalletByIdPipe } from './pipes/WalletByIdPipe';
 import { ExtractPrivateSignatureKeyFromWallet } from './pipes/ExtractPrivateSignatureKeyFromWallet';
 import { ExtractPublicSignatureKeyFromWallet } from './pipes/ExtractPublicSignatureKeyFromWallet';
@@ -88,6 +81,7 @@ import { WalletResolverController } from './controllers/wallet/WalletResolverCon
 			InvitationEntity,
 			ApiKeyEntity,
 			WalletEntity,
+			PrivateKeyEntity,
 			ApplicationEntity,
 		]),
 		ScheduleModule.forRoot(),
@@ -111,6 +105,8 @@ import { WalletResolverController } from './controllers/wallet/WalletResolverCon
 		UserService,
 		ApplicationService,
 		WalletService,
+		PrivateKeyService,
+		JsonSignatureService,
 		ChainService,
 		AnchorRequestService,
 		DeskAuthChallengeService,
@@ -127,25 +123,15 @@ import { WalletResolverController } from './controllers/wallet/WalletResolverCon
 		// guards & interceptors
 		{
 			provide: APP_GUARD,
-			useClass: AuthGuard,
+			useClass: SameOriginGuard,
 		},
 		{
-			provide: APP_INTERCEPTOR,
-			useClass: CrudRequestInterceptor,
-		}
+			provide: APP_GUARD,
+			useClass: AuthGuard,
+		},
 	],
 	controllers: [
 		HomeController,
-		// admin JSON API controllers
-		OperatorAdminApiSetupController,
-		OperatorAdminApiApiKeyController,
-		OperatorAdminApiAuthController,
-		OperatorAdminApiMeController,
-		OperatorAdminApiInvitationController,
-		OperatorAdminApiUserController,
-		OperatorAdminApiApplicationController,
-		OperatorAdminApiWalletController,
-
 		// admin UI controllers
 		OperatorAdminUiAuthController,
 		OperatorAdminUiSetupController,

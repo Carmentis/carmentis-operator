@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>API key created - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				<h2>API key created</h2>
+				<div class="flash flash-success" style="display:flex; flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+					<strong>API key created (shown once, copy it now):</strong>
+					<code style="word-break: break-all;">{{createdKey}}</code>
+					<button type="button" class="btn btn-secondary" data-copy-text="{{createdKey}}">Copy</button>
+					<a href="/admin/api-keys" class="btn btn-primary">Back to list</a>
+				</div>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+</body>
+</html>

@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import getPort, { portNumbers } from 'get-port';
 import { OperatorConfigService } from './config/services/operator-config.service';
 import { AllExceptionsFilter } from './filters/AllExceptionsFilter';
+import { configureApiVersioning } from './api/configureApiVersioning';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import cookieParser from 'cookie-parser';
@@ -37,6 +38,9 @@ async function bootstrap() {
 		origin: corsConfig.origin,
 		methods: corsConfig.methods,
 	});
+
+	// Public API: /api/v1/... (and the unversioned /api/... alias of v1); admin UI is not versioned.
+	configureApiVersioning(app);
 
 	// Set global verification enabled.
 	app.useGlobalPipes(new ValidationPipe({

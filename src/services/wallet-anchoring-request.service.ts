@@ -8,7 +8,7 @@ import {
 	ApplicationLedgerVb,
 	CMTSToken,
 	CryptoEncoderFactory,
-	EncoderFactory,
+	EncoderFactory, ExternalKeyApplicationLedgerActorIdentity,
 	Hash,
 	Microblock,
 	Provider,
@@ -27,6 +27,7 @@ import {
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { WalletUtils } from '../utils/WalletUtils';
 import { AnchorRequestStatus } from '../utils/AnchorRequestStatus';
+import { WalletService } from './WalletService';
 
 
 @Injectable()
@@ -34,7 +35,7 @@ export class WalletAnchoringRequestService {
 
 	constructor(
 		private anchorRequestService: AnchorRequestService,
-		private applicationService: ApplicationService,
+		private walletService: WalletService,
 	) {}
 
 	private logger = new Logger(WalletAnchoringRequestService.name);
@@ -45,11 +46,7 @@ export class WalletAnchoringRequestService {
 		return { anchorRequestId }
 	};
 
-	/**
-	 * This method is called when the wallet wants to proceed with the approval, starting with the handshake.
-	 * @param req
-	 * @returns
-	 */
+	/*
 	async approvalHandshake(req: WalletInteractiveAnchoringRequestApprovalHandshake): Promise<WalletInteractiveAnchoringResponse> {
 		const anchorRequestId = req.anchorRequestId;
 		this.logger.debug(`Proceeding to approval handshake with anchor request id = ${anchorRequestId}`)
@@ -123,12 +120,7 @@ export class WalletAnchoringRequestService {
 		}
 	}
 
-	/**
-	 * This method is called when the wallet sends the actor public keys for subscription.
-	 *
-	 * @param req
-	 * @returns
-	 */
+
 	async handleActorKeys(req: WalletInteractiveAnchoringRequestActorKey): Promise<WalletInteractiveAnchoringResponse> {
 		const anchorRequestId = req.anchorRequestId;
 		this.logger.debug(`Proceeding to approval actor key with anchor request id = ${anchorRequestId}`)
@@ -233,12 +225,6 @@ export class WalletAnchoringRequestService {
 		return mbBuilder;
 	}
 
-	/**
-	 * This method is called when the wallet sends the signature of the micro-block for approval.
-	 *
-	 * @param req
-	 * @returns
-	 */
 	async approvalSignature(req: WalletInteractiveAnchoringRequestApprovalSignature): Promise<WalletInteractiveAnchoringResponse> {
 		// check the request id is valid
 		const anchorRequestId = req.anchorRequestId;
@@ -326,6 +312,8 @@ export class WalletAnchoringRequestService {
 		}
 	}
 
+
+
 	private async loadAnchorRequestFromDataId(dataId: string) {
 		// load the initial anchor request and halts if the request is not pending
 		const storedRequest = await this.anchorRequestService.findOneByAnchorRequestId(dataId);
@@ -344,9 +332,12 @@ export class WalletAnchoringRequestService {
 		return { application };
 	}
 
+	 */
+
 	private async loadWalletEntityFromApplication(application: ApplicationEntity) {
 		return application.wallet;
 	}
+	/*
 	private async loadAccountCryptoFromApplication(application: ApplicationEntity) {
 		const wallet = application.wallet;
 		const seed = new SeedEncoder().decode(wallet.seed);
@@ -354,6 +345,9 @@ export class WalletAnchoringRequestService {
 
 	}
 
+	 */
+
+	/*
 	private async loadApplicationLedger(provider: Provider, application: ApplicationEntity, anchorRequest: AnchorRequestEntity): Promise<ApplicationLedgerVb> {
 		const appLedgerVbId = anchorRequest.receivedAnchorRequest.virtualBlockchainId;
 		let appLedgerVb: ApplicationLedgerVb;
@@ -369,16 +363,26 @@ export class WalletAnchoringRequestService {
 		return appLedgerVb;
 	}
 
+	 */
+
 	async getAnchorRequestFromAnchorRequestId(anchorRequestId: string) {
 		return this.anchorRequestService.findOneByAnchorRequestId(anchorRequestId);
 	}
 
+
+	/**
+	 * Anchor some data on the application ledger.
+	 * @param application The application under which the anchor is performed.
+	 * @param anchorDto The request containing all the information needed to anchor some data on the application ledger.
+	 */
 	async anchor(application: ApplicationEntity, anchorDto: AnchorDto) {
 
-		// we first recover the crypto wallet for the organization
-		const accountCrypto = await this.loadAccountCryptoFromApplication(application);
+
+		// we first recover the wallet for the organization
 		const wallet = await this.loadWalletEntityFromApplication(application);
 		const provider = wallet.getProvider();
+		const organizationVbId = await this.loadOrganizationVbIdFromApplication(provider, application);
+		const accountId = await this.loadAccountIdFromOrganizationVbId(provider, organizationVbId);
 
 		// we then load the application ledger if it is provided, otherwise we create a new application ledger
 		let applicationLedgerVb = ApplicationLedgerVb.createApplicationLedgerVirtualBlockchain(provider);
@@ -388,16 +392,29 @@ export class WalletAnchoringRequestService {
 			isCreatingNewApplicationLedger = false;
 		}
 
-		const organizationVbId = await this.loadOrganizationVbIdFromApplication(provider, application);
-		const accountId = await this.loadAccountIdFromOrganizationVbId(provider, organizationVbId);
+		// the operator anchors using its official identity as the actor identity
+		const vbSeed = (await applicationLedgerVb.getGenesisSeed()).toBytes();
+		const organizationPrivateKey = await this.walletService.getPrivateKeyOfWallet(wallet.id);
+		const actorIdentity = await this.walletService.getActorIdentity(wallet, vbSeed);
+		/*
+		const organizationPublicKey = await organizationPrivateKey.getPublicKey();
+		const actorPassphrase = await this.walletService.getActorPassphraseOfWallet(wallet.id)
+		const actorIdentity = await ExternalKeyApplicationLedgerActorIdentity.createFromPublicSignatureKeyAndMnemonic(
+			organizationPublicKey,
+			actorPassphrase,
+			vbSeed,
+		);
+
+		 */
+
+
 
 		// we construct the microblock builder
 		const applicationId = Hash.fromHex(application.vbId);
 		const mbBuilder = await WalletRequestBasedApplicationLedgerMicroblockBuilder.createFromVirtualBlockchain(applicationId, applicationLedgerVb);
-		const mb = await mbBuilder.createMicroblockFromStateUpdateRequest(accountCrypto, {
+		const mb = await mbBuilder.createMicroblockFromStateUpdateRequest(actorIdentity, {
 			...anchorDto,
 		})
-		const organizationPrivateKey = await accountCrypto.getPrivateSignatureKey(SignatureSchemeId.SECP256K1);
 
 		console.log("offchainDictionary", mbBuilder.getOffchainDictionary());
 
@@ -431,16 +448,6 @@ export class WalletAnchoringRequestService {
 
 		// return the anchor request id
 		return anchorRequestId;
-
-		/*
-		return this.anchorRequestService.createSubmittedAnchorRequest(
-			vbId,
-			mbHash,
-			anchorDto,
-			application
-		);
-
-		 */
 	}
 
 	async loadOrganizationVbIdFromApplication(provider: Provider, application: ApplicationEntity) {

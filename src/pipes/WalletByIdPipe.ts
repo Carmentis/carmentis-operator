@@ -10,7 +10,7 @@ export class WalletByIdPipe implements PipeTransform<number, Promise<WalletEntit
 	constructor(private readonly walletService: WalletService) {}
 
 	async transform(walletId: number): Promise<WalletEntity> {
-		const wallet = await this.walletService.findOneBy({ id: walletId });
+		const wallet = await this.walletService.getOneById(walletId);
 		if (!wallet) {
 			throw new NotFoundException(`Wallet ${walletId} not found`);
 		}

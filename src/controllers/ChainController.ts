@@ -3,9 +3,10 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MicroblockUtils } from '../utils/MicroblockUtils';
 import { Hash, Provider, ProviderFactory } from '@cmts-dev/carmentis-sdk-core';
 import { ApplicationLedgerUtils } from '../utils/ApplicationLedgerUtils';
+import { API_V1 } from '../api/ApiVersion';
 
 @ApiTags('Chain')
-@Controller('/api/chain')
+@Controller({ path: 'chain', version: API_V1 })
 export class ChainController {
 	private readonly logger = new Logger();
 

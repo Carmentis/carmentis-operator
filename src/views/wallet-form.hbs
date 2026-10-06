@@ -14,34 +14,83 @@
 			<div class="content-area">
 				<h2>{{#if wallet}}Edit wallet{{else}}New wallet{{/if}}</h2>
 
-				<div class="flash flash-error" id="form-error" style="display:none;"></div>
+				{{>flash}}
 
-				<form id="wallet-form">
+				<form method="post" action="{{#if wallet}}/admin/wallets/{{wallet.id}}/update{{else}}/admin/wallets{{/if}}">
 					<div class="form-group">
 						<label for="name">Name</label>
-						<input type="text" id="name" name="name" required value="{{wallet.name}}">
+						<input type="text" id="name" name="name" required value="{{wallet.name}}{{form.name}}">
 					</div>
+					{{#if wallet}}
 					<div class="form-group">
 						<label for="rpcEndpoint">RPC endpoint</label>
-						<input type="text" id="rpcEndpoint" name="rpcEndpoint" required value="{{wallet.rpcEndpoint}}">
+						<input type="text" id="rpcEndpoint" name="rpcEndpoint" required value="{{wallet.rpcEndpoint}}{{form.rpcEndpoint}}">
 					</div>
 					<div class="form-group">
 						<label for="indexerEndpoint">Indexer endpoint</label>
-						<input type="text" id="indexerEndpoint" name="indexerEndpoint" required value="{{wallet.indexerEndpoint}}">
+						<input type="text" id="indexerEndpoint" name="indexerEndpoint" required value="{{wallet.indexerEndpoint}}{{form.indexerEndpoint}}">
 					</div>
+					{{else}}
+					<div class="form-group">
+						<label for="network">Network</label>
+						<select id="network" name="network" required>
+							{{#each networks}}
+							<option value="{{this.id}}" {{#if (eq this.id ../network)}}selected{{/if}}>{{this.label}}</option>
+							{{/each}}
+							<option value="custom" {{#if (eq network "custom")}}selected{{/if}}>Custom</option>
+						</select>
+					</div>
+					<div id="custom-network-group" style="display:none;">
+						<div class="form-group">
+							<label for="rpcEndpoint">RPC endpoint</label>
+							<input type="text" id="rpcEndpoint" name="rpcEndpoint" value="{{form.rpcEndpoint}}">
+						</div>
+						<div class="form-group">
+							<label for="indexerEndpoint">Indexer endpoint</label>
+							<input type="text" id="indexerEndpoint" name="indexerEndpoint" value="{{form.indexerEndpoint}}">
+						</div>
+					</div>
+					{{/if}}
 					<div class="form-group">
 						<label for="allowedEndpointsRegex">Allowed endpoints regex (optional)</label>
-						<input type="text" id="allowedEndpointsRegex" name="allowedEndpointsRegex" value="{{wallet.allowedEndpointsRegex}}">
+						<input type="text" id="allowedEndpointsRegex" name="allowedEndpointsRegex" value="{{wallet.allowedEndpointsRegex}}{{form.allowedEndpointsRegex}}">
 					</div>
 
 					{{#unless wallet}}
 					<div class="form-group">
+						<label for="actorPassphrase">Actor passphrase (BIP39 mnemonic)</label>
+						<textarea id="actorPassphrase" name="actorPassphrase" required rows="2" autocomplete="off" spellcheck="false">{{actorPassphrase}}</textarea>
+						<div class="action-buttons" style="justify-content: flex-start; margin-top: 0.5rem;">
+							<button type="button" id="generate-passphrase-btn" class="btn btn-secondary">Regenerate</button>
+							<button type="button" id="copy-passphrase-btn" class="btn btn-secondary" data-copy-text="{{actorPassphrase}}">Copy</button>
+						</div>
+						<p style="font-size: 12px; color: var(--color-text-secondary);">
+							A BIP39 mnemonic (English words, 12 to 24 words with a valid checksum). Used to derive the actor identities of this wallet. It cannot be changed afterwards
+							and is not shown again: save it now, losing it means losing access to the identities derived from it.
+						</p>
+					</div>
+
+					<div class="form-group">
+						<label>Private key</label>
+						<label><input type="radio" name="keyType" value="SEED" {{#if (eq keyType "SEED")}}checked{{/if}}> Seed</label>
+						<label><input type="radio" name="keyType" value="JWK" {{#if (eq keyType "JWK")}}checked{{/if}}> JWK (JSON Web Key)</label>
+					</div>
+
+					<div class="form-group" id="seed-group">
 						<label for="seed">Seed</label>
-						<textarea id="seed" name="seed" required rows="3" placeholder="Paste an existing seed, or generate a new one"></textarea>
+						<textarea id="seed" name="seed" rows="3" placeholder="Paste an existing seed, or generate a new one"></textarea>
 						<div class="action-buttons" style="justify-content: flex-start; margin-top: 0.5rem;">
 							<button type="button" id="generate-seed-btn" class="btn btn-secondary">Generate a new seed</button>
 							<button type="button" id="copy-seed-btn" class="btn btn-secondary" data-copy-text="" style="display:none;">Copy</button>
 						</div>
+					</div>
+
+					<div class="form-group" id="jwk-group">
+						<label for="jwk">Private JWK</label>
+						<textarea id="jwk" name="jwk" rows="8" placeholder='{"kty":"EC","crv":"secp256k1","d":"…","x":"…","y":"…"}'></textarea>
+						<p style="font-size: 12px; color: var(--color-text-secondary);">
+							The key is checked by signing and verifying a sample message before the wallet is created.
+						</p>
 					</div>
 					{{/unless}}
 
@@ -52,54 +101,56 @@
 		</main>
 	</div>
 	<script src="/admin/static/admin.js"></script>
+	{{#unless wallet}}
 	<script>
-		const walletId = {{#if wallet}}{{wallet.id}}{{else}}null{{/if}};
+		const seedGroup = document.getElementById('seed-group');
+		const jwkGroup = document.getElementById('jwk-group');
+		const seedInput = document.getElementById('seed');
+		const jwkInput = document.getElementById('jwk');
 
-		const generateBtn = document.getElementById('generate-seed-btn');
-		if (generateBtn) {
-			generateBtn.addEventListener('click', async () => {
-				const res = await fetch('/admin/api/v1/wallet/seed', { method: 'POST' });
-				const data = await res.json();
-				if (res.ok) {
-					document.getElementById('seed').value = data.seed;
-					const copyBtn = document.getElementById('copy-seed-btn');
-					copyBtn.setAttribute('data-copy-text', data.seed);
-					copyBtn.style.display = '';
-				}
-			});
+		function refreshKeyType() {
+			const isJwk = document.querySelector('input[name="keyType"]:checked')?.value === 'JWK';
+			jwkGroup.style.display = isJwk ? '' : 'none';
+			seedGroup.style.display = isJwk ? 'none' : '';
+			jwkInput.required = isJwk;
+			seedInput.required = !isJwk;
 		}
+		document.querySelectorAll('input[name="keyType"]').forEach((radio) => radio.addEventListener('change', refreshKeyType));
+		refreshKeyType();
 
-		document.getElementById('wallet-form').addEventListener('submit', async (e) => {
-			e.preventDefault();
-			const errorEl = document.getElementById('form-error');
-			errorEl.style.display = 'none';
+		const networkSelect = document.getElementById('network');
+		const customGroup = document.getElementById('custom-network-group');
+		const customInputs = customGroup.querySelectorAll('input');
 
-			const body = {
-				name: document.getElementById('name').value,
-				rpcEndpoint: document.getElementById('rpcEndpoint').value,
-				indexerEndpoint: document.getElementById('indexerEndpoint').value,
-				allowedEndpointsRegex: document.getElementById('allowedEndpointsRegex').value || undefined,
-			};
-			if (!walletId) {
-				body.seed = document.getElementById('seed').value;
-			}
+		function refreshNetwork() {
+			const isCustom = networkSelect.value === 'custom';
+			customGroup.style.display = isCustom ? '' : 'none';
+			customInputs.forEach((input) => { input.required = isCustom; });
+		}
+		networkSelect.addEventListener('change', refreshNetwork);
+		refreshNetwork();
 
-			const url = walletId ? `/admin/api/v1/wallet/${walletId}` : '/admin/api/v1/wallet';
-			const method = walletId ? 'PATCH' : 'POST';
+		const passphraseInput = document.getElementById('actorPassphrase');
+		const copyPassphraseBtn = document.getElementById('copy-passphrase-btn');
+		passphraseInput.addEventListener('input', () => copyPassphraseBtn.setAttribute('data-copy-text', passphraseInput.value));
+		document.getElementById('generate-passphrase-btn').addEventListener('click', async () => {
+			const res = await fetch('/admin/wallets/passphrase', { method: 'POST' });
+			if (!res.ok) return;
+			const data = await res.json();
+			passphraseInput.value = data.passphrase;
+			copyPassphraseBtn.setAttribute('data-copy-text', data.passphrase);
+		});
 
-			const res = await fetch(url, {
-				method,
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(body),
-			});
-			const data = await res.json().catch(() => ({}));
-			if (!res.ok) {
-				errorEl.textContent = data.message || 'Could not save this wallet.';
-				errorEl.style.display = '';
-				return;
-			}
-			window.location.href = '/admin/wallets';
+		document.getElementById('generate-seed-btn').addEventListener('click', async () => {
+			const res = await fetch('/admin/wallets/seed', { method: 'POST' });
+			if (!res.ok) return;
+			const data = await res.json();
+			seedInput.value = data.seed;
+			const copyBtn = document.getElementById('copy-seed-btn');
+			copyBtn.setAttribute('data-copy-text', data.seed);
+			copyBtn.style.display = '';
 		});
 	</script>
+	{{/unless}}
 </body>
 </html>

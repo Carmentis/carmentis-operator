@@ -9,7 +9,7 @@ import { WalletEntity } from '../../entities/WalletEntity';
 import { Proof } from 'src/utils/proof/Proof';
 
 @ApiTags('Wallet Proof')
-@Controller('/api/wallet')
+@Controller({ path: 'wallet', version: API_V1 })
 export class WalletProofController {
 
 	private logger = new Logger();
