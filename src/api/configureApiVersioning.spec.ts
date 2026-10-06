@@ -57,9 +57,9 @@ describe('configureApiVersioning', () => {
 		await app.close();
 	});
 
-	it('serves v1 under /api/v1 and keeps the unversioned /api alias on v1', async () => {
+	it('serves v1 under /api/v1 only, without an unversioned /api alias', async () => {
 		await request(app.getHttpServer()).get('/api/v1/things').expect(200, { version: 'v1' });
-		await request(app.getHttpServer()).get('/api/things').expect(200, { version: 'v1' });
+		await request(app.getHttpServer()).get('/api/things').expect(404);
 	});
 
 	it('serves another version next to v1, and 404s on unknown versions', async () => {
