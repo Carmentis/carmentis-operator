@@ -21,54 +21,55 @@
 					Applications already published on-chain are listed below and can be imported.
 				</p>
 				{{>flash}}
-				<p><a href="/admin/applications/new" class="btn btn-primary">New application</a></p>
-				<div id="catalog-status"></div>
 				{{#each wallets}}<span class="wallet-ref" data-id="{{this.id}}" data-name="{{this.name}}" hidden></span>{{/each}}
-				<table>
-					<thead>
-					<tr>
-						<th>Name</th>
-						<th>Organization</th>
-						<th>State</th>
-						<th>Wallet</th>
-						<th></th>
-					</tr>
-					</thead>
-					<tbody>
-					{{#each applications}}
-					<tr>
-						<td><a href="/admin/applications/{{this.id}}">{{this.name}}</a></td>
-						<td>{{this.organization.name}}</td>
-						<td>
-							{{#if this.vbId}}<span class="badge badge-published">Published</span><br><code style="word-break: break-all;">{{this.vbId}}</code>
-							{{else}}<span class="badge badge-draft">Local only</span>{{/if}}
-						</td>
-						<td>{{this.wallet.name}}</td>
-						<td class="action-buttons">
-							<a href="/admin/applications/{{this.id}}" class="btn btn-secondary">Details</a>
-							<a href="/admin/applications/{{this.id}}/edit" class="btn btn-secondary">Edit</a>
-							<form method="post" action="/admin/applications/{{this.id}}/publish" style="display:inline;">
-								<button type="submit" class="btn btn-primary" data-publish-wallet-id="{{this.wallet.id}}"
-									data-confirm="Publish this application on-chain? This spends fees from the wallet's account.">{{#if this.vbId}}Republish{{else}}Publish{{/if}}</button>
-							</form>
-							<form method="post" action="/admin/applications/{{this.id}}/delete" style="display:inline;">
-								<button type="submit" class="btn btn-danger" data-confirm="Delete this application from the local registry? A published application stays on-chain.">Delete</button>
-							</form>
-						</td>
-					</tr>
-					{{else}}
-					<tr><td colspan="5">No applications yet.</td></tr>
-					{{/each}}
-					</tbody>
-				</table>
 
-				<div id="onchain-section" hidden>
-					<h3>Found on-chain, not registered locally</h3>
+				<section class="catalog-card">
+					<div class="catalog-card-header">
+						<h3>Registered applications</h3>
+						<span class="badge">{{applications.length}}</span>
+						<a href="/admin/applications/new" class="btn btn-primary">New application</a>
+					</div>
+					<p class="catalog-subtitle">Kept in this operator. Local-only applications can be published once their organization is published.</p>
 					<table>
-						<thead><tr><th>Name</th><th>Description</th><th>Virtual blockchain ID</th><th>Wallet</th><th></th></tr></thead>
-						<tbody id="onchain-rows"></tbody>
+						<thead>
+						<tr>
+							<th>Name</th>
+							<th>Organization</th>
+							<th>State</th>
+							<th>Wallet</th>
+							<th></th>
+						</tr>
+						</thead>
+						<tbody>
+						{{#each applications}}
+						<tr>
+							<td><a href="/admin/applications/{{this.id}}">{{this.name}}</a></td>
+							<td>{{this.organization.name}}</td>
+							<td>
+								{{#if this.vbId}}<span class="badge badge-published">Published</span><br><code style="word-break: break-all;">{{this.vbId}}</code>
+								{{else}}<span class="badge badge-draft">Local only</span>{{/if}}
+							</td>
+							<td>{{this.wallet.name}}</td>
+							<td class="action-buttons">
+								<a href="/admin/applications/{{this.id}}" class="btn btn-secondary">Details</a>
+								<a href="/admin/applications/{{this.id}}/edit" class="btn btn-secondary">Edit</a>
+								<form method="post" action="/admin/applications/{{this.id}}/publish" style="display:inline;">
+									<button type="submit" class="btn btn-primary" data-publish-wallet-id="{{this.wallet.id}}"
+										data-confirm="Publish this application on-chain? This spends fees from the wallet's account.">{{#if this.vbId}}Republish{{else}}Publish{{/if}}</button>
+								</form>
+								<form method="post" action="/admin/applications/{{this.id}}/delete" style="display:inline;">
+									<button type="submit" class="btn btn-danger" data-confirm="Delete this application from the local registry? A published application stays on-chain.">Delete</button>
+								</form>
+							</td>
+						</tr>
+						{{else}}
+						<tr><td colspan="5">No applications yet.</td></tr>
+						{{/each}}
+						</tbody>
 					</table>
-				</div>
+				</section>
+
+				{{> catalogOnchainCard title="Found on-chain" noun="applications" subtitle="Published under the organizations of your wallets but not registered here. Import them to manage them from this operator."}}
 			</div>
 		</main>
 	</div>
@@ -78,6 +79,7 @@
 		initCatalog({
 			discoverUrl: '/admin/applications/discover',
 			importUrl: '/admin/applications/import',
+			columns: ['Name', 'Description'],
 			describe: (app) => [app.name, app.description],
 		});
 	</script>

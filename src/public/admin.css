@@ -708,3 +708,62 @@ textarea {
 	color: var(--color-text-secondary);
 	margin: 4px 0;
 }
+
+/* Registered items and items found on-chain are shown in two distinct cards */
+.catalog-card {
+	background: var(--color-bg-light);
+	border: 1px solid var(--color-border);
+	border-radius: 6px;
+	padding: 1rem 1.25rem;
+	margin-bottom: 1.5rem;
+}
+
+.catalog-card-header {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid var(--color-border);
+}
+
+.catalog-card-header h3 {
+	margin: 0;
+}
+
+.catalog-card-header .btn {
+	margin-left: auto;
+}
+
+.catalog-subtitle {
+	margin: 0.5rem 0 1rem;
+	font-size: 13px;
+	color: var(--color-text-secondary);
+}
+
+.catalog-card-onchain {
+	background: #f8fafc;
+	border-style: dashed;
+}
+
+.catalog-card table {
+	margin-bottom: 0;
+}
+
+.catalog-empty {
+	margin: 0.5rem 0;
+	font-size: 13px;
+	font-style: italic;
+	color: var(--color-text-secondary);
+}
+
+.catalog-wallet {
+	margin-bottom: 1rem;
+}
+
+.catalog-wallet h4 {
+	margin: 0 0 0.25rem;
+}
+
+.catalog-note-error {
+	color: var(--color-danger);
+}
