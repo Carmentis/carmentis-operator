@@ -50,6 +50,12 @@ port = ...
 [operator.database.sqlite]
 database = ...
 
+[operator.anchoring]
+# Cron expression defining how often submitted anchor requests are checked against the indexer.
+# checkCronExpression = "* * * * *" # optional, every minute
+# Delay in seconds after which a submitted anchor request not found in the indexer is marked as failed.
+# submittedTimeoutSeconds = 600 # optional
+
 [operator.protocols.wap]
 # version = "v0" # optional
 

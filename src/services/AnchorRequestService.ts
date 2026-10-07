@@ -70,6 +70,26 @@ export class AnchorRequestService {
 		await this.anchorRequestRepository.save(anchorRequest);
 	}
 
+	/**
+	 * Returns the anchor requests whose microblock has been submitted but not yet confirmed on chain.
+	 */
+	findSubmitted(): Promise<AnchorRequestEntity[]> {
+		return this.anchorRequestRepository.find({
+			where: { status: AnchorRequestStatus.SUBMITTED },
+			relations: ['application', 'application.wallet'],
+		});
+	}
+
+	async markAsAnchored(anchorRequest: AnchorRequestEntity) {
+		anchorRequest.status = AnchorRequestStatus.ANCHORED;
+		await this.anchorRequestRepository.save(anchorRequest);
+	}
+
+	async markAsFailed(anchorRequest: AnchorRequestEntity) {
+		anchorRequest.status = AnchorRequestStatus.FAILED;
+		await this.anchorRequestRepository.save(anchorRequest);
+	}
+
 	async cancelAnchorRequestByAnchorRequestId(anchorRequestId: string) {
 		const anchorRequest = await this.findOneByAnchorRequestId(anchorRequestId);
 		anchorRequest.status = AnchorRequestStatus.CANCELLED;

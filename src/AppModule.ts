@@ -33,6 +33,7 @@ import { WalletBalanceService } from './services/WalletBalanceService';
 import ChainService from './services/ChainService';
 import { AnchorRequestService } from './services/AnchorRequestService';
 import { DeskAuthChallengeService } from './services/DeskAuthChallengeService';
+import { AnchorRequestStatusCronService } from './services/AnchorRequestStatusCronService';
 import { CarmentisDeskAuthService } from './services/CarmentisDeskAuthService';
 import { InvitationService } from './services/InvitationService';
 import { RegistrationService } from './services/RegistrationService';
@@ -122,6 +123,7 @@ import { HomeController } from './controllers/HomeController';
 		ChainService,
 		AnchorRequestService,
 		DeskAuthChallengeService,
+		AnchorRequestStatusCronService,
 		CarmentisDeskAuthService,
 		InvitationService,
 		RegistrationService,

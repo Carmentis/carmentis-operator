@@ -111,6 +111,9 @@ importers:
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
+      cron:
+        specifier: 4.4.0
+        version: 4.4.0
       did-resolver:
         specifier: ^5.0.1
         version: 5.0.1

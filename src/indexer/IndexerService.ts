@@ -2,9 +2,10 @@ import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import {
 	appControllerGetAccounts,
 	appControllerGetApplications,
+	appControllerGetMicroblocks,
 	appControllerGetOrganizations,
 } from '../generated';
-import type { AccountDto, ApplicationDto, OrganizationDto } from '../generated/models';
+import type { AccountDto, ApplicationDto, MicroblockDto, OrganizationDto } from '../generated/models';
 import type { WalletEntity } from '../entities/WalletEntity';
 
 const PAGE_SIZE = 100;
@@ -27,6 +28,11 @@ export class WalletIndexer {
 
 	async getApplicationByVbId(vbId: string): Promise<ApplicationDto | null> {
 		const { data } = await appControllerGetApplications({ vb_id: vbId }, { baseUrl: this.baseUrl });
+		return data.items[0] ?? null;
+	}
+
+	async findMicroblockByHash(hashHex: string): Promise<MicroblockDto | null> {
+		const { data } = await appControllerGetMicroblocks({ hash: hashHex, limit: 1 }, { baseUrl: this.baseUrl });
 		return data.items[0] ?? null;
 	}
 

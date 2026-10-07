@@ -59,6 +59,7 @@
     "class-validator": "^0.15.1",
     "commander": "^14.0.3",
     "cookie-parser": "^1.4.7",
+    "cron": "4.4.0",
     "did-resolver": "^5.0.1",
     "dotenv": "^17.4.2",
     "get-port": "^7.2.0",
