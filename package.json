@@ -32,7 +32,7 @@
     "@as-integrations/express5": "^1.1.2",
     "@automapper/classes": "^8.8.1",
     "@automapper/core": "^8.8.1",
-    "@cmts-dev/carmentis-sdk-core": "^1.7.3",
+    "@cmts-dev/carmentis-sdk-core": "^1.8.0",
     "@digitalbazaar/did-method-jwk": "^2.0.0",
     "@iarna/toml": "^2.2.5",
     "@logtape/logtape": "^2.2.4",
