@@ -12,7 +12,8 @@ import { GetAuthenticityProofRequestDto } from '../dto/wallet/GetVirtualBlockcha
 import { UserService } from '../services/UserService';
 import { ApiKey } from '../decorators/ApiKeyDecorator';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
-import { Proof } from 'src/utils/proof/Proof';
+import { ProofService } from '../services/ProofService';
+import { API_V1 } from 'src/api/ApiVersion';
 
 @ApiTags('Anchor Request')
 @Controller({ path: 'anchorRequest', version: API_V1 })
@@ -23,6 +24,7 @@ export class AnchorRequestController {
 		private readonly operatorService: WalletAnchoringRequestService,
 		private readonly anchorService: AnchorRequestService,
 		private readonly walletService: WalletService,
+		private readonly proofService: ProofService,
 		private readonly userService: UserService,
 	) {}
 
@@ -128,7 +130,7 @@ export class AnchorRequestController {
 		const vbId = anchorRequest.virtualBlockchainId;
 		const author = request.proofAuthor;
 		this.logger.log(`Returning authenticity proof for vb ${vbId} with author ${author}`)
-		const proof = await Proof.getVbProof(vbId, wallet, author);
+		const proof = await this.proofService.getVbProof(vbId, wallet, author);
 		return proof;
 	}
 

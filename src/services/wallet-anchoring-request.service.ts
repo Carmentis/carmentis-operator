@@ -416,8 +416,6 @@ export class WalletAnchoringRequestService {
 			...anchorDto,
 		})
 
-		console.log("offchainDictionary", mbBuilder.getOffchainDictionary());
-
 		// define the gas price
 		const usedGasPriceInAtomics = typeof anchorDto.gasPriceInAtomics === 'number' ? anchorDto.gasPriceInAtomics : 1;
 		const gasPrice = CMTSToken.createAtomic(usedGasPriceInAtomics);

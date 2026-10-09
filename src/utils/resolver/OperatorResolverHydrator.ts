@@ -9,18 +9,20 @@ import {
     Hash,
     AppLedgerProof,
     JsonObject,
-    OffchainDataHandler,
-    AccountCrypto,
+    DigestDataHandler,
 } from "@cmts-dev/carmentis-sdk-core";
+import { WalletEntity } from "../../entities/WalletEntity";
+import { WalletService } from "../../services/WalletService";
 
 export class OperatorResolverHydrator implements ResolverHydrator {
-    private accountCrypto: AccountCrypto;
+    private walletEntity: WalletEntity;
     private provider: Provider;
     private proofs: Map<string, AppLedgerProof> = new Map;
-    private offchainData: Map<string, JsonObject> = new Map;
+    private digestData: Map<string, JsonObject> = new Map;
+    private readonly walletService: WalletService;
 
-    constructor(accountCrypto: AccountCrypto, provider: Provider) {
-        this.accountCrypto = accountCrypto;
+    constructor(walletEntity: WalletEntity, provider: Provider) {
+        this.walletEntity = walletEntity;
         this.provider = provider;
     }
 
@@ -28,8 +30,8 @@ export class OperatorResolverHydrator implements ResolverHydrator {
         return Object.fromEntries(this.proofs);
     }
 
-    getOffchainData() {
-        return Object.fromEntries(this.offchainData);
+    getDigestData() {
+        return Object.fromEntries(this.digestData);
     }
 
     async hydrateMicroblock(link: string, mbRef: MbRef): Promise<JsonData> {
@@ -56,21 +58,24 @@ export class OperatorResolverHydrator implements ResolverHydrator {
             throw new Error(`the microblock does not belong to an application ledger`);
         }
 
-        const data = await vb.getRecord(height, this.accountCrypto);
+		const vbSeedHash = await vb.getGenesisSeed();
+		const vbSeed = vbSeedHash.toBytes();
+		const actorIdentity = await this.walletService.getActorIdentity(this.walletEntity, vbSeed);
+        const data = await vb.getRecord(height, actorIdentity);
         const proof = await vb.exportProof(
             { author: "" },
-            this.accountCrypto,
+            actorIdentity,
             [ height ]
         );
         this.proofs.set(link, proof.proof);
         return data;
     }
 
-    async hydrateOffchainData(onchainData: OnchainData): Promise<JsonData> {
-        const offchainData = {};
+    async hydrateDigestData(onchainData: OnchainData): Promise<JsonData> {
+        const digestData = {};
         const digest = onchainData.digest;
-        const res = OffchainDataHandler.inject(onchainData, offchainData);
-        this.offchainData.set(digest, offchainData);
+        const res = DigestDataHandler.inject(onchainData, digestData);
+        this.digestData.set(digest, digestData);
         return res;
     }
 }

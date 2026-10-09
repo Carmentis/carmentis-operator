@@ -1,5 +1,4 @@
 import { WalletEntity } from "src/entities/WalletEntity";
-import { WalletUtils } from "../WalletUtils";
 import { OperatorResolverHydrator } from "./OperatorResolverHydrator";
 import {
     Provider,
@@ -18,18 +17,17 @@ export class ResolverHandler {
     }
 
     async resolve(input: ResolverInput): Promise<ResolutionProof> {
-        const accountCrypto = await WalletUtils.getAccountCryptoFromWallet(this.walletEntity);
-        const hydrator = new OperatorResolverHydrator(accountCrypto, this.provider);
+        const hydrator = new OperatorResolverHydrator(this.walletEntity, this.provider);
         const resolver = new Resolver(hydrator);
         const resolvedJson = await resolver.resolveFromInput(input);
         const proofs = hydrator.getProofs();
-        const offchainData = hydrator.getOffchainData();
+        const digestData = hydrator.getDigestData();
 
         return {
             linkedJson: input.linkedJson,
             resolvedJson,
             proofs,
-            offchainData,
+            digestData,
         };
     }
 }
