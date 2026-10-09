@@ -69,7 +69,7 @@ export function getDatabaseConfig(config: OperatorConfigService): DataSourceOpti
 			synchronize,
 			migrationsRun,
 			migrations,
-			type: 'sqlite',
+			type: 'better-sqlite3',
 			database: join(
 				config.getHomePath(),
 				sqliteConfig.database,

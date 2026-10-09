@@ -170,6 +170,18 @@ export class AnchorRequestController {
 			where: {
 				anchorRequestId
 			},
+			select: {
+				anchorRequestId: true,
+				submittedMicroblockHash: true,
+				virtualBlockchainId: true,
+				createdAt: true,
+				virtualBlockchainExpiration: true,
+				submittedMicroblockHeight: true,
+				generatedGenesisSeed: true,
+				receivedAnchorRequest: true,
+				status: true,
+			}
+			/*
 			select: [
 				'anchorRequestId',
 				'submittedMicroblockHash',
@@ -181,6 +193,8 @@ export class AnchorRequestController {
 				'receivedAnchorRequest',
 				'status'
 			]
+
+			 */
 		})
 	}
 

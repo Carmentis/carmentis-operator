@@ -76,7 +76,11 @@ export class AnchorRequestService {
 	findSubmitted(): Promise<AnchorRequestEntity[]> {
 		return this.anchorRequestRepository.find({
 			where: { status: AnchorRequestStatus.SUBMITTED },
-			relations: ['application', 'application.wallet'],
+			relations: {
+				application: {
+					wallet: true,
+				}
+			}
 		});
 	}
 
@@ -107,7 +111,9 @@ export class AnchorRequestService {
 			where: {
 				anchorRequestId: anchorRequestID,
 			},
-			relations: ['application']
+			relations: {
+				application: true,
+			}
 		})
 		this.logger.log(`Anchor request found for id ${anchorRequestID}:`)
 		return storedAnchorRequest;
@@ -115,7 +121,9 @@ export class AnchorRequestService {
 
 	async getAllAnchorRequests(offset?: number, limit?: number) {
 		return await this.anchorRequestRepository.find({
-			relations: ['application'],
+			relations: {
+				application: true,
+			},
 			skip: offset,
 			take: limit
 		});
@@ -170,7 +178,9 @@ export class AnchorRequestService {
 	async getAnchorRequestByAnchorRequestId(anchorRequestId: string) {
 		return await this.anchorRequestRepository.findOne({
 			where: {anchorRequestId},
-			relations: ['application']
+			relations: {
+				application: true
+			}
 		});
 	}
 

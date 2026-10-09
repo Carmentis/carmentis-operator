@@ -36,7 +36,9 @@ export class ApplicationService {
 			where: {
 				vbId: applicationVbId
 			},
-			relations: ['wallet']
+			relations: {
+				wallet: true
+			}
 		});
 	}
 

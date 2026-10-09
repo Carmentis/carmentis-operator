@@ -52,7 +52,9 @@ export class ApiKeyService {
 					id: apiKey.id
 				},
 			},
-			relations: ['wallet']
+			relations: {
+				wallet: true,
+			}
 		})
 	}
 
@@ -72,7 +74,10 @@ export class ApiKeyService {
 		const {id, key: secret} = this.parseKey(key);
 		const apiKey = await ApiKeyEntity.findOne({
 			where: { id },
-			relations: ['wallet', 'application']
+			relations: {
+				wallet: true,
+				application: true,
+			}
 		})
 		if (apiKey.apiKey !== key) throw new Error('Invalid API key');
 		return apiKey;

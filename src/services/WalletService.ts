@@ -82,7 +82,9 @@ export class WalletService {
 			where: {
 				id: walletId,
 			},
-			relations: ["privateKey"]
+			relations: {
+				privateKey: true
+			}
 		});
 		return wallet.privateKey;
 	}
