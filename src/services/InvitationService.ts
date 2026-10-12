@@ -69,7 +69,9 @@ export class InvitationService {
 		return this.repository.find({
 			where: { createdByUserId },
 			order: { createdAt: 'DESC' },
-			relations: ['usedBy'],
+			relations: {
+				usedBy: true,
+			},
 		});
 	}
 

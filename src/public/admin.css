@@ -19,10 +19,6 @@
 }
 
 
-#my-account {
-	border-bottom: 1px solid var(--color-border);
-}
-
 * {
 	margin: 0;
 	padding: 0;
@@ -680,4 +676,165 @@ textarea {
 .detail-list dd {
 	margin: 0;
 	word-break: break-all;
+}
+
+/* Publication state of organizations and applications */
+.badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: 12px;
+	font-weight: 600;
+	background: #e5e7eb;
+	color: #374151;
+}
+
+.badge-draft {
+	background: #fef3c7;
+	color: #92400e;
+}
+
+.badge-published {
+	background: #dcfce7;
+	color: #166534;
+}
+
+.catalog-note {
+	font-size: 13px;
+	color: var(--color-text-secondary);
+	margin: 4px 0;
+}
+
+/* Registered items and items found on-chain are shown in two distinct cards */
+.catalog-card {
+	background: var(--color-bg-light);
+	border: 1px solid var(--color-border);
+	border-radius: 6px;
+	padding: 1rem 1.25rem;
+	margin-bottom: 1.5rem;
+}
+
+.catalog-card-header {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid var(--color-border);
+}
+
+.catalog-card-header h3 {
+	margin: 0;
+}
+
+.catalog-card-header .btn {
+	margin-left: auto;
+}
+
+.catalog-subtitle {
+	margin: 0.5rem 0 1rem;
+	font-size: 13px;
+	color: var(--color-text-secondary);
+}
+
+.catalog-card-onchain {
+	border-style: dashed;
+}
+
+.catalog-card table {
+	margin-bottom: 0;
+}
+
+.catalog-empty {
+	margin: 0.5rem 0;
+	font-size: 13px;
+	font-style: italic;
+	color: var(--color-text-secondary);
+}
+
+.catalog-wallet {
+	margin-bottom: 1rem;
+}
+
+.catalog-wallet h4 {
+	margin: 0 0 0.25rem;
+}
+
+.catalog-note-error {
+	color: var(--color-danger);
+}
+
+/* Sidebar: labelled groups, the on-chain objects nested under their owner */
+.nav-section-label {
+	padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--color-text-secondary);
+}
+
+.nav-section-label:first-child {
+	padding-top: 0;
+}
+
+.nav-sub {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-xs);
+	/* the connector lines up with the centre of the parent's icon */
+	margin-left: calc(var(--spacing-md) + 9px);
+	padding-left: var(--spacing-sm);
+	border-left: 2px solid var(--color-border);
+}
+
+.nav-sub .nav-link {
+	padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.nav-link.active .nav-icon img {
+	filter: brightness(0) invert(1);
+}
+
+/* Topbar: the account of the user is reached from the user block */
+.user-link {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-md);
+	padding: var(--spacing-xs) var(--spacing-sm);
+	border-radius: 4px;
+	text-decoration: none;
+}
+
+.user-link:hover {
+	background-color: var(--color-bg);
+	text-decoration: none;
+}
+
+.user-link.active .user-pseudo {
+	color: var(--color-primary);
+	font-weight: 600;
+}
+
+/* Breadcrumbs above the title of object pages */
+.breadcrumbs {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--spacing-sm);
+	margin-bottom: var(--spacing-md);
+	font-size: 13px;
+	color: var(--color-text-secondary);
+}
+
+.breadcrumbs a {
+	color: var(--color-text-secondary);
+}
+
+.breadcrumbs a:hover {
+	color: var(--color-primary);
+}
+
+.breadcrumb-current {
+	color: var(--color-text);
+	font-weight: 500;
 }

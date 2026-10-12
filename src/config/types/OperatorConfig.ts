@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { join } from 'path';
+import { CronTime } from 'cron';
 
 const DEFAULT_JWT_TOKEN_VALIDITY = 28800; // 8h
 
@@ -33,6 +34,21 @@ export const ConfigSchema = z.object({
 				.describe("Admin invitation link configuration."),
 		}).prefault({})
 			.describe("Workspace configuration, including authentication and GraphQL settings."),
+
+		anchoring: z.object({
+			checkCronExpression: z.string().default('* * * * *')
+				.refine((expression) => {
+					try {
+						new CronTime(expression);
+						return true;
+					} catch {
+						return false;
+					}
+				}, "Invalid cron expression.")
+				.describe("Cron expression defining how often submitted anchor requests are checked against the indexer (default: every minute)."),
+			submittedTimeoutSeconds: z.number().positive().default(600)
+				.describe("Delay in seconds after which a submitted anchor request not found in the indexer is considered failed."),
+		}).prefault({}).describe("Anchor request settings."),
 
 		swagger: z.object({
 			path: z.string().default('swagger')

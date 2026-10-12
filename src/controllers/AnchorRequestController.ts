@@ -121,7 +121,7 @@ export class AnchorRequestController {
 		// fetch the virtual blockchain id from the anchor request
 		const anchorRequest = await this.anchorService.findOneByAnchorRequestId(anchorRequestId);
 		if (
-			anchorRequest.status !== AnchorRequestStatus.SUBMITTED ||
+			!anchorRequest.isCompleted() ||
 			!anchorRequest.virtualBlockchainId
 		) {
 			throw new BadRequestException('Cannot produce a proof for an anchor request that is not submitted.');
@@ -157,6 +157,18 @@ export class AnchorRequestController {
 			where: {
 				anchorRequestId
 			},
+			select: {
+				anchorRequestId: true,
+				submittedMicroblockHash: true,
+				virtualBlockchainId: true,
+				createdAt: true,
+				virtualBlockchainExpiration: true,
+				submittedMicroblockHeight: true,
+				generatedGenesisSeed: true,
+				receivedAnchorRequest: true,
+				status: true,
+			}
+			/*
 			select: [
 				'anchorRequestId',
 				'submittedMicroblockHash',
@@ -168,6 +180,8 @@ export class AnchorRequestController {
 				'receivedAnchorRequest',
 				'status'
 			]
+
+			 */
 		})
 	}
 
@@ -225,7 +239,7 @@ export class AnchorRequestController {
 	) {
 		// return false if not submitted
 		const anchorRequest = await this.anchorService.getAnchorRequestByAnchorRequestId(anchorRequestId);
-		if (anchorRequest.status !== AnchorRequestStatus.SUBMITTED)
+		if (!anchorRequest.isCompleted())
 			return { isPublished: false };
 
 		const applicationId = anchorRequest.application.vbId;

@@ -17,26 +17,8 @@ import { BinaryEncoding } from '../dto/signature/BinaryEncoding';
  * Handles key pair generation, admin token creation, and node setup.
  */
 @Injectable()
-export class CryptoService implements OnModuleInit{
-	private logger = new Logger(CryptoService.name);
+export class CryptoService {
 
-
-	/**
-	 * Creates an instance of CryptoService.
-	 * @param envService - Service providing access to environment variables
-	 */
-	constructor(
-		private readonly envService: EnvService
-	) {}
-
-
-	/**
-	 * Initializes the crypto service when the module is loaded.
-	 * Sets up key pairs, admin token, and node connection.
-	 */
-	async onModuleInit() {
-
-	}
 
 
 	async signBinary(

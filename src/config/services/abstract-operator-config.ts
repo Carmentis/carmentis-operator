@@ -125,4 +125,13 @@ export abstract class AbstractOperatorConfig {
 		return this.config.operator.admin.invitation.expirySeconds;
 	}
 
+	/**
+	 * Returns the anchor request settings: how often submitted anchor requests are checked against the indexer,
+	 * and the delay (in seconds) after which a submitted request not found in the indexer is considered failed.
+	 */
+	getAnchoringConfig(): { checkCronExpression: string, submittedTimeoutSeconds: number } {
+		const { checkCronExpression, submittedTimeoutSeconds } = this.config.operator.anchoring;
+		return { checkCronExpression, submittedTimeoutSeconds };
+	}
+
 }

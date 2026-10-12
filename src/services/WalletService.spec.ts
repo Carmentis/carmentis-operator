@@ -8,6 +8,7 @@ import { PrivateKeyObjectType } from '../types/types';
 import { PrivateKeyService } from './PrivateKeyService';
 import { Bip39Utils } from '../utils/Bip39Utils';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
+import { OrganizationEntity } from '../entities/OrganizationEntity';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
 import { WalletService } from './WalletService';
@@ -45,12 +46,22 @@ describe('WalletService', () => {
 		);
 	}
 
+	async function createApplication(wallet: WalletEntity) {
+		const organization = await dataSource
+			.getRepository(OrganizationEntity)
+			.save({ name: 'org', city: 'Paris', countryCode: 'FR', website: 'https://org.example', wallet });
+		const applicationRepository = dataSource.getRepository(ApplicationEntity);
+		return applicationRepository.save(
+			applicationRepository.create({ vbId: 'aa', name: 'app', wallet, organization }),
+		);
+	}
+
 	beforeEach(async () => {
 		dataSource = new DataSource({
 			type: 'sqlite',
 			database: ':memory:',
 			synchronize: true,
-			entities: [WalletEntity, PrivateKeyEntity, ApplicationEntity, ApiKeyEntity, AnchorRequestEntity],
+			entities: [WalletEntity, PrivateKeyEntity, OrganizationEntity, ApplicationEntity, ApiKeyEntity, AnchorRequestEntity],
 		});
 		await dataSource.initialize();
 		service = new WalletService(dataSource.getRepository(WalletEntity), new PrivateKeyService());
@@ -94,6 +105,45 @@ describe('WalletService', () => {
 
 		expect(account).toEqual({ accountId: 'AB'.repeat(32), balance: '0.00042 CMTS' });
 		expect(provider.getAccountState).toHaveBeenCalledWith(new Uint8Array(32).fill(0xab));
+	});
+
+	describe('getAccountStatus', () => {
+		async function walletWithProvider(provider: object) {
+			const wallet = await service.createWallet({
+				...baseDto,
+				privateKey: { keyType: PrivateKeyObjectType.SEED, schemeId: SignatureSchemeId.SECP256K1, seed: service.generateSeed() },
+			});
+			return { id: wallet.id, getProvider: () => provider } as any;
+		}
+
+		it('reports an attached wallet along with its account', async () => {
+			const wallet = await walletWithProvider({
+				getAccountIdFromPublicKey: jest.fn().mockResolvedValue(new Hash(new Uint8Array(32).fill(0xab))),
+				getAccountState: jest.fn().mockResolvedValue({ balance: 42 }),
+			});
+
+			await expect(service.getAccountStatus(wallet)).resolves.toEqual({
+				attached: true,
+				accountId: 'AB'.repeat(32),
+				balance: '0.00042 CMTS',
+			});
+		});
+
+		it('reports a wallet unknown to the network as not attached', async () => {
+			const wallet = await walletWithProvider({
+				getAccountIdFromPublicKey: jest.fn().mockRejectedValue(new Error('[error 0] Remote error: unknown account key hash')),
+			});
+
+			await expect(service.getAccountStatus(wallet)).resolves.toEqual({ attached: false });
+		});
+
+		it('does not mistake a node failure for a missing account', async () => {
+			const wallet = await walletWithProvider({
+				getAccountIdFromPublicKey: jest.fn().mockRejectedValue(new Error('fetch failed')),
+			});
+
+			await expect(service.getAccountStatus(wallet)).rejects.toThrow('fetch failed');
+		});
 	});
 
 	describe('getApplicationOnChainDetails', () => {
@@ -292,8 +342,7 @@ describe('WalletService', () => {
 
 	it('refuses to delete a wallet that still has an application attached', async () => {
 		const wallet = await createWallet();
-		const applicationRepository = dataSource.getRepository(ApplicationEntity);
-		await applicationRepository.save(applicationRepository.create({ vbId: 'aa', name: 'app', wallet }));
+		await createApplication(wallet);
 
 		await expect(service.deleteWallet(wallet.id)).rejects.toThrow(ConflictException);
 		const stillThere = await dataSource.getRepository(WalletEntity).findOneBy({ id: wallet.id });
@@ -310,12 +359,11 @@ describe('WalletService', () => {
 
 	it('reports accurate dependent counts', async () => {
 		const wallet = await createWallet();
-		const applicationRepository = dataSource.getRepository(ApplicationEntity);
-		await applicationRepository.save(applicationRepository.create({ vbId: 'aa', name: 'app', wallet }));
+		await createApplication(wallet);
 		const apiKeyRepository = dataSource.getRepository(ApiKeyEntity);
 		await apiKeyRepository.save(apiKeyRepository.create({ name: 'key', apiKey: 'cmts:1:secret', wallet }));
 
 		const counts = await service.countDependents(wallet.id);
-		expect(counts).toEqual({ applications: 1, apiKeys: 1 });
+		expect(counts).toEqual({ organizations: 1, applications: 1, apiKeys: 1 });
 	});
 });

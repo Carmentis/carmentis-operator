@@ -145,7 +145,6 @@ export class AnchorDto  {
 	@IsNumber()
 	@IsOptional()
 	@IsInt()
-	@IsPositive()
 	chainStorageInDays?: number;
 
 	@ApiProperty({

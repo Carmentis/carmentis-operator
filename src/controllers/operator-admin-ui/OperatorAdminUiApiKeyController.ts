@@ -1,7 +1,7 @@
 import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Post, Render, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { ApiKeyEntity } from '../../entities/ApiKeyEntity';
 import { ApplicationEntity } from '../../entities/ApplicationEntity';
 import { WalletEntity } from '../../entities/WalletEntity';
@@ -64,7 +64,7 @@ export class OperatorAdminUiApiKeyController {
 	@Render('api-key-form')
 	async newForm(@Req() req: Request): Promise<any> {
 		const [applications, wallets] = await Promise.all([
-			this.applicationRepository.find({ select: { vbId: true, name: true }, order: { name: 'ASC' } }),
+			this.applicationRepository.find({ select: { vbId: true, name: true }, where: { vbId: Not(IsNull()) }, order: { name: 'ASC' } }),
 			this.walletRepository.find({ select: { id: true, name: true }, order: { name: 'ASC' } }),
 		]);
 		return {
@@ -94,7 +94,7 @@ export class OperatorAdminUiApiKeyController {
 				},
 				relations: { application: true, wallet: true },
 			}),
-			this.applicationRepository.find({ select: { vbId: true, name: true }, order: { name: 'ASC' } }),
+			this.applicationRepository.find({ select: { vbId: true, name: true }, where: { vbId: Not(IsNull()) }, order: { name: 'ASC' } }),
 			this.walletRepository.find({ select: { id: true, name: true }, order: { name: 'ASC' } }),
 		]);
 		if (!apiKey) {

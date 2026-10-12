@@ -14,7 +14,7 @@ import {
 	Provider,
 	SectionType,
 	SeedEncoder,
-	SignatureSchemeId,
+	SignatureSchemeId, VirtualBlockchainExpiration, VirtualBlockchainSeed,
 	VirtualBlockchainType,
 	WalletCrypto,
 	WalletInteractiveAnchoringRequestActorKey,
@@ -378,40 +378,47 @@ export class WalletAnchoringRequestService {
 	async anchor(application: ApplicationEntity, anchorDto: AnchorDto) {
 
 
-		// we first recover the wallet for the organization
+		// recover the wallet for the organization
 		const wallet = await this.loadWalletEntityFromApplication(application);
 		const provider = wallet.getProvider();
 		const organizationVbId = await this.loadOrganizationVbIdFromApplication(provider, application);
 		const accountId = await this.loadAccountIdFromOrganizationVbId(provider, organizationVbId);
 
+
+
+
 		// we then load the application ledger if it is provided, otherwise we create a new application ledger
 		let applicationLedgerVb = ApplicationLedgerVb.createApplicationLedgerVirtualBlockchain(provider);
+		let mbBuilder: WalletRequestBasedApplicationLedgerMicroblockBuilder;
+		const applicationVbId = Hash.fromHex(application.vbId);
 		let isCreatingNewApplicationLedger = true;
+		let vbSeedBytes: Uint8Array;
 		if (anchorDto.virtualBlockchainId) {
 			applicationLedgerVb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.fromHex(anchorDto.virtualBlockchainId));
+			vbSeedBytes = (await applicationLedgerVb.getGenesisSeed()).toBytes();
 			isCreatingNewApplicationLedger = false;
+			mbBuilder = await WalletRequestBasedApplicationLedgerMicroblockBuilder.createFromVirtualBlockchain(
+				applicationVbId,
+				applicationLedgerVb
+			);
+		} else {
+			const vbSeed = VirtualBlockchainSeed.create(
+				VirtualBlockchainType.APP_LEDGER_VIRTUAL_BLOCKCHAIN,
+				VirtualBlockchainExpiration.expiresInDays(100)
+			)
+			vbSeedBytes = vbSeed.getGenesisSeed().toBytes();
+			mbBuilder = await WalletRequestBasedApplicationLedgerMicroblockBuilder.createFromEmptyVirtualBlockchain(
+				applicationVbId,
+				applicationLedgerVb,
+				vbSeed
+				);
 		}
 
 		// the operator anchors using its official identity as the actor identity
-		const vbSeed = (await applicationLedgerVb.getGenesisSeed()).toBytes();
 		const organizationPrivateKey = await this.walletService.getPrivateKeyOfWallet(wallet.id);
-		const actorIdentity = await this.walletService.getActorIdentity(wallet, vbSeed);
-		/*
-		const organizationPublicKey = await organizationPrivateKey.getPublicKey();
-		const actorPassphrase = await this.walletService.getActorPassphraseOfWallet(wallet.id)
-		const actorIdentity = await ExternalKeyApplicationLedgerActorIdentity.createFromPublicSignatureKeyAndMnemonic(
-			organizationPublicKey,
-			actorPassphrase,
-			vbSeed,
-		);
+		const actorIdentity = await this.walletService.getActorIdentity(wallet, vbSeedBytes);
 
-		 */
-
-
-
-		// we construct the microblock builder
-		const applicationId = Hash.fromHex(application.vbId);
-		const mbBuilder = await WalletRequestBasedApplicationLedgerMicroblockBuilder.createFromVirtualBlockchain(applicationId, applicationLedgerVb);
+		// we construct the microblock
 		const mb = await mbBuilder.createMicroblockFromStateUpdateRequest(actorIdentity, {
 			...anchorDto,
 		})

@@ -1,9 +1,10 @@
-import { IsDefined, IsHexadecimal, IsISO8601, IsNumber, IsString } from 'class-validator';
+import { IsNumber } from 'class-validator';
+import { ApplicationUpdateDto } from './ApplicationUpdateDto';
 
-export class ApplicationCreationDto {
-	@IsHexadecimal()
-	vbId: string;
-
+export class ApplicationCreationDto extends ApplicationUpdateDto {
 	@IsNumber()
 	walletId: number;
+
+	@IsNumber()
+	organizationId: number;
 }

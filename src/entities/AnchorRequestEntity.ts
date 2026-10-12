@@ -106,7 +106,7 @@ export class AnchorRequestEntity extends BaseEntity {
 	}
 
 	isCompleted(): boolean {
-		return this.status === AnchorRequestStatus.SUBMITTED;
+		return this.status === AnchorRequestStatus.SUBMITTED || this.status === AnchorRequestStatus.ANCHORED;
 	}
 
 	getVirtualBlockchainId(): Optional<string> {
@@ -118,7 +118,7 @@ export class AnchorRequestEntity extends BaseEntity {
 	}
 
 	isFailed(): boolean {
-		return this.status === 'failed';
+		return this.status === AnchorRequestStatus.FAILED;
 	}
 
 	getStatus() {
