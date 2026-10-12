@@ -6,7 +6,6 @@ minimumReleaseAge: 0
 onlyBuiltDependencies:
   - '@nestjs/core'
   - '@scarf/scarf'
-  - better-sqlite3
   - cbor-extract
   - cpu-features
   - esbuild
