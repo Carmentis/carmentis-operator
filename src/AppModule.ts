@@ -37,6 +37,7 @@ import { AnchorRequestStatusCronService } from './services/AnchorRequestStatusCr
 import { CarmentisDeskAuthService } from './services/CarmentisDeskAuthService';
 import { InvitationService } from './services/InvitationService';
 import { RegistrationService } from './services/RegistrationService';
+import { ProofService } from './services/ProofService';
 import { APP_GUARD, HttpAdapterHost } from '@nestjs/core';
 import { EncryptionServiceProxy } from './shared/transformers/EncryptionServiceProxy';
 import { CorsMiddleware } from './middlewares/CorsMiddleware';
@@ -129,6 +130,7 @@ import { WalletResolverController } from './controllers/wallet/WalletResolverCon
 		InvitationService,
 		RegistrationService,
 		AuthTokenService,
+		ProofService,
 
 		// pipes
 		WalletByIdPipe,

@@ -13,6 +13,7 @@ import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
 import { WalletService } from './WalletService';
 import { EncryptionServiceProxy } from '../shared/transformers/EncryptionServiceProxy';
+import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
 
 // WalletEntity.actorPassphrase is an @EncryptedColumn(), whose transformer reads
 // EncryptionServiceProxy.instance. In the real app that's set once from
@@ -97,8 +98,8 @@ describe('WalletService', () => {
 			privateKey: { keyType: PrivateKeyObjectType.SEED, schemeId: SignatureSchemeId.SECP256K1, seed: service.generateSeed() },
 		});
 		const provider = {
-			getAccountIdFromPublicKey: jest.fn().mockResolvedValue(new Hash(new Uint8Array(32).fill(0xab))),
-			getAccountState: jest.fn().mockResolvedValue({ balance: 42 }),
+			getAccountIdFromPublicKey: vi.fn().mockResolvedValue(new Hash(new Uint8Array(32).fill(0xab))),
+			getAccountState: vi.fn().mockResolvedValue({ balance: 42 }),
 		};
 
 		const account = await service.getOnChainAccount({ id: wallet.id, getProvider: () => provider } as any);
@@ -118,8 +119,8 @@ describe('WalletService', () => {
 
 		it('reports an attached wallet along with its account', async () => {
 			const wallet = await walletWithProvider({
-				getAccountIdFromPublicKey: jest.fn().mockResolvedValue(new Hash(new Uint8Array(32).fill(0xab))),
-				getAccountState: jest.fn().mockResolvedValue({ balance: 42 }),
+				getAccountIdFromPublicKey: vi.fn().mockResolvedValue(new Hash(new Uint8Array(32).fill(0xab))),
+				getAccountState: vi.fn().mockResolvedValue({ balance: 42 }),
 			});
 
 			await expect(service.getAccountStatus(wallet)).resolves.toEqual({
@@ -131,7 +132,7 @@ describe('WalletService', () => {
 
 		it('reports a wallet unknown to the network as not attached', async () => {
 			const wallet = await walletWithProvider({
-				getAccountIdFromPublicKey: jest.fn().mockRejectedValue(new Error('[error 0] Remote error: unknown account key hash')),
+				getAccountIdFromPublicKey: vi.fn().mockRejectedValue(new Error('[error 0] Remote error: unknown account key hash')),
 			});
 
 			await expect(service.getAccountStatus(wallet)).resolves.toEqual({ attached: false });
@@ -139,7 +140,7 @@ describe('WalletService', () => {
 
 		it('does not mistake a node failure for a missing account', async () => {
 			const wallet = await walletWithProvider({
-				getAccountIdFromPublicKey: jest.fn().mockRejectedValue(new Error('fetch failed')),
+				getAccountIdFromPublicKey: vi.fn().mockRejectedValue(new Error('fetch failed')),
 			});
 
 			await expect(service.getAccountStatus(wallet)).rejects.toThrow('fetch failed');
@@ -150,7 +151,7 @@ describe('WalletService', () => {
 		const vbId = 'aa'.repeat(32);
 		const organizationId = new Hash(new Uint8Array(32).fill(0xcd));
 		const applicationVb = {
-			getApplicationDescription: jest.fn().mockResolvedValue({
+			getApplicationDescription: vi.fn().mockResolvedValue({
 				name: 'My app',
 				description: 'desc',
 				homepageUrl: 'https://app.example',
@@ -158,18 +159,18 @@ describe('WalletService', () => {
 			}),
 			getOrganizationId: () => organizationId,
 		};
-		const walletWith = (loadOrganizationVirtualBlockchain: jest.Mock) =>
+		const walletWith = (loadOrganizationVirtualBlockchain: Mock) =>
 			({
 				rpcEndpoint: 'https://rpc.example',
 				getProvider: () => ({
-					loadApplicationVirtualBlockchain: jest.fn().mockResolvedValue(applicationVb),
+					loadApplicationVirtualBlockchain: vi.fn().mockResolvedValue(applicationVb),
 					loadOrganizationVirtualBlockchain,
 				}),
 			}) as any;
 
 		it('returns the application and the organization owning it', async () => {
-			const load = jest.fn().mockResolvedValue({
-				getDescription: jest.fn().mockResolvedValue({ name: 'Acme', website: 'https://acme.example', city: 'Paris', countryCode: 'FR' }),
+			const load = vi.fn().mockResolvedValue({
+				getDescription: vi.fn().mockResolvedValue({ name: 'Acme', website: 'https://acme.example', city: 'Paris', countryCode: 'FR' }),
 			});
 
 			const details = await service.getApplicationOnChainDetails(walletWith(load), vbId);
@@ -187,7 +188,7 @@ describe('WalletService', () => {
 		});
 
 		it('still returns the application when only the organization cannot be read', async () => {
-			const load = jest.fn().mockRejectedValue(new Error('organization not found'));
+			const load = vi.fn().mockRejectedValue(new Error('organization not found'));
 
 			const details = await service.getApplicationOnChainDetails(walletWith(load), vbId);
 
@@ -199,43 +200,43 @@ describe('WalletService', () => {
 		it('fails when the application itself cannot be read', async () => {
 			const wallet = {
 				rpcEndpoint: 'https://rpc.example',
-				getProvider: () => ({ loadApplicationVirtualBlockchain: jest.fn().mockRejectedValue(new Error('boom')) }),
+				getProvider: () => ({ loadApplicationVirtualBlockchain: vi.fn().mockRejectedValue(new Error('boom')) }),
 			} as any;
 			await expect(service.getApplicationOnChainDetails(wallet, vbId)).rejects.toThrow(BadRequestException);
 		});
 	});
 
 	describe('fetchApplicationNameFromChain', () => {
-		const walletWith = (getVirtualBlockchainStatus: jest.Mock, name = 'On-chain name') =>
+		const walletWith = (getVirtualBlockchainStatus: Mock, name = 'On-chain name') =>
 			({
 				rpcEndpoint: 'https://rpc.example',
 				getProvider: () => ({
 					getVirtualBlockchainStatus,
-					loadApplicationVirtualBlockchain: jest.fn().mockResolvedValue({
-						getApplicationDescription: jest.fn().mockResolvedValue({ name }),
+					loadApplicationVirtualBlockchain: vi.fn().mockResolvedValue({
+						getApplicationDescription: vi.fn().mockResolvedValue({ name }),
 					}),
 				}),
 			}) as any;
 		const vbId = 'aa'.repeat(32);
 
 		it('returns the on-chain name of an application virtual blockchain', async () => {
-			const status = jest.fn().mockResolvedValue({ type: VirtualBlockchainType.APPLICATION_VIRTUAL_BLOCKCHAIN });
+			const status = vi.fn().mockResolvedValue({ type: VirtualBlockchainType.APPLICATION_VIRTUAL_BLOCKCHAIN });
 			await expect(service.fetchApplicationNameFromChain(walletWith(status, 'My app'), vbId)).resolves.toBe('My app');
 			expect(status).toHaveBeenCalledWith(Buffer.from(vbId, 'hex'));
 		});
 
 		it('rejects an unknown virtual blockchain', async () => {
-			const status = jest.fn().mockResolvedValue(null);
+			const status = vi.fn().mockResolvedValue(null);
 			await expect(service.fetchApplicationNameFromChain(walletWith(status), vbId)).rejects.toThrow(/No virtual blockchain/);
 		});
 
 		it('rejects a virtual blockchain that is not an application', async () => {
-			const status = jest.fn().mockResolvedValue({ type: VirtualBlockchainType.APP_LEDGER_VIRTUAL_BLOCKCHAIN });
+			const status = vi.fn().mockResolvedValue({ type: VirtualBlockchainType.APP_LEDGER_VIRTUAL_BLOCKCHAIN });
 			await expect(service.fetchApplicationNameFromChain(walletWith(status), vbId)).rejects.toThrow(/not an application/);
 		});
 
 		it('reports a provider failure as a bad request', async () => {
-			const status = jest.fn().mockRejectedValue(new Error('connection refused'));
+			const status = vi.fn().mockRejectedValue(new Error('connection refused'));
 			await expect(service.fetchApplicationNameFromChain(walletWith(status), vbId)).rejects.toThrow(BadRequestException);
 		});
 	});

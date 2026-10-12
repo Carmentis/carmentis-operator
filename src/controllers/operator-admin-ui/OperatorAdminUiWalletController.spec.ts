@@ -1,5 +1,6 @@
 import { OperatorAdminUiWalletController } from './OperatorAdminUiWalletController';
 import { resolveNetwork } from '../../config/WalletNetworks';
+import { describe, it, expect, vi } from 'vitest';
 
 describe('OperatorAdminUiWalletController.create', () => {
 	const seedBody = {
@@ -14,12 +15,12 @@ describe('OperatorAdminUiWalletController.create', () => {
 
 	function setup() {
 		const walletService = {
-			createWallet: jest.fn().mockResolvedValue({ id: 1 }),
-			generateActorPassphrase: jest.fn().mockReturnValue('generated'),
+			createWallet: vi.fn().mockResolvedValue({ id: 1 }),
+			generateActorPassphrase: vi.fn().mockReturnValue('generated'),
 		};
-		const walletBalanceService = { getBalances: jest.fn() };
+		const walletBalanceService = { getBalances: vi.fn() };
 		const controller = new OperatorAdminUiWalletController({} as any, walletService as any, walletBalanceService as any);
-		const res = { redirect: jest.fn(), status: jest.fn().mockReturnThis(), render: jest.fn() };
+		const res = { redirect: vi.fn(), status: vi.fn().mockReturnThis(), render: vi.fn() };
 		return { controller, walletService, walletBalanceService, res };
 	}
 
@@ -64,8 +65,8 @@ describe('OperatorAdminUiWalletController.create', () => {
 
 	describe('account', () => {
 		function setupAccount(wallet: object | null) {
-			const walletRepository = { findOne: jest.fn().mockResolvedValue(wallet) };
-			const walletBalanceService = { getBalances: jest.fn() };
+			const walletRepository = { findOne: vi.fn().mockResolvedValue(wallet) };
+			const walletBalanceService = { getBalances: vi.fn() };
 			const controller = new OperatorAdminUiWalletController(walletRepository as any, {} as any, walletBalanceService as any);
 			return { controller, walletRepository, walletBalanceService };
 		}

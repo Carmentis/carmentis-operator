@@ -7,6 +7,7 @@ import {
 	WalletCrypto,
 } from '@cmts-dev/carmentis-sdk-core';
 import { JsonSignatureService } from './JsonSignatureService';
+import { describe, it, expect } from 'vitest';
 
 describe('JsonSignatureService', () => {
 	const service = new JsonSignatureService();

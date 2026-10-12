@@ -3,6 +3,7 @@ import { GoneException, NotFoundException } from '@nestjs/common';
 import { InvitationEntity } from '../entities/InvitationEntity';
 import { UserEntity } from '../entities/UserEntity';
 import { InvitationService } from './InvitationService';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 describe('InvitationService', () => {
 	let dataSource: DataSource;

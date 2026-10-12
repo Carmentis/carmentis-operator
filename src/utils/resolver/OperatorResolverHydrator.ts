@@ -74,7 +74,7 @@ export class OperatorResolverHydrator implements ResolverHydrator {
     async hydrateDigestData(onchainData: OnchainData): Promise<JsonData> {
         const digestData = {};
         const digest = onchainData.digest;
-        const res = DigestDataHandler.inject(onchainData, digestData);
+        const res = DigestDataHandler.jsonFromDigestData(onchainData, digestData);
         this.digestData.set(digest, digestData);
         return res;
     }

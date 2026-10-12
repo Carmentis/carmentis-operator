@@ -9,6 +9,7 @@ import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
 import { ApplicationService } from './ApplicationService';
 import { EncryptionServiceProxy } from '../shared/transformers/EncryptionServiceProxy';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 // WalletEntity.seed is an @EncryptedColumn(); see WalletService.spec.ts for details.
 EncryptionServiceProxy.setInstance({

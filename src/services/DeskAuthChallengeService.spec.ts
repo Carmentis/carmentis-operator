@@ -1,22 +1,23 @@
 import { BadRequestException } from '@nestjs/common';
 import { DeskAuthChallengeService } from './DeskAuthChallengeService';
+import { describe, it, expect, vi } from 'vitest';
 
 describe('DeskAuthChallengeService', () => {
 	function buildRepository(initial: any[]) {
 		const rows = [...initial];
 		return {
 			create: (data: any) => ({ id: `id-${rows.length}`, consumed: false, ...data }),
-			save: jest.fn(async (entity: any) => {
+			save: vi.fn(async (entity: any) => {
 				const existingIndex = rows.findIndex((row) => row.id === entity.id);
 				if (existingIndex >= 0) rows[existingIndex] = entity;
 				else rows.push(entity);
 				return entity;
 			}),
-			findOne: jest.fn(async ({ where }: any) => {
+			findOne: vi.fn(async ({ where }: any) => {
 				return rows.find((row) => row.challenge === where.challenge) ?? null;
 			}),
 			// Simulates an atomic conditional UPDATE: only succeeds if `consumed` still matches `where.consumed`.
-			update: jest.fn(async (where: any, patch: any) => {
+			update: vi.fn(async (where: any, patch: any) => {
 				const row = rows.find((r) => r.id === where.id);
 				if (!row || row.consumed !== where.consumed) {
 					return { affected: 0 };
@@ -24,7 +25,7 @@ describe('DeskAuthChallengeService', () => {
 				Object.assign(row, patch);
 				return { affected: 1 };
 			}),
-			delete: jest.fn(async () => ({ affected: 0 })),
+			delete: vi.fn(async () => ({ affected: 0 })),
 		};
 	}
 

@@ -7,6 +7,9 @@ import {
 	PublicSignatureKey,
 	Secp256k1PrivateSignatureKey,
 	CryptoEncoderFactory,
+	DigestDataHandler,
+	JsonObject,
+	OnchainData,
 } from '@cmts-dev/carmentis-sdk-core';
 import { randomBytes } from 'crypto';
 import { BinaryEncodingUtils } from '../utils/BinaryEncodingUtils';
@@ -44,5 +47,13 @@ export class CryptoService {
 		const rawSignature = BinaryEncodingUtils.decode(signature, signatureEncoding);
 		const result = await pk.verify(rawMessage, rawSignature);
 		return { verified: result }
+	}
+
+	getJsonDigest(object: JsonObject, addSalt: boolean, encoding?: string, digestAlg?: string) {
+		return DigestDataHandler.jsonToDigestData(object, addSalt, encoding, digestAlg);
+	}
+
+	verifyJsonDigest(onchainData: OnchainData, digestData: JsonObject) {
+		return DigestDataHandler.jsonFromDigestData(onchainData, digestData);
 	}
 }

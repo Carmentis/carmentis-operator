@@ -3,6 +3,7 @@ import { UserEntity } from '../entities/UserEntity';
 import { InvitationEntity } from '../entities/InvitationEntity';
 import { InvitationService } from './InvitationService';
 import { RegistrationService } from './RegistrationService';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 describe('RegistrationService', () => {
 	let dataSource: DataSource;
