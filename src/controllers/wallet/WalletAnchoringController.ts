@@ -12,7 +12,6 @@ import { ApiKey } from '../../decorators/ApiKeyDecorator';
 import { ApiKeyEntity } from '../../entities/ApiKeyEntity';
 import { CarmentisError } from '@cmts-dev/carmentis-sdk-core';
 import { ApplicationService } from '../../services/ApplicationService';
-import { InvalidArgumentError } from 'commander';
 import { WalletEntity } from '../../entities/WalletEntity';
 import { ApplicationEntity } from '../../entities/ApplicationEntity';
 import { API_V1 } from '../../api/ApiVersion';
