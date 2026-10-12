@@ -49,6 +49,15 @@ export class CryptoService {
 		return { verified: result }
 	}
 
+	/**
+	 * Converts a JSON object to a digest representation.
+	 *
+	 * @param {JsonObject} object - The JSON object to be processed.
+	 * @param {boolean} addSalt - Indicates whether to add a salt to the digest computation for additional security.
+	 * @param {string} [encoding] - Optional parameter specifying the desired encoding format for the output (e.g., 'hex', 'base64').
+	 * @param {string} [digestAlg] - Optional parameter specifying the digest algorithm to use (e.g., 'sha256', 'md5').
+	 * @return {string} - A string representing the computed digest of the JSON object.
+	 */
 	getJsonDigest(object: JsonObject, addSalt: boolean, encoding?: string, digestAlg?: string) {
 		return DigestDataHandler.jsonToDigestData(object, addSalt, encoding, digestAlg);
 	}

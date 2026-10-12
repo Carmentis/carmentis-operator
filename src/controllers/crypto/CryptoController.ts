@@ -1,11 +1,18 @@
-import { Controller, Get, ParseIntPipe, Query } from '@nestjs/common';
+import { Body, Controller, Get, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import crypto from 'crypto';
-import { API_V1 } from '../../../api/ApiVersion';
+import { API_V1 } from '../../api/ApiVersion';
+import { WalletJsonDigestRequestDto } from '../../dto/wallet/WalletJsonDigestRequestDto';
+import { CryptoService } from '../../services/CryptoService';
 
 @ApiTags('Crypto')
 @Controller({ path: 'crypto', version: API_V1 })
 export class CryptoController {
+
+	constructor(
+		private readonly cryptoService: CryptoService
+	) {
+	}
 	/**
 	 * Generate a cryptographic challenge
 	 */
@@ -81,5 +88,19 @@ export class CryptoController {
 	@Get('/uuid')
 	async generateUuid() {
 		return { uuid: crypto.randomUUID() }
+	}
+
+
+	@ApiOperation({
+		summary: 'Computes digest data of JSON',
+		description: 'Computes digest data for a given JSON object.'
+	})
+	@Post([
+		'digest/json',
+	])
+	async getJsonDigest(
+		@Body() params: WalletJsonDigestRequestDto,
+	) {
+		return this.cryptoService.getJsonDigest(params.object, params.addSalt, params.encoding, params.digestAlg);
 	}
 }

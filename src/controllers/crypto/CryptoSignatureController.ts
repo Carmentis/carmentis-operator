@@ -1,15 +1,15 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk-core';
-import { BinaryEncodingUtils } from '../../../utils/BinaryEncodingUtils';
+import { BinaryEncodingUtils } from '../../utils/BinaryEncodingUtils';
 import {
 	BinaryMessageSignatureVerificationRequestDto,
-} from '../../../dto/signature/BinaryMessageSignatureVerificationRequestDto';
-import { JsonSignatureVerificationWithPublicKeyRequestDto } from '../../../dto/signature/JsonSignatureVerificationRequestDto';
-import { JsonSignatureService } from '../../../services/JsonSignatureService';
-import { CryptoService } from '../../../services/CryptoService';
-import { SignatureVerificationApiResponse } from '../../../swagger/SignatureVerificationApiResponse';
-import { API_V1 } from '../../../api/ApiVersion';
+} from '../../dto/signature/BinaryMessageSignatureVerificationRequestDto';
+import { JsonSignatureVerificationWithPublicKeyRequestDto } from '../../dto/signature/JsonSignatureVerificationRequestDto';
+import { JsonSignatureService } from '../../services/JsonSignatureService';
+import { CryptoService } from '../../services/CryptoService';
+import { SignatureVerificationApiResponse } from '../../swagger/SignatureVerificationApiResponse';
+import { API_V1 } from '../../api/ApiVersion';
 
 @ApiTags('Crypto Signature')
 @Controller({ path: 'crypto/signature', version: API_V1 })

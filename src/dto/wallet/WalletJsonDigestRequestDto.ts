@@ -20,8 +20,9 @@ export class WalletJsonDigestRequestDto {
 	@ApiProperty({
 		description: 'Tells whether a salt must be automatically added',
 	})
+	@IsOptional()
 	@IsBoolean()
-	addSalt: boolean;
+	addSalt: boolean = false;
 
 	@ApiProperty({
 		description: `The encoding method. Defaults to 'canonical'.`,

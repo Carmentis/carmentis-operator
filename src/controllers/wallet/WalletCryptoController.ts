@@ -110,19 +110,7 @@ export class WalletCryptoController {
 		return { signature: { pk: await encoder.encodePublicKey(pk) } }
 	}
 
-	@ApiOperation({
-		summary: 'Computes digest data of JSON',
-		description: 'Computes digest data for a given JSON object.'
-	})
-	@ApiResponse(SignatureVerificationApiResponse.Response200)
-	@Post([
-		'digest/fromJson',
-	])
-	async getJsonDigest(
-		@Body() params: WalletJsonDigestRequestDto,
-	) {
-		return this.cryptoService.getJsonDigest(params.object, params.addSalt, params.encoding, params.digestAlg);
-	}
+
 
 	/*
 	@ApiOperation({
