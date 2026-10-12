@@ -15,16 +15,17 @@ import { WalletEntity } from "../../entities/WalletEntity";
 import { WalletService } from "../../services/WalletService";
 
 export class OperatorResolverHydrator implements ResolverHydrator {
-    private walletEntity: WalletEntity;
-    private provider: Provider;
     private proofs: Map<string, AppLedgerProof> = new Map;
     private digestData: Map<string, JsonObject> = new Map;
-    private readonly walletService: WalletService;
 
-    constructor(walletEntity: WalletEntity, provider: Provider) {
-        this.walletEntity = walletEntity;
-        this.provider = provider;
-    }
+
+    constructor(
+        private readonly walletService: WalletService,
+        private readonly walletEntity: WalletEntity,
+        private readonly provider: Provider
+    ) {}
+
+
 
     getProofs() {
         return Object.fromEntries(this.proofs);

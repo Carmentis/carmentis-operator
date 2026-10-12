@@ -71,6 +71,7 @@ import { OperatorAdminUiUserController } from './controllers/operator-admin-ui/O
 import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui/OperatorAdminUiApiKeyController';
 import { HomeController } from './controllers/HomeController';
 import { WalletResolverController } from './controllers/wallet/WalletResolverController';
+import { ResolverHandler } from './utils/resolver/ResolverHandler';
 
 @Module({
 	imports: [
@@ -131,6 +132,7 @@ import { WalletResolverController } from './controllers/wallet/WalletResolverCon
 		RegistrationService,
 		AuthTokenService,
 		ProofService,
+		ResolverHandler,
 
 		// pipes
 		WalletByIdPipe,

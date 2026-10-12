@@ -9,11 +9,17 @@ import { ResolutionProofDto } from 'src/dto/ResolverResponseDto';
 import { ResolverHandler } from 'src/utils/resolver/ResolverHandler';
 import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
 import { WalletEntity } from '../../entities/WalletEntity';
+import { API_V1 } from '../../api/ApiVersion';
 
 @ApiTags('Wallet Resolver')
-@Controller('/api')
+@Controller({ path: '', version: API_V1 })
 export class WalletResolverController {
     private logger = new Logger();
+
+    constructor(
+        private readonly resolver: ResolverHandler
+    ) {
+    }
 
     @ApiOperation({
         summary: 'Resolve data stored in microblocks',
@@ -24,18 +30,20 @@ export class WalletResolverController {
         description: 'A Carmentis proof containing the resolved data.',
         type: ResolutionProofDto
     })
-//  @ApiSecurity('api-key')
-    // TODO: this should not be public
-    @Public()
-    @Post('/wallet/:walletId/resolveWithWallet')
-    async anchorWithWallet(
+
+    @ApiSecurity('api-key')
+    @Post('/wallet/:walletId/resolve')
+    async resolve(
         @Param('walletId', WalletByIdPipe) walletEntity: WalletEntity,
         @Body() resolverDto: ResolverDto,
     ): Promise<ResolutionProofDto> {
 		const provider = walletEntity.getProvider();
         const chainId = await provider.getChainId();
-        const handler = new ResolverHandler(walletEntity, provider);
-        const proofContent = await handler.resolve(resolverDto);
+        const proofContent = await this.resolver.resolve(
+            walletEntity,
+            provider,
+            resolverDto
+        );
         console.log("resolverDto", resolverDto);
         console.log("proofContent", proofContent);
         const proof = ResolutionProofWrapper.createEmptyProof(chainId);

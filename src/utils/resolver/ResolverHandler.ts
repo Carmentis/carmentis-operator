@@ -6,18 +6,23 @@ import {
     ResolutionProof,
     ResolverInput,
 } from "@cmts-dev/carmentis-sdk-core";
+import { Injectable } from '@nestjs/common';
+import { WalletService } from '../../services/WalletService';
 
+@Injectable()
 export class ResolverHandler {
-    private walletEntity: WalletEntity;
-    private provider: Provider;
 
-    constructor(walletEntity: WalletEntity, provider: Provider) {
-        this.walletEntity = walletEntity;
-        this.provider = provider;
+    constructor(
+        private readonly walletService: WalletService
+    ) {
     }
 
-    async resolve(input: ResolverInput): Promise<ResolutionProof> {
-        const hydrator = new OperatorResolverHydrator(this.walletEntity, this.provider);
+    async resolve(walletEntity: WalletEntity, provider: Provider, input: ResolverInput): Promise<ResolutionProof> {
+        const hydrator = new OperatorResolverHydrator(
+            this.walletService,
+            walletEntity,
+            provider
+        );
         const resolver = new Resolver(hydrator);
         const resolvedJson = await resolver.resolveFromInput(input);
         const proofs = hydrator.getProofs();
