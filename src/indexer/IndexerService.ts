@@ -74,4 +74,8 @@ export class IndexerService {
 		}
 		return new WalletIndexer(wallet.indexerEndpoint);
 	}
+
+	forEndpoint(indexerEndpoint: string): WalletIndexer {
+		return new WalletIndexer(indexerEndpoint);
+	}
 }
