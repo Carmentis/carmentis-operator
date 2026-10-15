@@ -7,6 +7,7 @@ import {
 	IsPositive,
 	IsString,
 	ValidateNested,
+	IsUUID,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -117,6 +118,16 @@ export class MaskableFieldDto {
  * }
  */
 export class AnchorDto  {
+	@ApiProperty({
+		description: 'Identifier of the wallet owning the application. Optional: when provided, the application must belong to this wallet ' +
+			'(and match the wallet of the API key, if the key is bound to one).',
+		format: 'uuid',
+		required: false,
+	})
+	@IsOptional()
+	@IsUUID()
+	walletId?: string;
+
 	@ApiProperty({
 		description: 'Identifier of the application virtual blockchain. ' +
 			'The application must be published online before calling this endpoint.' +

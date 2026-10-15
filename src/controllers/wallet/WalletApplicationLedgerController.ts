@@ -1,6 +1,6 @@
 import { ApiBody, ApiCreatedResponse, ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { AnchorRequestStatusResponseDto } from '../../dto/AnchorRequestStatusResponseDto';
-import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Logger, NotFoundException, Post } from '@nestjs/common';
 import { AnchorRequestEntity } from '../../entities/AnchorRequestEntity';
 import { ApiKeyService } from '../../services/ApiKeyService';
 import { WalletAnchoringRequestService } from '../../services/wallet-anchoring-request.service';
@@ -12,7 +12,6 @@ import { ApiKey } from '../../decorators/ApiKeyDecorator';
 import { ApiKeyEntity } from '../../entities/ApiKeyEntity';
 import { CarmentisError } from '@cmts-dev/carmentis-sdk-core';
 import { ApplicationService } from '../../services/ApplicationService';
-import { WalletEntity } from '../../entities/WalletEntity';
 import { ApplicationEntity } from '../../entities/ApplicationEntity';
 import { API_V1 } from '../../api/ApiVersion';
 
@@ -164,7 +163,8 @@ export class WalletApplicationLedgerController {
 
 	@ApiOperation({
 		summary: 'Initiate an anchor request',
-		description: 'Initiates an anchoring request for an application. This endpoint is used to create an anchor request without explicit wallet approval.'
+		description: 'Initiates an anchoring request for an application. This endpoint is used to create an anchor request without explicit wallet approval. ' +
+			'`walletId` is optional: when provided (or when the API key is bound to a wallet), the application must belong to that wallet.'
 	})
 	@ApiBody({ type: AnchorDto, examples: AnchoringExamples })
 	@ApiCreatedResponse({
@@ -172,13 +172,14 @@ export class WalletApplicationLedgerController {
 		type: AnchorRequestResponseDto
 	})
 	@ApiSecurity('api-key')
-	@Post('/wallet/:walletId/applicationLedger/anchor')
+	@Post('/applicationLedger/anchor')
 	async anchor(
 		@Body() anchorDto: AnchorDto,
 		@ApiKey() key: ApiKeyEntity,
 	): Promise<AnchorRequestResponseDto> {
 		// find application and organization
 		const application = await this.retrieveApplication(key, anchorDto);
+		this.validateApplicationBelongsToWallet(key, anchorDto, application);
 		const applicationId = application.vbId;
 		this.validateIfApiKeyAllowingPublicationToApplication(key, applicationId)
 		this.validateGasPrice(key, anchorDto.gasPriceInAtomics);
@@ -234,33 +235,6 @@ export class WalletApplicationLedgerController {
 
 
 
-	@ApiOperation({
-		summary: 'Initiate an anchor request',
-		description: 'Initiates an anchoring request for an application. This endpoint is used to create an anchor request without explicit wallet approval.'
-	})
-	@ApiBody({
-		type: AnchorDto,
-		examples: AnchoringExamples
-	})
-	@ApiCreatedResponse({
-		description: 'The anchoring request has been created successfully.',
-		type: AnchorRequestResponseDto
-	})
-	@ApiSecurity('api-key')
-	@Post('/wallet/applicationLedger/anchor')
-	async anchorUsingImplicitWallet(
-		@Body() anchorDto: AnchorDto,
-		@ApiKey() key: ApiKeyEntity,
-	): Promise<AnchorRequestResponseDto> {
-		const application = await this.retrieveApplication(key, anchorDto);
-		const wallet = await this.retrieveWallet(key, application);
-
-		this.validateGasPrice(key, anchorDto.gasPriceInAtomics);
-		this.logAnchorRequest(anchorDto)
-		const anchorRequestId = await this.operatorService.anchor(application, anchorDto);
-		return { anchorRequestId: anchorRequestId }
-	}
-
 	private async retrieveApplication(key: ApiKeyEntity, anchorDto: AnchorDto) {
 		const isAssociatedWithApplication = !!key.application;
 		const isApplicationSpecifiedInRequest = !!anchorDto.applicationId;
@@ -281,21 +255,19 @@ export class WalletApplicationLedgerController {
 		}
 	}
 
-	private async retrieveWallet(key: ApiKeyEntity, application: ApplicationEntity) {
-		const isAssociatedWithWallet = !!key.wallet;
-		if (!isAssociatedWithWallet) {
-			return await WalletEntity.findOneBy({
-				applications: {
-					vbId: application.vbId
-				}
-			})
-		} else {
-			return await WalletEntity.findOneBy({
-				id: key.wallet.id,
-				applications: {
-					vbId: application.vbId
-				}
-			})
+	/**
+	 * The wallet is the one given in the request, or the one the API key is bound to.
+	 * @throws BadRequestException If the request wallet differs from the API key wallet.
+	 * @throws NotFoundException If the application does not belong to the wallet.
+	 */
+	private validateApplicationBelongsToWallet(key: ApiKeyEntity, anchorDto: AnchorDto, application: ApplicationEntity) {
+		const keyWalletId = key.wallet?.id;
+		if (anchorDto.walletId && keyWalletId && anchorDto.walletId !== keyWalletId) {
+			throw new BadRequestException('The wallet of the request differs from the wallet associated with the API key.');
+		}
+		const walletId = anchorDto.walletId ?? keyWalletId;
+		if (walletId && application?.wallet?.id !== walletId) {
+			throw new NotFoundException(`Application ${application?.vbId} not found for wallet ${walletId}`);
 		}
 	}
 
