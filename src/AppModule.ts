@@ -72,6 +72,8 @@ import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui
 import { HomeController } from './controllers/HomeController';
 import { WalletResolverController } from './controllers/wallet/WalletResolverController';
 import { ResolverHandler } from './utils/resolver/ResolverHandler';
+import { WalletController } from './controllers/wallet/WalletController';
+import { WalletApplicationController } from './controllers/wallet/WalletApplicationController';
 import { WalletOrganizationController } from './controllers/wallet/WalletOrganizationController';
 
 @Module({
@@ -178,6 +180,8 @@ import { WalletOrganizationController } from './controllers/wallet/WalletOrganiz
 		WalletCryptoController,
 		WalletResolverController,
 		WalletOrganizationController,
+		WalletApplicationController,
+		WalletController,
 	]
 })
 export class AppModule implements NestModule, OnApplicationBootstrap {

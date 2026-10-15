@@ -1,9 +1,10 @@
 import { JsonObject } from '@cmts-dev/carmentis-sdk-core';
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { API_V1 } from '../../api/ApiVersion';
 import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
 import { WalletEntity } from '../../entities/WalletEntity';
+import { ApplicationService } from '../../services/ApplicationService';
 import { OrganizationService } from '../../services/OrganizationService';
 import { OnChainPublicationService } from '../../services/OnChainPublicationService';
 import {
@@ -11,6 +12,8 @@ import {
 	MicroblockPublicationResponseDto,
 	WalletOrganizationDto,
 } from '../../dto/CustomSectionPublicationDto';
+import { WalletApplicationDto } from '../../dto/WalletApplicationDto';
+import { toWalletApplicationDto } from './WalletApplicationController';
 
 @ApiTags('Wallet Organization')
 @Controller({ path: '', version: API_V1 })
@@ -18,27 +21,25 @@ export class WalletOrganizationController {
 	constructor(
 		private readonly publicationService: OnChainPublicationService,
 		private readonly organizationService: OrganizationService,
+		private readonly applicationService: ApplicationService,
 	) {}
 
+
+
 	@ApiOperation({
-		summary: 'List the organizations of a wallet',
+		summary: 'List the applications of an organization',
 		description:
-			'Returns the organizations of the local registry owned by the wallet. ' +
-			'`vbId` is null for an organization that is not published on-chain yet.',
+			'Returns the applications of the local registry belonging to the organization. ' +
+			'`vbId` is null for an application that is not published on-chain yet.',
 	})
-	@ApiOkResponse({ type: WalletOrganizationDto, isArray: true })
+	@ApiOkResponse({ type: WalletApplicationDto, isArray: true })
 	@ApiSecurity('api-key')
-	@Get('/wallet/:walletId/organization')
-	async listOrganizations(@Param('walletId', WalletByIdPipe) wallet: WalletEntity): Promise<WalletOrganizationDto[]> {
-		const organizations = await this.organizationService.listOrganizationsOfWallet(wallet.id);
-		return organizations.map(({ id, vbId, name, city, countryCode, website }) => ({
-			id,
-			vbId,
-			name,
-			city,
-			countryCode,
-			website,
-		}));
+	@Get('/organization/:organizationId/applications')
+	async listApplications(
+		@Param('organizationId', ParseUUIDPipe) organizationId: string,
+	): Promise<WalletApplicationDto[]> {
+		const applications = await this.applicationService.listApplicationsOfOrganization(organizationId);
+		return applications.map(toWalletApplicationDto);
 	}
 
 	@ApiOperation({

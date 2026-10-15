@@ -24,8 +24,8 @@ import { ExtractPublicSignatureKeyFromWallet } from '../../pipes/ExtractPublicSi
 import { PublicKeyRetrievalApiResponse } from '../../swagger/PublicKeyRetreivalApiResponse';
 import { API_V1 } from '../../api/ApiVersion';
 
-@ApiTags('Wallet Crypto')
-@Controller({ path: 'crypto/wallet', version: API_V1 })
+@ApiTags('Wallet')
+@Controller({ path: '/wallet', version: API_V1 })
 @ApiParam({ name: 'walletId', type: String, format: 'uuid', description: 'Wallet identifier' })
 export class WalletCryptoController {
 	constructor(
@@ -58,7 +58,7 @@ export class WalletCryptoController {
 			'Signs a JSON payload, bound to a context (purpose, target, validity window...), using the SDK JSON signatures. ' +
 			'Supports `json-canonical+utf8` and `jws` (the latter requires a wallet backed by a JWK private key).'
 	})
-	@Post(':walletId/json-signature/sign')
+	@Post(':walletId/signature/sign/json')
 	async signJsonSignature(
 		@Param('walletId', WalletByIdPipe, ExtractPrivateSignatureKeyFromWallet)
 		sk: PrivateSignatureKey,
@@ -87,7 +87,7 @@ export class WalletCryptoController {
 		summary: "Verify a JSON signature with the wallet's public key",
 		description: 'Verifies a `json-canonical+utf8` or `jws` signature and the context it carries.'
 	})
-	@Post(':walletId/json-signature/verify')
+	@Post(':walletId/signature/verify/json')
 	async verifyJsonSignature(
 		@Param('walletId', WalletByIdPipe, ExtractPublicSignatureKeyFromWallet)
 		pk: PublicSignatureKey,

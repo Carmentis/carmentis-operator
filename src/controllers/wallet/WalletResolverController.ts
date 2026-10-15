@@ -11,7 +11,7 @@ import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
 import { WalletEntity } from '../../entities/WalletEntity';
 import { API_V1 } from '../../api/ApiVersion';
 
-@ApiTags('Wallet Resolver')
+@ApiTags('Resolver')
 @Controller({ path: '', version: API_V1 })
 export class WalletResolverController {
     private logger = new Logger();

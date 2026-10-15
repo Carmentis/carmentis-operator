@@ -41,7 +41,7 @@ export class CryptoSignatureController {
 		summary: 'Verify a JSON signature',
 		description: 'Verifies a `json-canonical+utf8` or `jws` signature, and the context it carries, with a public key.'
 	})
-	@Post('json-signature/verify')
+	@Post('verify/json')
 	async verifyJsonSignature(
 		@Body() params: JsonSignatureVerificationWithPublicKeyRequestDto
 	) {

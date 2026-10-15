@@ -116,6 +116,7 @@ export class WalletApplicationLedgerController {
 	) {}
 
 
+	/*
 	@ApiOperation({
 		summary: 'Initiate an anchor request with wallet',
 		description: 'Initiates an anchoring request that should be accepted by a wallet. This endpoint allows anchoring with explicit wallet approval.'
@@ -151,6 +152,8 @@ export class WalletApplicationLedgerController {
 	}
 
 
+	 */
+
 
 
 
@@ -169,7 +172,7 @@ export class WalletApplicationLedgerController {
 		type: AnchorRequestResponseDto
 	})
 	@ApiSecurity('api-key')
-	@Post('/wallet/:walletId/anchor')
+	@Post('/wallet/:walletId/applicationLedger/anchor')
 	async anchor(
 		@Body() anchorDto: AnchorDto,
 		@ApiKey() key: ApiKeyEntity,
@@ -186,6 +189,7 @@ export class WalletApplicationLedgerController {
 
 
 
+	/*
 	@ApiOperation({
 		summary: 'Initiate an anchor request with wallet',
 		description: 'Initiates an anchoring request that should be accepted by a wallet. This endpoint allows anchoring with explicit wallet approval.'
@@ -219,6 +223,8 @@ export class WalletApplicationLedgerController {
 		}
 	}
 
+	 */
+
 
 
 
@@ -241,7 +247,7 @@ export class WalletApplicationLedgerController {
 		type: AnchorRequestResponseDto
 	})
 	@ApiSecurity('api-key')
-	@Post('/wallet/anchor')
+	@Post('/wallet/applicationLedger/anchor')
 	async anchorUsingImplicitWallet(
 		@Body() anchorDto: AnchorDto,
 		@ApiKey() key: ApiKeyEntity,

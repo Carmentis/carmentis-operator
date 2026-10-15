@@ -43,6 +43,28 @@ export class ApplicationService {
 		});
 	}
 
+	/** Applications of the local registry owned by the wallet, published (with a `vbId`) or not. */
+	async listApplicationsOfWallet(walletId: string): Promise<ApplicationEntity[]> {
+		return this.applicationRepository.find({
+			where: { wallet: { id: walletId } },
+			relations: { organization: true },
+			order: { createdAt: 'ASC', id: 'ASC' },
+		});
+	}
+
+	/** @throws NotFoundException If the organization is unknown. */
+	async listApplicationsOfOrganization(organizationId: string): Promise<ApplicationEntity[]> {
+		const organization = await this.organizationRepository.findOneBy({ id: organizationId });
+		if (!organization) {
+			throw new NotFoundException('Organization not found');
+		}
+		return this.applicationRepository.find({
+			where: { organization: { id: organizationId } },
+			relations: { organization: true },
+			order: { createdAt: 'ASC', id: 'ASC' },
+		});
+	}
+
 	/** Creates a local application (not published): the organization must belong to the wallet. */
 	async createApplication(dto: ApplicationCreationDto): Promise<ApplicationEntity> {
 		const wallet = await this.walletRepository.findOneBy({ id: dto.walletId });
