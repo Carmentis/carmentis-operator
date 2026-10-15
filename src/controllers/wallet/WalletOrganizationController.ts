@@ -51,12 +51,14 @@ export class WalletOrganizationController {
 	@ApiBody({ schema: { type: 'object', additionalProperties: true } })
 	@ApiCreatedResponse({ type: MicroblockPublicationResponseDto })
 	@ApiSecurity('api-key')
-	@Post('/wallet/:walletId/organization/:organizationVbId/anchor/json')
+	@Post('/organization/:organizationId/anchor/json')
 	async publishCustomSection(
-		@Param('walletId', WalletByIdPipe) wallet: WalletEntity,
-		@Param('organizationVbId') organizationVbId: string,
+		@Param('organizationId') organizationId: string,
 		@Body() json: JsonObject,
 	): Promise<MicroblockPublicationResponseDto> {
+		const organization = await this.organizationService.getOrganizationById(organizationId)
+		const organizationVbId = organization.vbId;
+		const wallet = organization.wallet
 		return this.publicationService.publishCustomSection(wallet, organizationVbId, json);
 	}
 
@@ -70,12 +72,14 @@ export class WalletOrganizationController {
 	@ApiBody({ type: CertificatePublicationDto })
 	@ApiCreatedResponse({ type: MicroblockPublicationResponseDto })
 	@ApiSecurity('api-key')
-	@Post('/wallet/:walletId/organization/:organizationVbId/anchor/certificate')
+	@Post('/organization/:organizationId/anchor/certificate')
 	async publishCertificate(
-		@Param('walletId', WalletByIdPipe) wallet: WalletEntity,
-		@Param('organizationVbId') organizationVbId: string,
+		@Param('organizationId') organizationId: string,
 		@Body() dto: CertificatePublicationDto,
 	): Promise<MicroblockPublicationResponseDto> {
+		const organization = await this.organizationService.getOrganizationById(organizationId)
+		const organizationVbId = organization.vbId;
+		const wallet = organization.wallet
 		return this.publicationService.publishCertificate(wallet, organizationVbId, dto.pemCertificate);
 	}
 }

@@ -66,4 +66,15 @@ export class OrganizationService {
 		}
 		await this.organizationRepository.delete({ id });
 	}
+
+	async getOrganizationById(organizationId: string) {
+		return OrganizationEntity.findOneOrFail({
+			where: {
+				id: organizationId,
+			},
+			relations: {
+				wallet: true,
+			}
+		})
+	}
 }
