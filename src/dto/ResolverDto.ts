@@ -1,6 +1,7 @@
 import {
 	IsOptional,
 	IsEnum,
+	IsUUID,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -36,6 +37,14 @@ export class ResolverPoliciesDto {
 }
 
 export class ResolverDto {
+	@ApiProperty({
+		title: 'The wallet',
+		description: 'The identifier of the wallet whose node is used to resolve the data.',
+		format: 'uuid',
+	})
+	@IsUUID()
+	walletId: string;
+
 	@ApiProperty({
 		title: 'The JSON to be resolved',
 		description: 'The JSON data from which the resolution starts.',

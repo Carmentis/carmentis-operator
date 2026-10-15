@@ -1,5 +1,5 @@
 import { ResolutionProofWrapper, JsonData } from '@cmts-dev/carmentis-sdk-core';
-import { Body, Controller, Logger, Post, Param } from '@nestjs/common';
+import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiSecurity, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiKey } from '../../decorators/ApiKeyDecorator';
 import { Public } from '../../decorators/PublicDecorator';
@@ -8,7 +8,6 @@ import { ResolverDto } from 'src/dto/ResolverDto';
 import { ResolutionProofDto } from 'src/dto/ResolverResponseDto';
 import { ResolverHandler } from 'src/utils/resolver/ResolverHandler';
 import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
-import { WalletEntity } from '../../entities/WalletEntity';
 import { API_V1 } from '../../api/ApiVersion';
 
 @ApiTags('Resolver')
@@ -17,7 +16,8 @@ export class WalletResolverController {
     private logger = new Logger();
 
     constructor(
-        private readonly resolver: ResolverHandler
+        private readonly resolver: ResolverHandler,
+        private readonly walletByIdPipe: WalletByIdPipe,
     ) {
     }
 
@@ -32,11 +32,11 @@ export class WalletResolverController {
     })
 
     @ApiSecurity('api-key')
-    @Post('/wallet/:walletId/resolve')
+    @Post('/resolve')
     async resolve(
-        @Param('walletId', WalletByIdPipe) walletEntity: WalletEntity,
         @Body() resolverDto: ResolverDto,
     ): Promise<ResolutionProofDto> {
+		const walletEntity = await this.walletByIdPipe.transform(resolverDto.walletId);
 		const provider = walletEntity.getProvider();
         const chainId = await provider.getChainId();
         const proofContent = await this.resolver.resolve(
