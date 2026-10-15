@@ -11,7 +11,7 @@ import { CryptoService } from '../../services/CryptoService';
 import { SignatureVerificationApiResponse } from '../../swagger/SignatureVerificationApiResponse';
 import { API_V1 } from '../../api/ApiVersion';
 
-@ApiTags('Crypto Signature')
+@ApiTags('Crypto')
 @Controller({ path: 'crypto/signature', version: API_V1 })
 export class CryptoSignatureController {
 

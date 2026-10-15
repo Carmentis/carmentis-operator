@@ -106,9 +106,9 @@ const AnchoringWithWalletExamples = {
 	}
 }
 
-@ApiTags('Wallet Anchoring')
+@ApiTags('Wallet Application Ledger')
 @Controller({ path: '', version: API_V1 })
-export class WalletAnchoringController {
+export class WalletApplicationLedgerController {
 	private logger = new Logger();
 	constructor(
 		private readonly operatorService: WalletAnchoringRequestService,

@@ -5,6 +5,7 @@ import {
 	ApplicationDescriptionSection,
 	CMTSToken,
 	Hash,
+	JsonObject,
 	Microblock,
 	OrganizationDescriptionSection,
 	SectionType,
@@ -121,6 +122,33 @@ export class OnChainPublicationService {
 			await this.applicationRepository.save(application);
 			await this.awaitAnchoring(provider, hash);
 			return application;
+		});
+	}
+
+	/**
+	 * Publishes a custom JSON section on the virtual blockchain of an organization owned by the wallet.
+	 *
+	 * @throws NotFoundException If the organization is unknown or not owned by the wallet.
+	 */
+	async publishCustomSection(
+		wallet: WalletEntity,
+		organizationVbId: string,
+		json: JsonObject,
+	): Promise<{ microblockHash: string; height: number }> {
+		const vbId = VbUtils.normalizeVbId(organizationVbId);
+		return this.exclusively(`organization-custom:${vbId}`, async () => {
+			const organization = await this.organizationRepository.findOne({
+				where: { vbId, wallet: { id: wallet.id } },
+			});
+			if (!organization) throw new NotFoundException('Organization not found for this wallet');
+
+			const { provider, sk, accountId } = await this.getPublisher(wallet);
+			const organizationVb = await provider.loadOrganizationVirtualBlockchain(Hash.fromHex(vbId));
+			const mb = await organizationVb.createMicroblock();
+			// `type` comes last so that the payload cannot override the section type
+			mb.addSection({ ...json, type: SectionType.CUSTOM });
+			const hash = await this.sealAndPublish(provider, mb, sk, accountId);
+			return { microblockHash: hash.encode(), height: mb.getHeight() };
 		});
 	}
 

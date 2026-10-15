@@ -13,7 +13,7 @@ import { WalletEntity } from '../../entities/WalletEntity';
 import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
 import { API_V1 } from '../../api/ApiVersion';
 
-@ApiTags('Wallet Record')
+@ApiTags('Wallet Application Ledger')
 @Controller({ path: 'wallet', version: API_V1 })
 export class WalletRecordController {
 

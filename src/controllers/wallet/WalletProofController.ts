@@ -8,7 +8,7 @@ import { WalletEntity } from '../../entities/WalletEntity';
 import { ProofService } from '../../services/ProofService';
 import { API_V1 } from '../../api/ApiVersion';
 
-@ApiTags('Wallet Proof')
+@ApiTags('Wallet Application Ledger')
 @Controller({ path: 'wallet', version: API_V1 })
 export class WalletProofController {
 

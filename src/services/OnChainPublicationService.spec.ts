@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Hash, Microblock, SectionType } from '@cmts-dev/carmentis-sdk-core';
 import { WalletEntity } from '../entities/WalletEntity';
@@ -146,6 +146,58 @@ describe('OnChainPublicationService', () => {
 			release();
 			await expect(first).resolves.toBeDefined();
 			expect(provider.publishMicroblock).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	describe('publishCustomSection', () => {
+		const mockOrganizationVb = () => {
+			const update = { addSection: jest.fn(), setGasPrice: jest.fn(), setGasAndSeal: jest.fn(), getHeight: jest.fn().mockReturnValue(2) };
+			const loadOrganization = jest.fn().mockResolvedValue({ createMicroblock: jest.fn().mockResolvedValue(update) });
+			provider.loadOrganizationVirtualBlockchain = loadOrganization;
+			return { update, loadOrganization };
+		};
+
+		it('appends a custom section to the organization, paid by the wallet account', async () => {
+			await createOrganization(ORG_VB_ID);
+			const { update, loadOrganization } = mockOrganizationVb();
+
+			const result = await service.publishCustomSection(wallet, ORG_VB_ID, { foo: 'bar', type: 'ignored' });
+
+			expect(loadOrganization).toHaveBeenCalledWith(Hash.fromHex(ORG_VB_ID));
+			expect(update.addSection).toHaveBeenCalledWith({ foo: 'bar', type: SectionType.CUSTOM });
+			expect(update.setGasAndSeal).toHaveBeenCalledWith(provider, { secret: 'key' }, { feesPayerAccount: Hash.fromHex(ACCOUNT_ID).toBytes() });
+			expect(provider.publishMicroblock).toHaveBeenCalledWith(update);
+			expect(result).toEqual({ microblockHash: NEW_VB_ID, height: 2 });
+		});
+
+		it('refuses an organization that is unknown or owned by another wallet, publishing nothing', async () => {
+			mockOrganizationVb();
+
+			await expect(service.publishCustomSection(wallet, ORG_VB_ID, {})).rejects.toThrow(NotFoundException);
+			expect(provider.publishMicroblock).not.toHaveBeenCalled();
+		});
+
+		it('refuses a wallet that is not attached to an account', async () => {
+			await createOrganization(ORG_VB_ID);
+			mockOrganizationVb();
+			walletService.getAccountStatus.mockResolvedValue({ attached: false });
+
+			await expect(service.publishCustomSection(wallet, ORG_VB_ID, {})).rejects.toThrow(ConflictException);
+			expect(provider.publishMicroblock).not.toHaveBeenCalled();
+		});
+
+		it('refuses two concurrent publications on the same organization', async () => {
+			await createOrganization(ORG_VB_ID);
+			mockOrganizationVb();
+			let release!: () => void;
+			provider.publishMicroblock.mockReturnValue(new Promise((resolve) => (release = () => resolve(NEW_VB_HASH))));
+
+			const first = service.publishCustomSection(wallet, ORG_VB_ID, {});
+			await new Promise((resolve) => setTimeout(resolve, 50));
+			await expect(service.publishCustomSection(wallet, ORG_VB_ID, {})).rejects.toThrow(/already in progress/);
+
+			release();
+			await expect(first).resolves.toBeDefined();
 		});
 	});
 

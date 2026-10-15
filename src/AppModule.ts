@@ -43,7 +43,7 @@ import { EncryptionServiceProxy } from './shared/transformers/EncryptionServiceP
 import { CorsMiddleware } from './middlewares/CorsMiddleware';
 import { CryptoController } from './controllers/crypto/CryptoController';
 import { VerifiableCredentialController } from './controllers/VerifiableCredentialController';
-import { WalletAnchoringController } from './controllers/wallet/WalletAnchoringController';
+import { WalletApplicationLedgerController } from './controllers/wallet/WalletApplicationLedgerController';
 import { WalletRecordController } from './controllers/wallet/WalletRecordController';
 import { HealthController } from './controllers/HealthController';
 import { ProtocolWiapV1Controller } from './controllers/ProtocolWiapV1Controller';
@@ -72,6 +72,7 @@ import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui
 import { HomeController } from './controllers/HomeController';
 import { WalletResolverController } from './controllers/wallet/WalletResolverController';
 import { ResolverHandler } from './utils/resolver/ResolverHandler';
+import { WalletOrganizationController } from './controllers/wallet/WalletOrganizationController';
 
 @Module({
 	imports: [
@@ -170,12 +171,13 @@ import { ResolverHandler } from './utils/resolver/ResolverHandler';
 		HealthController,
 		WalletProofController,
 		WalletRecordController,
-		WalletAnchoringController,
+		WalletApplicationLedgerController,
 		VerifiableCredentialController,
 		CryptoController,
 		CryptoSignatureController,
 		WalletCryptoController,
 		WalletResolverController,
+		WalletOrganizationController,
 	]
 })
 export class AppModule implements NestModule, OnApplicationBootstrap {
