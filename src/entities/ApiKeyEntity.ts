@@ -6,13 +6,13 @@ import { EncryptedColumn } from '../decorators/EncryptionDecorator';
 
 /**
  * An API key should have the following new format:
- * cmts:<id>:<applicationId>:<key>
- * where applicationId is optional
+ * cmts:<id>:<key>
+ * where id is the UUID of the API key
  */
 @Entity('api-key')
 export class ApiKeyEntity extends BaseEntity {
-	@PrimaryGeneratedColumn()
-	id: number;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
 	@Column()
 	name: string;

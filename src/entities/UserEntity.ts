@@ -9,8 +9,8 @@ import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } 
  */
 @Entity('user')
 export class UserEntity extends BaseEntity {
-	@PrimaryGeneratedColumn()
-	id: number;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
 	/** Canonical string encoding of the wallet's public signature key, e.g. `sig:secp256k1:pk:...`. */
 	@Column({ unique: true })

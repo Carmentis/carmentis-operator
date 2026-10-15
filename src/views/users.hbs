@@ -27,6 +27,7 @@
 				<table>
 					<thead>
 					<tr>
+						<th>ID</th>
 						<th>Pseudo</th>
 						<th>Public key</th>
 						<th>Created</th>
@@ -36,6 +37,7 @@
 					<tbody>
 					{{#each users}}
 					<tr>
+						<td><code style="word-break: break-all;">{{this.id}}</code></td>
 						<td>{{this.pseudo}}</td>
 						<td><code style="word-break: break-all;">{{this.publicKey}}</code></td>
 						<td>{{this.createdAt}}</td>

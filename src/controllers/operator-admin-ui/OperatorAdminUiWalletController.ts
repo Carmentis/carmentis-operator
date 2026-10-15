@@ -5,7 +5,7 @@ import {
 	Get,
 	NotFoundException,
 	Param,
-	ParseIntPipe,
+	ParseUUIDPipe,
 	Post,
 	Render,
 	Req,
@@ -128,7 +128,7 @@ export class OperatorAdminUiWalletController {
 
 	@Get(':id')
 	@Render('wallet-details')
-	async details(@Req() req: Request, @Param('id', ParseIntPipe) id: number): Promise<any> {
+	async details(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string): Promise<any> {
 		// Explicit selection: neither the encrypted actor passphrase nor any API key value is
 		// ever fetched for display.
 		const wallet = await this.walletRepository.findOne({
@@ -164,7 +164,7 @@ export class OperatorAdminUiWalletController {
 	 * that a slow or unreachable node never blocks the page itself.
 	 */
 	@Get(':id/account')
-	async account(@Param('id', ParseIntPipe) id: number) {
+	async account(@Param('id', ParseUUIDPipe) id: string) {
 		const wallet = await this.walletRepository.findOne({
 			where: { id },
 			select: { id: true, rpcEndpoint: true, indexerEndpoint: true },
@@ -181,7 +181,7 @@ export class OperatorAdminUiWalletController {
 
 	@Get(':id/edit')
 	@Render('wallet-form')
-	async editForm(@Req() req: Request, @Param('id', ParseIntPipe) id: number): Promise<any> {
+	async editForm(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string): Promise<any> {
 		const wallet = await this.walletRepository.findOne({
 			where: { id },
 			select: { id: true, name: true, rpcEndpoint: true, indexerEndpoint: true, allowedEndpointsRegex: true },
@@ -200,7 +200,7 @@ export class OperatorAdminUiWalletController {
 	}
 
 	@Post(':id/update')
-	async update(@Param('id', ParseIntPipe) id: number, @Body() body: Record<string, string>, @Res() res: Response) {
+	async update(@Param('id', ParseUUIDPipe) id: string, @Body() body: Record<string, string>, @Res() res: Response) {
 		try {
 			const dto = await validateForm(WalletUpdateDto, {
 				name: body.name,
@@ -221,7 +221,7 @@ export class OperatorAdminUiWalletController {
 	}
 
 	@Post(':id/delete')
-	async delete(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+	async delete(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
 		try {
 			await this.walletService.deleteWallet(id);
 			return redirectWithFlash(res, WALLETS_PATH, 'Wallet deleted.', 'success');

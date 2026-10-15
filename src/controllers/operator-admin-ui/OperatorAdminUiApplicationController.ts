@@ -5,7 +5,7 @@ import {
 	Get,
 	NotFoundException,
 	Param,
-	ParseIntPipe,
+	ParseUUIDPipe,
 	Post,
 	Query,
 	Render,
@@ -24,7 +24,7 @@ import { OnChainPublicationService } from '../../services/OnChainPublicationServ
 import { WalletService } from '../../services/WalletService';
 import { ApplicationCreationDto } from '../../dto/ApplicationCreationDto';
 import { ApplicationUpdateDto } from '../../dto/ApplicationUpdateDto';
-import { getErrorMessage, redirectWithFlash, toOptionalNumber, validateForm } from '../../utils/AdminForm';
+import { emptyToUndefined, getErrorMessage, redirectWithFlash, validateForm } from '../../utils/AdminForm';
 import { OPERATOR_ADMIN_UI_PREFIX } from './OperatorAdminUiController';
 
 const APPLICATIONS_PATH = `${OPERATOR_ADMIN_UI_PREFIX}/applications`;
@@ -82,7 +82,7 @@ export class OperatorAdminUiApplicationController {
 	 * page after it has loaded so that a slow or unreachable indexer never blocks the page.
 	 */
 	@Get('discover')
-	async discover(@Query('walletId', ParseIntPipe) walletId: number) {
+	async discover(@Query('walletId', ParseUUIDPipe) walletId: string) {
 		const wallet = await this.walletRepository.findOne({ where: { id: walletId }, select: WALLET_NETWORK_SELECT });
 		if (!wallet) {
 			throw new NotFoundException('Wallet not found');
@@ -123,8 +123,8 @@ export class OperatorAdminUiApplicationController {
 	async create(@Body() body: Record<string, string>, @Res() res: Response) {
 		try {
 			const dto = await validateForm(ApplicationCreationDto, {
-				walletId: toOptionalNumber(body.walletId),
-				organizationId: toOptionalNumber(body.organizationId),
+				walletId: emptyToUndefined(body.walletId),
+				organizationId: emptyToUndefined(body.organizationId),
 				name: body.name,
 				description: body.description,
 				homepageUrl: body.homepageUrl,
@@ -146,7 +146,7 @@ export class OperatorAdminUiApplicationController {
 	@Post('import')
 	async import(@Body() body: Record<string, string>, @Res() res: Response) {
 		try {
-			const walletId = toOptionalNumber(body.walletId);
+			const walletId = emptyToUndefined(body.walletId);
 			if (walletId === undefined || !body.vbId) {
 				throw new BadRequestException('A wallet and a virtual blockchain ID are required');
 			}
@@ -162,7 +162,7 @@ export class OperatorAdminUiApplicationController {
 	}
 
 	@Post(':id/publish')
-	async publish(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+	async publish(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
 		try {
 			await this.publicationService.publishApplication(id);
 			return redirectWithFlash(res, APPLICATIONS_PATH, 'Application published on-chain.', 'success');
@@ -172,7 +172,7 @@ export class OperatorAdminUiApplicationController {
 	}
 
 	@Post(':id/update')
-	async update(@Param('id', ParseIntPipe) id: number, @Body() body: Record<string, string>, @Res() res: Response) {
+	async update(@Param('id', ParseUUIDPipe) id: string, @Body() body: Record<string, string>, @Res() res: Response) {
 		try {
 			const dto = await validateForm(ApplicationUpdateDto, {
 				name: body.name,
@@ -193,7 +193,7 @@ export class OperatorAdminUiApplicationController {
 	}
 
 	@Post(':id/delete')
-	async delete(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+	async delete(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
 		try {
 			await this.applicationService.deleteApplication(id);
 			return redirectWithFlash(res, APPLICATIONS_PATH, 'Application deleted.', 'success');
@@ -204,7 +204,7 @@ export class OperatorAdminUiApplicationController {
 
 	@Get(':id')
 	@Render('application-details')
-	async details(@Req() req: Request, @Param('id', ParseIntPipe) id: number): Promise<any> {
+	async details(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string): Promise<any> {
 		// Explicit selection: the encrypted columns of the wallet and of the API keys are never fetched.
 		const application = await this.applicationRepository.findOne({
 			where: { id },
@@ -240,7 +240,7 @@ export class OperatorAdminUiApplicationController {
 	 * page after it has loaded so that a slow or unreachable node never blocks the page itself.
 	 */
 	@Get(':id/chain')
-	async chain(@Param('id', ParseIntPipe) id: number) {
+	async chain(@Param('id', ParseUUIDPipe) id: string) {
 		const application = await this.applicationRepository.findOne({
 			where: { id },
 			select: { id: true, vbId: true, wallet: { id: true, rpcEndpoint: true } },
@@ -261,7 +261,7 @@ export class OperatorAdminUiApplicationController {
 
 	@Get(':id/edit')
 	@Render('application-form')
-	async editForm(@Req() req: Request, @Param('id', ParseIntPipe) id: number): Promise<any> {
+	async editForm(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string): Promise<any> {
 		const application = await this.applicationRepository.findOne({
 			where: { id },
 			select: {

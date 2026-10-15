@@ -65,7 +65,7 @@ export class InvitationService {
 		}
 	}
 
-	async listForUser(createdByUserId: number): Promise<InvitationEntity[]> {
+	async listForUser(createdByUserId: string): Promise<InvitationEntity[]> {
 		return this.repository.find({
 			where: { createdByUserId },
 			order: { createdAt: 'DESC' },

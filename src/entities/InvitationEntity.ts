@@ -19,7 +19,7 @@ export class InvitationEntity extends BaseEntity {
 	createdBy: UserEntity;
 
 	@Column()
-	createdByUserId: number;
+	createdByUserId: string;
 
 	@CreateDateColumn()
 	createdAt: Date;
@@ -35,5 +35,5 @@ export class InvitationEntity extends BaseEntity {
 	usedBy?: UserEntity;
 
 	@Column({ nullable: true })
-	usedByUserId?: number;
+	usedByUserId?: string;
 }

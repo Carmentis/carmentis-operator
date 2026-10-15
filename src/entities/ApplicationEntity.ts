@@ -15,8 +15,8 @@ import { OrganizationEntity } from './OrganizationEntity';
 @Entity('application')
 export class ApplicationEntity extends BaseEntity {
 
-	@PrimaryGeneratedColumn()
-	id: number;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
 	@Column({ type: 'varchar', nullable: true, unique: true })
 	vbId: string | null;

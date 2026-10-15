@@ -17,7 +17,7 @@ export class OrganizationService {
 	) {}
 
 	/** Organizations of the local registry owned by the wallet, published (with a `vbId`) or not. */
-	async listOrganizationsOfWallet(walletId: number): Promise<OrganizationEntity[]> {
+	async listOrganizationsOfWallet(walletId: string): Promise<OrganizationEntity[]> {
 		return this.organizationRepository.find({
 			where: { wallet: { id: walletId } },
 			order: { createdAt: 'ASC', id: 'ASC' },
@@ -42,7 +42,7 @@ export class OrganizationService {
 	}
 
 	/** The change is local: publishing again pushes it on-chain. The wallet is not editable. */
-	async updateOrganization(id: number, dto: OrganizationUpdateDto): Promise<OrganizationEntity> {
+	async updateOrganization(id: string, dto: OrganizationUpdateDto): Promise<OrganizationEntity> {
 		const organization = await this.organizationRepository.findOneBy({ id });
 		if (!organization) {
 			throw new NotFoundException('Organization not found');
@@ -53,7 +53,7 @@ export class OrganizationService {
 
 	/** Refuses to delete an organization that still has applications. Only the local registry
 	 * entry is removed: a published organization stays on-chain. */
-	async deleteOrganization(id: number): Promise<void> {
+	async deleteOrganization(id: string): Promise<void> {
 		const organization = await this.organizationRepository.findOneBy({ id });
 		if (!organization) {
 			throw new NotFoundException('Organization not found');

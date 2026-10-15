@@ -4,7 +4,7 @@ import { OperatorConfigService } from '../config/services/operator-config.servic
 import { UserEntity } from '../entities/UserEntity';
 
 export interface AdminJwtPayload {
-	sub: number;
+	sub: string;
 	pseudo: string;
 	publicKey: string;
 }

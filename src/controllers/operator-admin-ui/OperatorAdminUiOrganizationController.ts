@@ -5,7 +5,7 @@ import {
 	Get,
 	NotFoundException,
 	Param,
-	ParseIntPipe,
+	ParseUUIDPipe,
 	Post,
 	Query,
 	Render,
@@ -22,7 +22,7 @@ import { CatalogService } from '../../services/CatalogService';
 import { OnChainPublicationService } from '../../services/OnChainPublicationService';
 import { OrganizationCreationDto } from '../../dto/OrganizationCreationDto';
 import { OrganizationUpdateDto } from '../../dto/OrganizationUpdateDto';
-import { getErrorMessage, redirectWithFlash, toOptionalNumber, validateForm } from '../../utils/AdminForm';
+import { emptyToUndefined, getErrorMessage, redirectWithFlash, validateForm } from '../../utils/AdminForm';
 import { OPERATOR_ADMIN_UI_PREFIX } from './OperatorAdminUiController';
 
 const ORGANIZATIONS_PATH = `${OPERATOR_ADMIN_UI_PREFIX}/organizations`;
@@ -78,7 +78,7 @@ export class OperatorAdminUiOrganizationController {
 	 * page after it has loaded so that a slow or unreachable indexer never blocks the page.
 	 */
 	@Get('discover')
-	async discover(@Query('walletId', ParseIntPipe) walletId: number) {
+	async discover(@Query('walletId', ParseUUIDPipe) walletId: string) {
 		const wallet = await this.walletRepository.findOne({ where: { id: walletId }, select: WALLET_NETWORK_SELECT });
 		if (!wallet) {
 			throw new NotFoundException('Wallet not found');
@@ -111,7 +111,7 @@ export class OperatorAdminUiOrganizationController {
 	async create(@Body() body: Record<string, string>, @Res() res: Response) {
 		try {
 			const dto = await validateForm(OrganizationCreationDto, {
-				walletId: toOptionalNumber(body.walletId),
+				walletId: emptyToUndefined(body.walletId),
 				name: body.name,
 				city: body.city,
 				countryCode: body.countryCode?.trim().toUpperCase(),
@@ -133,7 +133,7 @@ export class OperatorAdminUiOrganizationController {
 	@Post('import')
 	async import(@Body() body: Record<string, string>, @Res() res: Response) {
 		try {
-			const walletId = toOptionalNumber(body.walletId);
+			const walletId = emptyToUndefined(body.walletId);
 			if (walletId === undefined || !body.vbId) {
 				throw new BadRequestException('A wallet and a virtual blockchain ID are required');
 			}
@@ -149,7 +149,7 @@ export class OperatorAdminUiOrganizationController {
 	}
 
 	@Post(':id/publish')
-	async publish(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+	async publish(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
 		try {
 			await this.publicationService.publishOrganization(id);
 			return redirectWithFlash(res, ORGANIZATIONS_PATH, 'Organization published on-chain.', 'success');
@@ -159,7 +159,7 @@ export class OperatorAdminUiOrganizationController {
 	}
 
 	@Post(':id/update')
-	async update(@Param('id', ParseIntPipe) id: number, @Body() body: Record<string, string>, @Res() res: Response) {
+	async update(@Param('id', ParseUUIDPipe) id: string, @Body() body: Record<string, string>, @Res() res: Response) {
 		try {
 			const dto = await validateForm(OrganizationUpdateDto, {
 				name: body.name,
@@ -180,7 +180,7 @@ export class OperatorAdminUiOrganizationController {
 	}
 
 	@Post(':id/delete')
-	async delete(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+	async delete(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
 		try {
 			await this.organizationService.deleteOrganization(id);
 			return redirectWithFlash(res, ORGANIZATIONS_PATH, 'Organization deleted.', 'success');
@@ -191,7 +191,7 @@ export class OperatorAdminUiOrganizationController {
 
 	@Get(':id/edit')
 	@Render('organization-form')
-	async editForm(@Req() req: Request, @Param('id', ParseIntPipe) id: number): Promise<any> {
+	async editForm(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string): Promise<any> {
 		const organization = await this.organizationRepository.findOne({
 			where: { id },
 			select: {

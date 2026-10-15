@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { AnchorDto, AnchorWithWalletDto } from '../dto/AnchorDto';
 import { EncoderFactory, Hash, IllegalStateError, Microblock, Optional, Utils } from '@cmts-dev/carmentis-sdk-core';
 import { Logger } from '@nestjs/common';
@@ -13,7 +13,7 @@ export class AnchorRequestEntity extends BaseEntity {
 	/**
 	 *
 	 */
-	@PrimaryColumn()
+	@PrimaryGeneratedColumn('uuid')
 	anchorRequestId: string;
 
 

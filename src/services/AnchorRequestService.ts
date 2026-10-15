@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AnchorRequestEntity } from '../entities/AnchorRequestEntity';
 import { AnchorDto, AnchorWithWalletDto } from '../dto/AnchorDto';
-import { EncoderFactory, Hash, Microblock, Utils } from '@cmts-dev/carmentis-sdk-core';
-import { randomBytes } from 'crypto';
+import { Hash, Microblock, Utils } from '@cmts-dev/carmentis-sdk-core';
+import { randomUUID } from 'crypto';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { AnchorRequestStatus } from '../utils/AnchorRequestStatus';
 import { MicroblockUtils } from '../utils/MicroblockUtils';
@@ -22,8 +22,7 @@ export class AnchorRequestService {
 
 	// -------------------------------------------------------------------------
 	private generateRandomAnchorRequestId() {
-		const hexEncoder = EncoderFactory.defaultBytesToStringEncoder();
-		return hexEncoder.encode(randomBytes(32))
+		return randomUUID();
 	}
 
 

@@ -70,7 +70,7 @@ export class ApplicationService {
 
 	/** `vbId`, `wallet` and `organization` are not editable, see ApplicationUpdateDto. The change
 	 * is local: publishing again pushes it on-chain. */
-	async updateApplication(id: number, dto: ApplicationUpdateDto): Promise<ApplicationEntity> {
+	async updateApplication(id: string, dto: ApplicationUpdateDto): Promise<ApplicationEntity> {
 		const application = await this.applicationRepository.findOneBy({ id });
 		if (!application) {
 			throw new NotFoundException('Application not found');
@@ -79,7 +79,7 @@ export class ApplicationService {
 		return this.applicationRepository.save(application);
 	}
 
-	async countDependents(id: number): Promise<{ apiKeys: number; anchorRequests: number }> {
+	async countDependents(id: string): Promise<{ apiKeys: number; anchorRequests: number }> {
 		const [apiKeys, anchorRequests] = await Promise.all([
 			ApiKeyEntity.count({ where: { application: { id } } }),
 			AnchorRequestEntity.count({ where: { application: { id } } }),
@@ -90,7 +90,7 @@ export class ApplicationService {
 	/** Refuses to delete an application that still has API keys or anchoring history
 	 * attached, rather than silently letting the DB's `onDelete: CASCADE` wipe them out.
 	 * Only the local registry entry is removed: a published application stays on-chain. */
-	async deleteApplication(id: number): Promise<void> {
+	async deleteApplication(id: string): Promise<void> {
 		const application = await this.applicationRepository.findOneBy({ id });
 		if (!application) {
 			throw new NotFoundException('Application not found');

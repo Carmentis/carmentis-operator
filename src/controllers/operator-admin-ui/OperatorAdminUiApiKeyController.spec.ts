@@ -4,7 +4,7 @@ import { ApiKeyUpdateDto } from '../../dto/ApiKeyUpdateDto';
 describe('OperatorAdminUiApiKeyController.buildUpdate', () => {
 	function createController() {
 		const applicationRepository = { findOneByOrFail: jest.fn().mockResolvedValue({ vbId: 'aa' }) };
-		const walletRepository = { findOneByOrFail: jest.fn().mockResolvedValue({ id: 3 }) };
+		const walletRepository = { findOneByOrFail: jest.fn().mockResolvedValue({ id: '11111111-1111-4111-8111-111111111111' }) };
 		const controller = new OperatorAdminUiApiKeyController(
 			{} as any,
 			applicationRepository as any,
@@ -22,7 +22,7 @@ describe('OperatorAdminUiApiKeyController.buildUpdate', () => {
 		const dto = {
 			name: 'renamed',
 			apiKey: 'cmts:1:forged-secret',
-			id: 999,
+			id: '22222222-2222-4222-8222-222222222222',
 			createdAt: new Date('2000-01-01'),
 			isActive: false,
 		} as ApiKeyUpdateDto & Record<string, unknown>;
@@ -33,9 +33,9 @@ describe('OperatorAdminUiApiKeyController.buildUpdate', () => {
 	it('resolves applicationVbId/walletId into entities, and null explicitly unlinks them', async () => {
 		const { controller } = createController();
 
-		expect(await controller.buildUpdate({ applicationVbId: 'aa', walletId: 3 })).toEqual({
+		expect(await controller.buildUpdate({ applicationVbId: 'aa', walletId: '11111111-1111-4111-8111-111111111111' })).toEqual({
 			application: { vbId: 'aa' },
-			wallet: { id: 3 },
+			wallet: { id: '11111111-1111-4111-8111-111111111111' },
 		});
 		expect(await controller.buildUpdate({ applicationVbId: null, walletId: null })).toEqual({
 			application: null,

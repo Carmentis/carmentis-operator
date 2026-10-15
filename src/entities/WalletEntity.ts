@@ -16,8 +16,8 @@ import { ApiProperty } from '@nestjs/swagger';
 @Entity('wallet')
 export class WalletEntity extends BaseEntity {
 
-	@PrimaryGeneratedColumn()
-	id: number;
+	@PrimaryGeneratedColumn('uuid')
+	id: string;
 
 
 	@EncryptedColumn()

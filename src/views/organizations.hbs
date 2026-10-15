@@ -32,7 +32,8 @@
 					<table>
 						<thead>
 						<tr>
-							<th>Name</th>
+							<th>ID</th>
+						<th>Name</th>
 							<th>Location</th>
 							<th>State</th>
 							<th>Wallet</th>
@@ -42,6 +43,7 @@
 						<tbody>
 						{{#each organizations}}
 						<tr>
+						<td><code style="word-break: break-all;">{{this.id}}</code></td>
 							<td>{{this.name}}</td>
 							<td>{{this.city}}, {{this.countryCode}}</td>
 							<td>

@@ -21,6 +21,7 @@
 				<table>
 					<thead>
 					<tr>
+						<th>ID</th>
 						<th>Name</th>
 						<th>Active</th>
 						<th>Application</th>
@@ -33,6 +34,7 @@
 					<tbody>
 					{{#each apiKeys}}
 					<tr>
+						<td><code style="word-break: break-all;">{{this.id}}</code></td>
 						<td>{{this.name}}</td>
 						<td>{{#if this.isActive}}yes{{else}}no{{/if}}</td>
 						<td>{{this.application.name}}</td>

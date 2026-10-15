@@ -77,7 +77,7 @@ export class WalletService {
 	 * Returns the private key entity of a wallet.
 	 * @param walletId
 	 */
-	async getPrivateKeyEntityOfWallet(walletId: number) {
+	async getPrivateKeyEntityOfWallet(walletId: string) {
 		const wallet = await WalletEntity.findOne({
 			where: {
 				id: walletId,
@@ -94,7 +94,7 @@ export class WalletService {
 	 * Returns the private key of a wallet.
 	 * @param walletId
 	 */
-	async getPrivateKeyOfWallet(walletId: number) {
+	async getPrivateKeyOfWallet(walletId: string) {
 		const privateKeyEntity = await this.getPrivateKeyEntityOfWallet(walletId);
 		const privateKey = privateKeyEntity.privateKey;
 		return PrivateKeyUtils.getPrivateSignatureKeyFromPrivateKeyObject(privateKey)
@@ -105,14 +105,14 @@ export class WalletService {
 	 *
 	 * @param walletId
 	 */
-	async getPublicKeyOfWallet(walletId: number) {
+	async getPublicKeyOfWallet(walletId: string) {
 		const privateKey = await this.getPrivateKeyOfWallet(walletId);
 		return privateKey.getPublicKey()
 	}
 
 
-	async getActorIdentity(wallet: number | WalletEntity, vbSeed: Uint8Array) {
-		const walletId = typeof wallet === 'number' ? wallet : wallet.id;
+	async getActorIdentity(wallet: string | WalletEntity, vbSeed: Uint8Array) {
+		const walletId = typeof wallet === 'string' ? wallet : wallet.id;
 		const organizationPrivateKey = await this.getPrivateKeyOfWallet(walletId);
 		const organizationPublicKey = await organizationPrivateKey.getPublicKey();
 		const actorPassphrase = await this.getActorPassphraseOfWallet(walletId)
@@ -126,7 +126,7 @@ export class WalletService {
 	 * Returns the private key of a wallet.
 	 * @param walletId
 	 */
-	async getActorPassphraseOfWallet(walletId: number) {
+	async getActorPassphraseOfWallet(walletId: string) {
 		const wallet = await WalletEntity.findOne({
 			where: {
 				id: walletId,
@@ -135,7 +135,7 @@ export class WalletService {
 		return wallet.actorPassphrase;
 	}
 
-	async getOneById(id: number) {
+	async getOneById(id: string) {
 		return this.repo.findOneBy({ id });
 	}
 
@@ -159,7 +159,7 @@ export class WalletService {
 	 * Non-secret facts about the key of a wallet, for display: its type and its public key.
 	 * The public key is `null` when it cannot be derived.
 	 */
-	async getKeyDetails(walletId: number): Promise<{ keyType: string; publicKey: string | null }> {
+	async getKeyDetails(walletId: string): Promise<{ keyType: string; publicKey: string | null }> {
 		const privateKeyEntity = await this.getPrivateKeyEntityOfWallet(walletId);
 		const keyType = privateKeyEntity.privateKey.keyType;
 		try {
@@ -301,7 +301,7 @@ export class WalletService {
 	/** Partial update: only the fields actually present in `dto` are changed, everything
 	 * else (including `seed` and the crypto scheme ids, which aren't part of this DTO at
 	 * all) is left untouched. */
-	async updateWallet(id: number, dto: WalletUpdateDto): Promise<WalletEntity> {
+	async updateWallet(id: string, dto: WalletUpdateDto): Promise<WalletEntity> {
 		const wallet = await this.repo.findOneBy({ id });
 		if (!wallet) {
 			throw new NotFoundException('Wallet not found');
@@ -310,7 +310,7 @@ export class WalletService {
 		return this.repo.save(wallet);
 	}
 
-	async countDependents(id: number): Promise<{ organizations: number; applications: number; apiKeys: number }> {
+	async countDependents(id: string): Promise<{ organizations: number; applications: number; apiKeys: number }> {
 		const [organizations, applications, apiKeys] = await Promise.all([
 			OrganizationEntity.count({ where: { wallet: { id } } }),
 			ApplicationEntity.count({ where: { wallet: { id } } }),
@@ -321,7 +321,7 @@ export class WalletService {
 
 	/** Refuses to delete a wallet that still has applications or API keys attached, rather
 	 * than silently letting the DB's `onDelete: CASCADE` wipe them out. */
-	async deleteWallet(id: number): Promise<void> {
+	async deleteWallet(id: string): Promise<void> {
 		const wallet = await this.repo.findOneBy({ id });
 		if (!wallet) {
 			throw new NotFoundException('Wallet not found');

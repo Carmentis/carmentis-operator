@@ -15,7 +15,7 @@ describe('OperatorAdminUiWalletController.create', () => {
 
 	function setup() {
 		const walletService = {
-			createWallet: vi.fn().mockResolvedValue({ id: 1 }),
+			createWallet: vi.fn().mockResolvedValue({ id: '11111111-1111-4111-8111-111111111111' }),
 			generateActorPassphrase: vi.fn().mockReturnValue('generated'),
 		};
 		const walletBalanceService = { getBalances: vi.fn() };
@@ -72,27 +72,27 @@ describe('OperatorAdminUiWalletController.create', () => {
 		}
 
 		it('returns the balances of the wallet, loading what the node and the indexer need', async () => {
-			const { controller, walletRepository, walletBalanceService } = setupAccount({ id: 1 });
+			const { controller, walletRepository, walletBalanceService } = setupAccount({ id: '11111111-1111-4111-8111-111111111111' });
 			const balances = { attached: true, accountId: 'AB', balance: '5 CMTS' };
 			walletBalanceService.getBalances.mockResolvedValue(balances);
 
-			await expect(controller.account(1)).resolves.toBe(balances);
+			await expect(controller.account('11111111-1111-4111-8111-111111111111')).resolves.toBe(balances);
 			expect(walletRepository.findOne).toHaveBeenCalledWith(
 				expect.objectContaining({ select: { id: true, rpcEndpoint: true, indexerEndpoint: true } }),
 			);
 		});
 
 		it('reports a node failure as an error message instead of throwing', async () => {
-			const { controller, walletBalanceService } = setupAccount({ id: 1 });
+			const { controller, walletBalanceService } = setupAccount({ id: '11111111-1111-4111-8111-111111111111' });
 			walletBalanceService.getBalances.mockRejectedValue(new Error('node down'));
 
-			await expect(controller.account(1)).resolves.toEqual({ error: 'node down' });
+			await expect(controller.account('11111111-1111-4111-8111-111111111111')).resolves.toEqual({ error: 'node down' });
 		});
 
 		it('is not found for an unknown wallet', async () => {
 			const { controller } = setupAccount(null);
 
-			await expect(controller.account(9)).rejects.toThrow('Wallet not found');
+			await expect(controller.account('22222222-2222-4222-8222-222222222222')).rejects.toThrow('Wallet not found');
 		});
 	});
 });

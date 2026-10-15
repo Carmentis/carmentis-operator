@@ -41,7 +41,7 @@ export class OnChainPublicationService {
 		private readonly walletService: WalletService,
 	) {}
 
-	async publishOrganization(organizationId: number): Promise<OrganizationEntity> {
+	async publishOrganization(organizationId: string): Promise<OrganizationEntity> {
 		return this.exclusively(`organization:${organizationId}`, async () => {
 			const organization = await this.organizationRepository.findOne({
 				where: { id: organizationId },
@@ -78,7 +78,7 @@ export class OnChainPublicationService {
 		});
 	}
 
-	async publishApplication(applicationId: number): Promise<ApplicationEntity> {
+	async publishApplication(applicationId: string): Promise<ApplicationEntity> {
 		return this.exclusively(`application:${applicationId}`, async () => {
 			const application = await this.applicationRepository.findOne({
 				where: { id: applicationId },

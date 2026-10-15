@@ -331,7 +331,7 @@ describe('WalletService', () => {
 	});
 
 	it('throws when updating a wallet that does not exist', async () => {
-		await expect(service.updateWallet(999, { name: 'x' })).rejects.toThrow(NotFoundException);
+		await expect(service.updateWallet('22222222-2222-4222-8222-222222222222', { name: 'x' })).rejects.toThrow(NotFoundException);
 	});
 
 	it('deletes a wallet with no dependents', async () => {

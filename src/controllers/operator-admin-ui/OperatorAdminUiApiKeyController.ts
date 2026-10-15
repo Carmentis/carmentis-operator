@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Post, Render, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, ParseUUIDPipe, Post, Render, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
@@ -78,7 +78,7 @@ export class OperatorAdminUiApiKeyController {
 
 	@Get(':id/edit')
 	@Render('api-key-form')
-	async editForm(@Req() req: Request, @Param('id', ParseIntPipe) id: number): Promise<any> {
+	async editForm(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string): Promise<any> {
 		const [apiKey, applications, wallets] = await Promise.all([
 			this.apiKeyRepository.findOne({
 				where: { id },
@@ -120,7 +120,7 @@ export class OperatorAdminUiApiKeyController {
 			const dto = await validateForm(ApiKeyCreationDto, {
 				name: body.name,
 				applicationVbId: emptyToUndefined(body.applicationVbId),
-				walletId: toOptionalNumber(body.walletId),
+				walletId: emptyToUndefined(body.walletId),
 				endpointRegex: emptyToUndefined(body.endpointRegex),
 				activeUntil: this.toIsoDate(body.activeUntil),
 				gasMinAtomics: toOptionalNumber(body.gasMinAtomics),
@@ -152,12 +152,12 @@ export class OperatorAdminUiApiKeyController {
 	}
 
 	@Post(':id/update')
-	async update(@Param('id', ParseIntPipe) id: number, @Body() body: Record<string, string>, @Res() res: Response) {
+	async update(@Param('id', ParseUUIDPipe) id: string, @Body() body: Record<string, string>, @Res() res: Response) {
 		try {
 			const dto = await validateForm(ApiKeyUpdateDto, {
 				name: body.name,
 				applicationVbId: emptyToUndefined(body.applicationVbId) ?? null,
-				walletId: toOptionalNumber(body.walletId) ?? null,
+				walletId: emptyToUndefined(body.walletId) ?? null,
 				endpointRegex: emptyToUndefined(body.endpointRegex),
 				activeUntil: this.toIsoDate(body.activeUntil),
 				gasMinAtomics: toOptionalNumber(body.gasMinAtomics),
@@ -171,7 +171,7 @@ export class OperatorAdminUiApiKeyController {
 	}
 
 	@Post(':id/toggle')
-	async toggle(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+	async toggle(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
 		try {
 			await this.apiKeyService.toggleActivityForApiKeyById(id);
 			return redirectWithFlash(res, API_KEYS_PATH, 'API key updated.', 'success');
@@ -181,7 +181,7 @@ export class OperatorAdminUiApiKeyController {
 	}
 
 	@Post(':id/delete')
-	async delete(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+	async delete(@Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
 		try {
 			await this.apiKeyService.deleteKeyById(id);
 			return redirectWithFlash(res, API_KEYS_PATH, 'API key deleted.', 'success');

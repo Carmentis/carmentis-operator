@@ -1,4 +1,4 @@
-import { Controller, ForbiddenException, Get, Param, ParseIntPipe, Post, Render, Req, Res } from '@nestjs/common';
+import { Controller, ForbiddenException, Get, Param, ParseUUIDPipe, Post, Render, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -47,7 +47,7 @@ export class OperatorAdminUiUserController {
 	}
 
 	@Post(':id/delete')
-	async delete(@Req() req: Request, @Param('id', ParseIntPipe) id: number, @Res() res: Response) {
+	async delete(@Req() req: Request, @Param('id', ParseUUIDPipe) id: string, @Res() res: Response) {
 		try {
 			if (id === (req as any).user?.sub) {
 				throw new ForbiddenException('You cannot delete your own account');

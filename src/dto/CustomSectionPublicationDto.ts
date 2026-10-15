@@ -21,7 +21,7 @@ export class MicroblockPublicationResponseDto {
 
 export class WalletOrganizationDto {
 	@ApiProperty({ description: 'The local identifier of the organization.' })
-	id: number;
+	id: string;
 
 	@ApiProperty({ description: 'The virtual blockchain id of the organization, null while it is not published on-chain.', nullable: true, type: String })
 	vbId: string | null;

@@ -175,7 +175,7 @@ export class CatalogService {
 		);
 	}
 
-	async getWalletOrFail(walletId: number): Promise<WalletEntity> {
+	async getWalletOrFail(walletId: string): Promise<WalletEntity> {
 		const wallet = await WalletEntity.findOneBy({ id: walletId });
 		if (!wallet) throw new NotFoundException('Wallet not found');
 		return wallet;

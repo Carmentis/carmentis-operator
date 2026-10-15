@@ -7,7 +7,7 @@ function request(id: string, ageSeconds: number, hash: string | undefined = `has
 		anchorRequestId: id,
 		submittedMicroblockHash: hash,
 		submittedAt: Date.now() - ageSeconds * 1000,
-		application: { wallet: { id: 1, indexerEndpoint: 'https://indexer.example' } },
+		application: { wallet: { id: '11111111-1111-4111-8111-111111111111', indexerEndpoint: 'https://indexer.example' } },
 	} as any;
 }
 

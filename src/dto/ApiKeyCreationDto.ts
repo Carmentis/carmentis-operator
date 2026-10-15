@@ -1,4 +1,4 @@
-import { IsHexadecimal, IsISO8601, IsOptional, IsString, IsNumber, Min } from 'class-validator';
+import { IsHexadecimal, IsISO8601, IsOptional, IsString, IsNumber, IsUUID, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
@@ -46,8 +46,8 @@ export class ApiKeyCreationDto {
 		example: 1
 	})
 	@IsOptional()
-	@IsNumber()
-	walletId?: number;
+	@IsUUID()
+	walletId?: string;
 
 	@ApiPropertyOptional({
 		description: 'Regular expression pattern to restrict which API endpoints this key can access. If omitted, all endpoints are allowed. Example: "^/api/(anchor|wallet)/.*" restricts to anchor and wallet endpoints',

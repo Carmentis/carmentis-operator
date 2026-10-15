@@ -94,7 +94,7 @@ describe('ApplicationService', () => {
 
 	it('refuses to create an application for an unknown wallet', async () => {
 		await expect(
-			service.createApplication({ name: 'x', walletId: 9999, organizationId: organization.id }),
+			service.createApplication({ name: 'x', walletId: '22222222-2222-4222-8222-222222222222', organizationId: organization.id }),
 		).rejects.toThrow(NotFoundException);
 	});
 
@@ -107,7 +107,7 @@ describe('ApplicationService', () => {
 	});
 
 	it('throws when updating an application that does not exist', async () => {
-		await expect(service.updateApplication(9999, { name: 'x' })).rejects.toThrow(NotFoundException);
+		await expect(service.updateApplication('22222222-2222-4222-8222-222222222222', { name: 'x' })).rejects.toThrow(NotFoundException);
 	});
 
 	it('deletes an application with no dependents', async () => {

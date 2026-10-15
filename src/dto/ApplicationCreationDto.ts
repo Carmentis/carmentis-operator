@@ -1,10 +1,10 @@
-import { IsNumber } from 'class-validator';
+import { IsUUID } from 'class-validator';
 import { ApplicationUpdateDto } from './ApplicationUpdateDto';
 
 export class ApplicationCreationDto extends ApplicationUpdateDto {
-	@IsNumber()
-	walletId: number;
+	@IsUUID()
+	walletId: string;
 
-	@IsNumber()
-	organizationId: number;
+	@IsUUID()
+	organizationId: string;
 }

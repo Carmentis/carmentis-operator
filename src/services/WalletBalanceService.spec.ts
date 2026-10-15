@@ -52,7 +52,7 @@ describe('toBreakdown', () => {
 });
 
 describe('WalletBalanceService', () => {
-	const wallet = { id: 1, indexerEndpoint: 'https://indexer.example' } as any;
+	const wallet = { id: '11111111-1111-4111-8111-111111111111', indexerEndpoint: 'https://indexer.example' } as any;
 	const attached = { attached: true, accountId: 'AB', balance: NODE_BALANCE };
 
 	function setup(status: object, indexer: object) {

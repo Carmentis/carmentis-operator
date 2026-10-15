@@ -3,6 +3,7 @@ import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'crypto';
+import { isUUID } from 'class-validator';
 import { WalletEntity } from '../entities/WalletEntity';
 import { ApplicationEntity } from '../entities/ApplicationEntity';
 
@@ -59,13 +60,13 @@ export class ApiKeyService {
 	}
 
 	/**
-	 * Format an API key with the structure: cmts:<id>:<applicationId>:<key>
+	 * Format an API key with the structure: cmts:<id>:<key>
 	 * @param id - The API key entity ID
 	 * @param applicationId - The application ID
 	 * @param key - The secret key
 	 * @private
 	 */
-	private formatKey(id: number, applicationVbId: string, key: string): string {
+	private formatKey(id: string, applicationVbId: string, key: string): string {
 		return `cmts:${id}:${key}`;
 	}
 
@@ -79,11 +80,11 @@ export class ApiKeyService {
 				application: true,
 			}
 		})
-		if (apiKey.apiKey !== key) throw new Error('Invalid API key');
+		if (!apiKey || apiKey.apiKey !== key) throw new Error('Invalid API key');
 		return apiKey;
 	}
 
-	async updateKey(id: number, updateKey: Partial<ApiKeyEntity>) {
+	async updateKey(id: string, updateKey: Partial<ApiKeyEntity>) {
 		const key = await this.repo.findOne({where: { id: id }});
 		const updatedKey = {...key, ...updateKey};
 		return this.repo.save(updatedKey)
@@ -122,7 +123,7 @@ export class ApiKeyService {
 		return activeUntil > new Date()
 	}
 
-	async deleteKeyById(id: number) {
+	async deleteKeyById(id: string) {
 		return this.repo.delete({
 			id
 		})
@@ -131,7 +132,7 @@ export class ApiKeyService {
 
 	/**
 	 * Parse the key to recover the id, applicationId, and key.
-	 * Expected format: cmts:<id>:<applicationId>:<key>
+	 * Expected format: cmts:<id>:<key>
 	 * @param apiKey
 	 * @private
 	 */
@@ -141,16 +142,19 @@ export class ApiKeyService {
 			if (header !== 'cmts' || !id  || !key) {
 				throw new Error("Invalid format");
 			}
+			if (!isUUID(id)) {
+				throw new Error("Invalid id");
+			}
 			return {
-				id: parseInt(id, 10),
+				id,
 				key
 			}
 		} catch (e) {
-			throw new Error("Provided key has an invalid format. Expected format: cmts:<id>:<applicationVbId>:<key>")
+			throw new Error("Provided key has an invalid format. Expected format: cmts:<id>:<key>")
 		}
 	}
 
-	async toggleActivityForApiKeyById(id: number) {
+	async toggleActivityForApiKeyById(id: string) {
 		const currentKey = await ApiKeyEntity.findOneBy({ id })
 		const currentState = 	currentKey.isActive;
 		const newState = !currentState;

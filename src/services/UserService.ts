@@ -10,7 +10,7 @@ export class UserService {
 		private readonly userEntityRepository: Repository<UserEntity>,
 	) {}
 
-	async findUserById(id: number): Promise<UserEntity> {
+	async findUserById(id: string): Promise<UserEntity> {
 		const user = await this.userEntityRepository.findOneBy({ id });
 		if (!user) throw new NotFoundException();
 		return user;
@@ -20,7 +20,7 @@ export class UserService {
 		return this.userEntityRepository.findOneBy({ publicKey });
 	}
 
-	async deleteUserById(id: number): Promise<DeleteResult> {
+	async deleteUserById(id: string): Promise<DeleteResult> {
 		return this.userEntityRepository.delete(id);
 	}
 
@@ -38,7 +38,7 @@ export class UserService {
 	 * explicitly (rather than relying solely on the DB's unique constraint) so callers get a
 	 * clean 409 instead of a raw driver error.
 	 */
-	async renamePseudo(userId: number, pseudo: string): Promise<UserEntity> {
+	async renamePseudo(userId: string, pseudo: string): Promise<UserEntity> {
 		const trimmed = pseudo.trim();
 		const user = await this.findUserById(userId);
 

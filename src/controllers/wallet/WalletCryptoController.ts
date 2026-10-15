@@ -26,7 +26,7 @@ import { API_V1 } from '../../api/ApiVersion';
 
 @ApiTags('Wallet Crypto')
 @Controller({ path: 'crypto/wallet', version: API_V1 })
-@ApiParam({ name: 'walletId', type: Number, description: 'Wallet identifier' })
+@ApiParam({ name: 'walletId', type: String, format: 'uuid', description: 'Wallet identifier' })
 export class WalletCryptoController {
 	constructor(
 		public service: WalletService,
@@ -38,7 +38,7 @@ export class WalletCryptoController {
 		summary: 'Sign a binary message with wallet signature key',
 		description: 'Signs a binary message using the wallet\'s private signature key.'
 	})
-	@ApiParam({ name: 'walletId', type: Number, description: 'Wallet identifier' })
+	@ApiParam({ name: 'walletId', type: String, format: 'uuid', description: 'Wallet identifier' })
 	@ApiResponse(SignatureVerificationApiResponse.Response200)
 	@Post([
 		':walletId/signature/sign',

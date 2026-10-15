@@ -1,4 +1,4 @@
-import { IsHexadecimal, IsISO8601, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsHexadecimal, IsISO8601, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
@@ -25,8 +25,8 @@ export class ApiKeyUpdateDto {
 
 	@ApiPropertyOptional({ description: 'ID of the wallet this key is associated with, or null to unlink' })
 	@IsOptional()
-	@IsNumber()
-	walletId?: number | null;
+	@IsUUID()
+	walletId?: string | null;
 
 	@ApiPropertyOptional({ description: 'Regular expression pattern to restrict which API endpoints this key can access' })
 	@IsOptional()
