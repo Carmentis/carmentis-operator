@@ -31,6 +31,18 @@ export class ApplicationService {
     }
 
 
+	async findApplicationById(applicationId: string) {
+		this.logger.debug(`Finding application by ID: ${applicationId}`);
+		return ApplicationEntity.findOne({
+			where: {
+				id: applicationId
+			},
+			relations: {
+				wallet: true
+			}
+		});
+	}
+
 	async findApplicationByVbId(applicationVbId: string) {
 		this.logger.debug(`Finding application by VB ID: ${applicationVbId}`);
 		return ApplicationEntity.findOne({

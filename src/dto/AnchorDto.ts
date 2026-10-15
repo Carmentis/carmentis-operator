@@ -110,7 +110,7 @@ export class MaskableFieldDto {
  *
  * @example
  * {
- *   "applicationId": "app123",
+ *   "applicationId": "3f2b8c1e-5a47-4d0e-9b6a-1c2d3e4f5a6b",
  *   "channels": [{ "name": "Public", "public": true }],
  *   "actors": [{ "name": "Endorser" }],
  *   "data": { "invoice": "INV-001", "amount": "1000" },
@@ -129,14 +129,14 @@ export class AnchorDto  {
 	walletId?: string;
 
 	@ApiProperty({
-		description: 'Identifier of the application virtual blockchain. ' +
-			'The application must be published online before calling this endpoint.' +
-			'When omitted, either a wallet or an application must be associated with the API key.',
-		example: '6AC2A4EBFD08F34C2EF4432041313F83EB4C8AB9154FAEF61ABB833613DA1C10',
+		description: 'Local identifier of the application (not its virtual blockchain identifier). ' +
+			'The application must be published online before calling this endpoint. ' +
+			'When omitted, an application must be associated with the API key.',
+		format: 'uuid',
 		required: false,
 	})
 	@IsOptional()
-	@IsString()
+	@IsUUID()
 	applicationId?: string;
 
 	@ApiProperty({

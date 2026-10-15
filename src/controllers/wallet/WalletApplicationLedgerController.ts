@@ -27,7 +27,8 @@ const AnchoringExamples = {
 	createApplicationLedger: {
 		summary: 'Create an application ledger',
 		value: {
-			"applicationId": "6AC2A4EBFD08F34C2EF4432041313F83EB4C8AB9154FAEF61ABB833613DA1C10",
+			"walletId": "9d1c6f0a-7b3e-4a52-8e1f-2c4b6a8d0e13",
+			"applicationId": "3f2b8c1e-5a47-4d0e-9b6a-1c2d3e4f5a6b",
 			"chainStorageInDays": 360,
 			"gasPriceInAtomics": 200000,
 			"channels": [
@@ -71,7 +72,8 @@ const AnchoringExamples = {
 	appendToApplicationLedger: {
 		summary: 'Append application ledger',
 		value: {
-			"applicationId": "6AC2A4EBFD08F34C2EF4432041313F83EB4C8AB9154FAEF61ABB833613DA1C10",
+			"walletId": "9d1c6f0a-7b3e-4a52-8e1f-2c4b6a8d0e13",
+			"applicationId": "3f2b8c1e-5a47-4d0e-9b6a-1c2d3e4f5a6b",
 			"virtualBlockchainId": '82A49C89ACA5F3ECA4139A040A028B4C5B0A686BC1CE4B58DDE1BFC6B1004FBD',
 			"gasPriceInAtomics": 200000,
 			"channels": [
@@ -311,21 +313,29 @@ export class WalletApplicationLedgerController {
 	private async retrieveApplication(key: ApiKeyEntity, anchorDto: AnchorDto) {
 		const isAssociatedWithApplication = !!key.application;
 		const isApplicationSpecifiedInRequest = !!anchorDto.applicationId;
+		let applicationId: string;
 		if (!isAssociatedWithApplication) {
 			if (!isApplicationSpecifiedInRequest) {
-				throw new BadRequestException('Either a wallet or an application must be associated with the API key.');
-			} else {
-				this.logger.debug(`Finding application via anchor request: ${anchorDto.applicationId}`);
-				return this.applicationService.findApplicationByVbId(
-					anchorDto.applicationId
-				)
+				throw new BadRequestException('Either an application must be specified in the request or associated with the API key.');
 			}
+			this.logger.debug(`Finding application via anchor request: ${anchorDto.applicationId}`);
+			applicationId = anchorDto.applicationId;
 		} else {
-			this.logger.debug(`Finding application via API key: ${key.application.vbId}`);
-			return this.applicationService.findApplicationByVbId(
-				key.application.vbId
-			)
+			if (isApplicationSpecifiedInRequest && anchorDto.applicationId !== key.application.id) {
+				throw new BadRequestException('The application of the request differs from the application associated with the API key.');
+			}
+			this.logger.debug(`Finding application via API key: ${key.application.id}`);
+			applicationId = key.application.id;
 		}
+
+		const application = await this.applicationService.findApplicationById(applicationId);
+		if (!application) {
+			throw new NotFoundException(`Application ${applicationId} not found`);
+		}
+		if (!application.vbId) {
+			throw new BadRequestException(`Application ${applicationId} is not published online yet`);
+		}
+		return application;
 	}
 
 	/**
