@@ -1,3 +1,4 @@
+import { JsonObject } from '@cmts-dev/carmentis-sdk-core';
 import { Body, Controller, Param, Post } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { API_V1 } from '../../api/ApiVersion';
@@ -6,7 +7,6 @@ import { WalletEntity } from '../../entities/WalletEntity';
 import { OnChainPublicationService } from '../../services/OnChainPublicationService';
 import {
 	CertificatePublicationDto,
-	CustomSectionPublicationDto,
 	MicroblockPublicationResponseDto,
 } from '../../dto/CustomSectionPublicationDto';
 
@@ -19,18 +19,19 @@ export class WalletOrganizationController {
 		summary: 'Publish a custom JSON on an organization',
 		description:
 			'Publishes a custom JSON section on the virtual blockchain of an organization owned by the wallet. ' +
+				'The request body is the JSON itself. ' +
 			'The microblock is signed by the wallet and its fees are paid by the account the wallet is attached to.',
 	})
-	@ApiBody({ type: CustomSectionPublicationDto })
+	@ApiBody({ schema: { type: 'object', additionalProperties: true } })
 	@ApiCreatedResponse({ type: MicroblockPublicationResponseDto })
 	@ApiSecurity('api-key')
 	@Post('/wallet/:walletId/organization/:organizationVbId/anchor/json')
 	async publishCustomSection(
 		@Param('walletId', WalletByIdPipe) wallet: WalletEntity,
 		@Param('organizationVbId') organizationVbId: string,
-		@Body() dto: CustomSectionPublicationDto,
+		@Body() json: JsonObject,
 	): Promise<MicroblockPublicationResponseDto> {
-		return this.publicationService.publishCustomSection(wallet, organizationVbId, dto.json);
+		return this.publicationService.publishCustomSection(wallet, organizationVbId, json);
 	}
 
 	@ApiOperation({
