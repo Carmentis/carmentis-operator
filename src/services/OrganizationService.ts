@@ -16,6 +16,14 @@ export class OrganizationService {
 		private readonly walletRepository: Repository<WalletEntity>,
 	) {}
 
+	/** Organizations of the local registry owned by the wallet, published (with a `vbId`) or not. */
+	async listOrganizationsOfWallet(walletId: number): Promise<OrganizationEntity[]> {
+		return this.organizationRepository.find({
+			where: { wallet: { id: walletId } },
+			order: { createdAt: 'ASC', id: 'ASC' },
+		});
+	}
+
 	/** Creates a local organization (not published). */
 	async createOrganization(dto: OrganizationCreationDto): Promise<OrganizationEntity> {
 		const wallet = await this.walletRepository.findOneBy({ id: dto.walletId });

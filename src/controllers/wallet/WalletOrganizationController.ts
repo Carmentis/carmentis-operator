@@ -1,19 +1,45 @@
 import { JsonObject } from '@cmts-dev/carmentis-sdk-core';
-import { Body, Controller, Param, Post } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { API_V1 } from '../../api/ApiVersion';
 import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
 import { WalletEntity } from '../../entities/WalletEntity';
+import { OrganizationService } from '../../services/OrganizationService';
 import { OnChainPublicationService } from '../../services/OnChainPublicationService';
 import {
 	CertificatePublicationDto,
 	MicroblockPublicationResponseDto,
+	WalletOrganizationDto,
 } from '../../dto/CustomSectionPublicationDto';
 
 @ApiTags('Wallet Organization')
 @Controller({ path: '', version: API_V1 })
 export class WalletOrganizationController {
-	constructor(private readonly publicationService: OnChainPublicationService) {}
+	constructor(
+		private readonly publicationService: OnChainPublicationService,
+		private readonly organizationService: OrganizationService,
+	) {}
+
+	@ApiOperation({
+		summary: 'List the organizations of a wallet',
+		description:
+			'Returns the organizations of the local registry owned by the wallet. ' +
+			'`vbId` is null for an organization that is not published on-chain yet.',
+	})
+	@ApiOkResponse({ type: WalletOrganizationDto, isArray: true })
+	@ApiSecurity('api-key')
+	@Get('/wallet/:walletId/organization')
+	async listOrganizations(@Param('walletId', WalletByIdPipe) wallet: WalletEntity): Promise<WalletOrganizationDto[]> {
+		const organizations = await this.organizationService.listOrganizationsOfWallet(wallet.id);
+		return organizations.map(({ id, vbId, name, city, countryCode, website }) => ({
+			id,
+			vbId,
+			name,
+			city,
+			countryCode,
+			website,
+		}));
+	}
 
 	@ApiOperation({
 		summary: 'Publish a custom JSON on an organization',
