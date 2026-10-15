@@ -44,12 +44,10 @@ import { CorsMiddleware } from './middlewares/CorsMiddleware';
 import { CryptoController } from './controllers/crypto/CryptoController';
 import { VerifiableCredentialController } from './controllers/VerifiableCredentialController';
 import { WalletApplicationLedgerController } from './controllers/wallet/WalletApplicationLedgerController';
-import { WalletRecordController } from './controllers/wallet/WalletRecordController';
 import { HealthController } from './controllers/HealthController';
 import { ProtocolWiapV1Controller } from './controllers/ProtocolWiapV1Controller';
 import { AnchorRequestController } from './controllers/AnchorRequestController';
 import { ChainController } from './controllers/ChainController';
-import { WalletProofController } from './controllers/wallet/WalletProofController';
 import { AuthGuard } from './guards/AuthGuard';
 import { SameOriginGuard } from './guards/SameOriginGuard';
 import { PrivateKeyService } from './services/PrivateKeyService';
@@ -171,8 +169,6 @@ import { WalletOrganizationController } from './controllers/wallet/WalletOrganiz
 		ProtocolWiapV1Controller,
 		AnchorRequestController,
 		HealthController,
-		WalletProofController,
-		WalletRecordController,
 		WalletApplicationLedgerController,
 		VerifiableCredentialController,
 		CryptoController,

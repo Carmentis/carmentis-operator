@@ -1,6 +1,6 @@
-import { ApiBody, ApiCreatedResponse, ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiQuery, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { AnchorRequestStatusResponseDto } from '../../dto/AnchorRequestStatusResponseDto';
-import { BadRequestException, Body, Controller, Logger, NotFoundException, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Logger, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { AnchorRequestEntity } from '../../entities/AnchorRequestEntity';
 import { ApiKeyService } from '../../services/ApiKeyService';
 import { WalletAnchoringRequestService } from '../../services/wallet-anchoring-request.service';
@@ -10,10 +10,17 @@ import { AnchorDto, AnchorWithWalletDto } from '../../dto/AnchorDto';
 import { AnchorRequestResponseDto } from '../../dto/AnchorRequestResponseDto';
 import { ApiKey } from '../../decorators/ApiKeyDecorator';
 import { ApiKeyEntity } from '../../entities/ApiKeyEntity';
-import { CarmentisError } from '@cmts-dev/carmentis-sdk-core';
+import { CarmentisError, Hash, ProviderFactory } from '@cmts-dev/carmentis-sdk-core';
 import { ApplicationService } from '../../services/ApplicationService';
 import { ApplicationEntity } from '../../entities/ApplicationEntity';
 import { API_V1 } from '../../api/ApiVersion';
+import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
+import { WalletEntity } from '../../entities/WalletEntity';
+import { WalletService } from '../../services/WalletService';
+import { ProofService } from '../../services/ProofService';
+import { ApplicationLedgerUtils } from '../../utils/ApplicationLedgerUtils';
+import { GetVirtualBlockchainRecordRequestDto } from '../../dto/wallet/GetVirtualBlockchainRecordRequestDto';
+import { GetVirtualBlockchainAuthenticityProofRequestDto } from '../../dto/wallet/GetVirtualBlockchainAuthenticityProofRequestDto';
 
 
 const AnchoringExamples = {
@@ -112,6 +119,8 @@ export class WalletApplicationLedgerController {
 	constructor(
 		private readonly operatorService: WalletAnchoringRequestService,
 		private readonly applicationService: ApplicationService,
+		private readonly walletService: WalletService,
+		private readonly proofService: ProofService,
 	) {}
 
 
@@ -226,14 +235,78 @@ export class WalletApplicationLedgerController {
 
 	 */
 
+	@ApiOperation({
+		summary: 'Get a record from an application ledger',
+		description: 'Retrieves a record from an application ledger at a given block height, read with the wallet identity.'
+	})
+	@ApiQuery({ name: 'walletId', type: String, format: 'uuid', description: 'Wallet whose node and actor identity are used' })
+	@ApiResponse({ status: 200, description: 'The record has been successfully retrieved.' })
+	@ApiSecurity('api-key')
+	@Get('/applicationLedger/:applicationLedgerVbId/record')
+	async getRecord(
+		@Param('applicationLedgerVbId') applicationLedgerVbId: string,
+		@Query('walletId', WalletByIdPipe) wallet: WalletEntity,
+		@Query() request: GetVirtualBlockchainRecordRequestDto,
+	) {
+		const height = request.height;
+		this.logger.log(`Accessing record for application ledger ${applicationLedgerVbId} at height ${height}`)
+		const provider = wallet.getProvider();
+		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.from(applicationLedgerVbId))
+		const vbSeed = (await vb.getGenesisSeed()).toBytes();
+		const actorIdentity = await this.walletService.getActorIdentity(wallet, vbSeed);
+		return vb.getRecord(height, actorIdentity);
+	}
 
+	@ApiOperation({
+		summary: 'Get the authenticity proof of an application ledger',
+		description: 'Retrieves the authenticity proof of an application ledger, produced with the wallet identity.'
+	})
+	@ApiQuery({ name: 'walletId', type: String, format: 'uuid', description: 'Wallet whose node and actor identity are used' })
+	@ApiResponse({ status: 200, description: 'The authenticity proof has been successfully retrieved.' })
+	@ApiSecurity('api-key')
+	@Get('/applicationLedger/:applicationLedgerVbId/proof/authenticity')
+	async getAuthenticityProof(
+		@Param('applicationLedgerVbId') applicationLedgerVbId: string,
+		@Query('walletId', WalletByIdPipe) wallet: WalletEntity,
+		@Query() request: GetVirtualBlockchainAuthenticityProofRequestDto,
+	) {
+		const author = request.proofAuthor;
+		this.logger.log(`Returning authenticity proof for application ledger ${applicationLedgerVbId} with author ${author}`)
+		return this.proofService.getVbProof(applicationLedgerVbId, wallet, author);
+	}
 
+	@ApiOperation({
+		summary: 'Get the state of an application ledger',
+		description: 'Returns the actors and channels of an application ledger, read from the given node.'
+	})
+	@ApiSecurity('api-key')
+	@Get('/applicationLedger/:applicationLedgerVbId/state')
+	async getApplicationLedgerState(
+		@Param('applicationLedgerVbId') applicationLedgerVbId: string,
+		@Query('nodeEndpoint') nodeEndpoint: string,
+	) {
+		this.logger.log(`Getting application ledger state for VB ${applicationLedgerVbId} from node ${nodeEndpoint}`);
+		const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(nodeEndpoint);
+		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.fromHex(applicationLedgerVbId));
+		return ApplicationLedgerUtils.getActorsAndChannels(vb);
+	}
 
-
-
-
-
-
+	@ApiOperation({
+		summary: 'Get the public keys of an application ledger actor',
+		description: 'Returns the public keys of an actor of an application ledger, read from the given node.'
+	})
+	@ApiSecurity('api-key')
+	@Get('/applicationLedger/:applicationLedgerVbId/actor/:actorName/pk')
+	async getActorKeys(
+		@Param('applicationLedgerVbId') applicationLedgerVbId: string,
+		@Param('actorName') actorName: string,
+		@Query('nodeEndpoint') nodeEndpoint: string,
+	) {
+		this.logger.log(`Getting keys of actor ${actorName} of application ledger ${applicationLedgerVbId} from node ${nodeEndpoint}`);
+		const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(nodeEndpoint);
+		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.fromHex(applicationLedgerVbId));
+		return ApplicationLedgerUtils.getActorKeys(vb, actorName);
+	}
 
 	private async retrieveApplication(key: ApiKeyEntity, anchorDto: AnchorDto) {
 		const isAssociatedWithApplication = !!key.application;

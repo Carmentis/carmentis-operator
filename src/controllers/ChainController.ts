@@ -1,8 +1,7 @@
 import { Controller, Get, Logger, Param, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MicroblockUtils } from '../utils/MicroblockUtils';
-import { Hash, Provider, ProviderFactory } from '@cmts-dev/carmentis-sdk-core';
-import { ApplicationLedgerUtils } from '../utils/ApplicationLedgerUtils';
+import { ProviderFactory } from '@cmts-dev/carmentis-sdk-core';
 import { API_V1 } from '../api/ApiVersion';
 import { IndexerService } from '../indexer/IndexerService';
 
@@ -58,30 +57,5 @@ export class ChainController {
 		} else {
 			throw new Error('No node or indexer endpoint provided');
 		}
-	}
-
-
-
-	@Get('/applicationLedger/:vbId/state')
-	async getApplicationLedgerState(
-		@Param('vbId') vbId: string,
-		@Query('nodeEndpoint') nodeEndpoint: string,
-	) {
-		this.logger.log(`Getting application ledger state for VB ${vbId} from node ${nodeEndpoint}`);
-		const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(nodeEndpoint);
-		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.fromHex(vbId));
-		return ApplicationLedgerUtils.getActorsAndChannels(vb);
-	}
-
-	@Get('/applicationLedger/:vbId/actor/:actorName/pk')
-	async getActorKeys(
-		@Param('vbId') vbId: string,
-		@Param('actorName') actorName: string,
-		@Query('nodeEndpoint') nodeEndpoint: string,
-	) {
-		this.logger.log(`Getting application ledger state for VB ${vbId} from node ${nodeEndpoint}`);
-		const provider = ProviderFactory.createInMemoryProviderWithExternalProvider(nodeEndpoint);
-		const vb = await provider.loadApplicationLedgerVirtualBlockchain(Hash.fromHex(vbId));
-		return ApplicationLedgerUtils.getActorKeys(vb, actorName);
 	}
 }
