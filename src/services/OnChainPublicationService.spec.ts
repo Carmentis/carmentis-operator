@@ -1,4 +1,4 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Hash, Microblock, SectionType } from '@cmts-dev/carmentis-sdk-core';
 import { WalletEntity } from '../entities/WalletEntity';
@@ -198,6 +198,40 @@ describe('OnChainPublicationService', () => {
 
 			release();
 			await expect(first).resolves.toBeDefined();
+		});
+	});
+
+	describe('publishCertificate', () => {
+		const PEM = `-----BEGIN CERTIFICATE-----
+MIIBdTCCARugAwIBAgIUM3Z3VKSiggEj9l2zSrwKlxN3DtkwCgYIKoZIzj0EAwIw
+DzENMAsGA1UEAwwEdGVzdDAgFw0yNjEwMTUxMjQxMzZaGA8yMTI2MDkyMTEyNDEz
+NlowDzENMAsGA1UEAwwEdGVzdDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABPZa
+ma29s7GaIPj83lPxmXZR1P4u7NYK/ES7l1p5sgWl0y/2MEL9Fh8724wyuuEzA1ie
+I3tgSFLViaxI3YpSYEGjUzBRMB0GA1UdDgQWBBTJkDXUWIy3im/ASR8dc4RQoUt1
+GDAfBgNVHSMEGDAWgBTJkDXUWIy3im/ASR8dc4RQoUt1GDAPBgNVHRMBAf8EBTAD
+AQH/MAoGCCqGSM49BAMCA0gAMEUCIQD0KpoRdZVt0gQh6L1AtQm5OZE9C1swXq+f
+2anB8pbuQwIgdQgldQpXEmLw1gO32QKA197eQydkXwtzrVsYRatz4J0=
+-----END CERTIFICATE-----
+`;
+
+		it('publishes the PEM certificate as a __certificate__ custom section', async () => {
+			await createOrganization(ORG_VB_ID);
+			const update = { addSection: jest.fn(), setGasPrice: jest.fn(), setGasAndSeal: jest.fn(), getHeight: jest.fn().mockReturnValue(2) };
+			provider.loadOrganizationVirtualBlockchain = jest.fn().mockResolvedValue({ createMicroblock: jest.fn().mockResolvedValue(update) });
+
+			await service.publishCertificate(wallet, ORG_VB_ID, PEM);
+
+			expect(update.addSection).toHaveBeenCalledWith({
+				__certificate__: { type: 'PEM', content: PEM },
+				type: SectionType.CUSTOM,
+			});
+		});
+
+		it('rejects content that is not a PEM X.509 certificate, publishing nothing', async () => {
+			await createOrganization(ORG_VB_ID);
+
+			await expect(service.publishCertificate(wallet, ORG_VB_ID, 'not a certificate')).rejects.toThrow(BadRequestException);
+			expect(provider.publishMicroblock).not.toHaveBeenCalled();
 		});
 	});
 

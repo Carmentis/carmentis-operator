@@ -1,4 +1,4 @@
-import { IsObject } from 'class-validator';
+import { IsNotEmpty, IsObject, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { JsonObject } from '@cmts-dev/carmentis-sdk-core';
 
@@ -11,6 +11,16 @@ export class CustomSectionPublicationDto {
 	})
 	@IsObject()
 	json: JsonObject;
+}
+
+export class CertificatePublicationDto {
+	@ApiProperty({
+		title: 'The X.509 certificate',
+		description: 'The X.509 certificate in PEM format (-----BEGIN CERTIFICATE----- ...).',
+	})
+	@IsString()
+	@IsNotEmpty()
+	pemCertificate: string;
 }
 
 export class MicroblockPublicationResponseDto {

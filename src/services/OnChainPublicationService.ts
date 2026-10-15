@@ -1,4 +1,5 @@
-import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { X509Certificate } from 'node:crypto';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -149,6 +150,27 @@ export class OnChainPublicationService {
 			mb.addSection({ ...json, type: SectionType.CUSTOM });
 			const hash = await this.sealAndPublish(provider, mb, sk, accountId);
 			return { microblockHash: hash.encode(), height: mb.getHeight() };
+		});
+	}
+
+	/**
+	 * Publishes an X.509 certificate (PEM) on the virtual blockchain of an organization owned by the wallet,
+	 * as the custom section `{ __certificate__: { type: 'PEM', content } }`.
+	 *
+	 * @throws BadRequestException If the content is not a valid PEM X.509 certificate.
+	 */
+	async publishCertificate(
+		wallet: WalletEntity,
+		organizationVbId: string,
+		pemCertificate: string,
+	): Promise<{ microblockHash: string; height: number }> {
+		try {
+			new X509Certificate(pemCertificate);
+		} catch (error) {
+			throw new BadRequestException(`The certificate is not a valid PEM X.509 certificate: ${error instanceof Error ? error.message : error}`);
+		}
+		return this.publishCustomSection(wallet, organizationVbId, {
+			__certificate__: { type: 'PEM', content: pemCertificate },
 		});
 	}
 
