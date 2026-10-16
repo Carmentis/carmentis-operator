@@ -1,17 +1,11 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { promises as fs } from 'fs';
-import { EnvService } from './EnvService';
 import {
-	BytesToHexEncoder,
 	PrivateSignatureKey,
 	PublicSignatureKey,
-	Secp256k1PrivateSignatureKey,
-	CryptoEncoderFactory,
 	DigestDataHandler,
 	JsonObject,
-	OnchainData,
+	Digest,
 } from '@cmts-dev/carmentis-sdk-core';
-import { randomBytes } from 'crypto';
 import { BinaryEncodingUtils } from '../utils/BinaryEncodingUtils';
 import { BinaryEncoding } from '../dto/signature/BinaryEncoding';
 
@@ -62,7 +56,7 @@ export class CryptoService {
 		return DigestDataHandler.jsonToDigestData(object, addSalt, encoding, digestAlg);
 	}
 
-	verifyJsonDigest(onchainData: OnchainData, digestData: JsonObject) {
-		return DigestDataHandler.jsonFromDigestData(onchainData, digestData);
+	verifyJsonDigest(digest: Digest, digestData: JsonObject) {
+		return DigestDataHandler.jsonFromDigestData(digest, digestData);
 	}
 }

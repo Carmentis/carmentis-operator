@@ -23,16 +23,15 @@ export class ResolverHandler {
             walletEntity,
             provider
         );
-        const resolver = new Resolver(hydrator);
+        const resolver = new Resolver(provider, hydrator);
         const resolvedJson = await resolver.resolveFromInput(input);
         const proofs = hydrator.getProofs();
-        const digestData = hydrator.getDigestData();
 
         return {
             linkedJson: input.linkedJson,
             resolvedJson,
             proofs,
-            digestData,
+            digestData: input.digestData,
         };
     }
 }

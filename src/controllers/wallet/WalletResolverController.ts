@@ -1,9 +1,6 @@
 import { ResolutionProofWrapper, JsonData } from '@cmts-dev/carmentis-sdk-core';
 import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiSecurity, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiKey } from '../../decorators/ApiKeyDecorator';
-import { Public } from '../../decorators/PublicDecorator';
-import { ApiKeyEntity } from '../../entities/ApiKeyEntity';
 import { ResolverDto } from 'src/dto/ResolverDto';
 import { ResolutionProofDto } from 'src/dto/ResolverResponseDto';
 import { ResolverHandler } from 'src/utils/resolver/ResolverHandler';
@@ -44,8 +41,6 @@ export class WalletResolverController {
             provider,
             resolverDto
         );
-        console.log("resolverDto", resolverDto);
-        console.log("proofContent", proofContent);
         const proof = ResolutionProofWrapper.createEmptyProof(chainId);
         proof.setLinkedJson(proofContent.linkedJson);
         proof.setResolvedJson(proofContent.resolvedJson);
