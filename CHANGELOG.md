@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/Carmentis/carmentis-operator/compare/v1.13.0...v1.14.0) (2026-10-16)
+
+
+### Features
+
+* **dependencies:** add `valibot` as a dependency and update `pnpm-lock.yaml` ([8d65143](https://github.com/Carmentis/carmentis-operator/commit/8d651436553deb0dafa693fa56ad92f99d956e43))
+
 # [1.13.0](https://github.com/Carmentis/carmentis-operator/compare/v1.12.0...v1.13.0) (2026-10-16)
 
 
