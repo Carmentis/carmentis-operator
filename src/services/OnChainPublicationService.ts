@@ -170,7 +170,7 @@ export class OnChainPublicationService {
 			throw new BadRequestException(`The certificate is not a valid PEM X.509 certificate: ${error instanceof Error ? error.message : error}`);
 		}
 		return this.publishCustomSection(wallet, organizationVbId, {
-			__certificate__: { type: 'PEM', content: pemCertificate },
+			__certificate__: { type: 'PEM', pem: pemCertificate },
 		});
 	}
 

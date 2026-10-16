@@ -67,7 +67,7 @@ export class WalletOrganizationController {
 		summary: 'Publish an X.509 certificate on an organization',
 		description:
 			'Publishes an X.509 certificate (PEM) on the virtual blockchain of an organization owned by the wallet, ' +
-			'as `{ __certificate__: { type: "PEM", content } }`. The microblock is signed by the wallet and its fees ' +
+			'as `{ __certificate__: { type: "PEM", pem } }`. The microblock is signed by the wallet and its fees ' +
 			'are paid by the account the wallet is attached to.',
 	})
 	@ApiBody({ type: CertificatePublicationDto })
@@ -81,6 +81,6 @@ export class WalletOrganizationController {
 		const organization = await this.organizationService.getOrganizationById(organizationId)
 		const organizationVbId = organization.vbId;
 		const wallet = organization.wallet
-		return this.publicationService.publishCertificate(wallet, organizationVbId, dto.pemCertificate);
+		return this.publicationService.publishCertificate(wallet, organizationVbId, dto.pem);
 	}
 }

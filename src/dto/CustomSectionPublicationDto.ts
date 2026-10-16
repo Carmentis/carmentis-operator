@@ -8,7 +8,7 @@ export class CertificatePublicationDto {
 	})
 	@IsString()
 	@IsNotEmpty()
-	pemCertificate: string;
+	pem: string;
 }
 
 export class MicroblockPublicationResponseDto {
