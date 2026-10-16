@@ -1,3 +1,33 @@
+# [1.13.0](https://github.com/Carmentis/carmentis-operator/compare/v1.12.0...v1.13.0) (2026-10-16)
+
+
+### Bug Fixes
+
+* updated to the last resolver ([ece484b](https://github.com/Carmentis/carmentis-operator/commit/ece484b9983a2c5b667af1f26f81b3201017bdf2))
+
+
+### Features
+
+* **anchor:** add `walletId` to `AnchorDto` and refactor anchor request logic ([f717b4c](https://github.com/Carmentis/carmentis-operator/commit/f717b4cf09bc0c876822cdda9f958e30ef4d73b4))
+* **anchoring:** add periodic anchor request status checks via cron ([fb74df1](https://github.com/Carmentis/carmentis-operator/commit/fb74df163ae283de2ba7d29262c9bf9695db0207))
+* **anchor:** replace `applicationId` format with UUID and update retrieval logic ([0f6d43c](https://github.com/Carmentis/carmentis-operator/commit/0f6d43cd1f3e2ee9f4ed83c795f6072a70697ef0))
+* **api:** introduce API versioning and support for JSON signature workflows ([5c5a32f](https://github.com/Carmentis/carmentis-operator/commit/5c5a32fd67899a8c6b745b5b31d1d88571dad736))
+* **api:** remove unversioned `/api` alias for v1 endpoints ([4d11a9d](https://github.com/Carmentis/carmentis-operator/commit/4d11a9dc9034e62b7f0bb0a7774aa07aa4ffb6f0))
+* **applications:** add application details view with on-chain data integration ([29d7c4c](https://github.com/Carmentis/carmentis-operator/commit/29d7c4cf42351fc9648501fb86b765319fdedb29))
+* **applications:** enable on-chain application import and validation ([8926c18](https://github.com/Carmentis/carmentis-operator/commit/8926c18c67c9e51f861d294c86d90631c995e5c7))
+* **migrations:** introduce `organization` registry and local `application` support ([d47198d](https://github.com/Carmentis/carmentis-operator/commit/d47198d71206ce5b2ca27cbc3333393c6465a37a))
+* **organization:** refactor endpoints to use organization ID and fetch related entities ([0d81110](https://github.com/Carmentis/carmentis-operator/commit/0d81110537c6b6cfcce1f4be4d87034b182324f7))
+* **ui:** improve navigation and add breadcrumb support ([5cde77f](https://github.com/Carmentis/carmentis-operator/commit/5cde77fd42344a5a29a5e9b4f3be76d4341d847f))
+* **ui:** redesign on-chain data integration with catalog cards ([abed9f3](https://github.com/Carmentis/carmentis-operator/commit/abed9f3f478d18902f6f03b432108bd8ac9bc025))
+* **wallet-balances:** add wallet token breakdown and indexer integration ([3c1c5e5](https://github.com/Carmentis/carmentis-operator/commit/3c1c5e5dea56e61f8b9647f65b6cc024d1c16986))
+* **wallet-creation:** add BIP39 mnemonic support and network validation during wallet creation ([ea2e84b](https://github.com/Carmentis/carmentis-operator/commit/ea2e84b504f43e22eb64b2767ab7241cbe704f43))
+* **wallet-details:** add wallet detail view and on-chain integration ([6b41b83](https://github.com/Carmentis/carmentis-operator/commit/6b41b838551b90ee83205d9d637ceaf7154398db))
+* **wallet-service:** implement private key management functionality and refactor wallet anchoring flow ([db5d7cb](https://github.com/Carmentis/carmentis-operator/commit/db5d7cb9f797d9dfec7449fdb148ae61e8d92038))
+* **wallet:** add custom JSON publication endpoint in `WalletOrganizationController` ([e1b9fa5](https://github.com/Carmentis/carmentis-operator/commit/e1b9fa594fef40f0e31273c32ddb294ad216bbe1))
+* **wallet:** add endpoint to list wallet organizations ([455e448](https://github.com/Carmentis/carmentis-operator/commit/455e4484d0617293a33bf2eb37a91146ce64e683))
+* **wallet:** add new endpoints for listing wallet applications and organizations ([1d8a264](https://github.com/Carmentis/carmentis-operator/commit/1d8a2647f4f81913fbe08abfb7afcda2bbfe6201))
+* **wallet:** introduce PEM certificate publication endpoint ([db160a4](https://github.com/Carmentis/carmentis-operator/commit/db160a4cf2694e23f8b732d5222aaf7f1e2e5ee8))
+
 # [1.12.0](https://github.com/Carmentis/carmentis-operator/compare/v1.11.7...v1.12.0) (2026-09-17)
 
 
