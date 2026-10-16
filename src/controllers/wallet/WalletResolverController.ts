@@ -44,6 +44,7 @@ export class WalletResolverController {
         const proof = ResolutionProofWrapper.createEmptyProof(chainId);
         proof.setLinkedJson(proofContent.linkedJson);
         proof.setResolvedJson(proofContent.resolvedJson);
+        proof.setDigestData(resolverDto.digestData);
         proof.setProofs(proofContent.proofs);
 
         return proof.getObject();

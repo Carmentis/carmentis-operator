@@ -24,6 +24,22 @@ export class ResolutionProofBodyDto {
 		additionalProperties: true,
 	})
 	resolvedJson: JsonObject;
+
+	@ApiProperty({
+		title: 'Proofs',
+		description: 'The microblock proofs.',
+		type: 'object',
+		additionalProperties: true,
+	})
+	proofs: Record<string, JsonObject>;
+
+	@ApiProperty({
+		title: 'Digest data',
+		description: 'The external digest data provided for the resolition.',
+		type: 'object',
+		additionalProperties: true,
+	})
+	digestData: Record<string, JsonObject>;
 }
 
 export class ResolutionProofDto {

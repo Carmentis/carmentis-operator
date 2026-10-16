@@ -54,6 +54,14 @@ export class ResolverDto {
 	linkedJson: JsonObject;
 
 	@ApiProperty({
+		title: 'External digest data',
+		description: 'The external digest data (e.g. GDPR) stored by the application.',
+		type: 'object',
+		additionalProperties: true,
+	})
+	digestData: Record<string, JsonObject>;
+
+	@ApiProperty({
 		title: "Policies",
 		description: 'The policies used during the resolution.',
 	})
