@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/Carmentis/carmentis-operator/compare/v1.14.0...v1.14.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* **resolver:** added missing digest data export, fixed DTOs ([78883f1](https://github.com/Carmentis/carmentis-operator/commit/78883f1d6da7bea6f88e8ba5ec91e9c6f9ee40e0))
+
 # [1.14.0](https://github.com/Carmentis/carmentis-operator/compare/v1.13.0...v1.14.0) (2026-10-16)
 
 
