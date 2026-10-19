@@ -1,5 +1,5 @@
 import { Body, Controller, Logger, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import {
 	VerifiableCredentialFormat,
 	SdJwtVerifiableCredentialVerificationRequestDto, SdJwtVerifiablePresentationVerificationRequestDto,
@@ -12,6 +12,7 @@ import {
 import { SdJwtCredentialVerificationResultDto } from '../dto/vc/SdJwtCredentialVerificationResultDto';
 import { API_V1 } from '../api/ApiVersion';
 
+@ApiSecurity('api-key')
 @ApiTags('Verifiable Credentials')
 @Controller({ path: '', version: API_V1 })
 export class VerifiableCredentialController {

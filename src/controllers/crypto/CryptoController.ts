@@ -1,10 +1,11 @@
 import { Body, Controller, Get, ParseIntPipe, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import crypto from 'crypto';
 import { API_V1 } from '../../api/ApiVersion';
 import { WalletJsonDigestRequestDto } from '../../dto/wallet/WalletJsonDigestRequestDto';
 import { CryptoService } from '../../services/CryptoService';
 
+@ApiSecurity('api-key')
 @ApiTags('Crypto')
 @Controller({ path: 'crypto', version: API_V1 })
 export class CryptoController {

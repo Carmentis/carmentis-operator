@@ -15,6 +15,7 @@ import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import { ProofService } from '../services/ProofService';
 import { API_V1 } from 'src/api/ApiVersion';
 
+@ApiSecurity('api-key')
 @ApiTags('Anchor Request')
 @Controller({ path: 'anchorRequest', version: API_V1 })
 export class AnchorRequestController {

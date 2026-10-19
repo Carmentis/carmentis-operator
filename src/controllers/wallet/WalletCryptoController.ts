@@ -1,5 +1,5 @@
 import { Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { WalletService } from '../../services/WalletService';
 import { WalletEntity } from '../../entities/WalletEntity';
 import {
@@ -24,6 +24,7 @@ import { ExtractPublicSignatureKeyFromWallet } from '../../pipes/ExtractPublicSi
 import { PublicKeyRetrievalApiResponse } from '../../swagger/PublicKeyRetreivalApiResponse';
 import { API_V1 } from '../../api/ApiVersion';
 
+@ApiSecurity('api-key')
 @ApiTags('Wallet')
 @Controller({ path: '/wallet', version: API_V1 })
 @ApiParam({ name: 'walletId', type: String, format: 'uuid', description: 'Wallet identifier' })

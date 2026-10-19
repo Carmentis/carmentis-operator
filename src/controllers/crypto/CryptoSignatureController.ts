@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiSecurity, ApiTags } from '@nestjs/swagger';
 import { CryptoEncoderFactory } from '@cmts-dev/carmentis-sdk-core';
 import { BinaryEncodingUtils } from '../../utils/BinaryEncodingUtils';
 import {
@@ -11,6 +11,7 @@ import { CryptoService } from '../../services/CryptoService';
 import { SignatureVerificationApiResponse } from '../../swagger/SignatureVerificationApiResponse';
 import { API_V1 } from '../../api/ApiVersion';
 
+@ApiSecurity('api-key')
 @ApiTags('Crypto')
 @Controller({ path: 'crypto/signature', version: API_V1 })
 export class CryptoSignatureController {
