@@ -42,6 +42,8 @@ export class CryptoSignatureController {
 		summary: 'Verify a JSON signature',
 		description: 'Verifies a `json-canonical+utf8` or `jws` signature, and the context it carries, with a public key.'
 	})
+	@ApiResponse(SignatureVerificationApiResponse.JsonResponse200)
+	@ApiResponse({ status: 400, description: 'The request body or the verification context is invalid.' })
 	@Post('verify/json')
 	async verifyJsonSignature(
 		@Body() params: JsonSignatureVerificationWithPublicKeyRequestDto
