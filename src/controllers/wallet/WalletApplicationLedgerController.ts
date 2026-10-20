@@ -27,7 +27,6 @@ const AnchoringExamples = {
 	createApplicationLedger: {
 		summary: 'Create an application ledger',
 		value: {
-			"walletId": "9d1c6f0a-7b3e-4a52-8e1f-2c4b6a8d0e13",
 			"applicationId": "3f2b8c1e-5a47-4d0e-9b6a-1c2d3e4f5a6b",
 			"chainStorageInDays": 360,
 			"gasPriceInAtomics": 200000,
@@ -72,7 +71,6 @@ const AnchoringExamples = {
 	appendToApplicationLedger: {
 		summary: 'Append application ledger',
 		value: {
-			"walletId": "9d1c6f0a-7b3e-4a52-8e1f-2c4b6a8d0e13",
 			"applicationId": "3f2b8c1e-5a47-4d0e-9b6a-1c2d3e4f5a6b",
 			"virtualBlockchainId": '82A49C89ACA5F3ECA4139A040A028B4C5B0A686BC1CE4B58DDE1BFC6B1004FBD',
 			"gasPriceInAtomics": 200000,
@@ -175,7 +173,7 @@ export class WalletApplicationLedgerController {
 	@ApiOperation({
 		summary: 'Initiate an anchor request',
 		description: 'Initiates an anchoring request for an application. This endpoint is used to create an anchor request without explicit wallet approval. ' +
-			'`walletId` is optional: when provided (or when the API key is bound to a wallet), the application must belong to that wallet.'
+			'The wallet is resolved from the application (application -> organization -> wallet).'
 	})
 	@ApiBody({ type: AnchorDto, examples: AnchoringExamples })
 	@ApiCreatedResponse({
@@ -190,7 +188,7 @@ export class WalletApplicationLedgerController {
 	): Promise<AnchorRequestResponseDto> {
 		// find application and organization
 		const application = await this.retrieveApplication(key, anchorDto);
-		this.validateApplicationBelongsToWallet(key, anchorDto, application);
+		this.validateApplicationBelongsToWallet(key, application);
 		const applicationId = application.vbId;
 		this.validateIfApiKeyAllowingPublicationToApplication(key, applicationId)
 		this.validateGasPrice(key, anchorDto.gasPriceInAtomics);
@@ -339,16 +337,12 @@ export class WalletApplicationLedgerController {
 	}
 
 	/**
-	 * The wallet is the one given in the request, or the one the API key is bound to.
-	 * @throws BadRequestException If the request wallet differs from the API key wallet.
-	 * @throws NotFoundException If the application does not belong to the wallet.
+	 * The wallet is resolved from the application (application -> organization -> wallet).
+	 * If the API key is bound to a wallet, the application must belong to it.
+	 * @throws NotFoundException If the application does not belong to the API key wallet.
 	 */
-	private validateApplicationBelongsToWallet(key: ApiKeyEntity, anchorDto: AnchorDto, application: ApplicationEntity) {
-		const keyWalletId = key.wallet?.id;
-		if (anchorDto.walletId && keyWalletId && anchorDto.walletId !== keyWalletId) {
-			throw new BadRequestException('The wallet of the request differs from the wallet associated with the API key.');
-		}
-		const walletId = anchorDto.walletId ?? keyWalletId;
+	private validateApplicationBelongsToWallet(key: ApiKeyEntity, application: ApplicationEntity) {
+		const walletId = key.wallet?.id;
 		if (walletId && application?.wallet?.id !== walletId) {
 			throw new NotFoundException(`Application ${application?.vbId} not found for wallet ${walletId}`);
 		}

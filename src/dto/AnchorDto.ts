@@ -119,16 +119,6 @@ export class MaskableFieldDto {
  */
 export class AnchorDto  {
 	@ApiProperty({
-		description: 'Identifier of the wallet owning the application. Optional: when provided, the application must belong to this wallet ' +
-			'(and match the wallet of the API key, if the key is bound to one).',
-		format: 'uuid',
-		required: false,
-	})
-	@IsOptional()
-	@IsUUID()
-	walletId?: string;
-
-	@ApiProperty({
 		description: 'Local identifier of the application (not its virtual blockchain identifier). ' +
 			'The application must be published online before calling this endpoint. ' +
 			'When omitted, an application must be associated with the API key.',
