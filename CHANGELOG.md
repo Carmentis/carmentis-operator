@@ -1,3 +1,11 @@
+# [1.15.0](https://github.com/Carmentis/carmentis-operator/compare/v1.14.1...v1.15.0) (2026-10-20)
+
+
+### Features
+
+* **api:** add `@ApiSecurity('api-key')` decorator to secure controllers ([9dfcc49](https://github.com/Carmentis/carmentis-operator/commit/9dfcc49e9b08757637217b8b72ab67dc4aa3a69a))
+* **api:** enhance JSON signature verification with detailed responses ([233c513](https://github.com/Carmentis/carmentis-operator/commit/233c5139b25f652b01c68379d65b7b384c993cfa))
+
 ## [1.14.1](https://github.com/Carmentis/carmentis-operator/compare/v1.14.0...v1.14.1) (2026-10-16)
 
 
