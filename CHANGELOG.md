@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/Carmentis/carmentis-operator/compare/v1.15.0...v1.16.0) (2026-10-26)
+
+
+### Features
+
+* **wallet:** add wallet file import functionality to admin interface ([01ab305](https://github.com/Carmentis/carmentis-operator/commit/01ab30502e63857a69e2484085c00fba6ca720b8))
+
 # [1.15.0](https://github.com/Carmentis/carmentis-operator/compare/v1.14.1...v1.15.0) (2026-10-20)
 
 
