@@ -6,13 +6,17 @@ import { ApplicationEntity } from '../entities/ApplicationEntity';
 import { OrganizationEntity } from '../entities/OrganizationEntity';
 import { ApiKeyEntity } from '../entities/ApiKeyEntity';
 import {
+	Base64,
 	BytesToHexEncoder,
 	CryptoEncoderFactory,
 	ExternalKeyApplicationLedgerActorIdentity,
+	ExportedWallet,
 	Hash,
+	KeyType,
 	SeedEncoder,
 	VirtualBlockchainType,
 	WalletCrypto,
+	WalletKeyFileService,
 } from '@cmts-dev/carmentis-sdk-core';
 import { WalletUpdateDto } from '../dto/admin/WalletUpdateDto';
 import { PrivateKeyUtils } from '../utils/PrivateKeyUtils';
@@ -21,11 +25,19 @@ import { Bip39Utils } from '../utils/Bip39Utils';
 import { PrivateKeyService } from './PrivateKeyService';
 import { PrivateKeyEntity } from '../entities/PrivateKeyEntity';
 import { WalletCreationDto } from '../dto/wallet/WalletCreationDto';
+import { PrivateKeyObjectType } from '../types/types';
 
 export interface ApplicationOnChainDetails {
 	application: { name: string; description: string; homepageUrl: string; logoUrl: string };
 	organization: { id: string; name?: string; website?: string; city?: string; countryCode?: string };
 	organizationError?: string;
+}
+
+/** Settings applied to the imported wallets whose file does not carry its own connectivity. */
+export interface WalletImportDefaults {
+	rpcEndpoint: string;
+	indexerEndpoint: string;
+	allowedEndpointsRegex?: string;
 }
 
 export type AccountStatus =
@@ -71,6 +83,78 @@ export class WalletService {
 				}),
 			);
 		});
+	}
+
+	/**
+	 * Imports the wallets of a password-protected key file (`*.ecw`) produced by the SDK.
+	 *
+	 * The whole file is decrypted and every wallet is validated (actor passphrase, usable private
+	 * key) before anything is written; the wallets are then persisted atomically, so a file is
+	 * imported entirely or not at all. A wallet uses the connectivity stored in the file when
+	 * there is one, and `defaults` otherwise.
+	 *
+	 * @throws BadRequestException If the file cannot be read or decrypted (wrong password,
+	 * altered or malformed file), or one of its wallets is invalid.
+	 */
+	async importFromKeyFile(bytes: Uint8Array, password: string, defaults: WalletImportDefaults): Promise<WalletEntity[]> {
+		let payload;
+		try {
+			payload = await new WalletKeyFileService().import(bytes, password);
+		} catch (error) {
+			const reason = error instanceof Error ? error.message : String(error);
+			throw new BadRequestException(
+				`The wallet file could not be decrypted (wrong password, or invalid or altered file): ${reason}`,
+			);
+		}
+
+		const prepared = [];
+		for (const exported of payload.wallets) {
+			try {
+				prepared.push(await this.prepareImportedWallet(exported, defaults));
+			} catch (error) {
+				const reason = error instanceof Error ? error.message : String(error);
+				throw new BadRequestException(`Wallet "${exported.name}" cannot be imported: ${reason}`);
+			}
+		}
+
+		return this.repo.manager.transaction(async manager => {
+			const wallets: WalletEntity[] = [];
+			for (const { privateKey, ...fields } of prepared) {
+				const privateKeyEntity = await manager.save(PrivateKeyEntity.create({ privateKey }));
+				const wallet: WalletEntity = this.repo.create();
+				Object.assign(wallet, fields, { privateKey: privateKeyEntity });
+				wallets.push(await manager.save(wallet));
+			}
+			return wallets;
+		});
+	}
+
+	private async prepareImportedWallet(exported: ExportedWallet, defaults: WalletImportDefaults) {
+		if (!Bip39Utils.isValid(exported.actorPassphrase)) {
+			throw new BadRequestException('its actor passphrase is not a valid BIP39 mnemonic');
+		}
+		const privateKey = await this.privateKeyService.parseAndValidate(this.toPrivateKeyCandidate(exported));
+		return {
+			name: exported.name,
+			rpcEndpoint: exported.connectivity?.nodeEndpoint ?? defaults.rpcEndpoint,
+			indexerEndpoint: exported.connectivity?.indexerEndpoint ?? defaults.indexerEndpoint,
+			allowedEndpointsRegex: defaults.allowedEndpointsRegex || undefined,
+			actorPassphrase: Bip39Utils.normalize(exported.actorPassphrase),
+			privateKey,
+		};
+	}
+
+	/**
+	 * Converts an exported key to the (untrusted) private key object stored by the operator.
+	 * The file holds the raw seed in base64, whereas the operator stores it SeedEncoder-encoded.
+	 */
+	private toPrivateKeyCandidate(exported: ExportedWallet): unknown {
+		const key = exported.privateKey;
+		if (key.keyType === KeyType.JWK) {
+			return { keyType: PrivateKeyObjectType.JWK, jwk: key.jwk };
+		}
+		const seed = WalletCrypto.fromSeed(Base64.decodeBinary(key.seed)).encode(new SeedEncoder());
+		return { keyType: PrivateKeyObjectType.SEED, schemeId: key.schemeId, seed, passphrase: key.passphrase };
 	}
 
 	/**

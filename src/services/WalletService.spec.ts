@@ -1,7 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
-import { WalletCrypto, SeedEncoder, SignatureSchemeId, JwkPrivateSignatureKey, VirtualBlockchainType, Hash } from '@cmts-dev/carmentis-sdk-core';
+import { WalletCrypto, SeedEncoder, WalletKeyFileService, WalletKeyFileBuilder, ExportedWalletMapper, KeyType, SignatureSchemeId, JwkPrivateSignatureKey, VirtualBlockchainType, Hash } from '@cmts-dev/carmentis-sdk-core';
 import { WalletEntity } from '../entities/WalletEntity';
 import { PrivateKeyEntity } from '../entities/PrivateKeyEntity';
 import { PrivateKeyObjectType } from '../types/types';
@@ -106,6 +106,54 @@ describe('WalletService', () => {
 
 		expect(account).toEqual({ accountId: 'AB'.repeat(32), balance: '0.00042 CMTS' });
 		expect(provider.getAccountState).toHaveBeenCalledWith(new Uint8Array(32).fill(0xab));
+	});
+
+	describe('importFromKeyFile', () => {
+		const defaults = { rpcEndpoint: 'https://default-rpc.example', indexerEndpoint: 'https://default-indexer.example' };
+
+		async function keyFile(password: string, connectivity?: object) {
+			const crypto = WalletCrypto.generateWallet();
+			const builder = new WalletKeyFileBuilder().addWallet({
+				name: 'imported',
+				privateKey: ExportedWalletMapper.seedKeyFromWallet(crypto, SignatureSchemeId.SECP256K1),
+				actorPassphrase: VALID_MNEMONIC,
+				...(connectivity ? { connectivity: connectivity as any } : {}),
+			});
+			return { crypto, bytes: await new WalletKeyFileService().export(builder, password) };
+		}
+
+		it('imports the wallets of a key file, keeping the same private key', async () => {
+			const { crypto, bytes } = await keyFile('correct horse');
+
+			const [wallet] = await service.importFromKeyFile(bytes, 'correct horse', defaults);
+
+			expect(wallet.name).toBe('imported');
+			expect(wallet.rpcEndpoint).toBe(defaults.rpcEndpoint);
+			expect(wallet.actorPassphrase).toBe(VALID_MNEMONIC);
+			const expected = await crypto.getDefaultAccountCrypto().getPrivateSignatureKey(SignatureSchemeId.SECP256K1);
+			const actual = await service.getPrivateKeyOfWallet(wallet.id);
+			expect(await actual.getPublicKey()).toEqual(await expected.getPublicKey());
+		}, 60000);
+
+		it('prefers the connectivity stored in the file', async () => {
+			const { bytes } = await keyFile('pw', {
+				networkName: 'n',
+				nodeEndpoint: 'https://file-rpc.example',
+				indexerEndpoint: 'https://file-indexer.example',
+			});
+
+			const [wallet] = await service.importFromKeyFile(bytes, 'pw', defaults);
+
+			expect(wallet.rpcEndpoint).toBe('https://file-rpc.example');
+			expect(wallet.indexerEndpoint).toBe('https://file-indexer.example');
+		}, 60000);
+
+		it('rejects a wrong password without writing anything', async () => {
+			const { bytes } = await keyFile('right');
+
+			await expect(service.importFromKeyFile(bytes, 'wrong', defaults)).rejects.toThrow(BadRequestException);
+			expect(await dataSource.getRepository(WalletEntity).count()).toBe(0);
+		}, 60000);
 	});
 
 	describe('getAccountStatus', () => {

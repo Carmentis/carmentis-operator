@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Import wallet - Carmentis Operator</title>
+	<link rel="stylesheet" href="/admin/static/admin.css">
+</head>
+<body>
+	<div class="layout">
+		{{>sidebar}}
+		<main class="main-content">
+			{{>topbar}}
+			<div class="content-area">
+				{{> breadcrumbs section="Wallets" sectionHref="/admin/wallets" action="Import"}}
+				<h2>Import wallet file</h2>
+				<p class="text">
+					Import the wallets of an encrypted wallet file (<code>.ecw</code>). The file is decrypted
+					on the server with the password you provide; neither the file nor the password is stored.
+				</p>
+
+				{{>flash}}
+
+				<form method="post" action="/admin/wallets/import" enctype="multipart/form-data">
+					<div class="form-group">
+						<label for="file">Wallet file (.ecw)</label>
+						<input type="file" id="file" name="file" accept=".ecw" required>
+					</div>
+					<div class="form-group">
+						<label for="password">Password</label>
+						<input type="password" id="password" name="password" required autocomplete="off">
+					</div>
+					<div class="form-group">
+						<label for="network">Network</label>
+						<select id="network" name="network" required>
+							{{#each networks}}
+							<option value="{{this.id}}" {{#if (eq this.id ../network)}}selected{{/if}}>{{this.label}}</option>
+							{{/each}}
+							<option value="custom" {{#if (eq network "custom")}}selected{{/if}}>Custom</option>
+						</select>
+						<p style="font-size: 12px; color: var(--color-text-secondary);">
+							Used for the wallets whose file does not specify its own node and indexer endpoints.
+						</p>
+					</div>
+					<div id="custom-network-group" style="display:none;">
+						<div class="form-group">
+							<label for="rpcEndpoint">RPC endpoint</label>
+							<input type="text" id="rpcEndpoint" name="rpcEndpoint" value="{{form.rpcEndpoint}}">
+						</div>
+						<div class="form-group">
+							<label for="indexerEndpoint">Indexer endpoint</label>
+							<input type="text" id="indexerEndpoint" name="indexerEndpoint" value="{{form.indexerEndpoint}}">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="allowedEndpointsRegex">Allowed endpoints regex (optional)</label>
+						<input type="text" id="allowedEndpointsRegex" name="allowedEndpointsRegex" value="{{form.allowedEndpointsRegex}}">
+					</div>
+
+					<button type="submit" class="btn btn-primary">Import</button>
+					<a href="/admin/wallets" class="btn btn-secondary">Cancel</a>
+				</form>
+			</div>
+		</main>
+	</div>
+	<script src="/admin/static/admin.js"></script>
+	<script>
+		const networkSelect = document.getElementById('network');
+		const customGroup = document.getElementById('custom-network-group');
+		const customInputs = customGroup.querySelectorAll('input');
+
+		function refreshNetwork() {
+			const isCustom = networkSelect.value === 'custom';
+			customGroup.style.display = isCustom ? '' : 'none';
+			customInputs.forEach((input) => { input.required = isCustom; });
+		}
+		networkSelect.addEventListener('change', refreshNetwork);
+		refreshNetwork();
+	</script>
+</body>
+</html>

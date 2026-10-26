@@ -10,7 +10,10 @@ import {
 	Render,
 	Req,
 	Res,
+	UploadedFile,
+	UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Request, Response } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -29,6 +32,14 @@ import {
 	redirectWithFlash,
 	validateForm,
 } from '../../utils/AdminForm';
+
+/** Maximum size of an uploaded wallet file: a key file only holds a few keys. */
+const MAX_WALLET_FILE_BYTES = 1024 * 1024;
+
+/** The part of a multer file used here (kept local: `@types/multer` is not a dependency). */
+interface UploadedWalletFile {
+	buffer: Buffer;
+}
 
 const WALLETS_PATH = `${OPERATOR_ADMIN_UI_PREFIX}/wallets`;
 
@@ -76,6 +87,63 @@ export class OperatorAdminUiWalletController {
 			keyType: PrivateKeyObjectType.SEED,
 			...this.buildCreationDefaults(DEFAULT_NETWORK_ID),
 		};
+	}
+
+	@Get('import')
+	@Render('wallet-import')
+	async importForm(@Req() req: Request): Promise<any> {
+		return {
+			currentSection: 'wallets',
+			user: (req as any).user,
+			flash: req.query?.flash,
+			flashType: req.query?.flashType,
+			...this.buildImportDefaults(DEFAULT_NETWORK_ID),
+		};
+	}
+
+	/** Imports the wallets of an encrypted wallet file (`*.ecw`), decrypted with the given password. */
+	@Post('import')
+	@UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_WALLET_FILE_BYTES, files: 1 } }))
+	async importWallets(
+		@Req() req: Request,
+		@Body() body: Record<string, string>,
+		@UploadedFile() file: UploadedWalletFile | undefined,
+		@Res() res: Response,
+	) {
+		try {
+			if (!file?.buffer?.length) {
+				throw new BadRequestException('Choose the wallet file (.ecw) to import');
+			}
+			if (!body.password) {
+				throw new BadRequestException('Enter the password of the wallet file');
+			}
+			const endpoints = this.resolveEndpoints(body);
+			const wallets = await this.walletService.importFromKeyFile(new Uint8Array(file.buffer), body.password, {
+				...endpoints,
+				allowedEndpointsRegex: emptyToUndefined(body.allowedEndpointsRegex),
+			});
+			const count = wallets.length;
+			return redirectWithFlash(
+				res,
+				WALLETS_PATH,
+				`${count} wallet${count === 1 ? '' : 's'} imported.`,
+				'success',
+			);
+		} catch (error) {
+			// The file and the password are never echoed back.
+			return res.status(400).render('wallet-import', {
+				currentSection: 'wallets',
+				user: (req as any).user,
+				...this.buildImportDefaults(body.network),
+				flash: getErrorMessage(error, 'Could not import this wallet file.'),
+				flashType: 'error',
+				form: {
+					rpcEndpoint: body.rpcEndpoint,
+					indexerEndpoint: body.indexerEndpoint,
+					allowedEndpointsRegex: body.allowedEndpointsRegex,
+				},
+			});
+		}
 	}
 
 	/** Stateless helper for the "regenerate" button of the actor passphrase: nothing is persisted. */
@@ -236,6 +304,13 @@ export class OperatorAdminUiWalletController {
 			networks: WALLET_NETWORKS,
 			network: network === CUSTOM_NETWORK_ID || resolveNetwork(network) ? network : DEFAULT_NETWORK_ID,
 			actorPassphrase: this.walletService.generateActorPassphrase(),
+		};
+	}
+
+	private buildImportDefaults(network: string | undefined) {
+		return {
+			networks: WALLET_NETWORKS,
+			network: network === CUSTOM_NETWORK_ID || resolveNetwork(network) ? network : DEFAULT_NETWORK_ID,
 		};
 	}
 
