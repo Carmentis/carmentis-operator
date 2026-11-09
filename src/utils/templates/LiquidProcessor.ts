@@ -1,5 +1,5 @@
 import { Liquid } from 'liquidjs'
-import { TemplateProcessor } from './templateProcessor';
+import { TemplateProcessor } from './TemplateProcessor';
 import { InjectionCodec } from './InjectionCodec';
 
 export class LiquidProcessor implements TemplateProcessor {
