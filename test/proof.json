@@ -1,0 +1,449 @@
+{
+  "type": "resolutionProof",
+  "info": {
+    "version": 1,
+    "chainId": "cmts:devnet",
+    "description": "This is a Carmentis proof file. Visit www.carmentis.io for more information.",
+    "author": "",
+    "date": "2026-10-29T12:58:45.703Z"
+  },
+  "proof": {
+    "linkedJson": {
+      "sending": {
+        "__link__": "cmts://resolve/vb/17CD19974EE7ED9915834ED6AE7FBAB8FF7F238B0F686D1DB489D4C2352F13B0/mb/h/1"
+      },
+      "fileSignCert": {
+        "__link__": "cmts://resolve/mb/215210905CBF9CA0D2FA8F20E0C00ACF567733A96CBA7D4AB7BCB685D5FA60D7/sect/0"
+      },
+      "__representation__": {
+        "templateEngine": "Liquid",
+        "format": "markdown",
+        "template": "# File-Sign Delivery Receipt\n\n{% assign sa = sending.sender.sendingApproval.__signature__ %}{% assign ra = reception.recipient.receptionApproval.__signature__ %}{% assign cert = fileSignCert.x509Chain[0] %}\nMessage #**{{ sa.payload.messageId }}** sent by **{{ sa.payload.senderEmail }}** [1][2] to **{{ sa.payload.recipientEmail }}** [2]{% if ra %}[3][4]{% endif %}.\n\n- Sending approved on **{{ sa.context.signedAt | divided_by: 1000 | date: '%B %d, %Y at %H:%M:%S' }}** [2]\n{% if ra %}- Reception approved on **{{ ra.context.signedAt | divided_by: 1000 | date: '%B %d, %Y at %H:%M:%S' }}** [4]\n{% else %}- Reception: not yet approved\n{% endif %}{% if cert %}- Sending service: **{{ cert.subject['2.5.4.3'].values[0] }}** [5]\n{% endif %}\n## Message\n\n| | |\n|---|---|\n| Title | **{{ sa.payload.title }}** [2] |\n| Body | {{ sending.body }} |\n\n## Attached files ({{ sa.payload.files | size }})\n\n| Name | Size | SHA-256 |\n|---|---|---|\n{% for f in sa.payload.files %}| **{{ f.filename }}** [2]{% if ra %}[4]{% endif %} | {{ f.size | divided_by: 1024.0 | round: 1 }} KB | `{{ f.sha256 }}` [2]{% if ra %}[4]{% endif %} |\n{% endfor %}\n{% if ra %}## Blockchain anchoring\n\n`{{ ra.payload.virtualBlockchainId }}` [4]\n\n{% endif %}---\n\n## Proofs\n\n**[1] Sender email**: SD-JWT verifiable presentation (EmailCredential), with proof of possession.\n\n**[2] Sending approval**: \"{{ sa.context.purpose }}\". {{ sa.signatureType }} signature, key `{{ sa.publicKey | truncate: 50 }}`. It covers the title, sender, recipient and files.\n\n{% if ra %}**[3] Recipient email**: SD-JWT verifiable presentation (EmailCredential), with proof of possession.\n\n**[4] Reception approval**: \"{{ ra.context.purpose }}\". {{ ra.signatureType }} signature, key `{{ ra.publicKey | truncate: 50 }}`. It covers the virtual blockchain identifier, sender, recipient and files.\n\n{% endif %}{% if cert %}**[5] Service certificate**: subject {{ cert.subject['2.5.4.3'].values[0] }}, issuer {{ cert.issuer['2.5.4.3'].values[0] }}{% if cert.info.selfSigned %} (self-signed){% endif %}. Serial number `{{ cert.info.serialNumber }}`. Valid from {{ cert.info.notBefore | date: '%B %d, %Y' }} to {{ cert.info.notAfter | date: '%B %d, %Y' }}.\n{% endif %}"
+      }
+    },
+    "resolvedJson": {
+      "sending": {
+        "title": "Token Economy",
+        "body": "For you to review",
+        "recipientEmail": "arnauld.chevallier@carmentis.io",
+        "files": [
+          {
+            "filename": "Carmentis Token Economics v1.2.pdf",
+            "mimetype": "application/pdf",
+            "size": 653077,
+            "sha256": "543e661216a801a5b05396b9d34ca2baa56e4e14e12123b8d1768ff8d8c19efb"
+          }
+        ],
+        "sender": {
+          "email": {
+            "iss": "did:jwk:eyJjcnYiOiJFZDI1NTE5IiwieCI6IktzcDJ6UGtIX3paOFctMDNLMy1ZQ2ZGZkJWRG9lM0g4NFM0bWZrcDR2ZlEiLCJrdHkiOiJPS1AiLCJ4NWMiOlsiTUlJQmxEQ0NBVWFnQXdJQkFnSVVJTWhUdTNkdS9BZVpNM3BzZkREWXdsL2g0SEV3QlFZREsyVndNR294RWpBUUJnTlZCQU1NQ1VOaGNtMWxiblJwY3pFU01CQUdBMVVFQ3d3SlEyRnliV1Z1ZEdsek1Rc3dDUVlEVlFRR0V3SkdVakVQTUEwR0ExVUVDQXdHUm5KaGJtTmxNUTR3REFZRFZRUUhEQVZRWVhKcGN6RVNNQkFHQTFVRUNnd0pRMkZ5YldWdWRHbHpNQjRYRFRJMk1EWXpNREE1TVRJMU1sb1hEVEkzTURZek1EQTVNVEkxTWxvd2FqRVNNQkFHQTFVRUF3d0pRMkZ5YldWdWRHbHpNUkl3RUFZRFZRUUxEQWxEWVhKdFpXNTBhWE14Q3pBSkJnTlZCQVlUQWtaU01ROHdEUVlEVlFRSURBWkdjbUZ1WTJVeERqQU1CZ05WQkFjTUJWQmhjbWx6TVJJd0VBWURWUVFLREFsRFlYSnRaVzUwYVhNd0tqQUZCZ01yWlhBRElRQXF5bmJNK1FmL05ueGI3VGNyZjVnSjhWOEZVT2g3Y2Z6aExpWitTbmk5OURBRkJnTXJaWEFEUVFEUEtTdkVoZzZvY1pkWjlYYklnZ0NrRkt4VVUxeWJZaFVsZUY1a05GNEN0TTR5NmhHRjMrQ3JGVzVvWkRtZ3EyM0V0M3RrVHhuSXZSSVpxeURTMGRJQSJdfQ",
+            "iat": 1793278030,
+            "vct": "EmailCredential",
+            "sub": "sig:secp256k1:pk:03e98968a90954d9d0905e443b79fcd889f921e7fd9756b590cd6e59584d4c4e84",
+            "jti": "ef0e03a5-94cb-49df-aef1-734a525a78eb",
+            "status": {
+              "status_list": {
+                "idx": 47,
+                "uri": "https://issuer.admin.carmentis.io/api/demo-vc-email/credential/status"
+              }
+            },
+            "email": "john.filesigndemo@proton.me"
+          },
+          "sendingApproval": {
+            "type": "fileSign/sendingApproval",
+            "messageId": 25,
+            "nonce": "fb7f9dc329464b7a321adea323c44dde",
+            "title": "Token Economy",
+            "senderEmail": "john.filesigndemo@proton.me",
+            "recipientEmail": "arnauld.chevallier@carmentis.io",
+            "files": [
+              {
+                "filename": "Carmentis Token Economics v1.2.pdf",
+                "sha256": "543e661216a801a5b05396b9d34ca2baa56e4e14e12123b8d1768ff8d8c19efb",
+                "size": 653077
+              }
+            ]
+          }
+        }
+      },
+      "fileSignCert": {
+        "type": 129,
+        "x509Chain": [
+          {
+            "info": {
+              "notBefore": "2026-10-19T13:36:23.000Z",
+              "notAfter": "2027-10-19T13:36:23.000Z",
+              "serialNumber": "7bf9b84fbd4bbf4dbc2c4155fca225ed6429fed8",
+              "selfSigned": true
+            },
+            "subject": {
+              "2.5.4.3": {
+                "shortName": "CN",
+                "description": "Common Name",
+                "values": [
+                  "File-Sign"
+                ]
+              }
+            },
+            "issuer": {
+              "2.5.4.3": {
+                "shortName": "CN",
+                "description": "Common Name",
+                "values": [
+                  "File-Sign"
+                ]
+              }
+            },
+            "extensions": {
+              "2.5.29.35": {
+                "shortName": "2.5.29.35",
+                "description": "",
+                "values": [
+                  "30168014233E46DEC031C7576B414E05E2332A0FC4544B4E"
+                ]
+              },
+              "2.5.29.19": {
+                "shortName": "2.5.29.19",
+                "description": "",
+                "values": [
+                  "3000"
+                ]
+              },
+              "2.5.29.15": {
+                "shortName": "2.5.29.15",
+                "description": "",
+                "values": [
+                  "030206C0"
+                ]
+              },
+              "2.5.29.14": {
+                "shortName": "2.5.29.14",
+                "description": "",
+                "values": [
+                  "0414233E46DEC031C7576B414E05E2332A0FC4544B4E"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "digestData": {},
+    "proofs": {
+      "cmts://resolve/vb/17CD19974EE7ED9915834ED6AE7FBAB8FF7F238B0F686D1DB489D4C2352F13B0/mb/h/1": {
+        "virtualBlockchains": [
+          {
+            "id": "17CD19974EE7ED9915834ED6AE7FBAB8FF7F238B0F686D1DB489D4C2352F13B0",
+            "microblocks": [
+              {
+                "height": 1,
+                "channels": [
+                  {
+                    "id": 0,
+                    "isPublic": false,
+                    "nLeaves": 24,
+                    "fields": [
+                      {
+                        "path": [
+                          "title"
+                        ],
+                        "index": 0,
+                        "type": 1,
+                        "salt": "462ED8ACE4A915479DD6BD661F1469F3",
+                        "value": "Token Economy"
+                      },
+                      {
+                        "path": [
+                          "body"
+                        ],
+                        "index": 1,
+                        "type": 1,
+                        "salt": "815ED7E1C87134245E0B5FA362AF46C6",
+                        "value": "For you to review"
+                      },
+                      {
+                        "path": [
+                          "recipientEmail"
+                        ],
+                        "index": 2,
+                        "type": 1,
+                        "salt": "3DD35C2D47C72DA936FC9BBC58CEFB5C",
+                        "value": "arnauld.chevallier@carmentis.io"
+                      },
+                      {
+                        "path": [
+                          "files",
+                          0,
+                          "filename"
+                        ],
+                        "index": 3,
+                        "type": 1,
+                        "salt": "CC02E52BF0DBB5D3451AAB6B9D0399FD",
+                        "value": "Carmentis Token Economics v1.2.pdf"
+                      },
+                      {
+                        "path": [
+                          "files",
+                          0,
+                          "mimetype"
+                        ],
+                        "index": 4,
+                        "type": 1,
+                        "salt": "50E79DD7703C2EA88AFFED9A1F8F55D1",
+                        "value": "application/pdf"
+                      },
+                      {
+                        "path": [
+                          "files",
+                          0,
+                          "size"
+                        ],
+                        "index": 5,
+                        "type": 1,
+                        "salt": "01B3B0E243395DE29B350176FF4C53BD",
+                        "value": 653077
+                      },
+                      {
+                        "path": [
+                          "files",
+                          0,
+                          "sha256"
+                        ],
+                        "index": 6,
+                        "type": 1,
+                        "salt": "FDC685359F4B9604FB204DC76AA60BF0",
+                        "value": "543e661216a801a5b05396b9d34ca2baa56e4e14e12123b8d1768ff8d8c19efb"
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "email",
+                          "__vp__",
+                          "type"
+                        ],
+                        "index": 7,
+                        "type": 1,
+                        "salt": "249CBAC8BED43983296ABC70B674DD55",
+                        "value": "SDJWT_IETF"
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "email",
+                          "__vp__",
+                          "sdjwt_ietf"
+                        ],
+                        "index": 8,
+                        "type": 1,
+                        "salt": "00F301BA9296232366ED819D86670A85",
+                        "value": "eyJ0eXAiOiJ2YytzZC1qd3QiLCJhbGciOiJFZERTQSJ9.eyJpc3MiOiJkaWQ6andrOmV5SmpjbllpT2lKRlpESTFOVEU1SWl3aWVDSTZJa3R6Y0RKNlVHdElYM3BhT0ZjdE1ETkxNeTFaUTJaR1prSldSRzlsTTBnNE5GTTBiV1pyY0RSMlpsRWlMQ0pyZEhraU9pSlBTMUFpTENKNE5XTWlPbHNpVFVsSlFteEVRME5CVldGblFYZEpRa0ZuU1ZWSlRXaFVkVE5rZFM5QlpWcE5NM0J6WmtSRVdYZHNMMmcwU0VWM1FsRlpSRXN5Vm5kTlIyOTRSV3BCVVVKblRsWkNRVTFOUTFWT2FHTnRNV3hpYmxKd1kzcEZVMDFDUVVkQk1WVkZRM2QzU2xFeVJubGlWMVoxWkVkc2VrMVJjM2REVVZsRVZsRlJSMFYzU2tkVmFrVlFUVUV3UjBFeFZVVkRRWGRIVW01S2FHSnRUbXhOVVRSM1JFRlpSRlpSVVVoRVFWWlJXVmhLY0dONlJWTk5Ra0ZIUVRGVlJVTm5kMHBSTWtaNVlsZFdkV1JIYkhwTlFqUllSRlJKTWsxRVdYcE5SRUUxVFZSSk1VMXNiMWhFVkVrelRVUlplazFFUVRWTlZFa3hUV3h2ZDJGcVJWTk5Ra0ZIUVRGVlJVRjNkMHBSTWtaNVlsZFdkV1JIYkhwTlVrbDNSVUZaUkZaUlVVeEVRV3hFV1ZoS2RGcFhOVEJoV0UxNFEzcEJTa0puVGxaQ1FWbFVRV3RhVTAxUk9IZEVVVmxFVmxGUlNVUkJXa2RqYlVaMVdUSlZlRVJxUVUxQ1owNVdRa0ZqVFVKV1FtaGpiV3g2VFZKSmQwVkJXVVJXVVZGTFJFRnNSRmxZU25SYVZ6VXdZVmhOZDB0cVFVWkNaMDF5V2xoQlJFbFJRWEY1Ym1KTksxRm1MMDV1ZUdJM1ZHTnlaalZuU2poV09FWlZUMmczWTJaNmFFeHBXaXRUYm1rNU9VUkJSa0puVFhKYVdFRkVVVkZFVUV0VGRrVm9aelp2WTFwa1dqbFlZa2xuWjBOclJrdDRWVlV4ZVdKWmFGVnNaVVkxYTA1R05FTjBUVFI1Tm1oSFJqTXJRM0pHVnpWdldrUnRaM0V5TTBWME0zUnJWSGh1U1haU1NWcHhlVVJUTUdSSlFTSmRmUSIsImlhdCI6MTc5MzI3ODAzMCwidmN0IjoiRW1haWxDcmVkZW50aWFsIiwic3ViIjoic2lnOnNlY3AyNTZrMTpwazowM2U5ODk2OGE5MDk1NGQ5ZDA5MDVlNDQzYjc5ZmNkODg5ZjkyMWU3ZmQ5NzU2YjU5MGNkNmU1OTU4NGQ0YzRlODQiLCJqdGkiOiJlZjBlMDNhNS05NGNiLTQ5ZGYtYWVmMS03MzRhNTI1YTc4ZWIiLCJzdGF0dXMiOnsic3RhdHVzX2xpc3QiOnsiaWR4Ijo0NywidXJpIjoiaHR0cHM6Ly9pc3N1ZXIuYWRtaW4uY2FybWVudGlzLmlvL2FwaS9kZW1vLXZjLWVtYWlsL2NyZWRlbnRpYWwvc3RhdHVzIn19LCJfc2QiOlsiMUxZUDFTNndzVjhqSlVLUTNsR09MYVF6Qy1PWnJMa01fb1h6Yk41bWF2TSIsIjVRT3lENXJmNnBEQ1FaVk03MmsyNWI2eDBnY3FoTWJuNGdtckVPaDE5ZGMiLCI3X2N1eTdubVg0a0RPM0RkREljNnZYOEtuVFctejRqeHR1MkZhb29lcUdvIiwiWU5JcnhTV19MMGxaaGxhZVVmcHlBR0lEbmlZTVlEX3JPUkZQMDZUVTl2USJdLCJfc2RfYWxnIjoic2hhLTI1NiJ9.6vIZoQlL80TDKQ7AHECPrrQ-p6pPXaQ3mkan0Y-b8Oe8Xsbl9pkYApKbKyar8SzFj8wbvG5DlM815JXHZ-DhBg~WyJXQVhfSEZYelgybVRGdGhNZWIwcVVRIiwiZW1haWwiLCJqb2huLmZpbGVzaWduZGVtb0Bwcm90b24ubWUiXQ~eyJ0eXAiOiJrYitqd3QiLCJhbGciOiJFUzI1NksifQ.eyJub25jZSI6ImZ5L2lacHFVN3RqczRvUWxwMGZkeUIvSXRqOWFXQUE3cm1jR1J6aElzb289IiwiaWF0IjoxNzkzMjc4MTI3LCJhdWQiOiJodHRwczovL2ZpbGUtc2lnbi5zZXJ2ZXI0LmRldm5ldC5jYXJtZW50aXMuaW8iLCJzZF9oYXNoIjoiSlYyUTNnQWVkUUFnYWhOTExrRTVtT0pyY0s1RGV2WDY5amtuQlRHLXhVQSJ9.Y7V_TLrT6zKDFl-kaqRloUaZRnUGfCyfxJLvxUCAQR1e_FKvry8jxDbQ0SHoPPYgiQnFk6JgMeVPxEqMxtQfmg"
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "signatureType"
+                        ],
+                        "index": 9,
+                        "type": 1,
+                        "salt": "F49583E42068870038B73B7A22494CBF",
+                        "value": "json-canonical+utf8"
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "context",
+                          "signedAt"
+                        ],
+                        "index": 10,
+                        "type": 1,
+                        "salt": "C110D5CDB5C2CF019442D39E799EA3EC",
+                        "value": 1793278176729
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "context",
+                          "purpose"
+                        ],
+                        "index": 11,
+                        "type": 1,
+                        "salt": "FCC6E946146A4C8887D6E46D8C8376D4",
+                        "value": "FileSign: approve the sending of a message"
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "signature"
+                        ],
+                        "index": 12,
+                        "type": 1,
+                        "salt": "0DB921A955EBD6298EFA21B412FC7AA3",
+                        "value": "eqRwxL6/OmMizCgpsi7xQ/eAZJ3RxW/OXztPOW/Ckl03AYHh/fV2ucB1AM4Tv2GcU98Awe0SGVwq6oTUnP+dLQ=="
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "payload",
+                          "type"
+                        ],
+                        "index": 13,
+                        "type": 1,
+                        "salt": "F70198F7D8E360B33BB57B4B5B2287E3",
+                        "value": "fileSign/sendingApproval"
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "payload",
+                          "messageId"
+                        ],
+                        "index": 14,
+                        "type": 1,
+                        "salt": "2C8D17164BE3CD8FD6647A70A88CDDAC",
+                        "value": 25
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "payload",
+                          "nonce"
+                        ],
+                        "index": 15,
+                        "type": 1,
+                        "salt": "5BA685EE868DE98DEC04346D18D055A0",
+                        "value": "fb7f9dc329464b7a321adea323c44dde"
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "payload",
+                          "title"
+                        ],
+                        "index": 16,
+                        "type": 1,
+                        "salt": "22836614F11ABD3E8D50E0B17FEA00BD",
+                        "value": "Token Economy"
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "payload",
+                          "senderEmail"
+                        ],
+                        "index": 17,
+                        "type": 1,
+                        "salt": "DF3A8C48C1E5562053D0FD6B640EBA97",
+                        "value": "john.filesigndemo@proton.me"
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "payload",
+                          "recipientEmail"
+                        ],
+                        "index": 18,
+                        "type": 1,
+                        "salt": "A1C1F31E8736F4B5B69CE321E7C2F110",
+                        "value": "arnauld.chevallier@carmentis.io"
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "payload",
+                          "files",
+                          0,
+                          "filename"
+                        ],
+                        "index": 19,
+                        "type": 1,
+                        "salt": "0068A8F1EC9B1E896BAF4063B1C9274D",
+                        "value": "Carmentis Token Economics v1.2.pdf"
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "payload",
+                          "files",
+                          0,
+                          "sha256"
+                        ],
+                        "index": 20,
+                        "type": 1,
+                        "salt": "AE30982593ACA78E9F9FFA701DEE40F2",
+                        "value": "543e661216a801a5b05396b9d34ca2baa56e4e14e12123b8d1768ff8d8c19efb"
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "payload",
+                          "files",
+                          0,
+                          "size"
+                        ],
+                        "index": 21,
+                        "type": 1,
+                        "salt": "23575D328A437F42EFC85A84DF891961",
+                        "value": 653077
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "publicKey"
+                        ],
+                        "index": 22,
+                        "type": 1,
+                        "salt": "0CF9D61FD5313E968262C4BDBD3A7B1C",
+                        "value": "sig:secp256k1:pk:03e98968a90954d9d0905e443b79fcd889f921e7fd9756b590cd6e59584d4c4e84"
+                      },
+                      {
+                        "path": [
+                          "sender",
+                          "sendingApproval",
+                          "__signature__",
+                          "signatureEncoding"
+                        ],
+                        "index": 23,
+                        "type": 1,
+                        "salt": "17246717D83BEFF4E11D10C6B6FE6AB1",
+                        "value": "base64"
+                      }
+                    ],
+                    "witnesses": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

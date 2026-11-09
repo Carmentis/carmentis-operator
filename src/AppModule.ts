@@ -48,6 +48,7 @@ import { HealthController } from './controllers/HealthController';
 import { ProtocolWiapV1Controller } from './controllers/ProtocolWiapV1Controller';
 import { AnchorRequestController } from './controllers/AnchorRequestController';
 import { ChainController } from './controllers/ChainController';
+import { PdfController } from './controllers/pdf/PdfController';
 import { AuthGuard } from './guards/AuthGuard';
 import { SameOriginGuard } from './guards/SameOriginGuard';
 import { PrivateKeyService } from './services/PrivateKeyService';
@@ -70,6 +71,7 @@ import { OperatorAdminUiApiKeyController } from './controllers/operator-admin-ui
 import { HomeController } from './controllers/HomeController';
 import { WalletResolverController } from './controllers/wallet/WalletResolverController';
 import { ResolverHandler } from './utils/resolver/ResolverHandler';
+import { ResolutionProofToPdf } from './utils/pdf/ResolutionProofToPdf';
 import { WalletController } from './controllers/wallet/WalletController';
 import { WalletApplicationController } from './controllers/wallet/WalletApplicationController';
 import { WalletOrganizationController } from './controllers/wallet/WalletOrganizationController';
@@ -134,6 +136,7 @@ import { WalletOrganizationController } from './controllers/wallet/WalletOrganiz
 		AuthTokenService,
 		ProofService,
 		ResolverHandler,
+		ResolutionProofToPdf,
 
 		// pipes
 		WalletByIdPipe,
@@ -178,6 +181,7 @@ import { WalletOrganizationController } from './controllers/wallet/WalletOrganiz
 		WalletOrganizationController,
 		WalletApplicationController,
 		WalletController,
+		PdfController,
 	]
 })
 export class AppModule implements NestModule, OnApplicationBootstrap {
