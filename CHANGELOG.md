@@ -1,3 +1,11 @@
+## [1.16.2](https://github.com/Carmentis/carmentis-operator/compare/v1.16.1...v1.16.2) (2026-11-09)
+
+
+### Bug Fixes
+
+* added support for PDF generation ([52959f0](https://github.com/Carmentis/carmentis-operator/commit/52959f0c382afdc1da7b201948ecc06eedad4439))
+* invalid template processor filename ([f88fb1b](https://github.com/Carmentis/carmentis-operator/commit/f88fb1b4dc0c32fc21920781c3392d5a9bd81fec))
+
 ## [1.16.1](https://github.com/Carmentis/carmentis-operator/compare/v1.16.0...v1.16.1) (2026-10-28)
 
 
