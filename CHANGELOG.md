@@ -1,3 +1,10 @@
+## [1.16.4](https://github.com/Carmentis/carmentis-operator/compare/v1.16.3...v1.16.4) (2026-11-10)
+
+
+### Bug Fixes
+
+* added pdf/sign endpoint ([3cb0c10](https://github.com/Carmentis/carmentis-operator/commit/3cb0c101afaa203d4764d0ddcf5569aaf062e5d7))
+
 ## [1.16.3](https://github.com/Carmentis/carmentis-operator/compare/v1.16.2...v1.16.3) (2026-11-10)
 
 
