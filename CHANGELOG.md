@@ -1,3 +1,10 @@
+## [1.16.3](https://github.com/Carmentis/carmentis-operator/compare/v1.16.2...v1.16.3) (2026-11-10)
+
+
+### Bug Fixes
+
+* more permissive Liquid variables, added proof attachment in PdfController ([85f7144](https://github.com/Carmentis/carmentis-operator/commit/85f714459e9569ae0b1af3d1b98a0fa6023b9133))
+
 ## [1.16.2](https://github.com/Carmentis/carmentis-operator/compare/v1.16.1...v1.16.2) (2026-11-09)
 
 
