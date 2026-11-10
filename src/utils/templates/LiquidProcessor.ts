@@ -2,12 +2,14 @@ import { Liquid } from 'liquidjs'
 import { TemplateProcessor } from './TemplateProcessor';
 import { InjectionCodec } from './InjectionCodec';
 
+const strictVariables = false;
+
 export class LiquidProcessor implements TemplateProcessor {
     private readonly liquid: Liquid;
 
     constructor(private readonly codec: InjectionCodec) {
         this.liquid = new Liquid({
-            strictVariables: true,
+            strictVariables,
             // outputEscape() is called for every {{ ... }} output, after filters
             outputEscape: (value: unknown) => codec.encode(value),
         });

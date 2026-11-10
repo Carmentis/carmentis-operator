@@ -1,144 +1,139 @@
 {
-    "sending": {
-        "title": "Demo",
-        "body": "test",
+  "sending": {
+    "title": "test",
+    "body": "test",
+    "recipientEmail": "gael.marcadet@carmentis.io",
+    "files": [
+      {
+        "filename": "proof-20.json",
+        "mimetype": "application/json",
+        "size": 71813,
+        "sha256": "e4ceb261cd7785924772a7f687d54cd3ec8562e0dbde490d324a578ab39ee37b"
+      }
+    ],
+    "sender": {
+      "email": {
+        "iss": "did:jwk:eyJjcnYiOiJFZDI1NTE5IiwieCI6IktzcDJ6UGtIX3paOFctMDNLMy1ZQ2ZGZkJWRG9lM0g4NFM0bWZrcDR2ZlEiLCJrdHkiOiJPS1AiLCJ4NWMiOlsiTUlJQmxEQ0NBVWFnQXdJQkFnSVVJTWhUdTNkdS9BZVpNM3BzZkREWXdsL2g0SEV3QlFZREsyVndNR294RWpBUUJnTlZCQU1NQ1VOaGNtMWxiblJwY3pFU01CQUdBMVVFQ3d3SlEyRnliV1Z1ZEdsek1Rc3dDUVlEVlFRR0V3SkdVakVQTUEwR0ExVUVDQXdHUm5KaGJtTmxNUTR3REFZRFZRUUhEQVZRWVhKcGN6RVNNQkFHQTFVRUNnd0pRMkZ5YldWdWRHbHpNQjRYRFRJMk1EWXpNREE1TVRJMU1sb1hEVEkzTURZek1EQTVNVEkxTWxvd2FqRVNNQkFHQTFVRUF3d0pRMkZ5YldWdWRHbHpNUkl3RUFZRFZRUUxEQWxEWVhKdFpXNTBhWE14Q3pBSkJnTlZCQVlUQWtaU01ROHdEUVlEVlFRSURBWkdjbUZ1WTJVeERqQU1CZ05WQkFjTUJWQmhjbWx6TVJJd0VBWURWUVFLREFsRFlYSnRaVzUwYVhNd0tqQUZCZ01yWlhBRElRQXF5bmJNK1FmL05ueGI3VGNyZjVnSjhWOEZVT2g3Y2Z6aExpWitTbmk5OURBRkJnTXJaWEFEUVFEUEtTdkVoZzZvY1pkWjlYYklnZ0NrRkt4VVUxeWJZaFVsZUY1a05GNEN0TTR5NmhHRjMrQ3JGVzVvWkRtZ3EyM0V0M3RrVHhuSXZSSVpxeURTMGRJQSJdfQ",
+        "iat": 1793265563,
+        "vct": "EmailCredential",
+        "sub": "sig:secp256k1:pk:029c40beb169b2bcbd0690b8d7d91e85f719d2a86ab0a51ac439d69a33a58428de",
+        "jti": "199ba249-316a-4c47-a3e0-aa95b094b2a5",
+        "status": {
+          "status_list": {
+            "idx": 42,
+            "uri": "https://issuer.admin.carmentis.io/api/demo-vc-email/credential/status"
+          }
+        },
+        "email": "arnauld.chevallier@gmail.com"
+      },
+      "sendingApproval": {
+        "type": "fileSign/sendingApproval",
+        "messageId": 24,
+        "nonce": "20eaaf6eddf1ada033a964e7a2b2a71f",
+        "title": "test",
+        "senderEmail": "arnauld.chevallier@gmail.com",
         "recipientEmail": "gael.marcadet@carmentis.io",
         "files": [
-            {
-                "filename": "1792488694704-129258100",
-                "mimetype": "text/markdown",
-                "size": 88,
-                "sha256": "e13d8cc5233bb584727bb1e6f568396a312eb89ee132af849c5bc1b28adb201a"
-            }
-        ],
-        "sender": {
-            "email": {
-                "__vp__": {
-                    "__sdjwt_ietf__": "eyJ0eXAiOiJ2YytzZC1qd3QiLCJhbGciOiJFZERTQSJ9.eyJpc3MiOiJkaWQ6andrOmV5SmpjbllpT2lKRlpESTFOVEU1SWl3aWVDSTZJa3R6Y0RKNlVHdElYM3BhT0ZjdE1ETkxNeTFaUTJaR1prSldSRzlsTTBnNE5GTTBiV1pyY0RSMlpsRWlMQ0pyZEhraU9pSlBTMUFpTENKNE5XTWlPbHNpVFVsSlFteEVRME5CVldGblFYZEpRa0ZuU1ZWSlRXaFVkVE5rZFM5QlpWcE5NM0J6WmtSRVdYZHNMMmcwU0VWM1FsRlpSRXN5Vm5kTlIyOTRSV3BCVVVKblRsWkNRVTFOUTFWT2FHTnRNV3hpYmxKd1kzcEZVMDFDUVVkQk1WVkZRM2QzU2xFeVJubGlWMVoxWkVkc2VrMVJjM2REVVZsRVZsRlJSMFYzU2tkVmFrVlFUVUV3UjBFeFZVVkRRWGRIVW01S2FHSnRUbXhOVVRSM1JFRlpSRlpSVVVoRVFWWlJXVmhLY0dONlJWTk5Ra0ZIUVRGVlJVTm5kMHBSTWtaNVlsZFdkV1JIYkhwTlFqUllSRlJKTWsxRVdYcE5SRUUxVFZSSk1VMXNiMWhFVkVrelRVUlplazFFUVRWTlZFa3hUV3h2ZDJGcVJWTk5Ra0ZIUVRGVlJVRjNkMHBSTWtaNVlsZFdkV1JIYkhwTlVrbDNSVUZaUkZaUlVVeEVRV3hFV1ZoS2RGcFhOVEJoV0UxNFEzcEJTa0puVGxaQ1FWbFVRV3RhVTAxUk9IZEVVVmxFVmxGUlNVUkJXa2RqYlVaMVdUSlZlRVJxUVUxQ1owNVdRa0ZqVFVKV1FtaGpiV3g2VFZKSmQwVkJXVVJXVVZGTFJFRnNSRmxZU25SYVZ6VXdZVmhOZDB0cVFVWkNaMDF5V2xoQlJFbFJRWEY1Ym1KTksxRm1MMDV1ZUdJM1ZHTnlaalZuU2poV09FWlZUMmczWTJaNmFFeHBXaXRUYm1rNU9VUkJSa0puVFhKYVdFRkVVVkZFVUV0VGRrVm9aelp2WTFwa1dqbFlZa2xuWjBOclJrdDRWVlV4ZVdKWmFGVnNaVVkxYTA1R05FTjBUVFI1Tm1oSFJqTXJRM0pHVnpWdldrUnRaM0V5TTBWME0zUnJWSGh1U1haU1NWcHhlVVJUTUdSSlFTSmRmUSIsImlhdCI6MTc5MjQxNDcxOCwidmN0IjoiRW1haWxDcmVkZW50aWFsIiwic3ViIjoiZGlkOmp3azpleUpoYkdjaU9pSlNVekkxTmlJc0ltVWlPaUpCVVVGQ0lpd2lhM1I1SWpvaVVsTkJJaXdpYmlJNklqWlpkREJvT1ZneFNHeEpWMDFxVVVSeWNWaDJaMVJOZGxkdWNVOXNSRTUxYmpZeFh6TlhVR1F5WVdjM2EyRkRZVFpyY0Y5dWRUbDJURmwyU0RkVk4zTnBNRE42YVU5U1JHWmFVMVJ2ZGxob1JtVjRTRUZaZVdsU1EwaEhWVXRmVVhwd05EVTBRV1JFTmxZMlRUSnhla0Z5TFY5SWJrSmxjbGhIWVc1d1lraHhNMDQxY0RCTlgxQjVSa2xFVmpWbVIzcG1VMlJmUkY5QlpGZFFNMmRQYzFRdE9FWnpSVkZHYWpKR1RGSlljMlExUVRGQ1kwOU9jbFpZUlhWM1pEaGZTM1JTZUVOU1JUTkVPVk5WYjBSYVUwOUtWVjlrUkZaRWREZEVOWFJNYmt0emJscENPVVJaVUhKT1ZtMXFORXB3V2pFd1ZUaENTMUZZY0d4V05tSXRPVU5MTTFsS09EaElkVUl4VVVKS1JrOXRialJYTm5nNWRGaExSMWxuTVZGSllrOHpNa0oxUnpKWGIzbEtSM0pGYWtsRmFFcEJMVnBuVjFNM2IzQnZhVzFpT0dReWFHMUdSRTkyYm1oU1JrZFpkR1I2T0ZjeWR5SjkiLCJqdGkiOiIzZjJkZGRhMS1mNzVmLTRiMTktOThiMS02MWMwMjcyMDczMDIiLCJzdGF0dXMiOnsic3RhdHVzX2xpc3QiOnsiaWR4IjoyNSwidXJpIjoiaHR0cHM6Ly9pc3N1ZXIuYWRtaW4uY2FybWVudGlzLmlvL2FwaS9kZW1vLXZjLWVtYWlsL2NyZWRlbnRpYWwvc3RhdHVzIn19LCJfc2QiOlsiM0lQUnFNVVN2WGlEYXNaNXFFNGJVSHJBUkh5UjhpY3Qyd2lPQ2NQZnRxMCIsImZxVDBMZ1A3dVhsUnk3T2VYRmtNX3JOcmwtaU1BRzBuSjV2V2hYN1g3dnMiLCJoMXZfSWpPOUtZUW93N1l6QTM0YXZaRHI3V0w2ekxDNHFhVktHcThPX0ZvIiwidFJkdVdZTC1HMlkwck5CREtqVDdITndCQkxUdkg5S2Y4T1dZZGUtNXhFVSJdLCJfc2RfYWxnIjoic2hhLTI1NiJ9.-u4I6lGE8PkLKLQ_gGtFRf9pmPn9_A3XHZIwo-9ggJFpKuo7pGOkPGE_-h2-IFpl8LLaYBB1TgGszz4rc67KBQ~WyJYN25IZ01KUEdVY1laSmR0N2dfd3hnIiwiZW1haWwiLCJnYWVsLm1hcmNhZGV0QGNhcm1lbnRpcy5pbyJd~eyJ0eXAiOiJrYitqd3QiLCJhbGciOiJSUzI1NiJ9.eyJub25jZSI6ImlDdllUTEpBbTNOMUNkd24xdmxsREp5M2xJL1BQejlHTy9lUFdjajUxYjA9IiwiaWF0IjoxNzkyNDE1MzkxLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUxNzMiLCJzZF9oYXNoIjoiRURBZDBjeXU2WnRWdWNxN00wcTl0Zkc0WHB6UDdfcDFSWFgxM2dWRENxdyJ9.cxFYcYdKQuxZCzK-PnZdu1iZhxGWSYiTIfXmBnkRLO-i_8oHCBJufE-BqnXE-zV7W5T7kySzQ4PKyihXzPAaKDncNi_V1qOHaXqerei1qIH5uj7ORb5oz88LeA_EjTb0hQGAC5MTlSe95K9PgFeRDvjGbJ1dqi_Ovc9fxbbLJ33lSaLmd30L6cFbmnLrJe3z4zyjIC4bonHKMct84vB2pPldVmamWgUBDTCe7L6YOjw4sVni8Jok2sYe6YAlQYn83-FnEOc0BRRnyT02ym52KOsrIRGIwU0Lw-L5WJgsQxPT2oa1QJQfLR1ceYuf-fr2RPUKF-RK1qQT4ZC-4gnhCg"
-                }
-            },
-            "sendingApproval": {
-                "__signature__": {
-                    "signatureType": "json-canonical+utf8",
-                    "context": {
-                        "signedAt": 1792488716832,
-                        "purpose": "FileSign: approve the sending of a message"
-                    },
-                    "signature": "qwkcm831eAnxzyy+Y+Ex/utZ3KAIJyjKQuTbj0BtR8yDMNC36e0y5K4jjN7c4RYTKzYnFnAAbC9WFv39BoKcKlDgkxwzand0zj8jPPZ8AuJkB8qtLXC7NmaUtG1KJtr/jko8yEoJJgNqbkt9P016pFmQc+Netd43Dtdl0DiiULs4Q2i1EJ/j2vfNZrFdd7QaHNS75jYduENXaOaSRTN/xMSMNHsJQK2D6Nkh0m6rsPKQnrF4ezjkM8gJCZSyM4ZjeOkj3QCpFG6EHlkkxS4cJ+CDFcfj7t6sGJLH9G/KQrFZIn1VMls0/yHQPJEP2cjh1v72haqyCLT4Jv8M+2eiag==",
-                    "payload": {
-                        "type": "fileSign/sendingApproval",
-                        "messageId": 6,
-                        "nonce": "e5da67b92874a238034fd7a2bde46ea7",
-                        "title": "Demo",
-                        "senderEmail": "gael.marcadet@carmentis.io",
-                        "recipientEmail": "gael.marcadet@carmentis.io",
-                        "files": [
-                            {
-                                "filename": "1792488694704-129258100",
-                                "sha256": "e13d8cc5233bb584727bb1e6f568396a312eb89ee132af849c5bc1b28adb201a",
-                                "size": 88
-                            }
-                        ]
-                    },
-                    "publicKey": "did:jwk:eyJhbGciOiJSUzI1NiIsImUiOiJBUUFCIiwia3R5IjoiUlNBIiwibiI6IjZZdDBoOVgxSGxJV01qUURycVh2Z1RNdlducU9sRE51bjYxXzNXUGQyYWc3a2FDYTZrcF9udTl2TFl2SDdVN3NpMDN6aU9SRGZaU1RvdlhoRmV4SEFZeWlSQ0hHVUtfUXpwNDU0QWRENlY2TTJxekFyLV9IbkJlclhHYW5wYkhxM041cDBNX1B5RklEVjVmR3pmU2RfRF9BZFdQM2dPc1QtOEZzRVFGajJGTFJYc2Q1QTFCY09OclZYRXV3ZDhfS3RSeENSRTNEOVNVb0RaU09KVV9kRFZEdDdENXRMbktzblpCOURZUHJOVm1qNEpwWjEwVThCS1FYcGxWNmItOUNLM1lKODhIdUIxUUJKRk9tbjRXNng5dFhLR1lnMVFJYk8zMkJ1RzJXb3lKR3JFaklFaEpBLVpnV1M3b3BvaW1iOGQyaG1GRE92bmhSRkdZdGR6OFcydyJ9",
-                    "signatureEncoding": "base64"
-                }
-            }
-        }
-    },
-    "reception": {
-        "recipient": {
-            "email": {
-                "__vp__": {
-                    "__sdjwt_ietf__": "eyJ0eXAiOiJ2YytzZC1qd3QiLCJhbGciOiJFZERTQSJ9.eyJpc3MiOiJkaWQ6andrOmV5SmpjbllpT2lKRlpESTFOVEU1SWl3aWVDSTZJa3R6Y0RKNlVHdElYM3BhT0ZjdE1ETkxNeTFaUTJaR1prSldSRzlsTTBnNE5GTTBiV1pyY0RSMlpsRWlMQ0pyZEhraU9pSlBTMUFpTENKNE5XTWlPbHNpVFVsSlFteEVRME5CVldGblFYZEpRa0ZuU1ZWSlRXaFVkVE5rZFM5QlpWcE5NM0J6WmtSRVdYZHNMMmcwU0VWM1FsRlpSRXN5Vm5kTlIyOTRSV3BCVVVKblRsWkNRVTFOUTFWT2FHTnRNV3hpYmxKd1kzcEZVMDFDUVVkQk1WVkZRM2QzU2xFeVJubGlWMVoxWkVkc2VrMVJjM2REVVZsRVZsRlJSMFYzU2tkVmFrVlFUVUV3UjBFeFZVVkRRWGRIVW01S2FHSnRUbXhOVVRSM1JFRlpSRlpSVVVoRVFWWlJXVmhLY0dONlJWTk5Ra0ZIUVRGVlJVTm5kMHBSTWtaNVlsZFdkV1JIYkhwTlFqUllSRlJKTWsxRVdYcE5SRUUxVFZSSk1VMXNiMWhFVkVrelRVUlplazFFUVRWTlZFa3hUV3h2ZDJGcVJWTk5Ra0ZIUVRGVlJVRjNkMHBSTWtaNVlsZFdkV1JIYkhwTlVrbDNSVUZaUkZaUlVVeEVRV3hFV1ZoS2RGcFhOVEJoV0UxNFEzcEJTa0puVGxaQ1FWbFVRV3RhVTAxUk9IZEVVVmxFVmxGUlNVUkJXa2RqYlVaMVdUSlZlRVJxUVUxQ1owNVdRa0ZqVFVKV1FtaGpiV3g2VFZKSmQwVkJXVVJXVVZGTFJFRnNSRmxZU25SYVZ6VXdZVmhOZDB0cVFVWkNaMDF5V2xoQlJFbFJRWEY1Ym1KTksxRm1MMDV1ZUdJM1ZHTnlaalZuU2poV09FWlZUMmczWTJaNmFFeHBXaXRUYm1rNU9VUkJSa0puVFhKYVdFRkVVVkZFVUV0VGRrVm9aelp2WTFwa1dqbFlZa2xuWjBOclJrdDRWVlV4ZVdKWmFGVnNaVVkxYTA1R05FTjBUVFI1Tm1oSFJqTXJRM0pHVnpWdldrUnRaM0V5TTBWME0zUnJWSGh1U1haU1NWcHhlVVJUTUdSSlFTSmRmUSIsImlhdCI6MTc5MjQxNDcxOCwidmN0IjoiRW1haWxDcmVkZW50aWFsIiwic3ViIjoiZGlkOmp3azpleUpoYkdjaU9pSlNVekkxTmlJc0ltVWlPaUpCVVVGQ0lpd2lhM1I1SWpvaVVsTkJJaXdpYmlJNklqWlpkREJvT1ZneFNHeEpWMDFxVVVSeWNWaDJaMVJOZGxkdWNVOXNSRTUxYmpZeFh6TlhVR1F5WVdjM2EyRkRZVFpyY0Y5dWRUbDJURmwyU0RkVk4zTnBNRE42YVU5U1JHWmFVMVJ2ZGxob1JtVjRTRUZaZVdsU1EwaEhWVXRmVVhwd05EVTBRV1JFTmxZMlRUSnhla0Z5TFY5SWJrSmxjbGhIWVc1d1lraHhNMDQxY0RCTlgxQjVSa2xFVmpWbVIzcG1VMlJmUkY5QlpGZFFNMmRQYzFRdE9FWnpSVkZHYWpKR1RGSlljMlExUVRGQ1kwOU9jbFpZUlhWM1pEaGZTM1JTZUVOU1JUTkVPVk5WYjBSYVUwOUtWVjlrUkZaRWREZEVOWFJNYmt0emJscENPVVJaVUhKT1ZtMXFORXB3V2pFd1ZUaENTMUZZY0d4V05tSXRPVU5MTTFsS09EaElkVUl4VVVKS1JrOXRialJYTm5nNWRGaExSMWxuTVZGSllrOHpNa0oxUnpKWGIzbEtSM0pGYWtsRmFFcEJMVnBuVjFNM2IzQnZhVzFpT0dReWFHMUdSRTkyYm1oU1JrZFpkR1I2T0ZjeWR5SjkiLCJqdGkiOiIzZjJkZGRhMS1mNzVmLTRiMTktOThiMS02MWMwMjcyMDczMDIiLCJzdGF0dXMiOnsic3RhdHVzX2xpc3QiOnsiaWR4IjoyNSwidXJpIjoiaHR0cHM6Ly9pc3N1ZXIuYWRtaW4uY2FybWVudGlzLmlvL2FwaS9kZW1vLXZjLWVtYWlsL2NyZWRlbnRpYWwvc3RhdHVzIn19LCJfc2QiOlsiM0lQUnFNVVN2WGlEYXNaNXFFNGJVSHJBUkh5UjhpY3Qyd2lPQ2NQZnRxMCIsImZxVDBMZ1A3dVhsUnk3T2VYRmtNX3JOcmwtaU1BRzBuSjV2V2hYN1g3dnMiLCJoMXZfSWpPOUtZUW93N1l6QTM0YXZaRHI3V0w2ekxDNHFhVktHcThPX0ZvIiwidFJkdVdZTC1HMlkwck5CREtqVDdITndCQkxUdkg5S2Y4T1dZZGUtNXhFVSJdLCJfc2RfYWxnIjoic2hhLTI1NiJ9.-u4I6lGE8PkLKLQ_gGtFRf9pmPn9_A3XHZIwo-9ggJFpKuo7pGOkPGE_-h2-IFpl8LLaYBB1TgGszz4rc67KBQ~WyJYN25IZ01KUEdVY1laSmR0N2dfd3hnIiwiZW1haWwiLCJnYWVsLm1hcmNhZGV0QGNhcm1lbnRpcy5pbyJd~eyJ0eXAiOiJrYitqd3QiLCJhbGciOiJSUzI1NiJ9.eyJub25jZSI6ImlDdllUTEpBbTNOMUNkd24xdmxsREp5M2xJL1BQejlHTy9lUFdjajUxYjA9IiwiaWF0IjoxNzkyNDE1MzkxLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjUxNzMiLCJzZF9oYXNoIjoiRURBZDBjeXU2WnRWdWNxN00wcTl0Zkc0WHB6UDdfcDFSWFgxM2dWRENxdyJ9.cxFYcYdKQuxZCzK-PnZdu1iZhxGWSYiTIfXmBnkRLO-i_8oHCBJufE-BqnXE-zV7W5T7kySzQ4PKyihXzPAaKDncNi_V1qOHaXqerei1qIH5uj7ORb5oz88LeA_EjTb0hQGAC5MTlSe95K9PgFeRDvjGbJ1dqi_Ovc9fxbbLJ33lSaLmd30L6cFbmnLrJe3z4zyjIC4bonHKMct84vB2pPldVmamWgUBDTCe7L6YOjw4sVni8Jok2sYe6YAlQYn83-FnEOc0BRRnyT02ym52KOsrIRGIwU0Lw-L5WJgsQxPT2oa1QJQfLR1ceYuf-fr2RPUKF-RK1qQT4ZC-4gnhCg"
-                }
-            },
-            "receptionApproval": {
-                "__signature__": {
-                    "signatureType": "json-canonical+utf8",
-                    "context": {
-                        "signedAt": 1792488809008,
-                        "purpose": "FileSign: approve the reception of a message"
-                    },
-                    "signature": "H6Eo+zPszAIRYSZP7bliJY2Xx9b9rAFwiyQ2o3HkRT0VoksGHfNQxiLr2Xl+BsqA1RNK0ER2twM3IKeAjLfd8INllhv4vO+Rws20hc3EfA4hd5B2WFNnOG/3pnvOkb5pSrRB6VLSbg3aof5vXhp/rKC29FgzOSW2nbCJzUjJFUgVSTyS8onKX7W9o4EnXwQC3Z7jkPyjqvoiyvWIGnfrSIkf0JFwLzDc8x6dq/sd/mUzu83KEeiWqocHspun2UG0nhav2HwEu6nTUuDf2izqsr0UU9y67MJdwpd7toLB+A02MqpS8MYYD0jUeTEMp9lf3es6YNi+sIti89VMdUUIWA==",
-                    "payload": {
-                        "type": "fileSign/receptionApproval",
-                        "messageId": 6,
-                        "virtualBlockchainId": "E60400A986D1626628D6918FA293B4F26905905CC8FD8639E1DDE6024A37F4F2",
-                        "senderEmail": "gael.marcadet@carmentis.io",
-                        "recipientEmail": "gael.marcadet@carmentis.io",
-                        "files": [
-                            {
-                                "filename": "1792488694704-129258100",
-                                "sha256": "e13d8cc5233bb584727bb1e6f568396a312eb89ee132af849c5bc1b28adb201a",
-                                "size": 88
-                            }
-                        ]
-                    },
-                    "publicKey": "did:jwk:eyJhbGciOiJSUzI1NiIsImUiOiJBUUFCIiwia3R5IjoiUlNBIiwibiI6IjZZdDBoOVgxSGxJV01qUURycVh2Z1RNdlducU9sRE51bjYxXzNXUGQyYWc3a2FDYTZrcF9udTl2TFl2SDdVN3NpMDN6aU9SRGZaU1RvdlhoRmV4SEFZeWlSQ0hHVUtfUXpwNDU0QWRENlY2TTJxekFyLV9IbkJlclhHYW5wYkhxM041cDBNX1B5RklEVjVmR3pmU2RfRF9BZFdQM2dPc1QtOEZzRVFGajJGTFJYc2Q1QTFCY09OclZYRXV3ZDhfS3RSeENSRTNEOVNVb0RaU09KVV9kRFZEdDdENXRMbktzblpCOURZUHJOVm1qNEpwWjEwVThCS1FYcGxWNmItOUNLM1lKODhIdUIxUUJKRk9tbjRXNng5dFhLR1lnMVFJYk8zMkJ1RzJXb3lKR3JFaklFaEpBLVpnV1M3b3BvaW1iOGQyaG1GRE92bmhSRkdZdGR6OFcydyJ9",
-                    "signatureEncoding": "base64"
-                }
-            }
-        }
-    },
-    "fileSignCert": {
-        "x509Chain": [
-            {
-                "info": {
-                    "notBefore": "2026-10-19T13:36:23.000Z",
-                    "notAfter": "2027-10-19T13:36:23.000Z",
-                    "serialNumber": "7bf9b84fbd4bbf4dbc2c4155fca225ed6429fed8",
-                    "selfSigned": true
-                },
-                "subject": {
-                    "2.5.4.3": {
-                        "shortName": "CN",
-                        "description": "Common Name",
-                        "values": [
-                            "File-Sign"
-                        ]
-                    }
-                },
-                "issuer": {
-                    "2.5.4.3": {
-                        "shortName": "CN",
-                        "description": "Common Name",
-                        "values": [
-                            "File-Sign"
-                        ]
-                    }
-                },
-                "extensions": {
-                    "2.5.29.35": {
-                        "shortName": "2.5.29.35",
-                        "description": "",
-                        "values": [
-                            "30168014233E46DEC031C7576B414E05E2332A0FC4544B4E"
-                        ]
-                    },
-                    "2.5.29.19": {
-                        "shortName": "2.5.29.19",
-                        "description": "",
-                        "values": [
-                            "3000"
-                        ]
-                    },
-                    "2.5.29.15": {
-                        "shortName": "2.5.29.15",
-                        "description": "",
-                        "values": [
-                            "030206C0"
-                        ]
-                    },
-                    "2.5.29.14": {
-                        "shortName": "2.5.29.14",
-                        "description": "",
-                        "values": [
-                            "0414233E46DEC031C7576B414E05E2332A0FC4544B4E"
-                        ]
-                    }
-                }
-            }
+          {
+            "filename": "proof-20.json",
+            "sha256": "e4ceb261cd7785924772a7f687d54cd3ec8562e0dbde490d324a578ab39ee37b",
+            "size": 71813
+          }
         ]
+      }
     }
+  },
+  "reception": {
+    "recipient": {
+      "email": {
+        "iss": "did:jwk:eyJjcnYiOiJFZDI1NTE5IiwieCI6IktzcDJ6UGtIX3paOFctMDNLMy1ZQ2ZGZkJWRG9lM0g4NFM0bWZrcDR2ZlEiLCJrdHkiOiJPS1AiLCJ4NWMiOlsiTUlJQmxEQ0NBVWFnQXdJQkFnSVVJTWhUdTNkdS9BZVpNM3BzZkREWXdsL2g0SEV3QlFZREsyVndNR294RWpBUUJnTlZCQU1NQ1VOaGNtMWxiblJwY3pFU01CQUdBMVVFQ3d3SlEyRnliV1Z1ZEdsek1Rc3dDUVlEVlFRR0V3SkdVakVQTUEwR0ExVUVDQXdHUm5KaGJtTmxNUTR3REFZRFZRUUhEQVZRWVhKcGN6RVNNQkFHQTFVRUNnd0pRMkZ5YldWdWRHbHpNQjRYRFRJMk1EWXpNREE1TVRJMU1sb1hEVEkzTURZek1EQTVNVEkxTWxvd2FqRVNNQkFHQTFVRUF3d0pRMkZ5YldWdWRHbHpNUkl3RUFZRFZRUUxEQWxEWVhKdFpXNTBhWE14Q3pBSkJnTlZCQVlUQWtaU01ROHdEUVlEVlFRSURBWkdjbUZ1WTJVeERqQU1CZ05WQkFjTUJWQmhjbWx6TVJJd0VBWURWUVFLREFsRFlYSnRaVzUwYVhNd0tqQUZCZ01yWlhBRElRQXF5bmJNK1FmL05ueGI3VGNyZjVnSjhWOEZVT2g3Y2Z6aExpWitTbmk5OURBRkJnTXJaWEFEUVFEUEtTdkVoZzZvY1pkWjlYYklnZ0NrRkt4VVUxeWJZaFVsZUY1a05GNEN0TTR5NmhHRjMrQ3JGVzVvWkRtZ3EyM0V0M3RrVHhuSXZSSVpxeURTMGRJQSJdfQ",
+        "iat": 1792766355,
+        "vct": "EmailCredential",
+        "sub": "did:jwk:eyJhbGciOiJNTC1EU0EtODciLCJrdHkiOiJBS1AiLCJwdWIiOiJRWFFjeUtBMi1hZElESDctWjRoTTBqYlpuVTFoMHdzMjZEWHo5TG9TUVd1c3BucVVSTFFSc1VyN01aaGhIUXlZdEJoLUs5b1dDTVpEaWNERk5sSFhMMnpTSjA2bmVYek1OTVo2S1o5ZVdtVkRYcF9JeWVyLVJXSU5aTkRqRy1Sdy1mbmN4MGZ4eGhJNkdFTkVVbjJvMFpXMjVVLVVWeUFEeUVZQlk0UEt4QXpLck96eXlyN3ZaMUttMlhpWGN1dmlRa1pNVVAtcmJYNTJvUVN1Wl9YWGljWGluaTFVZzFsektiTnZjZmtpMHE4a0hpN0tMSWJ1bmhhbU1OX2JKWjl3TldJWGszdy1nWGJxZnZYUFR1TUxZYldlYmIxdGR4YlZ3MkllQ1RYOW85ck9RTG83UUUzODdyVnA2RGxMRnhGTWVaVWNKU1EwRkd0Z201Qk55THhhLXduSHZPMzNXUlc3VV9uaDNsSF9LTk9yeHJXLVQwbzJjVGJ1OHpDbzl5eVRhZjRJcUNfenNDNUJ3cWVGeHdiNU4tS1djMHlxZVhBeWVuUzcyUl9WQ25Dd2tESmx4enp5OG82Y2R4NmlpOEZZeEpNSlFUaWdXWjhqRkVLQ0VRRVlndGJIVF9LbVhSVVFzRXJkVDhSZFpxUDJ4NFdNWXdzWUd0cVBSempsYjZuWFk0RVF5aVpIdklDUDVrVUdBeXZKcGtXWHRhVzJESzBFbEg3ODgxcVFtQnF2S2pleE5YLVpUSWhmQzczVFY0cFViaTktZ3p4bkhPOWNJTEtnZ0ltbEJXV2lLMHRoYS1TWG04eThtRnRPRDNtTm9IbGVLSFk2T2pTaDdyRF9lOW1ZMEo5N21mdElWNXZfVUd3N01Ua1R0ZkdyWG5wRWJibU1IekxXMGZlakVWVzl3NG1xaW13Tk9TLXJOdHZMNGx3emEyTXJhUU52VExpTkZHeDVPZ0cyRTlxcW9GLWpVYzNFOHd3eVMwRmRKWlpRa3JUbU91MXpfRFo5R3pYSFJjamN1N2JOZHVHdEJBZTZEWkVlN25sazA2RmJWdDRHNGNkaFZSaVdCUDNmSUJTZThRLWxteGpncDg5R3kwR0t5dWplMUNqdHk5bWtnaF80QjBsNlM2Z3FCQjk3ZHNlVjd3NVBLeGZnaUtvdlZSUHFqdlFsVFYtbExITEs2bU1TbzFtTEk2ejBESGFacFlZSjdRY1gyOTZvVVk1T2RUcEYwbEFDOWFBVmpTLTdTS1RmdnI1LXMtRGxQMlVPckFuVUdFdlNPUmlWMTJaX0ZwMmdJVGNfUkpHM0IzcUk5REM4Ul83bHhuOVBocEpkVlozOHhoczJRTGlwY1JfYTRaUG5GenIzcDVFd0NBN3oyV0tRRnlGQi1qZHZDcFd6OTNIM29iS2wtcm5oTWFzM0Rxc2NRYjlMWS1JVDlPSDNJdDNkR1liZlFuS1lic19Qbm1odW91Z3FUdm5LOHUwRGxJcFhuQTdpeUQ1emttVWRuS1EteWp2bUlTM2Zud1A2azBwV0c4Q2pJMVhxLWdvN1BadC0zQWx5d29aZWU0ZWFGZ2JpV2pQdU5TaHNkWXF4S2FxN2JYeldBMlMwaXFxdjZ4WUY3dDN5eXk1bVlTZWUtNWlLRkJrZF9ObzNDdlFvYlZBWlpLX1lpZWpabXgzek5tOXVuakRsYzRNSWdIODY0ZjJlUlhZMUJBSFpob2RvNDZXbm1iWGgzUnFxUGhDTkdvbjVWN2RGVEs3cHU0SlBaX0plRnhwQWlPY0pkMFlUVC1RMHRIc2Y1LW9zcWJOUjU2TmowV2toY2Y1MlBWR2x2S2l4XzdxQm5VRVpiR3pEWG5oUWl0UVV5UXQycjN6MnFfX0MwV0J2ckRmUlpvUTV3V2EweWswNXc3dlp1MS1rek9XNVcteTF4X2FQbzRKMEJ5TjdfZzJrTGV3VE1vNE1seTJWclFzM1hhQVdFU2Z2YVZqTVdJTmhjSW44aXdMQWExb1JMT1pCRG1GelhuV2NZcXhmdHNTOFdpUDZ5Q1Zfa0c5TmlyNDdZYTUyUDFaVjRMdGFmMVhacXhOeFVXZzFXZ2llQmJOeHozZUUyMVo5SWNSZFFGUlEyNEdnQ0txVkRPdWdPT3VFWlZIYTE2QkFwV25pTlBUWUpneThGRFRPRlVwVW5IR0FuWEY3WWJTNlY0cGJxM2xyak1Yd2EySnhVMkhRWDlfSjNyazJzOVV2am1GM2tHbE9XTXdnQ2JDbXgxS09Ga2dydE5iZGJmWmJlY2N1STVhUEw3aUd2ZTIzSnFkQ3d3LWpHOHR1VUtrRnpGNkl3dEg2RGVsRUZjM3pPYXB0TldaUjVycTNKZ3RVUi14WnZheEJGLW1jLTBVQUtwNVA4MXhBT0t2SnRhbDliUmNaUlUtOFNBNHV5Ym5KcUEzMER3NFZtN2lCdDhlU3J1OEVSZ3BubWFJUWJROVhwd0JmVl9LVUhxYjN6RVp5bUNrUGkwdlBBeHkxU3lqTlpqRXpOZHl4TzlxZkdFc3lhYkFpR2QtWUdtYU1YN1JVV25sN0dkNDNMQ2JMM0lfMU45UTN6d3pqOWl4MU1Ba3czZkQzUkRTQTlXd0p3N1czSXBYWmVERXNLMm1tN0RJbDlXZmJFU0h0TVVZWnlGekRGY3ZNcEVySW1BWmZDYUh0Zlo5dzBfYTFvNE1lcW94WkQ0RGstdjc3RWdsVEcyYzdTZGlLQlZ5a192OWwxOHVOaW1sYXVIcXpJWF82dTZTUGh0TEl0OWJya0NXMVdiSG5hT01pc0o1MEtVdEY1MXdKRFdlYjFmNHFlUVVnOGZEYVN2NkRhMk5FQVRaRUdGZm1QSlpid2dQSXRpWmxDeWdXcVJPaXVtSGxyaldPQUd2MG5TbTRWank2RTdYT3lQQVZyZl85ZTE1QWMyMFpKVGpRM3lSWXdWbnBlTFpYSEdrRHRJMmRjSGQtbjI3LWxWbHpEVTl3N0RUNmI4c1ZwVEszZWM1dExPSF85RkNzcW9nWWF6SmZOU01SVVZHWWxZbVhvUnNDSEhTcHN6YmxqOF9FWk55c1V6WW9CWWVSWG1QWWFXQ3FDeXE1S3UyZW9FUWxXOEpFa0p3UjJlS3ZZM3N3TkpBLXktRFpRUE0yNDRtZEFrQjdzSlNmd3didXY1WHFySGcwX19SZzNQMERDX294Z2pXZnJFV3gzX1l0T3lMOWRxakhqNFptLU9ZRFFnTFV0SVozTjBKVTk2Znk3ZlJuc01QZnV1alM0Mzd5MGozMmZJeGF3czBzV29wUGJ3djhETXFqVU9icndJc1FJMFRGcmxLeDJOUDNzeF9HVTB5eU9ucUhtbmtMSEdSQ3YwUjBwWUViRFc2NUs3N1VWaXJHUzVad0hGemp2SkJnOXdvR1NpdHhBOVAzVXdocERzOWxlMlB2dWRUZXM0bGJZMDdSNklmYmd5SThyTVJPSWVYbXZfZFJqTVpTYXFXNTR0c00yMmRyUFJFNGViWUZGcEtndVRDRlllWnQxcVdjLXpMcXBzSTNiQzZBbTdYSFk0eUVQNVZuV01uSUJpTUNWdXNaLUhpQzJDazVyeXI5Z3liSk5UUVBKVS1QU3hZVGJvQ1BtcUtMQXBxeWtPYnIwQXNvdGQxbkl1c3Z4YWpvd3B5MFpUSTgyZW9jdUpGZUVEZ2lkS1dyVTRCYnNndS1VR1BpczlHRFl4NU5uT1B4cVNnbjRFSjdpTEJJQnNtZXAyWTFPY3lrRkZPN2dSdnRsRjdPWFQ3ZzVYdnhHVUVNNVJ2eDR3RUs4MzRCNDRwdWNUQ1NzelBrNUZZRjRWVzJ6MUo3RDVvSnQtb3NsS01oekttcGtrSUJSaVg5WW14NGhLc2RfdlJrSVVNY2VMeU1ucnNESTBnaUcyYlg0WXh4c0hRem5IdmJZcFFBVXo5OUxIOXBQNW9OOTduR3I0Tk1MelhWcy1fUXpOSjdtWElMRDFrMnMxLTA4TEFaS1ktbGlmeVdJVmk2eFpObnRFeWZqVy03aHBwMnFPNGlGckFOSTg5NEhobHRUelVLRTV5SG1aclFHLVhmZ1BYME5xb0tha2ZOY2x2ZHNTYWF6UVdVRTRNekpsSER3TWxNZ0VSMTZrc0hXU0MxVm1RQmx2cGxUVVhTZTVJSWxfRjlEVXNpUUFsVkdGSVJiMkRVRXZKdnpJQXQ0UzY4aUxzdHY5aTZNTXFRblVOTUM3VE11T09IMG5RcGVybE5taHpybnpBTW94OEU5cE9MSjdlTlBIMkt3N3lyTDZ1ckVpRHo2cE9Ea3p0aUVYR29Tcjd5c013TGg0TVpGLURWV1BqTXFoamNRODl0b1hOdTNrb3ZQUjFWS3R6Tm5CZGkyTTNWN0hvZnJmRFpobzQ0REJ2alpnOUtKdjRxTV8wY3pyb1RPVDlYc0JDQjhZR0VOZFJKZzJ1bFdHR0E1WHk0T25IVjd1bTNLbFBEMXdzWDF0LWx4UUN3LTM4OHEyM045M1RGUy1UeWI2U0gwSkIwcVpTOW81YXhjOFhrRlJFWUNwVmtZQ3FFM1liU1REZV9sU1VmQmRNczFVbFJnRGh3M1ZUTC1LX3ZSUXJfb25mLW9KTzQifQ",
+        "jti": "248b36c6-548c-441e-8389-2c6debfd8880",
+        "status": {
+          "status_list": {
+            "idx": 39,
+            "uri": "https://issuer.admin.carmentis.io/api/demo-vc-email/credential/status"
+          }
+        },
+        "email": "gael.marcadet@carmentis.io"
+      },
+      "receptionApproval": {
+        "type": "fileSign/receptionApproval",
+        "messageId": 24,
+        "virtualBlockchainId": "DCD5F9D0B5384B57CCB15D160BA6357D8FB5E33B1796C517C1CEBB410EDBDBEE",
+        "senderEmail": "arnauld.chevallier@gmail.com",
+        "recipientEmail": "gael.marcadet@carmentis.io",
+        "files": [
+          {
+            "filename": "proof-20.json",
+            "sha256": "e4ceb261cd7785924772a7f687d54cd3ec8562e0dbde490d324a578ab39ee37b",
+            "size": 71813
+          }
+        ]
+      }
+    }
+  },
+  "fileSignCert": {
+    "type": 129,
+    "x509Chain": [
+      {
+        "info": {
+          "notBefore": "2026-10-19T13:36:23.000Z",
+          "notAfter": "2027-10-19T13:36:23.000Z",
+          "serialNumber": "7bf9b84fbd4bbf4dbc2c4155fca225ed6429fed8",
+          "selfSigned": true
+        },
+        "subject": {
+          "2.5.4.3": {
+            "shortName": "CN",
+            "description": "Common Name",
+            "values": [
+              "File-Sign"
+            ]
+          }
+        },
+        "issuer": {
+          "2.5.4.3": {
+            "shortName": "CN",
+            "description": "Common Name",
+            "values": [
+              "File-Sign"
+            ]
+          }
+        },
+        "extensions": {
+          "2.5.29.35": {
+            "shortName": "2.5.29.35",
+            "description": "",
+            "values": [
+              "30168014233E46DEC031C7576B414E05E2332A0FC4544B4E"
+            ]
+          },
+          "2.5.29.19": {
+            "shortName": "2.5.29.19",
+            "description": "",
+            "values": [
+              "3000"
+            ]
+          },
+          "2.5.29.15": {
+            "shortName": "2.5.29.15",
+            "description": "",
+            "values": [
+              "030206C0"
+            ]
+          },
+          "2.5.29.14": {
+            "shortName": "2.5.29.14",
+            "description": "",
+            "values": [
+              "0414233E46DEC031C7576B414E05E2332A0FC4544B4E"
+            ]
+          }
+        }
+      }
+    ]
+  }
 }

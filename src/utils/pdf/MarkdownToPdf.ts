@@ -9,6 +9,8 @@ import { InjectionCodec } from '../templates/InjectionCodec';
 const FONT_PATH = path.resolve(__dirname, '../../assets/fonts');
 const IMG_PATH = path.resolve(__dirname, '../../assets/img');
 
+const PROOF_CHECKER_LINK = 'https://proof-checker.server4.devnet.carmentis.io/';
+
 const INJECTED_TEXT_COLOR   = '#0a5';
 const CODE_BG_COLOR         = '#f0f0f0';
 const BLOCKQUOTE_COLOR      = '#555';
@@ -90,6 +92,7 @@ export class MarkdownToPdf {
         const body = this.blocksToPdf(tokens, 0).nodes;
         const hasCoverPage = this.pdfOptions.coverPage !== undefined;
         const isoDate = this.pdfOptions.creationDate ?? (new Date()).toISOString();
+        const proofCheckerLink = PROOF_CHECKER_LINK;
 
         const definition: TDocumentDefinitions = {
             pageSize: 'A4',
@@ -114,7 +117,9 @@ export class MarkdownToPdf {
                         ...this.fontSize(10),
                         color: PAGINATION_COLOR,
                     },
-            content: hasCoverPage ? [...this.coverPage(this.pdfOptions.coverPage), ...body] : body,
+            content: hasCoverPage
+                ? [...this.coverPage(this.pdfOptions.coverPage, proofCheckerLink), ...body]
+                : body,
         };
 
         const buffer = await pdfmake.createPdf(definition).getBuffer();
@@ -289,7 +294,7 @@ export class MarkdownToPdf {
         return out;
     }
 
-    private coverPage(coverPage: CoverPageOptions): Content[] {
+    private coverPage(coverPage: CoverPageOptions, proofCheckerLink: string): Content[] {
         const { logo, title } = coverPage;
         const page: Content[] = [];
         const poweredBySvg = fs.readFileSync(path.join(IMG_PATH, "carmentis.svg")).toString();
@@ -319,7 +324,7 @@ export class MarkdownToPdf {
                 this.getText(TEXTS.documentCheck) + ' ',
                 {
                     text: 'proof-checker.carmentis.io',
-                    link: 'https://proof-checker.carmentis.io',
+                    link: proofCheckerLink,
                     color: LINK_COLOR,
                 },
                 ".",
@@ -340,8 +345,10 @@ export class MarkdownToPdf {
     }
 
     private logoNode(logo: Buffer | string, fit: [number, number]): Content {
+        console.log("logoNode", logo);
         if (typeof logo === 'string') {
             const isDataUrlImage = /^data:image\/(png|jpeg);base64,/.test(logo);
+            console.log("logo is string", isDataUrlImage);
             if (isDataUrlImage) {
                 return { image: logo, fit };
             }

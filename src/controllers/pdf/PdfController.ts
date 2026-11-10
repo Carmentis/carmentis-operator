@@ -9,6 +9,7 @@ import { PdfGenerationDto } from 'src/dto/PdfGenerationDto';
 import { PdfGenerationResponseDto } from 'src/dto/PdfGenerationResponseDto';
 import { ResolverOutput } from '@cmts-dev/carmentis-sdk-core';
 import { PdfAsDataUrl } from 'src/utils/pdf/PdfAsDataUrl';
+import { PdfAttachment } from 'src/utils/pdf/PdfAttachment';
 
 @ApiTags('PDF')
 @Controller({ path: '', version: API_V1 })
@@ -39,12 +40,16 @@ export class PdfController {
 		const walletEntity = await this.walletByIdPipe.transform(pdfGenerationDto.walletId);
 		const provider = walletEntity.getProvider();
 
-        const pdfBytes = await this.resolutionProofToPdf.render(
+        let pdfBytes = await this.resolutionProofToPdf.render(
             walletEntity,
             provider,
             pdfGenerationDto.proof.proof as ResolverOutput,
             pdfGenerationDto.options,
         );
+        const attacher = new PdfAttachment(pdfBytes);
+        await attacher.attach("carmentis-proof.json", JSON.stringify(pdfGenerationDto.proof));
+        pdfBytes = attacher.getPdfBytes();
+
         return {
             pdf: PdfAsDataUrl.binaryToDataUrl(pdfBytes)
         };
