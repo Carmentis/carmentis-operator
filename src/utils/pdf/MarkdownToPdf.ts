@@ -9,7 +9,7 @@ import { InjectionCodec } from '../templates/InjectionCodec';
 const FONT_PATH = path.resolve(__dirname, '../../assets/fonts');
 const IMG_PATH = path.resolve(__dirname, '../../assets/img');
 
-const PROOF_CHECKER_LINK = 'https://proof-checker.server4.devnet.carmentis.io/';
+const PROOF_CHECKER_LINK = 'https://proof-checker.testnet.carmentis.io/';
 
 const INJECTED_TEXT_COLOR   = '#0a5';
 const CODE_BG_COLOR         = '#f0f0f0';
@@ -345,10 +345,8 @@ export class MarkdownToPdf {
     }
 
     private logoNode(logo: Buffer | string, fit: [number, number]): Content {
-        console.log("logoNode", logo);
         if (typeof logo === 'string') {
             const isDataUrlImage = /^data:image\/(png|jpeg);base64,/.test(logo);
-            console.log("logo is string", isDataUrlImage);
             if (isDataUrlImage) {
                 return { image: logo, fit };
             }
