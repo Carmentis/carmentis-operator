@@ -1,4 +1,3 @@
-import { ResolutionProofWrapper, JsonData } from '@cmts-dev/carmentis-sdk-core';
 import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiSecurity, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ResolverDto } from 'src/dto/ResolverDto';
@@ -35,18 +34,12 @@ export class WalletResolverController {
     ): Promise<ResolutionProofDto> {
 		const walletEntity = await this.walletByIdPipe.transform(resolverDto.walletId);
 		const provider = walletEntity.getProvider();
-        const chainId = await provider.getChainId();
-        const proofContent = await this.resolver.resolve(
+        const res = await this.resolver.resolveFromInput(
             walletEntity,
             provider,
             resolverDto
         );
-        const proof = ResolutionProofWrapper.createEmptyProof(chainId);
-        proof.setLinkedJson(proofContent.linkedJson);
-        proof.setResolvedJson(proofContent.resolvedJson);
-        proof.setDigestData(resolverDto.digestData);
-        proof.setProofs(proofContent.proofs);
 
-        return proof.getObject();
+        return res.resolutionProof;
     }
 }

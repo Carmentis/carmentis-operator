@@ -135,5 +135,6 @@
         }
       }
     ]
-  }
+  },
+  "seal": "SEAL_DATA_URL"
 }

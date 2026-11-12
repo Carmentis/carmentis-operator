@@ -23,3 +23,5 @@ Message #**{{ sa.messageId }}** sent by **{{ sa.senderEmail }}** to **{{ sa.reci
 `{{ ra.virtualBlockchainId }}`
 
 {% endif %}---
+
+![seal]({{ seal }})

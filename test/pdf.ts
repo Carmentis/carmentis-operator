@@ -10,6 +10,8 @@ import { Utils } from '@cmts-dev/carmentis-sdk-core';
 (async function() {
     const logo = fs.readFileSync('./filesign.png');
     const logoBase64 = `data:image/png;base64,${logo.toString('base64')}`;
+    const seal = fs.readFileSync('./seal.jpg');
+    const sealBase64 = `data:image/jpeg;base64,${seal.toString('base64')}`;
     const codec = new InjectionCodec;
 
     const mdToPdf = new MarkdownToPdf(
@@ -32,6 +34,7 @@ import { Utils } from '@cmts-dev/carmentis-sdk-core';
     const template = fs.readFileSync("./template.md").toString();
     const json = fs.readFileSync("./data.json").toString();
     const data = JSON.parse(json);
+    data.seal = sealBase64;
     const liquidProcessor = new LiquidProcessor(codec);
     const markdown = await liquidProcessor.render(template, data);
 

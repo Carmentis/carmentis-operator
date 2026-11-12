@@ -1,6 +1,7 @@
 import MarkdownIt from 'markdown-it'
 import type { Token, StateCore } from 'markdown-it'
 import { InjectionCodec } from './InjectionCodec';
+import { sanitizeImageDataUrl } from './ImageUrl';
 
 const SAFE_URL = /^(https?:|mailto:|#)/i;
 
@@ -45,11 +46,18 @@ export class MarkdownProcessor {
                     case 'image': {
                         const attr = child.type === 'link_open' ? 'href' : 'src';
                         const raw = child.attrGet(attr);
-                        if (raw !== null) child.attrSet(attr, this.sanitizeUrl(String(raw)));
+                        if (raw !== null) {
+                            const value = String(raw);
+                            child.attrSet(attr, child.type === 'image'
+                                ? sanitizeImageDataUrl(this.codec.revealInUrl(value))
+                                : this.sanitizeUrl(value));
+                        }
                         if (child.type === 'image') {
-                            // alt text is rendered from `content`, not from the children
-                            child.content = this.codec.reveal(child.content);
-                            child.children = [];
+                            // the alt text is rendered from the children: replace them with one revealed text token
+                            const alt = new state.Token('text', '', 0);
+                            alt.content = this.codec.reveal(child.content);
+                            child.content = alt.content;
+                            child.children = [alt];
                         }
                         out.push(child);
                         break;

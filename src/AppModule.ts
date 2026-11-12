@@ -195,20 +195,24 @@ export class AppModule implements NestModule, OnApplicationBootstrap {
 
 	onApplicationBootstrap() {
 		const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
-		const address = httpServer.address();
 
-		const port =
-			typeof address === "object" && address !== null
-				? address.port
-				: 3000;
-		const sep = "-------------------------------------------------"
-		this.logger.log([
-			"Operator is running, displaying welcome message",
-			sep,
-			"The Operator server is running, you can now configure it at:",
-			`http://localhost:${port}`,
-			sep
-		].join("\n"));
+		const infoMessage = () => {
+			const address = httpServer.address();
+			const sep = "-".repeat(64);
+			this.logger.log([
+				"Operator is running, displaying welcome message",
+				sep,
+				"The Operator server is running, you can now configure it at:",
+				`http://localhost:${address.port}`,
+				sep
+			].join("\n"));
+		}
+
+		if (httpServer.listening) {
+			infoMessage();
+		} else {
+			httpServer.once('listening', () => infoMessage());
+		}
     }
 
 	onModuleInit() {

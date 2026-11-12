@@ -5,6 +5,7 @@ import pdfmake from 'pdfmake';
 import type { Content, ContentColumns, TDocumentDefinitions } from 'pdfmake/interfaces';
 import { MarkdownProcessor } from '../templates/MarkdownProcessor';
 import { InjectionCodec } from '../templates/InjectionCodec';
+import { imageKind, sanitizeImageDataUrl } from '../templates/ImageUrl';
 
 const FONT_PATH = path.resolve(__dirname, '../../assets/fonts');
 const IMG_PATH = path.resolve(__dirname, '../../assets/img');
@@ -148,11 +149,15 @@ export class MarkdownToPdf {
                 return i + 3;
             }
             case 'paragraph_open': {
-                // hidden = paragraph inside a tight list item
-                nodes.push({
-                    text: this.inlineToPdf(tokens[i + 1].children ?? []),
-                    margin: t.hidden ? [0, 0, 0, 0] : [0, 0, 0, 8],
-                });
+                const children = tokens[i + 1].children ?? [];
+                const image = this.loneImageSrc(children);
+                nodes.push(image
+                    ? { image, fit: [495, 300], alignment: 'center', margin: [0, 0, 0, 8] }
+                    : {
+                        text: this.inlineToPdf(children),
+                        // hidden = paragraph inside a tight list item
+                        margin: t.hidden ? [0, 0, 0, 0] : [0, 0, 0, 8],
+                    });
                 return i + 3;
             }
             case 'bullet_list_open':
@@ -226,6 +231,14 @@ export class MarkdownToPdf {
                 return i + 1;
             }
         }
+    }
+
+    /** Returns the data URL when the paragraph contains nothing but one valid image. */
+    private loneImageSrc(children: Token[]): string | null {
+        if (children.length !== 1 || children[0].type !== 'image') return null;
+        // validated again here (cheap) so this class stays safe with any MarkdownProcessor
+        const src = sanitizeImageDataUrl(String(children[0].attrGet('src') ?? ''));
+        return src === '#' ? null : src;
     }
 
     private plainLength(children: Token[]): number {
@@ -353,14 +366,12 @@ export class MarkdownToPdf {
             // if it does not look like a data URL, assume SVG markup
             return { svg: logo, fit };
         }
-        const header = logo[0] << 8 | logo[1];
-        const isPng = header === 0x8950;
-        const isJpeg = header === 0xffd8;
-        if (!isPng && !isJpeg) {
+        const kind = imageKind(logo);
+        if (!kind) {
             throw new Error('Logo must be PNG/JPEG as a buffer, PNG/JPEG as a data URL, or SVG markup as a string');
         }
         return {
-            image: `data:image/${isPng ? 'png' : 'jpeg'};base64,${logo.toString('base64')}`,
+            image: `data:image/${kind};base64,${logo.toString('base64')}`,
             fit, // keeps the aspect ratio, never exceeds the box
         };
     }

@@ -4,12 +4,11 @@ import { ResolutionProofDto } from 'src/dto/ResolverResponseDto';
 import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
 import { API_V1 } from '../../api/ApiVersion';
 import { ResolutionProofToPdf } from 'src/utils/pdf/ResolutionProofToPdf';
-import { PdfGenerationDto } from 'src/dto/PdfGenerationDto';
+import { PdfFromOutputDto, PdfFromInputDto } from 'src/dto/PdfGenerationDto';
 import { PdfSignatureDto } from 'src/dto/PdfSignatureDto';
 import { PdfResponseDto } from 'src/dto/PdfResponseDto';
 import { ResolverOutput } from '@cmts-dev/carmentis-sdk-core';
 import { PdfAsDataUrl } from 'src/utils/pdf/PdfAsDataUrl';
-import { PdfAttachment } from 'src/utils/pdf/PdfAttachment';
 import { PdfSigner } from 'src/utils/pdf/PdfSigner';
 
 @ApiTags('PDF')
@@ -24,30 +23,55 @@ export class PdfController {
     }
 
     @ApiOperation({
-        summary: 'Generates a PDF file',
-        description: 'Generates a PDF file from a resolution proof.'
+        summary: 'Generate a PDF file from resolution output',
+        description: 'Generates a PDF file from a resolution proof output.'
     })
-    @ApiBody({ type: PdfGenerationDto })
+    @ApiBody({ type: PdfFromOutputDto })
     @ApiCreatedResponse({
         type: PdfResponseDto
     })
     @ApiSecurity('api-key')
-    @Post('/pdf/generate')
-    async generatePdf(
-        @Body() pdfGenerationDto: PdfGenerationDto,
+    @Post('/pdf/generate-from-output')
+    async generatePdfFromOutput(
+        @Body() pdfGenerationDto: PdfFromOutputDto,
     ): Promise<PdfResponseDto> {
 		const walletEntity = await this.walletByIdPipe.transform(pdfGenerationDto.walletId);
 		const provider = walletEntity.getProvider();
 
-        let pdfBytes = await this.resolutionProofToPdf.render(
+        const pdfBytes = await this.resolutionProofToPdf.renderFromOutput(
             walletEntity,
             provider,
             pdfGenerationDto.proof.proof as ResolverOutput,
             pdfGenerationDto.options,
         );
-        const attacher = new PdfAttachment(pdfBytes);
-        await attacher.attach("carmentis-proof.json", JSON.stringify(pdfGenerationDto.proof));
-        pdfBytes = attacher.getPdfBytes();
+
+        return {
+            pdf: PdfAsDataUrl.binaryToDataUrl(pdfBytes)
+        };
+    }
+
+    @ApiOperation({
+        summary: 'Generate a PDF file from resolution input',
+        description: 'Generates a PDF file from a resolution proof input.'
+    })
+    @ApiBody({ type: PdfFromInputDto })
+    @ApiCreatedResponse({
+        type: PdfResponseDto
+    })
+    @ApiSecurity('api-key')
+    @Post('/pdf/generate-from-input')
+    async generatePdfFromInput(
+        @Body() pdfGenerationDto: PdfFromInputDto,
+    ): Promise<PdfResponseDto> {
+		const walletEntity = await this.walletByIdPipe.transform(pdfGenerationDto.resolution.walletId);
+		const provider = walletEntity.getProvider();
+
+        const pdfBytes = await this.resolutionProofToPdf.renderFromInput(
+            walletEntity,
+            provider,
+            pdfGenerationDto.resolution,
+            pdfGenerationDto.options,
+        );
 
         return {
             pdf: PdfAsDataUrl.binaryToDataUrl(pdfBytes)

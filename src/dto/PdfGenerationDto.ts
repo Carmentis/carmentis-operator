@@ -13,6 +13,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ResolutionProofDto } from './ResolverResponseDto';
+import { ResolverDto } from './ResolverDto';
 
 export class PdfCoverPageDto {
 	@ApiProperty({
@@ -89,7 +90,7 @@ export class PdfOptionsDto {
     language?: string;
 }
 
-export class PdfGenerationDto {
+export class PdfFromOutputDto {
 	@ApiProperty({
 		title: 'The wallet',
 		description: 'The identifier of the wallet whose node is used to resolve the data.',
@@ -104,6 +105,22 @@ export class PdfGenerationDto {
 	})
 	@Type(() => ResolutionProofDto)
 	proof: ResolutionProofDto;
+
+	@ApiProperty({
+		title: 'PDF options',
+		description: 'PDF options for customizing the generated file.',
+	})
+	@Type(() => PdfOptionsDto)
+	options: PdfOptionsDto;
+}
+
+export class PdfFromInputDto {
+	@ApiProperty({
+		title: 'resolution data',
+		description: 'The data to be resolved, in the same format as for /resolve.',
+	})
+	@Type(() => ResolverDto)
+	resolution: ResolverDto;
 
 	@ApiProperty({
 		title: 'PDF options',
