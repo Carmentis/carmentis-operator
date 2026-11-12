@@ -1,3 +1,10 @@
+## [1.16.5](https://github.com/Carmentis/carmentis-operator/compare/v1.16.4...v1.16.5) (2026-11-12)
+
+
+### Bug Fixes
+
+* now supporting 2 PDF generation methods; added support of images ([843897c](https://github.com/Carmentis/carmentis-operator/commit/843897c432ecc404906fc279d0ea58b59e6ff36b))
+
 ## [1.16.4](https://github.com/Carmentis/carmentis-operator/compare/v1.16.3...v1.16.4) (2026-11-10)
 
 
