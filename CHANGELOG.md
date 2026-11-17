@@ -1,3 +1,10 @@
+## [1.16.6](https://github.com/Carmentis/carmentis-operator/compare/v1.16.5...v1.16.6) (2026-11-17)
+
+
+### Bug Fixes
+
+* now using carmentis-sdk-templating, which adds support for multiple representations ([8f96363](https://github.com/Carmentis/carmentis-operator/commit/8f96363d3dced6632e8c3b864b1623b4dbfc0877))
+
 ## [1.16.5](https://github.com/Carmentis/carmentis-operator/compare/v1.16.4...v1.16.5) (2026-11-12)
 
 
