@@ -1,10 +1,10 @@
-import { LiquidProcessor } from '../templates/LiquidProcessor';
-import { InjectionCodec } from '../templates/InjectionCodec';
+import { InjectionCodec, RepresentationProcessor } from '@cmts-dev/carmentis-sdk-templating';
 import { MarkdownToPdf, PdfOptions } from './MarkdownToPdf';
 import { WalletEntity } from "../../entities/WalletEntity";
 import { ResolverHandler } from 'src/utils/resolver/ResolverHandler';
 import { PdfAttachment } from 'src/utils/pdf/PdfAttachment';
 import { Injectable } from '@nestjs/common';
+import { RepresentationSelectionEnum } from 'src/dto/PdfGenerationDto';
 import {
     ResolverInput,
     ResolverOutput,
@@ -33,7 +33,9 @@ export class ResolutionProofToPdf {
     private async render(resolutionProof: WrappedResolutionProof, report: ResolverReport, options: PdfOptions) {
         const proof = resolutionProof.proof;
         const representations = report.representations;
-
+        const representationOptions = options.representations ?? { select: RepresentationSelectionEnum.ALL };
+        const markdown = await RepresentationProcessor.toMarkdown(proof.resolvedJson, representations, representationOptions);
+/*
         // get the Liquid template
         if (representations.size !== 1) {
             throw new Error(`Expected exactly one representation, got ${representations.size}`);
@@ -45,8 +47,9 @@ export class ResolutionProofToPdf {
         const codec = new InjectionCodec;
         const liquidProcessor = new LiquidProcessor(codec);
         const markdown = await liquidProcessor.render(template, proof.resolvedJson);
-
+*/
         // process markdown
+        const codec = new InjectionCodec;
         const mdToPdf = new MarkdownToPdf(codec, options);
         let pdfBytes = await mdToPdf.render(markdown);
 

@@ -6,16 +6,21 @@ import {
     IsOptional,
     IsString,
 	IsUUID,
+	IsEnum,
+	IsArray,
     Max,
     Min,
     ValidateNested,
+	ValidateIf,
+	ArrayNotEmpty,
+	ArrayMaxSize,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ResolutionProofDto } from './ResolverResponseDto';
 import { ResolverDto } from './ResolverDto';
 
-export class PdfCoverPageDto {
+export class PdfCoverPageOptionsDto {
 	@ApiProperty({
 		title: "Cover page logo",
 		description: "JPEG/PNG as a data url, or SVG markup."
@@ -31,7 +36,7 @@ export class PdfCoverPageDto {
     title!: string;
 }
 
-export class PdfInjectedTextDto {
+export class PdfInjectedTextOptionsDto {
 	@ApiProperty({
 		title: "Color of injected text",
 	})
@@ -47,7 +52,54 @@ export class PdfInjectedTextDto {
     bold?: boolean;
 }
 
+export enum RepresentationSelectionEnum {
+    FIRST = 'first',
+    ALL = 'all',
+    SELECTED = 'selected',
+}
+
+export type PathSegment = string | number
+
+export class PdfRepresentationOptionsDto {
+    @ApiProperty({
+        enum: RepresentationSelectionEnum,
+        default: RepresentationSelectionEnum.FIRST,
+        description: 'first: first representation in document order (usually the root one). '
+            + 'all: every representation, in document order. '
+            + 'selected: only the ones listed in `paths`, in the order given.',
+    })
+    @IsEnum(RepresentationSelectionEnum)
+    select: RepresentationSelectionEnum;
+
+    @ApiPropertyOptional({
+        type: 'array',
+        maxItems: 50,
+        items: {
+            type: 'array',
+            maxItems: 32,
+            items: { oneOf: [
+				{ type: 'string', maxLength: 256 },
+				{ type: 'integer', minimum: 0 }
+			]},
+        },
+        example: [[], ['reception', 'recipient', 'representations', 0]],
+        description: 'Required when select=selected, forbidden otherwise. A path is an array of object keys '
+            + '(strings) and array indices (integers) from the root of the proof; [] is the root itself.',
+    })
+    @ValidateIf((o: PdfRepresentationOptionsDto) => o.select === RepresentationSelectionEnum.SELECTED)
+    @IsArray() @ArrayNotEmpty() @ArrayMaxSize(50)
+    paths?: PathSegment[][];
+}
+
 export class PdfOptionsDto {
+	@ApiPropertyOptional({
+		title: 'Representation selection',
+		description: 'Options for representation selection.',
+	})
+	@IsOptional()
+	@Type(() => PdfRepresentationOptionsDto)
+	representations: PdfRepresentationOptionsDto;
+
 	@ApiProperty({
 		title: "Font ratio in 0..1",
 	})
@@ -70,16 +122,16 @@ export class PdfOptionsDto {
 	})
     @IsOptional()
     @ValidateNested()
-    @Type(() => PdfCoverPageDto)
-    coverPage?: PdfCoverPageDto;
+    @Type(() => PdfCoverPageOptionsDto)
+    coverPage?: PdfCoverPageOptionsDto;
 
 	@ApiProperty({
 		title: "Injected text options",
 	})
     @IsOptional()
     @ValidateNested()
-    @Type(() => PdfInjectedTextDto)
-    injectedText?: PdfInjectedTextDto;
+    @Type(() => PdfInjectedTextOptionsDto)
+    injectedText?: PdfInjectedTextOptionsDto;
 
 	@ApiProperty({
 		title: "Language",

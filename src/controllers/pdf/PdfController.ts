@@ -1,6 +1,5 @@
 import { Body, Controller, Logger, Post } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiSecurity, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ResolutionProofDto } from 'src/dto/ResolverResponseDto';
 import { WalletByIdPipe } from '../../pipes/WalletByIdPipe';
 import { API_V1 } from '../../api/ApiVersion';
 import { ResolutionProofToPdf } from 'src/utils/pdf/ResolutionProofToPdf';
@@ -10,6 +9,7 @@ import { PdfResponseDto } from 'src/dto/PdfResponseDto';
 import { ResolverOutput } from '@cmts-dev/carmentis-sdk-core';
 import { PdfAsDataUrl } from 'src/utils/pdf/PdfAsDataUrl';
 import { PdfSigner } from 'src/utils/pdf/PdfSigner';
+import { DataUrl } from '@cmts-dev/carmentis-sdk-templating';
 
 @ApiTags('PDF')
 @Controller({ path: '', version: API_V1 })
@@ -46,7 +46,7 @@ export class PdfController {
         );
 
         return {
-            pdf: PdfAsDataUrl.binaryToDataUrl(pdfBytes)
+            pdf: PdfAsDataUrl.bufferToDataUrl(pdfBytes)
         };
     }
 
@@ -56,6 +56,7 @@ export class PdfController {
     })
     @ApiBody({ type: PdfFromInputDto })
     @ApiCreatedResponse({
+        description: 'The PDF file as a data URL.',
         type: PdfResponseDto
     })
     @ApiSecurity('api-key')
@@ -74,7 +75,7 @@ export class PdfController {
         );
 
         return {
-            pdf: PdfAsDataUrl.binaryToDataUrl(pdfBytes)
+            pdf: PdfAsDataUrl.bufferToDataUrl(pdfBytes)
         };
     }
 
@@ -84,25 +85,25 @@ export class PdfController {
     })
     @ApiBody({ type: PdfSignatureDto })
     @ApiCreatedResponse({
-        description: 'A Carmentis proof containing the resolved data.',
-        type: ResolutionProofDto
+        description: 'The PDF file as a data URL.',
+        type: PdfResponseDto
     })
     @ApiSecurity('api-key')
     @Post('/pdf/sign')
     async signPdf(
         @Body() pdfSignatureDto: PdfSignatureDto,
     ): Promise<PdfResponseDto> {
-        let pdfBytes: Buffer = PdfAsDataUrl.dataUrlToBinary(pdfSignatureDto.pdf);
-        const match = pdfSignatureDto.p12.match(/^data:application\/x-pkcs12;base64,(.*)/);
-        if (!match) {
+        let pdfBytes: Buffer = PdfAsDataUrl.dataUrlToBuffer(pdfSignatureDto.pdf);
+        const { subType } = DataUrl.getType(pdfSignatureDto.p12, "application");
+        if (subType !== 'x-pkcs12') {
             throw new Error(`invalid data URL for p12 content; expected "data:application/x-pkcs12;base64,..."`);
         }
-        const p12Buffer = Buffer.from(match[1], 'base64');
+        const p12Buffer = DataUrl.getDataAsBinary(pdfSignatureDto.p12);
         const signer = new PdfSigner(pdfBytes);
         await signer.signWithP12(p12Buffer, pdfSignatureDto.password);
         pdfBytes = signer.getPdfBytes();
         return {
-            pdf: PdfAsDataUrl.binaryToDataUrl(pdfBytes)
+            pdf: PdfAsDataUrl.bufferToDataUrl(pdfBytes)
         };
     }
 }

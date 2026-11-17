@@ -1,11 +1,15 @@
 import fs from 'fs';
 import path from 'path';
-import type { Token } from 'markdown-it';
 import pdfmake from 'pdfmake';
 import type { Content, ContentColumns, TDocumentDefinitions } from 'pdfmake/interfaces';
-import { MarkdownProcessor } from '../templates/MarkdownProcessor';
-import { InjectionCodec } from '../templates/InjectionCodec';
-import { imageKind, sanitizeImageDataUrl } from '../templates/ImageUrl';
+import type { RepresentationSelectionEnum, PathSegment } from 'src/dto/PdfGenerationDto';
+import {
+    MarkdownProcessor,
+    InjectionCodec,
+    DataUrl,
+    ImageUrl,
+    Token,
+} from '@cmts-dev/carmentis-sdk-templating';
 
 const FONT_PATH = path.resolve(__dirname, '../../assets/fonts');
 const IMG_PATH = path.resolve(__dirname, '../../assets/img');
@@ -46,6 +50,11 @@ const TEXTS: Record<string, Language> = {
     },
 };
 
+export interface RepresentationOptions {
+    select: RepresentationSelectionEnum;
+    paths?: PathSegment[][];
+}
+
 export interface CoverPageOptions {
     logo?: Buffer | string;             // free logo: PNG/JPEG bytes, or SVG markup as a string
     poweredBySvg?: string;              // Carmentis logo, SVG markup
@@ -59,12 +68,13 @@ export interface InjectedTextOptions {
 }
 
 export interface PdfOptions {
-    creationDate?: string;              // pin it if you want reproducible output
-    defaultFont?: string;               // default: first key of `fonts`
-    fontRatio?: number;                 // font ratio as a float multiplier
-    coverPage?: CoverPageOptions;       // cover page
-    language?: string;                  // language of built-in texts (default: 'en')
-    injectedText?: InjectedTextOptions; // options for injected texts
+    representations?: RepresentationOptions;    // options for selected representations
+    creationDate?: string;                      // pin it if you want reproducible output
+    defaultFont?: string;                       // default: first key of `fonts`
+    fontRatio?: number;                         // font ratio as a float multiplier
+    coverPage?: CoverPageOptions;               // options for cover page
+    language?: string;                          // language of built-in texts (default: 'en')
+    injectedText?: InjectedTextOptions;         // options for injected texts
 }
 
 export class MarkdownToPdf {
@@ -77,6 +87,16 @@ export class MarkdownToPdf {
         this.pdfOptions ||= {};
         this.pdfOptions.fontRatio ||= 1.0;
         this.pdfOptions.language ||= 'en';
+
+        // no network access at all
+        pdfmake.setUrlAccessPolicy(() => false);
+
+        // only the bundled fonts may be read from disk
+        pdfmake.setLocalAccessPolicy((filePath: string) => {
+            const resolved = path.resolve(filePath);
+            return resolved.startsWith(FONT_PATH + path.sep);
+        });
+
         pdfmake.setFonts({
             Roboto: {
                 normal: path.join(FONT_PATH, "Roboto-Regular.ttf"),
@@ -237,7 +257,7 @@ export class MarkdownToPdf {
     private loneImageSrc(children: Token[]): string | null {
         if (children.length !== 1 || children[0].type !== 'image') return null;
         // validated again here (cheap) so this class stays safe with any MarkdownProcessor
-        const src = sanitizeImageDataUrl(String(children[0].attrGet('src') ?? ''));
+        const src = ImageUrl.sanitizeImageDataUrl(String(children[0].attrGet('src') ?? ''));
         return src === '#' ? null : src;
     }
 
@@ -359,19 +379,22 @@ export class MarkdownToPdf {
 
     private logoNode(logo: Buffer | string, fit: [number, number]): Content {
         if (typeof logo === 'string') {
-            const isDataUrlImage = /^data:image\/(png|jpeg);base64,/.test(logo);
-            if (isDataUrlImage) {
+            const { type, subType } = DataUrl.getType(logo);
+            if (type !== '') {
+                if (type !== 'image' || (subType !== 'jpeg' && subType !== 'png')) {
+                    throw new Error('Invalid or unsupported data URL for the logo');
+                }
                 return { image: logo, fit };
             }
             // if it does not look like a data URL, assume SVG markup
             return { svg: logo, fit };
         }
-        const kind = imageKind(logo);
+        const kind = ImageUrl.imageKind(logo);
         if (!kind) {
             throw new Error('Logo must be PNG/JPEG as a buffer, PNG/JPEG as a data URL, or SVG markup as a string');
         }
         return {
-            image: `data:image/${kind};base64,${logo.toString('base64')}`,
+            image: DataUrl.encode(`image/${kind}`, logo),
             fit, // keeps the aspect ratio, never exceeds the box
         };
     }

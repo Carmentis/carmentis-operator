@@ -1,6 +1,5 @@
 import fs from 'fs';
-import { LiquidProcessor } from '../src/utils/templates/LiquidProcessor';
-import { InjectionCodec } from '../src/utils/templates/InjectionCodec';
+import { LiquidProcessor, InjectionCodec } from '@cmts-dev/carmentis-sdk-templating';
 import { MarkdownToPdf } from '../src/utils/pdf/MarkdownToPdf';
 import { PdfAttachment } from '../src/utils/pdf/PdfAttachment';
 import { PdfSigner } from '../src/utils/pdf/PdfSigner';
@@ -41,8 +40,8 @@ import { Utils } from '@cmts-dev/carmentis-sdk-core';
     let pdf = await mdToPdf.render(markdown);
 
     // binary <-> data URL conversion test
-    const pdfAsDataUrl = PdfAsDataUrl.binaryToDataUrl(pdf);
-    const rebuiltPdf = PdfAsDataUrl.dataUrlToBinary(pdfAsDataUrl);
+    const pdfAsDataUrl = PdfAsDataUrl.bufferToDataUrl(pdf);
+    const rebuiltPdf = PdfAsDataUrl.dataUrlToBuffer(pdfAsDataUrl);
     if (!Utils.binaryIsEqual(pdf, rebuiltPdf)) {
         throw new Error('error during binary <-> data URL conversion');
     }
