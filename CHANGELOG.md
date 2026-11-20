@@ -1,3 +1,10 @@
+## [1.16.8](https://github.com/Carmentis/carmentis-operator/compare/v1.16.7...v1.16.8) (2026-11-20)
+
+
+### Bug Fixes
+
+* **catalog:** log on-chain fetch errors to console ([080fa67](https://github.com/Carmentis/carmentis-operator/commit/080fa67679fe44d3b3e3a084a7d14c68f93fe7a6))
+
 ## [1.16.7](https://github.com/Carmentis/carmentis-operator/compare/v1.16.6...v1.16.7) (2026-11-20)
 
 
