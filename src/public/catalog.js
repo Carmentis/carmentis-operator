@@ -112,6 +112,7 @@ function initCatalog({ discoverUrl, importUrl, columns, describe }) {
 				note('Nothing to import.');
 			}
 		} catch (err) {
+			console.error(`Cannot fetch on-chain data: ${err}`);
 			note(`On-chain data unavailable (${err.message}).`, true);
 		} finally {
 			finish();
