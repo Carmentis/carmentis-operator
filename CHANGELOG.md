@@ -1,3 +1,10 @@
+## [1.16.7](https://github.com/Carmentis/carmentis-operator/compare/v1.16.6...v1.16.7) (2026-11-20)
+
+
+### Bug Fixes
+
+* added 2 options for the PDF cover page; fixed @ApiPropertyOptional ([04db728](https://github.com/Carmentis/carmentis-operator/commit/04db728e15ae98da3da64761b7306bf5ca730755))
+
 ## [1.16.6](https://github.com/Carmentis/carmentis-operator/compare/v1.16.5...v1.16.6) (2026-11-17)
 
 
