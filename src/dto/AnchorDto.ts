@@ -10,7 +10,7 @@ import {
 	IsUUID,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { CMTSToken, Hash, Optional } from '@cmts-dev/carmentis-sdk-core';
 
 /**
@@ -118,7 +118,7 @@ export class MaskableFieldDto {
  * }
  */
 export class AnchorDto  {
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: 'Local identifier of the application (not its virtual blockchain identifier). ' +
 			'The application must be published online before calling this endpoint. ' +
 			'When omitted, an application must be associated with the API key.',
@@ -129,7 +129,7 @@ export class AnchorDto  {
 	@IsUUID()
 	applicationId?: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: 'Identifier of the target application ledger. If omitted, a new virtual blockchain is created for this anchor request',
 		example: '82A49C89ACA5F3ECA4139A040A028B4C5B0A686BC1CE4B58DDE1BFC6B1004FBD',
 		required: false
@@ -138,7 +138,7 @@ export class AnchorDto  {
 	@IsOptional()
 	virtualBlockchainId?: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: 'Retention period in days for the anchored data on the Carmentis blockchain. After this period, data may be archived or removed. Required only for the first microblock of the virtual blockchain.',
 		example: 360,
 		required: false
@@ -203,7 +203,7 @@ export class AnchorDto  {
 	@Type(() => ActorAssignationDto)
 	actorAssignations: ActorAssignationDto[];
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		type: [HashableFieldDto],
 		description: 'Fields whose values should be hashed for zero-knowledge proofs',
 		default: [],
@@ -215,7 +215,7 @@ export class AnchorDto  {
 	@IsOptional()
 	hashableFields: HashableFieldDto[] = [];
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		type: [MaskableFieldDto],
 		description: 'Fields that support masking (redaction) of specific parts. Useful for PII and sensitive data',
 		default: [],
@@ -247,7 +247,7 @@ export class AnchorWithWalletDto extends AnchorDto {
 	@IsString()
 	endorser: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: 'User-facing message displayed on the wallet during approval. Helps users understand what they are approving',
 		example: 'Please approve the anchoring of invoice INV-001 for $1000',
 		default: "",

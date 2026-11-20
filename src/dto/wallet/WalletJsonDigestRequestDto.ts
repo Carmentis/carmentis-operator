@@ -1,15 +1,12 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsObject, IsBoolean } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString, IsObject, IsBoolean } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { JsonObject } from '@cmts-dev/carmentis-sdk-core';
-
-import { BinaryEncoding } from '../signature/BinaryEncoding';
 
 /**
  * Request DTO for requesting a wallet to sign a binary message.
  * The wallet will sign the provided message using its private key and return the signature.
  */
 export class WalletJsonDigestRequestDto {
-
 	@ApiProperty({
 		description: 'The binary message to be signed, encoded according to messageEncoding',
 		example: '{ firstname: "John", lastname: "Doe" }'
@@ -17,7 +14,7 @@ export class WalletJsonDigestRequestDto {
 	@IsObject()
 	object: JsonObject;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: 'Tells whether a salt must be automatically added',
 	})
 	@IsOptional()

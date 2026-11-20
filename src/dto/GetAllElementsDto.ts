@@ -1,9 +1,9 @@
 import { IsInt, IsOptional } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
 export class GetAllElementsDto {
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: 'Limit of elements to return',
 		example: 10,
 		default: 100,

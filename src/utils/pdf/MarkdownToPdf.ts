@@ -14,7 +14,7 @@ import {
 const FONT_PATH = path.resolve(__dirname, '../../assets/fonts');
 const IMG_PATH = path.resolve(__dirname, '../../assets/img');
 
-const PROOF_CHECKER_LINK = 'https://proof-checker.testnet.carmentis.io/';
+const DEFAULT_PROOF_CHECKER_LINK = 'https://proof-checker.carmentis.io/';
 
 const INJECTED_TEXT_COLOR   = '#0a5';
 const CODE_BG_COLOR         = '#f0f0f0';
@@ -57,8 +57,9 @@ export interface RepresentationOptions {
 
 export interface CoverPageOptions {
     logo?: Buffer | string;             // free logo: PNG/JPEG bytes, or SVG markup as a string
-    poweredBySvg?: string;              // Carmentis logo, SVG markup
     title?: string;                     // main title on the title page
+    showCarmentisSeal?: boolean;        // whether to show the Carmentis seal
+    proofCheckerUrl?: string;           // link to the proof checker
 }
 
 export interface InjectedTextOptions {
@@ -113,7 +114,7 @@ export class MarkdownToPdf {
         const body = this.blocksToPdf(tokens, 0).nodes;
         const hasCoverPage = this.pdfOptions.coverPage !== undefined;
         const isoDate = this.pdfOptions.creationDate ?? (new Date()).toISOString();
-        const proofCheckerLink = PROOF_CHECKER_LINK;
+        const proofCheckerLink = this.pdfOptions.coverPage?.proofCheckerUrl ?? DEFAULT_PROOF_CHECKER_LINK;
 
         const definition: TDocumentDefinitions = {
             pageSize: 'A4',
@@ -330,7 +331,6 @@ export class MarkdownToPdf {
     private coverPage(coverPage: CoverPageOptions, proofCheckerLink: string): Content[] {
         const { logo, title } = coverPage;
         const page: Content[] = [];
-        const poweredBySvg = fs.readFileSync(path.join(IMG_PATH, "carmentis.svg")).toString();
 
         if (logo) {
             page.push(this.centered(this.logoNode(logo, [260, 140]), [0, 120, 0, 40]));
@@ -344,19 +344,24 @@ export class MarkdownToPdf {
         });
 
         page.push(this.hr());
-        page.push({
-            text: this.getText(TEXTS.certifiedBy),
-            alignment: 'center',
-            ...this.fontSize(12),
-            color: POWERED_BY_COLOR,
-            margin: [0, 60, 0, 2]
-        });
-        page.push(this.centered({ svg: poweredBySvg, fit: [90, 24] }));
+        const showSeal = this.pdfOptions?.coverPage?.showCarmentisSeal ?? true;
+        if (showSeal) {
+            const poweredBySvg = fs.readFileSync(path.join(IMG_PATH, "carmentis.svg")).toString();
+            page.push({
+                text: this.getText(TEXTS.certifiedBy),
+                alignment: 'center',
+                ...this.fontSize(12),
+                color: POWERED_BY_COLOR,
+                margin: [0, 60, 0, 2]
+            });
+            page.push(this.centered({ svg: poweredBySvg, fit: [90, 24] }));
+        }
+        const url = new URL(proofCheckerLink);
         page.push({
             text: [
                 this.getText(TEXTS.documentCheck) + ' ',
                 {
-                    text: 'proof-checker.carmentis.io',
+                    text: url.hostname ?? proofCheckerLink,
                     link: proofCheckerLink,
                     color: LINK_COLOR,
                 },

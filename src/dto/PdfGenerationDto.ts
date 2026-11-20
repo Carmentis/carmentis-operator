@@ -21,7 +21,7 @@ import { ResolutionProofDto } from './ResolverResponseDto';
 import { ResolverDto } from './ResolverDto';
 
 export class PdfCoverPageOptionsDto {
-	@ApiProperty({
+	@ApiPropertyOptional({
 		title: "Cover page logo",
 		description: "JPEG/PNG as a data url, or SVG markup."
 	})
@@ -33,18 +33,34 @@ export class PdfCoverPageOptionsDto {
 		title: "Cover page title",
 	})
     @IsString()
-    title!: string;
+    title: string;
+
+	@ApiPropertyOptional({
+		title: "Carmentis seal",
+		description: "Whether to display the Carmentis seal on the cover page. True by default."
+	})
+    @IsOptional()
+    @IsBoolean()
+    showCarmentisSeal?: boolean;
+
+	@ApiPropertyOptional({
+		title: "Proof checker URL",
+		description: "A custom proof checker URL. Defaults to https://proof-checker.carmentis.io."
+	})
+    @IsOptional()
+    @IsString()
+    proofCheckerUrl: string;
 }
 
 export class PdfInjectedTextOptionsDto {
-	@ApiProperty({
+	@ApiPropertyOptional({
 		title: "Color of injected text",
 	})
     @IsOptional()
     @IsHexColor()
     color?: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		title: "Whether to use bold for injected text",
 	})
     @IsOptional()
@@ -100,7 +116,7 @@ export class PdfOptionsDto {
 	@Type(() => PdfRepresentationOptionsDto)
 	representations: PdfRepresentationOptionsDto;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		title: "Font ratio in 0..1",
 	})
     @IsOptional()
@@ -109,7 +125,7 @@ export class PdfOptionsDto {
     @Max(1)
     fontRatio?: number;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		title: "PDF creation date",
 		description: "The creation date to be put in the PDF file, in ISO 8601 format.",
 	})
@@ -117,7 +133,7 @@ export class PdfOptionsDto {
     @IsISO8601()
     creationDate?: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		title: "Cover page options",
 	})
     @IsOptional()
@@ -125,7 +141,7 @@ export class PdfOptionsDto {
     @Type(() => PdfCoverPageOptionsDto)
     coverPage?: PdfCoverPageOptionsDto;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		title: "Injected text options",
 	})
     @IsOptional()
@@ -133,7 +149,7 @@ export class PdfOptionsDto {
     @Type(() => PdfInjectedTextOptionsDto)
     injectedText?: PdfInjectedTextOptionsDto;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		title: "Language",
 		description: "Language of built-in texts. Currently supported: 'en' (default) or 'fr'."
 	})

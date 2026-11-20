@@ -4,7 +4,7 @@ import {
 	IsUUID,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { JsonObject } from '@cmts-dev/carmentis-sdk-core';
 
 enum PolicyEnum {
@@ -13,7 +13,7 @@ enum PolicyEnum {
 }
 
 export class ResolverPoliciesDto {
-	@ApiProperty({
+	@ApiPropertyOptional({
 		title: 'Expected behavior on resolution failure',
 		description: 'Field indicating whether to raise an exception or ignore the error if a resolution fails.',
 		enum: PolicyEnum,
@@ -24,7 +24,7 @@ export class ResolverPoliciesDto {
 	@IsEnum(PolicyEnum)
 	onResolutionFailure: PolicyEnum = PolicyEnum.THROW;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		title: 'Expected behavior on cyclic resolution',
 		description: 'Field indicating whether to raise an exception or ignore the error if a cyclic resolution is detected.',
 		enum: PolicyEnum,

@@ -20,6 +20,8 @@ import { Utils } from '@cmts-dev/carmentis-sdk-core';
             creationDate: (new Date(2026, 10, 4)).toISOString(),
             coverPage: {
                 logo: logoBase64,
+                showCarmentisSeal: false,
+                proofCheckerUrl: "https://proof-checker.server4.devnet.carmentis.io",
                 title: "FileSign Proof",
             },
             injectedText: {

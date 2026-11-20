@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { BinaryEncoding } from '../signature/BinaryEncoding';
 
@@ -17,7 +17,7 @@ export class WalletBinarySignatureRequestDto {
 	@IsNotEmpty()
 	message: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: 'Encoding format of the input message',
 		enum: BinaryEncoding,
 		default: BinaryEncoding.HEX,
@@ -27,7 +27,7 @@ export class WalletBinarySignatureRequestDto {
 	@IsEnum(BinaryEncoding)
 	messageEncoding: BinaryEncoding = BinaryEncoding.HEX;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: 'Desired encoding format for the returned signature',
 		enum: BinaryEncoding,
 		default: BinaryEncoding.HEX,

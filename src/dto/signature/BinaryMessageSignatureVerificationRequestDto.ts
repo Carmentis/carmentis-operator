@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { BaseSignatureVerificationRequestDto } from './BaseSignatureVerificationRequestDto';
 import { BinaryEncoding } from './BinaryEncoding';
@@ -26,7 +26,7 @@ export class BinaryMessageSignatureVerificationRequestDto extends BaseSignatureV
 	@IsNotEmpty()
 	message: string;
 
-	@ApiProperty({
+	@ApiPropertyOptional({
 		description: 'Encoding format of the message bytes',
 		enum: BinaryEncoding,
 		default: BinaryEncoding.HEX,

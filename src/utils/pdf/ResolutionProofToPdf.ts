@@ -35,19 +35,7 @@ export class ResolutionProofToPdf {
         const representations = report.representations;
         const representationOptions = options.representations ?? { select: RepresentationSelectionEnum.ALL };
         const markdown = await RepresentationProcessor.toMarkdown(proof.resolvedJson, representations, representationOptions);
-/*
-        // get the Liquid template
-        if (representations.size !== 1) {
-            throw new Error(`Expected exactly one representation, got ${representations.size}`);
-        }
-        const representation = representations.values().next().value;
-        const template = representation.template;
 
-        // process Liquid template
-        const codec = new InjectionCodec;
-        const liquidProcessor = new LiquidProcessor(codec);
-        const markdown = await liquidProcessor.render(template, proof.resolvedJson);
-*/
         // process markdown
         const codec = new InjectionCodec;
         const mdToPdf = new MarkdownToPdf(codec, options);
