@@ -1,3 +1,15 @@
+# [1.17.0](https://github.com/Carmentis/carmentis-operator/compare/v1.16.8...v1.17.0) (2026-11-23)
+
+
+### Bug Fixes
+
+* updated pnpm-lock.yaml ([2e133b4](https://github.com/Carmentis/carmentis-operator/commit/2e133b4256d12b9cde16123d221e079fb5ac1e5a))
+
+
+### Features
+
+* latest SDK -> updated Merkle tree ([93749f9](https://github.com/Carmentis/carmentis-operator/commit/93749f9eaa13f35ea6318ed4c0d3f908cdcda798))
+
 ## [1.16.8](https://github.com/Carmentis/carmentis-operator/compare/v1.16.7...v1.16.8) (2026-11-20)
 
 
