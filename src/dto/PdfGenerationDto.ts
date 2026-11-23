@@ -49,7 +49,7 @@ export class PdfCoverPageOptionsDto {
 	})
     @IsOptional()
     @IsString()
-    proofCheckerUrl: string;
+    proofCheckerUrl?: string;
 }
 
 export class PdfInjectedTextOptionsDto {
