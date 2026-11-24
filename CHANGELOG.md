@@ -1,3 +1,10 @@
+## [1.17.1](https://github.com/Carmentis/carmentis-operator/compare/v1.17.0...v1.17.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* update SDK core ([1b9ab9f](https://github.com/Carmentis/carmentis-operator/commit/1b9ab9f0eecd790306a248ec6641420c5679f344))
+
 # [1.17.0](https://github.com/Carmentis/carmentis-operator/compare/v1.16.8...v1.17.0) (2026-11-23)
 
 
