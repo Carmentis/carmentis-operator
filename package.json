@@ -28,7 +28,7 @@
     "@automapper/classes": "^8.8.1",
     "@automapper/core": "^8.8.1",
     "@cmts-dev/carmentis-sdk-core": "^1.16.0",
-    "@cmts-dev/carmentis-sdk-templating": "^1.0.2",
+    "@cmts-dev/carmentis-sdk-templating": "^1.0.3",
     "@digitalbazaar/did-method-jwk": "^2.0.0",
     "@iarna/toml": "^2.2.5",
     "@libpdf/core": "^0.5.3",

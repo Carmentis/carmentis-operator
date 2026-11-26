@@ -2,8 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import pdfmake from 'pdfmake';
 import type { Content, ContentColumns, TDocumentDefinitions } from 'pdfmake/interfaces';
-import type { RepresentationSelectionEnum, PathSegment } from 'src/dto/PdfGenerationDto';
 import {
+    RepresentationSelectionEnum,
+    PathSegment,
     MarkdownProcessor,
     InjectionCodec,
     DataUrl,

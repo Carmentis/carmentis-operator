@@ -15,12 +15,20 @@ import {
 	ArrayNotEmpty,
 	ArrayMaxSize,
 } from 'class-validator';
+import {
+	RepresentationSelectionEnum,
+	PathSegment,
+	PdfCoverPageOptions,
+	PdfInjectedTextOptions,
+	PdfRepresentationOptions,
+	PdfOptions,
+} from '@cmts-dev/carmentis-sdk-templating';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ResolutionProofDto } from './ResolverResponseDto';
 import { ResolverDto } from './ResolverDto';
 
-export class PdfCoverPageOptionsDto {
+export class PdfCoverPageOptionsDto implements PdfCoverPageOptions {
 	@ApiPropertyOptional({
 		title: "Cover page logo",
 		description: "JPEG/PNG as a data url, or SVG markup."
@@ -52,7 +60,7 @@ export class PdfCoverPageOptionsDto {
     proofCheckerUrl?: string;
 }
 
-export class PdfInjectedTextOptionsDto {
+export class PdfInjectedTextOptionsDto implements PdfInjectedTextOptions {
 	@ApiPropertyOptional({
 		title: "Color of injected text",
 	})
@@ -68,15 +76,7 @@ export class PdfInjectedTextOptionsDto {
     bold?: boolean;
 }
 
-export enum RepresentationSelectionEnum {
-    FIRST = 'first',
-    ALL = 'all',
-    SELECTED = 'selected',
-}
-
-export type PathSegment = string | number
-
-export class PdfRepresentationOptionsDto {
+export class PdfRepresentationOptionsDto implements PdfRepresentationOptions {
     @ApiProperty({
         enum: RepresentationSelectionEnum,
         default: RepresentationSelectionEnum.FIRST,
@@ -107,14 +107,14 @@ export class PdfRepresentationOptionsDto {
     paths?: PathSegment[][];
 }
 
-export class PdfOptionsDto {
+export class PdfOptionsDto implements PdfOptions {
 	@ApiPropertyOptional({
 		title: 'Representation selection',
 		description: 'Options for representation selection.',
 	})
 	@IsOptional()
 	@Type(() => PdfRepresentationOptionsDto)
-	representations: PdfRepresentationOptionsDto;
+	representations?: PdfRepresentationOptionsDto;
 
 	@ApiPropertyOptional({
 		title: "Font ratio in 0..1",
