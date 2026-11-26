@@ -1,3 +1,10 @@
+## [1.17.2](https://github.com/Carmentis/carmentis-operator/compare/v1.17.1...v1.17.2) (2026-11-26)
+
+
+### Bug Fixes
+
+* now attaching 'options.json' to generated pdf files ([1477d66](https://github.com/Carmentis/carmentis-operator/commit/1477d66b087fd66250a1e836667b629905397ed5))
+
 ## [1.17.1](https://github.com/Carmentis/carmentis-operator/compare/v1.17.0...v1.17.1) (2026-11-24)
 
 
